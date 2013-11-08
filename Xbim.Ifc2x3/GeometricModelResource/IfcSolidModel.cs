@@ -44,5 +44,6 @@ namespace Xbim.Ifc2x3.GeometricModelResource
         {
             get { return Dim; }
         }
+
     }
 }

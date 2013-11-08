@@ -67,8 +67,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;NOMINMAX;USE_CARVE;_HAS_CPP0X=0;_ITERATOR_DEBUG_LEVEL=0;DOPARALLEL;_DEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;.\OpenCascade\inc;.\CarveCsg\include;.\CarveCsg\external\GLOOP\include;.\CarveCsg\external\GLEW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_LIB;NOMINMAX;USE_CARVE;_ITERATOR_DEBUG_LEVEL=0;DOPARALLEL;_DEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -87,8 +87,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;NOMINMAX;USE_CARVE;_HAS_CPP0X=0;_ITERATOR_DEBUG_LEVEL=0;DOPARALLEL;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;.\OpenCascade\inc;.\CarveCsg\include;.\CarveCsg\external\GLOOP\include;.\CarveCsg\external\GLEW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_LIB;NOMINMAX;USE_CARVE;_ITERATOR_DEBUG_LEVEL=0;DOPARALLEL;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
@@ -145,6 +145,7 @@
     <ClCompile>
       <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

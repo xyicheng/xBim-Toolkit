@@ -1,8 +1,8 @@
 #pragma once
 #include "ITessellatorReceiver.h"
-#include <windows.h>
-#include <gl/gl.h>
-#include <gl/glu.h>
+//#include <windows.h>
+#include <gloop/gl.hpp>
+#include <gloop/glu.hpp>
 
 using namespace Xbim::XbimExtensions;
 using namespace System::Collections::Generic;

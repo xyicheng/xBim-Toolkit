@@ -15,6 +15,7 @@ namespace Xbim.ModelGeometry.Scene
         XbimMeshFragmentCollection Meshes { get; set; }
         
         bool Add(XbimGeometryData geometryMeshData);
+        void Add(IXbimGeometryModel geometryModel);
         void MoveTo(IXbimMeshGeometry3D toMesh);
         void BeginUpdate();
         void EndUpdate();

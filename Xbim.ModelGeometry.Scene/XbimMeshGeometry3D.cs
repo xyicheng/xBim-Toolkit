@@ -566,5 +566,13 @@ namespace Xbim.ModelGeometry.Scene
             }
             return boundingBox;
         }
+
+
+
+
+        public void Add(IXbimGeometryModel geometryModel)
+        {
+            Add((IXbimMeshGeometry3D)geometryModel);
+        }
     }
 }

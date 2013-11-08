@@ -98,7 +98,7 @@ namespace Xbim.Ifc2x3.PresentationResource
 
         #region Fields
 
-        protected IfcLabel? _name;
+        protected IfcLabel? theName;
 
         #endregion
 
@@ -110,9 +110,9 @@ namespace Xbim.Ifc2x3.PresentationResource
             get
             {
                 ((IPersistIfcEntity) this).Activate(false);
-                return _name;
+                return theName;
             }
-            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref theName, value, v => Name = v, "Name"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)
@@ -120,7 +120,7 @@ namespace Xbim.Ifc2x3.PresentationResource
             switch (propIndex)
             {
                 case 0:
-                    _name = value.StringVal;
+                    theName = value.StringVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

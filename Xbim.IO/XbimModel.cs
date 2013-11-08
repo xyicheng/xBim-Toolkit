@@ -22,6 +22,8 @@ using System.Globalization;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.IO.DynamicGrouping;
 using Xbim.Ifc2x3.RepresentationResource;
+using System.Runtime.CompilerServices;
+using Xbim.Common.Geometry;
 
 
 namespace Xbim.IO
@@ -29,6 +31,7 @@ namespace Xbim.IO
     /// <summary>
     /// General Model class for memory based model suport
     /// </summary>
+   
     public class XbimModel : IModel, IDisposable
     {
         #region Fields
@@ -62,6 +65,10 @@ namespace Xbim.IO
 
         #endregion
 
+        //Object that manages geometry conversion etc
+        IGeometryManager geometryManager;
+
+      
         #endregion
 
         /// <summary>
@@ -80,6 +87,13 @@ namespace Xbim.IO
         public string DatabaseName
         {
             get { return cache.DatabaseName; }
+        }
+
+        //sets or gets the Geometry Manager for this model
+        IGeometryManager IModel.GeometryManager
+        {
+            get { return geometryManager; }
+            set { geometryManager = value; }
         }
 
         static public int ModelOpenCount
@@ -388,7 +402,11 @@ namespace Xbim.IO
                 default:
                     return false;
             }
-            if (keepOpen) GetModelFactors();
+            if (keepOpen) 
+            {
+                GetModelFactors();
+                this.LoadReferenceModels();
+            }
             return true;
         }
 

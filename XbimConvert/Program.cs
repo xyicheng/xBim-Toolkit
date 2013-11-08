@@ -23,6 +23,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Xbim.ModelGeometry.Converter;
 using Xbim.Common.Geometry;
+using Xbim.Ifc2x3.GeometricModelResource;
 
 namespace XbimConvert
 {
@@ -75,6 +76,19 @@ namespace XbimConvert
                     watch.Start();
                     using (XbimModel model = ParseModelFile(origFileName, xbimFileName, arguments.Caching))
                     {
+                        foreach (var product in model.Instances.OfType<IfcProduct>())
+                        {
+                            IXbimGeometryModelGroup grp = product.Geometry3D();
+                            Console.WriteLine(grp.Count());
+                            XbimRect3D b = grp.GetBoundingBox();
+                            Console.WriteLine(b.ToString());
+                            foreach (IXbimGeometryModel poly in grp)
+                            {
+                                XbimRect3D r3d = poly.GetBoundingBox();
+                                Console.WriteLine(r3d.ToString());
+                                Console.WriteLine(poly.GetAxisAlignedBoundingBox().ToString());
+                            }
+                        }
                         //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
                         parseTime = watch.ElapsedMilliseconds;
                         if (!arguments.NoGeometry)

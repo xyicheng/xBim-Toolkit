@@ -152,7 +152,7 @@ model_actions
 	| VALIDATE MODEL																			{ValidateModel();}
 	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
 	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
-	| COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);}
+	/* | COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);} */
 	;
 
 variables_actions
@@ -291,9 +291,9 @@ spatialCondition
 	;
 
 modelCondition
-	: MODEL op_bool							{GenerateModelCondition(Tokens.MODEL, $1.strVal);}
-	| MODEL OWNER op_bool STRING			{GenerateModelCondition(Tokens.OWNER, $4.strVal);}
-	| MODEL ORGANIZATION op_bool STRING		{GenerateModelCondition(Tokens.ORGANIZATION, $4.strVal);}
+	: MODEL op_bool	STRING					{$$.val = GenerateModelCondition(Tokens.MODEL, (Tokens)($2.val), $3.strVal);}
+	| MODEL OWNER op_bool STRING			{$$.val = GenerateModelCondition(Tokens.OWNER, (Tokens)($3.val), $4.strVal);}
+	| MODEL ORGANIZATION op_bool STRING		{$$.val = GenerateModelCondition(Tokens.ORGANIZATION, (Tokens)($3.val), $4.strVal);}
 	;
 
 op_spatial

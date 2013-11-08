@@ -2,6 +2,7 @@
 #include "XbimShell.h"
 #include "XbimSolid.h"
 #include "XbimGeometryModelCollection.h"
+#include "XbimPolyhedron.h"
 #include "XbimGeomPrim.h"
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Solid.hxx>
@@ -58,11 +59,7 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-			IEnumerable<XbimFace^>^ XbimShell::CfsFaces::get()
-			{
-				return this;
-			}
-
+			
 			
 			XbimShell::XbimShell(const TopoDS_Shape & shape, bool hasCurves,int representationLabel, int surfaceStyleLabel )
 			{
@@ -413,6 +410,11 @@ TryBuildLoop:
 				}
 				wire.Closed(true);
 				return wire;
+			}
+
+			IXbimGeometryModelGroup^ XbimShell::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			{
+				return ToPolyHedron(deflection,  precision, precisionMax);
 			}
 			
 		}

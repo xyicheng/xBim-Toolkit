@@ -1,5 +1,5 @@
 #pragma once
-			
+
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
 #include "XbimLocation.h"
@@ -12,6 +12,8 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <BRepTools.hxx>
+
+
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::Ifc2x3::GeometricModelResource;
@@ -36,19 +38,77 @@ namespace Xbim
 		{
 #pragma unmanaged
 
-void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData);
-void CALLBACK XMS_EndTessellate(void *pVertexData);
-void CALLBACK XMS_TessellateError(GLenum err);
-void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData);
-void CALLBACK CGS_BeginTessellate(GLenum type, void *pPolygonData);
-void CALLBACK CGS_EndTessellate(void *pPolygonData);
-void CALLBACK CGS_AddVertexIndex(void *pVertexData, void *pPolygonData);
-#pragma managed
+typedef void (__stdcall *GLUTessCallback)();	
 
+void __stdcall XMS_AddVertexIndex(void * pVertexData, void * pPolygonData);
+void __stdcall XMS_BeginTessellate(GLenum type, void *pPolygonData);
+void __stdcall XMS_EndTessellate(void *pVertexData);
+void __stdcall XMS_TessellateError(GLenum err);
+
+void __stdcall CGS_BeginTessellate(GLenum type, void *pPolygonData);
+void __stdcall CGS_EndTessellate(void *pPolygonData);
+void __stdcall CGS_AddVertexIndex(void *pVertexData, void *pPolygonData);
+#pragma managed
 ref class XbimPolyhedron;
-public ref class XbimGeometryModel abstract : IXbimGeometryModel
-		{
-			
+
+
+public ref class XbimGeometryModel abstract :  public IXbimGeometryModel, public IXbimGeometryModelGroup
+{
+	
+private:
+	ref struct enumerator : IEnumerator<IXbimGeometryModel^>
+			{
+				enumerator( IXbimGeometryModel^ gm )
+				{
+					colInst = gm;
+				}
+
+				virtual bool MoveNext() = IEnumerator<IXbimGeometryModel^>::MoveNext
+				{
+					if( currentIndex == 0 )
+					{
+						currentIndex++;
+						return true;
+					}
+					return false;
+				}
+
+				property IXbimGeometryModel^ Current
+				{
+					virtual IXbimGeometryModel^ get() = IEnumerator<IXbimGeometryModel^>::Current::get
+					{
+						return colInst;
+					}
+				};
+				// This is required as IEnumerator<T> also implements IEnumerator
+				property Object^ Current2
+				{
+					virtual Object^ get() = System::Collections::IEnumerator::Current::get
+					{
+						return colInst;
+					}
+				};
+
+				virtual void Reset() = IEnumerator<IXbimGeometryModel^>::Reset {currentIndex = -1;}
+				~enumerator() {}
+
+				IXbimGeometryModel^ colInst;
+				int currentIndex;
+			};
+
+		public:		
+			literal String^ PolyhedronFormat = "PLY";
+
+			virtual IEnumerator<IXbimGeometryModel^>^ GetEnumerator()
+			{
+				return gcnew enumerator(this);
+			}
+
+			virtual System::Collections::IEnumerator^ GetEnumerator2() = System::Collections::IEnumerable::GetEnumerator
+			{
+				return gcnew enumerator(this);
+			}
+
 		private:
 		protected:
 			TopoDS_Shape* nativeHandle;
@@ -72,6 +132,7 @@ public ref class XbimGeometryModel abstract : IXbimGeometryModel
 			};
 		public:
 
+			virtual IXbimGeometryModelGroup^ AsPolyhedron(double deflection, double precision,double precisionMax);
 			XbimGeometryModel(){_bounds=XbimRect3D::Empty;};
 			void Init(const TopoDS_Shape&  shape, bool hasCurves,int representationLabel, int surfaceStyleLabel );
 			void Init(IfcRepresentationItem^ entity);
@@ -102,8 +163,12 @@ public ref class XbimGeometryModel abstract : IXbimGeometryModel
 			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision);
 			virtual XbimGeometryModel^ CopyTo(	IfcAxis2Placement^ placement) abstract;
 			virtual void ToSolid(double precision, double maxPrecision) abstract;
+			virtual  IXbimMeshGeometry3D^ TriangulatedMesh(double deflection);
+			
 #if USE_CARVE
+			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) abstract ;
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) ;
+			virtual String^ WriteAsString();
 #endif
 			virtual property XbimLocation ^ Location 
 			{
@@ -152,6 +217,9 @@ public ref class XbimGeometryModel abstract : IXbimGeometryModel
 			}
 
 			virtual XbimRect3D GetBoundingBox();
+			
+			virtual XbimRect3D GetAxisAlignedBoundingBox();
+			
 			virtual bool Intersects(XbimGeometryModel^ other);
 
 			virtual property double Volume

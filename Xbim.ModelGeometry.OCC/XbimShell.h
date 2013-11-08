@@ -22,7 +22,7 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-			public ref class XbimShell : XbimGeometryModel,  IEnumerable<XbimFace^>
+			public ref class XbimShell : XbimGeometryModel
 			{
 			private:
 				bool isSolid;
@@ -47,25 +47,14 @@ namespace Xbim
 				/*Interfaces*/
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 				
-				// IEnumerable<IIfcFace^> Members
-				virtual property IEnumerable<XbimFace^>^ CfsFaces
-				{
-					IEnumerable<XbimFace^>^ get();
-				}
 
-				virtual IEnumerator<XbimFace^>^ GetEnumerator()
-				{
-					return gcnew XbimFaceEnumerator(*Handle);
-				}
-				virtual System::Collections::IEnumerator^ GetEnumerator2() sealed = System::Collections::IEnumerable::GetEnumerator
-				{
-					return gcnew XbimFaceEnumerator(*Handle);
-				}
 
 				//Builds a TopoDS_Shell from an ConnectedFaceSet
 				static TopoDS_Shape Build(IfcConnectedFaceSet^ faceSet, bool% hasCurves);
 
 				virtual void ToSolid(double precision, double maxPrecision) override; 
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+
 			};
 		}
 	}

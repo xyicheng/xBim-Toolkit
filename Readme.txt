@@ -18,12 +18,6 @@ You will need Visual Studio 2010 SP1 or newer to compile the Solution. To compil
 project you will require ASP.NET MVC 3.0 to be installed. All solutions target .NET 4.0. The 4.0 Client profile
 may be supported for some projects.
 
-Before compiling, you should ensure you have targetted the correct platform in the Solution Configuration Manager. 
-Xbim currently supports targetting x86 and x64 architectures - choose the one most appropriate to your
-environment. 
-
-Note that targetting Any CPU or Mixed Platforms is not advised due the the dependency on native C++ DLLs in the 
-OpenCascade geometry engine.
 
 Xbim is a software library, and is currently deployed with a number of sample applications to demonstrate its capabilities
 

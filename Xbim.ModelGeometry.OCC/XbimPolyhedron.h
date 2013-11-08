@@ -1,8 +1,17 @@
 #pragma once
+//#include <windows.h>
 #include "XbimGeometryModel.h"
 #include <carve\polyhedron_decl.hpp>
 #include <carve\input.hpp>
 #include <carve\csg.hpp>
+#include <carve/carve.hpp>
+#include <carve/collection_types.hpp>
+
+#ifndef WIN32
+#  include <stdint.h>
+#endif
+
+
 
 using namespace Xbim::ModelGeometry::Scene;
 using namespace System::Collections::Generic;
@@ -10,11 +19,8 @@ using namespace Xbim::Common::Geometry;
 using namespace Xbim::Common::Logging;
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::Ifc2x3::GeometricConstraintResource;
-#include <windows.h>
-#include <gl/gl.h>
-#include <gl/glu.h>
-#include <carve/carve.hpp>
-#include <carve/collection_types.hpp>
+
+
 
 typedef std::pair<const TopoDS_Edge, const TopoDS_Vertex*> edgeVertexPair_t;
 typedef std::vector<edgeVertexPair_t> edgeVertexPairList_t;
@@ -74,13 +80,18 @@ namespace Xbim
 				}
 
 			protected:;
-				void DeletePolyhedron(void);
-				virtual void InstanceCleanup() override;
+					  void DeletePolyhedron(void);
+					  virtual void InstanceCleanup() override;
 			public:
 				XbimPolyhedron(void);
+				XbimPolyhedron(String^ plyData);
 				XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel);
 				//properties
-				
+				virtual property double Volume 
+				{
+					double get() override;
+				}
+
 				//funtions
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 
@@ -99,7 +110,12 @@ namespace Xbim
 				virtual property bool IsValid {bool get() override;}
 				bool Intersects(XbimPolyhedron^ poly);
 				virtual void ToSolid(double precision, double maxPrecision) override; 
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
 				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
+				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override ;
+				virtual String^ WriteAsString() override;
+				
+				
 			};
 		}
 	}

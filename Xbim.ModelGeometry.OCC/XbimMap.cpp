@@ -2,7 +2,7 @@
 #include "XbimMap.h"
 
 #include "XbimPolyhedron.h"
-
+#include "XbimGeometryModelCollection.h"
 using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Ifc2x3::Extensions;
@@ -23,6 +23,26 @@ namespace Xbim
 				poly->Transform(_transform);
 				return poly;
 			}
+
+			IXbimGeometryModelGroup^ XbimMap::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			{
+
+				if(dynamic_cast<XbimGeometryModelCollection^>(_mappedItem)) //do each one
+				{
+					XbimGeometryModelCollection^ coll = (XbimGeometryModelCollection^)_mappedItem;
+					XbimGeometryModelCollection^ polys = gcnew XbimGeometryModelCollection(false,coll->RepresentationLabel,coll->SurfaceStyleLabel); //no curves after conversion
+					for each(XbimGeometryModel^ shape in (XbimGeometryModelCollection^)_mappedItem)
+					{
+						XbimPolyhedron^ poly = shape->ToPolyHedron(deflection, precision,precisionMax);
+						poly->Transform(_transform);
+						polys->Add(poly);
+					}
+					return polys;
+				}
+				else
+					return ToPolyHedron(deflection,  precision, precisionMax);
+			}
+
 			XbimMap::XbimMap(const TopoDS_Shape& shape,XbimMap^ copy)
 			{
 				_mappedItem = copy->MappedItem;

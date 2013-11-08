@@ -51,6 +51,7 @@
     <Compile Include="Clustering\XbimBBoxClusterElement.cs" />
     <Compile Include="IXbimGeometryEngine.cs" />
     <Compile Include="IXbimGeometryModel.cs" />
+    <Compile Include="IXbimGeometryModelGroup.cs" />
     <Compile Include="IXbimMeshGeometry3D.cs" />
     <Compile Include="IXbimRenderMaterial.cs" />
     <Compile Include="IXbimTriangulatedModelBuilder.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="XbimColour.cs" />
     <Compile Include="XbimColourMap.cs" />
     <Compile Include="Clustering\XbimDBSCAN.cs" />
+    <Compile Include="XbimEmptyGeometryGroup.cs" />
     <Compile Include="XbimRegion.cs" />
     <Compile Include="XbimLOD.cs" />
     <Compile Include="XbimMeshFragment.cs" />

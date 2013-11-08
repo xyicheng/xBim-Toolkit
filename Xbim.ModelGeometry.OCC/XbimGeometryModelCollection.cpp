@@ -29,7 +29,7 @@ namespace Xbim
 		{
 			void XbimGeometryModelCollection::Init()
 			{
-				shapes = gcnew List<XbimGeometryModel^>();
+				shapes = gcnew List<IXbimGeometryModel^>();
 				_hasCurvedEdges = false;
 			};
 
@@ -120,6 +120,16 @@ namespace Xbim
 				    shape->ToSolid(precision,maxPrecision);
 				}
 				
+			}
+
+			IXbimGeometryModelGroup^ XbimGeometryModelCollection::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			{
+				XbimGeometryModelCollection^ polys = gcnew XbimGeometryModelCollection(this->_hasCurvedEdges,this->_representationLabel,this->_surfaceStyleLabel);
+				for each(XbimGeometryModel^ shape in shapes)
+				{
+					polys->Add(shape->ToPolyHedron(deflection,  precision, precisionMax));
+				}
+				return polys;
 			}
 		}
 	}

@@ -75,9 +75,9 @@ namespace Xbim.Ifc2x3.PresentationResource
         {
             if (propIndex == 0 && value.Type == IfcParserType.Real) //we have a 2x2 colour with no name
             {
-                _name = ifc2x2Colour;
+                theName = ifc2x2Colour;
             }
-            if (_name == ifc2x2Colour) propIndex++; //move all indices along 
+            if (theName == ifc2x2Colour) propIndex++; //move all indices along 
 
             switch (propIndex)
             {

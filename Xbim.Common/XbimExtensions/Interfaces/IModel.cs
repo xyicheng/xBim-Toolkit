@@ -19,6 +19,7 @@ using System.Linq.Expressions;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Common;
 using System.Collections;
+using Xbim.Common.Geometry;
 
 
 #endregion
@@ -96,5 +97,6 @@ namespace Xbim.XbimExtensions.Interfaces
         /// in case of federated models or multiple model environments. 
         /// </summary>
         object Tag { get; set; }
+        IGeometryManager GeometryManager { get; set; }
     }
 }

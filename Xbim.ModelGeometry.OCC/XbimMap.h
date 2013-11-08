@@ -26,6 +26,8 @@ namespace Xbim
 			XbimMap(const TopoDS_Shape & shape,XbimMap^ copy);
 #if USE_CARVE
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
+			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+
 #endif
 			~XbimMap()
 			{

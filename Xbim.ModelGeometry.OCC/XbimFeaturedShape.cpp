@@ -38,7 +38,7 @@ namespace Xbim
 			
 
 
-			XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, XbimGeometryModelCollection^ openings, IEnumerable<XbimGeometryModel^>^ projections)
+			XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, XbimGeometryModelCollection^ openings, XbimGeometryModelCollection^ projections)
 			{
 				if(baseShape==nullptr)
 				{
@@ -57,9 +57,14 @@ namespace Xbim
 
 			XbimPolyhedron^ XbimFeaturedShape::ToPolyHedron(double deflection, double precision, double precisionMax)
 			{
-				throw gcnew NotImplementedException();
+				return mResultShape->ToPolyHedron(deflection,  precision,  precisionMax);
 			}
 
+			IXbimGeometryModelGroup^ XbimFeaturedShape::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			{
+				return ToPolyHedron(deflection,  precision, precisionMax);
+				
+			}
 			//divides the openings into a list of list of non-intersecting shapes
 			XbimGeometryModelCollection^ XbimFeaturedShape::PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax)
 			{

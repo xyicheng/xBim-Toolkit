@@ -22,7 +22,7 @@ namespace Xbim
 		namespace OCC
 		{
 
-			public ref class XbimSolid  : XbimGeometryModel,  IEnumerable<XbimFace^>
+			public ref class XbimSolid  : XbimGeometryModel
 			{
 			protected:			
 						
@@ -41,7 +41,6 @@ namespace Xbim
 				XbimSolid(IfcCsgPrimitive3D^ repItem);
 				XbimSolid(IfcVertexPoint^ pt);
 				XbimSolid(IfcEdge^ edge);
-				void Print();
 				~XbimSolid()
 				{
 					InstanceCleanup();
@@ -52,27 +51,12 @@ namespace Xbim
 					InstanceCleanup();
 				};
 				
-		
-				// IEnumerable<IIfcFace^> Members
-				virtual property IEnumerable<XbimFace^>^ Faces
-				{
-					IEnumerable<XbimFace^>^ get();
-				};
 
-
-				virtual IEnumerator<XbimFace^>^ GetEnumerator()
-				{
-
-					return gcnew XbimFaceEnumerator(*Handle);
-				};
-				virtual System::Collections::IEnumerator^ GetEnumerator2() sealed = System::Collections::IEnumerable::GetEnumerator
-				{
-					return gcnew XbimFaceEnumerator(*Handle);
-				};
-			
 				//solid operations
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 				virtual void ToSolid(double precision, double maxPrecision) override {}; //nothing to do
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+
 				///static builders 
 				
 				static TopoDS_Solid Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves);

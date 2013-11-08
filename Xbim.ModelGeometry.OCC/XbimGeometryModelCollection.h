@@ -1,6 +1,5 @@
 #pragma once
 #include "XbimGeometryModel.h"
-#include "XbimGeometryModel.h"
 #include "TopoDS_Compound.hxx"
 #include "XbimBoundingBox.h"
 #include <BRep_Builder.hxx>
@@ -14,13 +13,17 @@ using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace System::Linq;
 using namespace  System::Threading;
+
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
 		namespace OCC
 		{
-			static int CompareBoundinBoxSize(XbimGeometryModel^ a, XbimGeometryModel^ b)
+			
+			
+
+			static int CompareBoundinBoxSize(IXbimGeometryModel^ a, IXbimGeometryModel^ b)
 			{
 			    XbimRect3D aBox = a->GetBoundingBox();
 				XbimRect3D bBox = b->GetBoundingBox();
@@ -29,12 +32,15 @@ namespace Xbim
 				return bVol.CompareTo(aVol);
 			}
 
-			public ref class XbimGeometryModelCollection : public XbimGeometryModel, IEnumerable<XbimGeometryModel^>
+			public ref class XbimGeometryModelCollection : public XbimGeometryModel
 			{
+				
 			protected:
-				List<XbimGeometryModel^>^ shapes;
+				List<IXbimGeometryModel^>^ shapes;
 				void Init();
+				
 			public:
+				
 				XbimGeometryModelCollection(void);
 				XbimGeometryModelCollection(bool hasCurvedEdges, int representationLabel, int surfaceStyleLabel);
 				XbimGeometryModelCollection(int representationLabel, int surfaceStyleLabel);
@@ -44,7 +50,7 @@ namespace Xbim
 				
 #if USE_CARVE
 				//virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override;
-				
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
 #endif
 				virtual property bool IsValid
 				{
@@ -113,12 +119,12 @@ namespace Xbim
 					return bb;
 				};
 
-				virtual IEnumerator<XbimGeometryModel^>^ GetEnumerator()
+				virtual IEnumerator<IXbimGeometryModel^>^ GetEnumerator() override
 				{
-
 					return shapes->GetEnumerator();
+					
 				}
-				virtual System::Collections::IEnumerator^ GetEnumerator2() sealed = System::Collections::IEnumerable::GetEnumerator
+				virtual System::Collections::IEnumerator^ GetEnumerator2() override sealed = System::Collections::IEnumerable::GetEnumerator
 				{
 					return shapes->GetEnumerator();
 				}
@@ -184,7 +190,7 @@ namespace Xbim
 				//returns the first in the collection or nulllptr if the collection is empty
 				virtual property XbimGeometryModel^ FirstOrDefault
 				{
-					XbimGeometryModel^ get() {return Enumerable::FirstOrDefault<XbimGeometryModel^>(shapes);};
+					XbimGeometryModel^ get() {return (XbimGeometryModel^)Enumerable::FirstOrDefault<IXbimGeometryModel^>(shapes);};
 				}
 
 				
@@ -217,12 +223,12 @@ namespace Xbim
 				}
 				XbimGeometryModel^ Shape(int idx)
 				{
-					return shapes[idx];
+					return (XbimGeometryModel^)shapes[idx];
 				}
 				//sorts with largest element first
 				void SortDescending()
 				{
-					shapes->Sort(gcnew Comparison<XbimGeometryModel^>(CompareBoundinBoxSize));
+					shapes->Sort(gcnew Comparison<IXbimGeometryModel^>(CompareBoundinBoxSize));
 				}
 			};
 		}

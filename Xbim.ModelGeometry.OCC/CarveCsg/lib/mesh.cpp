@@ -644,14 +644,19 @@ namespace carve {
               continue;
             }
 
-            for (edgelist_t::iterator j = (*e2i).second.begin(); j != (*e2i).second.end(); ++j) {
-              open_groups.insert(faceGroupID(*j));
-            }
-            complex_edges.erase(e1i);
-            complex_edges.erase(e2i);
-          }
-        }
-      }
+			for (edgelist_t::iterator j = (*e2i).second.begin(); j != (*e2i).second.end(); ++j) {
+				open_groups.insert(faceGroupID(*j));
+			}
+			if(e1i==e2i) //they are the same so just delete one of them
+				complex_edges.erase(e1i);
+			else
+			{
+				complex_edges.erase(e1i);
+				complex_edges.erase(e2i);
+			}
+		  }
+		}
+	  }
 
 
 

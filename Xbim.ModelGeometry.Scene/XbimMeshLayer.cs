@@ -206,6 +206,19 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
+        public void AddGeometry(IEnumerable<IXbimGeometryModelGroup> geomColls)
+        {
+            throw new NotFiniteNumberException();
+        }
+
+        public void AddGeometry(IXbimGeometryModelGroup geomColl)
+        {
+            foreach (IXbimGeometryModel geom in geomColl)
+            {
+                Hidden.Add(geom);
+            }
+        }
+
         /// <summary>
         /// Adds the geometry fragment to the hidden mesh, if the model is not null 
         /// the fragment is placed on a sub layer of the correct style

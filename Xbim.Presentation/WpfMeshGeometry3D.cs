@@ -231,5 +231,40 @@ namespace Xbim.Presentation
             }
             return boundingBox;
         }
+
+
+        public void Add(IXbimGeometryModel geometryModel)
+        {
+            Add((IXbimMeshGeometry3D)geometryModel);
+        }
+
+        /// <summary>
+        /// Adds a geometry mesh to this, includes all mesh fragments
+        /// </summary>
+        /// <param name="geom"></param>
+        public void Add(IXbimMeshGeometry3D geom)
+        {
+            //if (geom.Positions.Any()) //if no positions nothing to add
+            //{
+            //    this.BeginUpdate();
+            //    int startPos = Mesh.Positions.Count;
+            //    int startIndices = Mesh.TriangleIndices.Count;
+            //    foreach (var pos in geom.Positions)
+            //    {
+            //        Mesh.Positions.Add(pos);
+            //    }
+            //     Mesh.Positions.AddRange(geom.Positions);
+            //    Mesh.Normals.AddRange(geom.Normals);
+            //    foreach (var indices in geom.TriangleIndices)
+            //        TriangleIndices.Add(indices + startPos);
+            //    foreach (var fragment in geom.Meshes)
+            //    {
+            //        fragment.Offset(startPos, startIndices);
+            //        Meshes.Add(fragment);
+            //    }
+
+            //    this.EndUpdate();
+            //}
+        }
     }
 }

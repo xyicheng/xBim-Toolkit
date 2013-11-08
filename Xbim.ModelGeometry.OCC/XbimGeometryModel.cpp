@@ -43,6 +43,7 @@ using namespace Xbim::Ifc2x3::SharedComponentElements;
 using namespace System::Linq;
 using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
+using namespace Xbim::ModelGeometry::Scene;
 using namespace  System::Threading;
 class Message_ProgressIndicator {};
 
@@ -52,23 +53,27 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-			void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData)
+#pragma unmanaged
+			void __stdcall XMS_AddVertexIndex(void *pVertexData, void *pPolygonData)
+			{
+				((XbimTriangularMeshStreamer*)pPolygonData)->WriteTriangleIndex((size_t)pVertexData);
+			}
+			;
+			void __stdcall XMS_BeginTessellate(GLenum type, void *pPolygonData)
 			{
 				((XbimTriangularMeshStreamer*)pPolygonData)->BeginPolygon(type);
 			};
-			void CALLBACK XMS_EndTessellate(void *pVertexData)
+			void __stdcall XMS_EndTessellate(void *pVertexData)
 			{
 				((XbimTriangularMeshStreamer*)pVertexData)->EndPolygon();
 			};
-			void CALLBACK XMS_TessellateError(GLenum err)
+			void __stdcall XMS_TessellateError(GLenum err)
 			{
 				// swallow the error.
 			};
-			void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData)
-			{
-				((XbimTriangularMeshStreamer*)pPolygonData)->WriteTriangleIndex((size_t)pVertexData);
-			};
 
+			
+#pragma managed
 			gp_Dir GetNormal(const TopoDS_Face& face)
 			{
 				// get bounds of face
@@ -219,10 +224,10 @@ namespace Xbim
 			{
 				GLUtesselator *ActiveTss = gluNewTess();
 
-				gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
-				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
-				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
-				gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
+				gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (GLUTessCallback) XMS_BeginTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (GLUTessCallback) XMS_EndTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (GLUTessCallback) XMS_TessellateError);
+				gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (GLUTessCallback) XMS_AddVertexIndex);
 
 				GLdouble glPt3D[3];
 				// TesselateStream vertexData(pStream, points, faceCount, streamSize);
@@ -520,6 +525,76 @@ TryIntersectSolid:
 				return this;//stick with what we started with
 			}
 
+			IXbimMeshGeometry3D^ XbimGeometryModel::TriangulatedMesh(double deflection)
+			{
+				Monitor::Enter(this);
+				XbimMeshGeometry3D^ mesh3D = gcnew XbimMeshGeometry3D();
+				IXbimTriangulatesToPositionsIndices^ theMesh = dynamic_cast<IXbimTriangulatesToPositionsIndices^>(mesh3D);
+				TopoDS_Shape shape = *(this->Handle);
+
+				try
+				{
+					BRepMesh_IncrementalMesh incrementalMesh(shape, deflection); //triangulate the first time
+				}
+				finally
+				{
+					Monitor::Exit(this);
+				}
+				std::unordered_map<Float3D, size_t> vertexMap;
+				for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
+				{
+					
+					for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 	
+					{
+						const TopoDS_Face & face = TopoDS::Face(faceEx.Current());
+						TopAbs_Orientation orient = face.Orientation();
+						TopLoc_Location loc;
+						Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
+						if(facing.IsNull()) continue;
+
+						Standard_Integer nbNodes = facing->NbNodes();
+						Standard_Integer nbTriangles = facing->NbTriangles();
+
+						const TColgp_Array1OfPnt& points = facing->Nodes();
+						std::unordered_map<Standard_Integer,size_t> posMap;
+						for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
+						{
+							gp_XYZ p = points(nd).XYZ();
+							loc.Transformation().Transforms(p);			 
+							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z());
+							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+							if(hit==vertexMap.end()) //not found add it in
+							{	
+								posMap.insert(std::make_pair(nd,mesh3D->PositionCount));
+								vertexMap.insert(std::make_pair(p3D,mesh3D->PositionCount));
+								theMesh->AddPosition(XbimPoint3D(p.X(),p.Y(),p.Z()));
+							}
+							else
+								posMap.insert(std::make_pair(nd,hit->second));
+						}
+						const Poly_Array1OfTriangle& triangles = facing->Triangles();
+						Standard_Integer n1, n2, n3;			
+						for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
+						{
+							triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
+							if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
+							{
+								theMesh->AddTriangleIndex(posMap[n3]);
+								theMesh->AddTriangleIndex(posMap[n2]);
+								theMesh->AddTriangleIndex(posMap[n1]);
+							}
+							else
+							{
+								theMesh->AddTriangleIndex(posMap[n1]);
+								theMesh->AddTriangleIndex(posMap[n2]);
+								theMesh->AddTriangleIndex(posMap[n3]);
+							}
+						}
+					}
+				}
+				return mesh3D;
+			}
+
 			XbimTriangulatedModelCollection^ XbimGeometryModel::Mesh(double deflection )
 			{	
 				//Build the Mesh
@@ -566,6 +641,18 @@ TryIntersectSolid:
 				return list;
 			};
 
+			String^ XbimGeometryModel::WriteAsString()
+			{
+				throw gcnew NotImplementedException();
+			}
+
+
+			XbimRect3D XbimGeometryModel::GetAxisAlignedBoundingBox()
+			{
+				XbimRect3D bb = GetBoundingBox();
+				return XbimRect3D::TransformBy(bb, Transform);
+			}
+
 			XbimRect3D XbimGeometryModel::GetBoundingBox()
 			{
 				if(_bounds.IsEmpty)
@@ -580,6 +667,11 @@ TryIntersectSolid:
 				return _bounds;
 			};
 
+			IXbimGeometryModelGroup^ XbimGeometryModel::AsPolyhedron(double deflection, double precision,double precisionMax) 
+			{
+				return ToPolyHedronCollection(deflection, precision, precisionMax);
+			} 
+		
 			XbimPolyhedron^ XbimGeometryModel::ToPolyHedron(double deflection, double precision,double precisionMax)
 			{	
 				TopoDS_Shape shape = *(this->Handle);

@@ -199,15 +199,6 @@ namespace Xbim
 			/*Interfaces*/
 
 
-
-			System::Collections::Generic::IEnumerable<XbimFace^>^ XbimSolid::Faces::get()
-			{
-
-				return this;
-			}
-
-
-
 			
 			XbimGeometryModel^ XbimSolid::CopyTo(IfcAxis2Placement^ placement)
 			{
@@ -664,16 +655,11 @@ namespace Xbim
 				return solid;
 			}
 
-			void XbimSolid::Print()
+			
+
+			IXbimGeometryModelGroup^ XbimSolid::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
 			{
-				int c = 1;
-				System::Diagnostics::Debug::WriteLine("Solid");
-				for each(XbimFace^ face in this->Faces)
-				{
-					System::Diagnostics::Debug::WriteLine("Face " + c);
-					face->Print();
-				}
-				System::Diagnostics::Debug::WriteLine("End Solid");
+				return ToPolyHedron(deflection,  precision, precisionMax);
 			}
 		}
 	}

@@ -2,12 +2,14 @@
 #include "XbimGeometryEngine.h"
 #include "XbimFeaturedShape.h"
 #include "XbimShell.h"
+#include "XbimPolyhedron.h"
 #include "XbimGeometryModelCollection.h"
 #include "XbimFacetedShell.h"
 #include "XbimMap.h"
 #include <BRepBuilderAPI.hxx>
 #include "XbimGeomPrim.h"
 #include "CartesianTransform.h"
+using namespace System;
 using namespace Xbim::Common::Logging;
 using namespace Xbim::ModelGeometry::OCC;
 using namespace System::Linq;
@@ -24,23 +26,85 @@ namespace Xbim
 		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
 		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
 		*/
-		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps)
+		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcProduct^ product,  XbimGeometryType xbimGeometryType)
 		{
-			return CreateFrom(product,maps,false,XbimLOD::LOD_Unspecified,false);
+			if(xbimGeometryType != XbimGeometryType::Polyhedron)
+				throw gcnew NotImplementedException("Only polyhedron geometry is currently implemented");
+			Object^ lookup;
+			int id = Math::Abs(product->EntityLabel);
+			if(maps->TryGetValue(id,lookup))
+				return (IXbimGeometryModelGroup^)lookup;
+			else
+			{
+				XbimGeometryModel^ geom = CreateFrom(product,maps,false,XbimLOD::LOD_Unspecified,false);
+				if(geom!=nullptr)
+				{
+					maps->TryAdd(id, geom);
+					if(xbimGeometryType == XbimGeometryType::Polyhedron)
+						return geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax);
+				}
+			}
+			return XbimEmptyGeometryGroup::Empty;
 		}
 
-		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(IfcSolidModel^ solid, ConcurrentDictionary<int, Object^>^ maps)
+		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcProduct^ product)
 		{
-			return CreateFrom(solid,maps,false,XbimLOD::LOD_Unspecified,false);
-		}
-		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(IfcProduct^ product)
-		{
-			return CreateFrom(product,nullptr,false,XbimLOD::LOD_Unspecified,false);
+			XbimGeometryModel^ geom = CreateFrom(product,maps,false,XbimLOD::LOD_Unspecified,false);
+			if( geom==nullptr)
+				return XbimEmptyGeometryGroup::Empty;
+			else
+				return geom;
 		}
 
-		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(IfcSolidModel^ solid)
+
+		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType)
 		{
-			return CreateFrom(solid,nullptr,false,XbimLOD::LOD_Unspecified,false);
+			if(data->Compare(data,0,XbimGeometryModel::PolyhedronFormat,0,XbimGeometryModel::PolyhedronFormat->Length,true)==0)
+				return gcnew XbimPolyhedron(data);
+			else //unsupported format
+				return nullptr;
+		}
+
+		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcSolidModel^ solid, XbimGeometryType xbimGeometryType)
+		{
+
+			Object^ lookup;
+			int id = Math::Abs(solid->EntityLabel);
+			if(maps->TryGetValue(id,lookup))
+				return (IXbimGeometryModelGroup^)lookup;
+			else
+			{
+				XbimGeometryModel^ geom = CreateFrom(solid,maps,false,XbimLOD::LOD_Unspecified,false);
+				if(geom!=nullptr)
+				{
+					maps->TryAdd(id, geom);
+					if(xbimGeometryType == XbimGeometryType::Polyhedron)
+						return geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax);
+					else
+						return geom;
+				}
+			}
+			return XbimEmptyGeometryGroup::Empty;
+			
+		}
+
+		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcRepresentation^ representation)
+		{
+			Object^ lookup;
+			int id = Math::Abs(representation->EntityLabel);
+			if(maps->TryGetValue(id,lookup))
+				return (IXbimGeometryModelGroup^)lookup;
+			else
+			{
+				XbimGeometryModel^ geom = CreateFrom(representation,maps,false,XbimLOD::LOD_Unspecified,false);
+				if(geom!=nullptr)
+				{
+					IXbimGeometryModelGroup^ polygrp = geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax);
+					maps->TryAdd(id, polygrp);
+					return polygrp;
+				}
+			}
+			return XbimEmptyGeometryGroup::Empty;
 		}
 
 		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
@@ -140,9 +204,7 @@ namespace Xbim
 								{
 
 									XbimGeometryModel^ baseShape = CreateFrom(shape, maps, false,lod, occOut);	
-									
-									
-									
+
 									XbimGeometryModel^ fshape = gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
 									return fshape;
 								}
@@ -187,16 +249,16 @@ namespace Xbim
 		{
 			// HACK: Ideally we shouldn't need this try-catch handler. This just allows us to log the fault, and raise a managed exception, before the application terminates.
 			// Upstream callers should ideally terminate the application ASAP.
-			__try
-			{
+			/*__try
+			{*/
 				return CreateFrom(product, nullptr, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod,occOut);
-			}
+			/*}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
 				Logger->Fatal("Access Violation in geometry engine. Thireturns may leave the application in an inconsistent state!");
 				throw gcnew AccessViolationException(
 					"A memory access violation occurred in the geometry engine. The application and geometry may be in an inconsistent state and the process should be terminated.");
-			}
+			}*/
 		}
 
 		/*

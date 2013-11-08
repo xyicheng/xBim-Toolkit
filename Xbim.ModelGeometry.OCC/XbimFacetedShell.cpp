@@ -1,9 +1,10 @@
 #include "StdAfx.h"
+#include "XbimGeometryModel.h"
 #include "XbimTriangularMeshStreamer.h"
 #include "XbimSolid.h"
 #include "XbimFacetedShell.h"
 
-#include "XbimGeometryModel.h"
+
 #include "XbimGeometryModelCollection.h"
 #include "XbimGeomPrim.h"
 using namespace System::Collections::Generic;
@@ -357,6 +358,10 @@ namespace Xbim
 				return XbimGeometryModelCollection::ToPolyHedron(deflection,  precision, precisionMax);
 			}
 
+			IXbimGeometryModelGroup^ XbimFacetedShell::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			{
+				return XbimGeometryModelCollection::ToPolyHedronCollection(deflection,  precision, precisionMax);
+			}
 
 			void  XbimFacetedShell::ToSolid(double precision, double maxPrecision)
 			{
@@ -507,25 +512,29 @@ namespace Xbim
 				// OPENGL TESSELLATION
 				//
 				GLUtesselator *ActiveTss = gluNewTess();
-				gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
-				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
-				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
-				gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
+				gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (GLUTessCallback) XMS_AddVertexIndex);
+				gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (GLUTessCallback) XMS_BeginTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (GLUTessCallback) XMS_EndTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (GLUTessCallback) XMS_TessellateError);
+				
 				// TesselateStream vertexData(pStream, points, faceCount, streamSize);
 				for each (IfcFace^ fc in  faces)
 				{
 					{
 						// IfcDirection^ normal = ((IFace^)fc)->Normal;
-						IVector3D^ normal = ((IFace^)fc)->Normal;
-
+						IfcFaceBound^ outerBound = Enumerable::FirstOrDefault(Enumerable::OfType<IfcFaceOuterBound^>(fc->Bounds)); //get the outer bound
+						if(outerBound == nullptr) outerBound = Enumerable::FirstOrDefault(fc->Bounds); //if one not defined explicitly use first found
+						if(outerBound == nullptr || !dynamic_cast<IfcPolyLoop^>(outerBound->Bound)|| ((IfcPolyLoop^)(outerBound->Bound))->Polygon->Count<3) 
+							continue; //invalid polygonal face
+						XbimVector3D normal = PolyLoopExtensions::NewellsNormal((IfcPolyLoop^)(outerBound->Bound));
 						//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
-						if(normal->IsInvalid()) 
+						if(normal.IsInvalid()) 
 							continue;
 						tms.BeginFace((int)-1);
 						tms.SetNormal(
-							(float)normal->X, 
-							(float)normal->Y, 
-							(float)normal->Z
+							(float)normal.X, 
+							(float)normal.Y, 
+							(float)normal.Z
 							);
 					}
 					gluTessBeginPolygon(ActiveTss, &tms);

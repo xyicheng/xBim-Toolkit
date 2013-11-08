@@ -1,4 +1,9 @@
 ﻿#include "StdAfx.h"
+#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <iomanip>
+#include <istream>
 #include "XbimPolyhedron.h"
 #include "XbimTriangularMeshStreamer.h"
 #include <carve/mesh.hpp>
@@ -7,8 +12,9 @@
 #include <carve/triangulator.hpp>
 #include <carve/geom.hpp>
 #include "CartesianTransform.h"
-using namespace System;
+
 using namespace  System::Threading;
+using System::Runtime::InteropServices::Marshal;
 
 namespace Xbim
 {
@@ -16,6 +22,8 @@ namespace Xbim
 	{
 		namespace OCC
 		{
+
+
 			XbimPolyhedronMeshStreamer::XbimPolyhedronMeshStreamer(double precision)
 			{
 				_precision=precision;
@@ -40,7 +48,7 @@ namespace Xbim
 				for (size_t i = 0; i < t; i+=3)  
 				{
 					const carve::geom3d::Vector & v0 =  polyData.getVertex(_indices[i]);
-					
+
 					const carve::geom3d::Vector & v1 =  polyData.getVertex(_indices[i+1]);
 					const carve::geom3d::Vector & v2 =  polyData.getVertex(_indices[i+2]);
 					/*std::cout<<v0.x<<"\t"<<v0.y<<"\t"<<v0.z<<std::endl;
@@ -58,7 +66,7 @@ namespace Xbim
 					double diffACx = v2.x-v0.x;
 					double diffACy = v2.y-v0.y;
 					double diffACz = v2.z-v0.z;
-					
+
 					double ratio =	diffABx==0?0:diffACx/diffABx;
 					if(ratio==0) ratio=diffABy==0?0:diffACy/diffABy;
 					if(ratio==0) ratio=diffABz==0?0:diffACz/diffABz;
@@ -69,7 +77,7 @@ namespace Xbim
 						//std::cout<<"Accepted"<<std::endl;
 					}
 					/*else
-						std::cout<<"Rejected"<<std::endl;*/
+					std::cout<<"Rejected"<<std::endl;*/
 				}
 
 			}
@@ -77,7 +85,7 @@ namespace Xbim
 			{
 				/*size_t fC = polyData.getFaceCount();
 				size_t vC = polyData.getVertexCount();*/
-				
+
 				return polyData.createMesh(carve::input::Options());
 			}
 
@@ -142,6 +150,44 @@ namespace Xbim
 				_bounds=XbimRect3D::Empty;
 			}
 
+			//Constructs geometry based on PLY ascii data
+			XbimPolyhedron::XbimPolyhedron(String^ plyData)
+			{	
+				StringReader^ sr = gcnew StringReader(plyData);
+				String^ ply = sr->ReadLine(); 
+				if(	String::Compare(ply,"PLY",true) == 0) // correct format
+				{	
+					String^ elementVertex = sr->ReadLine();
+					String^ elementFace = sr->ReadLine();
+					array<String^>^ toks = elementVertex->Split(' ');
+					int numVertices = Int32::Parse(elementVertex); 
+					int numFaces = Int32::Parse(elementFace); 
+					carve::input::PolyhedronData polyData;
+					polyData.reserveVertices(numVertices);
+					for (int i = 0; i < numVertices; i++)
+					{
+						String^ ptText = sr->ReadLine(); 
+						toks = ptText->Split(' ');
+						polyData.addVertex(carve::geom::VECTOR(Double::Parse(toks[0]),Double::Parse(toks[1]),Double::Parse(toks[2])));
+					}
+					for (int i = 0; i < numFaces; i++)
+					{
+						String^ ptText = sr->ReadLine(); 
+						toks = ptText->Split(' ');
+						int numPointsInFace = Convert::ToInt32(toks[0]); 
+						std::vector<int> vidx;
+						for (int p = 1; p < numPointsInFace+1; p++)
+						{
+							vidx.push_back(Int32::Parse(toks[p]));
+						}
+						polyData.addFace(vidx.begin(),vidx.end());
+					}
+					carve::csg::CSG::meshset_t* mesh = polyData.createMesh(carve::input::Options());
+					_meshSet=mesh;
+				}
+
+			}
+
 			XbimPolyhedron::XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel)
 			{
 				_bounds=XbimRect3D::Empty;
@@ -151,6 +197,26 @@ namespace Xbim
 
 			}
 
+			double XbimPolyhedron::Volume::get()  
+			{
+				if (_meshSet==nullptr) return 0.0;
+				double vol = 0.0;
+				meshset_t::face_iter begin = _meshSet->faceBegin();
+				begin++;
+				meshset_t::face_iter end = _meshSet->faceBegin();
+				if(begin==end) //no faces
+					return 0.0;
+				vertex_t::vector_t origin = (*begin)->edge->vert->v;
+				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) 
+				{
+					face_t *face = *i;
+					edge_t *e1 = face->edge;
+					for (edge_t *e2 = e1->next ;e2->next != e1; e2 = e2->next) {
+						vol += carve::geom3d::tetrahedronVolume(e1->vert->v, e2->vert->v, e2->next->vert->v, origin);
+					}
+				}
+				return vol;
+			}
 
 			void XbimPolyhedron::InstanceCleanup()
 			{  
@@ -200,9 +266,9 @@ namespace Xbim
 			void XbimPolyhedron::Transform(XbimMatrix3D t)
 			{
 				carve::math::Matrix m(t.M11,t.M12,t.M13,t.M14,
-									  t.M21,t.M22,t.M23,t.M24,
-									  t.M31,t.M32,t.M33,t.M34,
-									  t.OffsetX,t.OffsetY,t.OffsetZ,t.M44);
+					t.M21,t.M22,t.M23,t.M24,
+					t.M31,t.M32,t.M33,t.M34,
+					t.OffsetX,t.OffsetY,t.OffsetZ,t.M44);
 				carve::math::matrix_transformation mt(m);
 				_meshSet->transform(mt);
 			}
@@ -243,6 +309,95 @@ namespace Xbim
 				_meshSet = carve::meshFromPolyhedron(poly,-1);
 			}
 
+		/*	String^ XbimPolyhedron::AsPLY()
+			{
+
+				int vertexCount = _meshSet->vertex_storage.size();
+				int faceCount = 0;
+				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) faceCount++;
+				MemoryStream^ ms = gcnew MemoryStream();
+				BinaryWriter^ bw = gcnew BinaryWriter(ms);
+				bw->Write(vertexCount);
+				bw->Write(faceCount);
+				for (std::vector<meshset_t::vertex_t>::const_iterator i = _meshSet->vertex_storage.begin(); i!=_meshSet->vertex_storage.end(); ++i)
+				{
+					vertex_t vt = *i;
+					bw->Write(vt.v.x);
+					bw->Write(vt.v.y);
+					bw->Write(vt.v.z);
+				}
+				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) 
+				{
+					face_t *face = *i;
+					int numVertices = face->nVertices();
+					bw->Write(numVertices);
+
+					if(numVertices>0)
+					{
+						edge_t *e1 = face->edge;
+						
+						bw->Write(carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,e1->v1()));
+						for (edge_t *e2 = e1 ;e2->next != e1; e2 = e2->next) 
+						{
+							size_t idx = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,e2->v2());
+							bw->Write(idx);
+						}
+					}     
+				}
+				array<unsigned char>^ arr = ms->ToArray();
+				int len = arr->Length;
+				Console::WriteLine(len);
+				return "";
+			}*/
+
+			
+			String^ XbimPolyhedron::WriteAsString()
+			{
+				StringWriter^ sw = gcnew StringWriter();
+				sw->WriteLine("PLY");
+				int faceCount = 0;
+				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) faceCount++;
+				sw->WriteLine(Convert::ToString(_meshSet->vertex_storage.size()));
+				sw->WriteLine(Convert::ToString(faceCount));
+				for (std::vector<meshset_t::vertex_t>::const_iterator i = _meshSet->vertex_storage.begin(); i!=_meshSet->vertex_storage.end(); ++i)
+				{
+					vertex_t vt = *i;
+					sw->WriteLine(String::Format("{0} {1} {2}",vt.v.x,vt.v.y,vt.v.z));
+				}
+				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) 
+				{
+					face_t *face = *i;
+					int numVertices = face->nVertices();
+					sw->Write(Convert::ToString(numVertices));
+
+					if(numVertices>0)
+					{
+						edge_t *e1 = face->edge;
+						sw->Write(" ");
+						sw->Write(Convert::ToString(carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,e1->v1())));
+						for (edge_t *e2 = e1 ;e2->next != e1; e2 = e2->next) 
+						{
+							sw->Write(" ");
+							size_t idx = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,e2->v2());
+							sw->Write(Convert::ToString(idx));
+						}
+					}
+					sw->WriteLine();        
+				}
+				return sw->ToString();
+				
+			}
+			
+			XbimPolyhedron^ XbimPolyhedron::ToPolyHedron(double deflection, double precision,double precisionMax)
+			{
+				return this;
+			}
+
+			IXbimGeometryModelGroup^ XbimPolyhedron::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			{
+				return this;
+			}
+
 			XbimGeometryModel^ XbimPolyhedron::CopyTo(IfcAxis2Placement^ placement)
 			{
 				//if(dynamic_cast<IfcLocalPlacement^>(placement))
@@ -255,7 +410,7 @@ namespace Xbim
 				//	return p;
 				//}
 				//else
-					throw(gcnew NotSupportedException("XbimPolyhedron::CopyTo only supports IfcLocalPlacement type"));
+				throw(gcnew NotSupportedException("XbimPolyhedron::CopyTo only supports IfcLocalPlacement type"));
 
 			}
 			////Subtracts toCut from this, if it fails a Null Polyhedron is returned
@@ -327,7 +482,7 @@ namespace Xbim
 
 						if (f->nVertices() == 3) //it's a triangle
 						{
-							
+
 							std::vector<carve::mesh::Vertex<3> *> v1;
 							f->getVertices(v1); //get the vertices
 							tms.BeginFace(-1);//begin a face
@@ -338,7 +493,7 @@ namespace Xbim
 								size_t pt = tms.WritePoint((float)v1[ip]->v.x, (float)v1[ip]->v.y, (float)v1[ip]->v.z);
 								indices.push_back(pt);
 							}	
-							
+
 							tms.BeginPolygon(GL_TRIANGLES);
 							for (size_t j = 0; j < 3; ++j) 
 							{
@@ -352,10 +507,10 @@ namespace Xbim
 							if(f->plane.N.isZero(1e-5)) continue; //if the normal is invalid skip face
 							// OPENGL TESSELLATION
 							GLUtesselator *ActiveTss = gluNewTess();
-							gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
-							gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
-							gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)())XMS_TessellateError);
-							gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
+							gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (GLUTessCallback) XMS_BeginTessellate);
+							gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (GLUTessCallback) XMS_EndTessellate);
+							gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (GLUTessCallback)XMS_TessellateError);
+							gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (GLUTessCallback) XMS_AddVertexIndex);
 
 							tms.BeginFace(-1);//begin a face
 							tms.SetNormal((float)f->plane.N.x,(float)f->plane.N.y,(float)f->plane.N.z);
@@ -363,7 +518,7 @@ namespace Xbim
 							gluTessBeginPolygon(ActiveTss, &tms);
 							gluTessBeginContour(ActiveTss);
 							carve::mesh::Edge<3> *e = f->edge;
-							
+
 							for (size_t ie = 0, le = f->nVertices(); ie != le; ++ie)
 							{
 								carve::geom::vector<3U> v =  e->v1()->v;
