@@ -775,23 +775,24 @@ namespace XbimXplorer
         {
             var win = new Scripting.ScriptingWindow();
             win.Owner = this;
-            
-            //var binding = new Binding();
-            //win.ScriptingConcrol.SetBinding(ScriptingControl.ModelProperty, binding);
+
+            win.ScriptingConcrol.DataContext = ModelProvider;
+            var binding = new Binding();
+            win.ScriptingConcrol.SetBinding(ScriptingControl.ModelProperty, binding);
+
             win.ScriptingConcrol.OnModelChangedByScript += delegate(object o, Xbim.Script.ModelChangedEventArgs arg)
             {
                 ModelProvider.ObjectInstance = null;
+                XbimMesher.GenerateGeometry(arg.NewModel);
                 ModelProvider.ObjectInstance = arg.NewModel;
                 ModelProvider.Refresh();
             };
 
-            //win.ScriptingConcrol.OnScriptParsed += delegate(object o, Xbim.Script.ScriptParsedEventArgs arg)
-            //{
-            //    GroupControl.InvalidateVisual();
-            //    SpatialControl.InvalidateVisual();
-            //};
-
-
+            win.ScriptingConcrol.OnScriptParsed += delegate(object o, Xbim.Script.ScriptParsedEventArgs arg)
+            {
+                GroupControl.Regenerate();
+                //SpatialControl.Regenerate();
+            };
             
 
             ScriptResults.Visibility = Visibility.Visible;
