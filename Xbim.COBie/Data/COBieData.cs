@@ -403,7 +403,7 @@ namespace Xbim.COBie.Data
             if (ifcCR != null)
             {
                 string conCatChar = " : ";
-                if (Context.TemplateFileName.Contains("COBie-US")) //change for US format
+                if ((Context.TemplateFileName != null) && (Context.TemplateFileName.Contains("COBie-US"))) //change for US format
                     conCatChar = ": "; 
                 //holders for first and last part of category
                 string itemReference = ifcCR.ItemReference;

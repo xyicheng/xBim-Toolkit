@@ -67,8 +67,7 @@ namespace Xbim.COBie
         /// </summary>
         /// <param name="model"></param>
         /// <param name="fileRoles">bit fields enumeration to hold all the roles in one place using bitwise AND, OR, EXCLUSIVE OR</param>
-        /// <param name="progressCallback"></param>
-        public void ValidateMerge(XbimModel model, COBieMergeRoles fileRoles) 
+        public void ValidateRoles(XbimModel model, COBieMergeRoles fileRoles) 
         {
 #if DEBUG
             Stopwatch timer = new Stopwatch();

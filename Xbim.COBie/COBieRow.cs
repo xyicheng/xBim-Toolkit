@@ -11,9 +11,9 @@ using System.Runtime.Serialization;
 
 namespace Xbim.COBie
 {
-	/// <summary>
-	/// Abstract base class for Rows
-	/// </summary>
+    /// <summary>
+    /// Abstract base class for Rows
+    /// </summary>
     [Serializable()]
     public abstract class COBieRow
     {
@@ -117,6 +117,14 @@ namespace Xbim.COBie
         public string RowHashValue
         {
             get { return GenerateRowHash(); }
+        }
+
+        /// <summary>
+        /// Row hash value
+        /// </summary>
+        public string RowMergeHashValue
+        {
+            get { return GenerateMergeKeyHash(); }
         } 
 
         /// <summary>
@@ -164,16 +172,57 @@ namespace Xbim.COBie
         }
 
         /// <summary>
-        /// Generate the Hash code for the row values
+        /// Return the concatenation of the row values
+        /// </summary>
+        /// <returns>string value of all rows added together</returns>
+        private string ConcatMergeRowValues()
+        {
+            //columns to miss out of the hash 
+            List<string> ExcludeColumns = new List<string>() { "CreatedBy", "CreatedOn", "ExtSystem", "ExternalSystem", "ExtIdentifier", "ExternalSiteIdentifier", "ExternalFacilityIdentifier", "ExternalProjectIdentifier" };
+            string value = "";
+            StringBuilder stringBld = new StringBuilder();
+            for (int i = 0; i < RowCount; i++)
+            {
+                string colname = this[i].COBieColumn.ColumnName;
+                if (!ExcludeColumns.Contains(colname))
+                {
+                    value = this[i].CellValue;
+
+                    //optimize the category match to front end code, should we do this?
+                    //if (colname == "Category")
+                    //    value = GetCategoryCode(value);
+                    
+                    if (string.IsNullOrEmpty(value)) value = "";
+                    stringBld.Append(value);
+                }
+            }
+            return stringBld.ToString().ToLower();
+        }
+
+        /// <summary>
+        /// Get the Uniclass Code from the category name
+        /// </summary>
+        /// <param name="category">String holding category</param>
+        /// <returns>Front end of category code</returns>
+        private string GetCategoryCode(string category)
+        {
+            string[] split = category.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+            if (split.Count() > 0)
+                return split[0].Trim();
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Generate the Hash code for the row values used in a merge
         /// </summary>
         /// <returns></returns>
-        private string GeneratePrimaryKeyHash()
+        private string GenerateMergeKeyHash()
         {
             string value = "";
-            string keyValue = GetPrimaryKeyValue; //get the row cell values concatenated together
+            string rowValue = ConcatMergeRowValues(); //get the row cell values concatenated together which we want for merge
             using (MD5 md5hash = MD5.Create())
             {
-                value = GetRowHash(md5hash, keyValue);
+                value = GetRowHash(md5hash, rowValue);
             }
             return value;
         }
