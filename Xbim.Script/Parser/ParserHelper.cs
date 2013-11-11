@@ -1003,7 +1003,7 @@ namespace Xbim.Script
                     _model.CreateFrom(path, null, null, true);
                 else
                     _model.Open(path, XbimExtensions.XbimDBAccess.ReadWrite);
-                ModelChanged();
+                ModelChanged(_model);
             }
             catch (Exception e)
             {
@@ -1018,7 +1018,7 @@ namespace Xbim.Script
                 _model.Close();
                 _variables.Clear();
                 _model = XbimModel.CreateTemporaryModel();
-                ModelChanged();
+                ModelChanged(_model);
             }
             catch (Exception e)
             {
@@ -1064,7 +1064,7 @@ namespace Xbim.Script
         public void AddReferenceModel(string refModel, string organization, string owner)
         {
             _model.AddModelReference(refModel, organization, owner);
-            ModelChanged();
+            ModelChanged(_model);
         }
 
         public void CopyToModel(string variable, string model)
@@ -1622,10 +1622,10 @@ namespace Xbim.Script
 
         //event to be used in the event driven environment
         public event ModelChangedHandler OnModelChanged;
-        private void ModelChanged()
+        private void ModelChanged(XbimModel newModel)
         {
             if (OnModelChanged != null)
-                OnModelChanged(this, new ModelChangedEventArgs());
+                OnModelChanged(this, new ModelChangedEventArgs(newModel));
         }
     }
 
@@ -1653,5 +1653,11 @@ namespace Xbim.Script
 
     public class ModelChangedEventArgs : EventArgs
     {
+        private XbimModel _newModel;
+        public XbimModel NewModel { get { return _newModel; } }
+        public ModelChangedEventArgs(XbimModel newModel)
+        {
+            _newModel = newModel;
+        }
     }
 }

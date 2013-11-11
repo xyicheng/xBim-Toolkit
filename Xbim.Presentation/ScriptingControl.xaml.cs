@@ -13,7 +13,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Xbim.IO;
 using Xbim.Script;
-using System.Windows.Forms;
 using System.IO;
 
 namespace Xbim.Presentation
@@ -62,16 +61,15 @@ namespace Xbim.Presentation
         {
             if (model != null) _parser = new XbimQueryParser(model);
             else _parser = new XbimQueryParser();
-            _parser.OnModelChanged += new ModelChangedHandler(delegate(object sender, ModelChangedEventArgs e) {
-                SetValue(ModelProperty, model);
-                var provider = DataContext as ObjectDataProvider;
-                if (provider != null)
-                    provider.Refresh();
-            });
-            _parser.OnScriptParsed += new ScriptParsedHandler(delegate(object sender, ScriptParsedEventArgs e) {
+            
+            _parser.OnScriptParsed += delegate(object sender, ScriptParsedEventArgs e) {
                 //fire the event
                 ScriptParsed();
-            });
+            };
+            _parser.OnModelChanged += delegate(object sender, ModelChangedEventArgs e)
+            {
+                ModelChangedByScript(e.NewModel);
+            };
         }
 
         private void SaveScript_Click(object sender, RoutedEventArgs e)
@@ -82,13 +80,13 @@ namespace Xbim.Presentation
                 System.Windows.MessageBox.Show("There is no script to save.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            SaveFileDialog dlg = new SaveFileDialog();
+            System.Windows.Forms.SaveFileDialog dlg = new System.Windows.Forms.SaveFileDialog();
             dlg.AddExtension = true;
             dlg.DefaultExt = ".bql";
             dlg.Title = "Set file name of the script...";
             dlg.OverwritePrompt = true;
             dlg.ValidateNames = true;
-            dlg.FileOk += new System.ComponentModel.CancelEventHandler(delegate(object s, System.ComponentModel.CancelEventArgs eArg)
+            dlg.FileOk += delegate(object s, System.ComponentModel.CancelEventArgs eArg)
             {
                 var name = dlg.FileName;
                 StreamWriter file = null;
@@ -106,19 +104,19 @@ namespace Xbim.Presentation
                     if (file!= null)
                         file.Close();
                 }
-            });
+            };
             dlg.ShowDialog();
         }
 
 
         private void LoadScript_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
+            System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
             dlg.AddExtension = true;
             dlg.DefaultExt = ".bql";
             dlg.Title = "Specify the script file...";
             dlg.ValidateNames = true;
-            dlg.FileOk += new System.ComponentModel.CancelEventHandler(delegate(object s, System.ComponentModel.CancelEventArgs eArg) {
+            dlg.FileOk += delegate(object s, System.ComponentModel.CancelEventArgs eArg) {
                 Stream file = null;
                 try
                 {
@@ -136,7 +134,7 @@ namespace Xbim.Presentation
                     if (file != null)
                         file.Close();
                 }
-            });
+            };
             dlg.ShowDialog();
         }
 
@@ -148,7 +146,11 @@ namespace Xbim.Presentation
                 System.Windows.MessageBox.Show("There is no script to execute.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
+
+            var origCurs = this.Cursor;
+            this.Cursor = Cursors.Wait;
             _parser.Parse(script);
+            this.Cursor = origCurs;
 
             ErrorsWindow.Visibility = System.Windows.Visibility.Collapsed;
             ErrorsWindow.Text = null;
@@ -186,6 +188,13 @@ namespace Xbim.Presentation
         {
             if (OnScriptParsed != null)
                 OnScriptParsed(this, new ScriptParsedEventArgs());
+        }
+
+         public event ModelChangedHandler OnModelChangedByScript;
+        private void ModelChangedByScript(XbimModel newModel)
+        {
+            if (OnModelChangedByScript != null)
+                OnModelChangedByScript(this, new ModelChangedEventArgs(newModel));
         }
 
     }

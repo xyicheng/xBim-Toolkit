@@ -5,6 +5,6 @@
         x:Name="This"
         Title="Scripting Window" Height="300" Width="300">
     <Grid>
-        <xbim:ScriptingControl Model="{Binding ElementName=This, Path=Model, Mode=TwoWay}" Name="ScriptingConcrol"/>
+        <xbim:ScriptingControl Name="ScriptingConcrol"/>
     </Grid>
 </Window>

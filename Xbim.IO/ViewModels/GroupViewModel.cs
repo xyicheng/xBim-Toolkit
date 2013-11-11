@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.IO;
+using Xbim.Ifc2x3.Extensions;
 using System.ComponentModel;
 
 namespace Xbim.IO.ViewModels
@@ -95,7 +96,7 @@ namespace Xbim.IO.ViewModels
 
         public override string ToString()
         {
-            return Name;
+            return String.Format("{0}: {1} ({2})", Name, group.Description, group.GetGroupedObjects<IfcProduct>().Count()); 
         }
 
         #region INotifyPropertyChanged Members

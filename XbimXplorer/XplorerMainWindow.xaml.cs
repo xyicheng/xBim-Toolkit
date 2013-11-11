@@ -776,14 +776,27 @@ namespace XbimXplorer
             var win = new Scripting.ScriptingWindow();
             win.Owner = this;
             
-            win.DataContext = ModelProvider;
+            //var binding = new Binding();
+            //win.ScriptingConcrol.SetBinding(ScriptingControl.ModelProperty, binding);
+            win.ScriptingConcrol.OnModelChangedByScript += delegate(object o, Xbim.Script.ModelChangedEventArgs arg)
+            {
+                ModelProvider.ObjectInstance = null;
+                ModelProvider.ObjectInstance = arg.NewModel;
+                ModelProvider.Refresh();
+            };
 
-            var binding = new Binding();
-            win.SetBinding(Scripting.ScriptingWindow.ModelProperty, binding);
+            //win.ScriptingConcrol.OnScriptParsed += delegate(object o, Xbim.Script.ScriptParsedEventArgs arg)
+            //{
+            //    GroupControl.InvalidateVisual();
+            //    SpatialControl.InvalidateVisual();
+            //};
 
-            ScriptResults.Visibility = System.Windows.Visibility.Visible;
+
+            
+
+            ScriptResults.Visibility = Visibility.Visible;
             win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg) {
-                ScriptResults.Visibility = System.Windows.Visibility.Collapsed; 
+                ScriptResults.Visibility = Visibility.Collapsed; 
             });
             
             win.Show();
