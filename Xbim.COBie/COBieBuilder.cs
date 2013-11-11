@@ -233,8 +233,8 @@ namespace Xbim.COBie
                 (Context.MapMergeRoles.ContainsKey(Context.Model))
                 )
             {
-                progress.ReportMessage("Starting Merge Validation...");
-                Workbook.ValidateMerge(Context.Model, Context.MapMergeRoles[Context.Model]);
+                progress.ReportMessage(string.Format("Starting Merge Validation for {0}...", Context.MapMergeRoles[Context.Model]));
+                Workbook.ValidateRoles(Context.Model, Context.MapMergeRoles[Context.Model]);
                 progress.ReportMessage("Finished Merge Validation...");
             }
         }

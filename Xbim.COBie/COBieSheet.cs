@@ -18,11 +18,11 @@ namespace Xbim.COBie
         
 
         #region Private Fields
-		private Dictionary<int, COBieColumn> _columns;
+        private Dictionary<int, COBieColumn> _columns;
         private COBieErrorCollection _errors = new COBieErrorCollection();
         private Dictionary<string, HashSet<string>> _indices;
         private ErrorRowIndexBase _errorRowIdx; //report error row based with row stating at one(excel), or two (data table)
-	    #endregion
+        #endregion
 
 
         #region Properties
@@ -83,7 +83,7 @@ namespace Xbim.COBie
             Rows = new List<T>();
             RowsRemoved = new List<T>();
             _indices = new Dictionary<string, HashSet<string>>();
-			SheetName = sheetName;
+            SheetName = sheetName;
             PropertyInfo[]  properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
             _columns = new Dictionary<int, COBieColumn>();
             // add column info 
@@ -119,6 +119,30 @@ namespace Xbim.COBie
             Rows.Add(cOBieRow);
         }
 
+        public void AddRow(COBieRow cOBieRow)
+        {
+            cOBieRow.RowNumber = Rows.Count() + 1;
+            Rows.Add((T)cOBieRow);
+        }
+
+        /// <summary>
+        /// Add COBieRow to the the Removed Rows list
+        /// </summary>
+        /// <param name="cOBieRow"></param>
+        public void AddRemovedRow(T cOBieRow)
+        {
+            cOBieRow.RowNumber = RowsRemoved.Count() + 1;
+            RowsRemoved.Add(cOBieRow);
+        }
+
+        public void AddRemovedRow(COBieRow cOBieRow)
+        {
+            cOBieRow.RowNumber = RowsRemoved.Count() + 1;
+            RowsRemoved.Add((T)cOBieRow);
+        }
+        
+        
+
         /// <summary>
         /// Get the alias attribute name values and add to a list of strings
         /// </summary>
@@ -143,6 +167,33 @@ namespace Xbim.COBie
             {
                 //SetThe initial has vale for each row
                 row.SetInitialRowHash();
+            }
+        }
+
+        private HashSet<string> RowHashs = new HashSet<string>();
+        /// <summary>
+        /// See if passed in hash code exists in the sheet
+        /// </summary>
+        /// <param name="hash">string, hash code to test</param>
+        /// <param name="addHash">add passed in hash to RowHash, i.e if you are going to add th row to the sheet if result of function is false</param>
+        /// <returns>bool</returns>
+        public bool HasMergeHashCode(string hash, bool addHash)
+        {
+            if (RowHashs.Count == 0)
+            {
+                foreach (COBieRow row in Rows)
+                {
+                    RowHashs.Add(row.RowMergeHashValue);
+                }
+            }
+            if (RowHashs.Contains(hash))
+            {
+                return true;
+            }
+            else
+            {
+                if (addHash) RowHashs.Add(hash);
+                return false;
             }
         }
 

@@ -93,7 +93,7 @@ namespace Xbim.COBie
         /// <param name="forceUpdate"></param>
         public void UpdateStatus(bool forceUpdate = false)
         {
-            if (UpdateIntervalPassed() || forceUpdate)
+            if (forceUpdate || UpdateIntervalPassed())
             {
                 Context.UpdateStatus(Message, TotalRecords, CurrentRecord);
                 _lastUpdate = _timer.ElapsedMilliseconds;

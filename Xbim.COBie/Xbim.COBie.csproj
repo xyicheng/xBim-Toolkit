@@ -71,6 +71,7 @@
     <Compile Include="COBieColumnRelationship.cs" />
     <Compile Include="COBieWorkbook.cs" />
     <Compile Include="Contracts\ICOBieDeserialiser.cs" />
+    <Compile Include="Contracts\ICOBieFederate.cs" />
     <Compile Include="Contracts\ICOBieSerialiser.cs" />
     <Compile Include="Data\COBieData.cs" />
     <Compile Include="Data\COBieDataAssembly.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Data\IAttributeProvider.cs" />
     <Compile Include="COBieProgress.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Federate\FederateCOBie.cs" />
     <Compile Include="FilterValues.cs" />
     <Compile Include="FilterValuesOnMerge.cs" />
     <Compile Include="Resources\ErrorDescription.en-GB.Designer.cs">

@@ -25,6 +25,7 @@ using System.Collections.Concurrent;
 using System.Windows.Media.Media3D;
 using Xbim.Common.Geometry;
 using Xbim.ModelGeometry.Converter;
+using Xbim.COBie.Federate;
 
 namespace Xbim.COBie.Client
 {
@@ -143,6 +144,10 @@ namespace Xbim.COBie.Client
                     else
                         GenerateIFCFile(parameters);
                 }
+                else if (Path.GetExtension(parameters.ModelFile).ToLower() == ".xbimf") //federated 
+                {
+                    GenerateFederatedCOBieFile(parameters);
+                }
                 else
                 {
                     GenerateCOBieFile(parameters);
@@ -155,6 +160,97 @@ namespace Xbim.COBie.Client
             }
             finally { IsGenerating = false; }
             
+        }
+
+        /// <summary>
+        /// Create the COBieBuilder, holds COBieWorkBook
+        /// </summary>
+        /// <param name="parameters">Params</param>
+        /// <returns>COBieBuilder</returns>
+        private COBieWorkbook GenerateFederatedCOBieWorkBook(Params parameters)
+        {
+            string xbimFile = parameters.ModelFile;
+            COBieBuilder builder = null;
+            COBieWorkbook fedWorkBook = null; 
+            List<COBieWorkbook> workbooks = new List<COBieWorkbook>();
+                
+            LogBackground(String.Format("Loading federated model {0}...", xbimFile));
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(xbimFile, XbimDBAccess.ReadWrite);
+                Model = model; //used to check we close file on Close event
+
+                // Build context on the XBimF model to link roles
+                COBieContext context = new COBieContext(_worker.ReportProgress);
+                context.TemplateFileName = parameters.TemplateFile;
+                context.Model = model;
+               foreach (var ModelRoles in context.MapMergeRoles)
+                {
+                    XbimModel refModel = ModelRoles.Key;
+                    COBieMergeRoles roles = ModelRoles.Value;
+
+                    COBieContext refContext = new COBieContext(_worker.ReportProgress);
+                    refContext.TemplateFileName = parameters.TemplateFile;
+                    refContext.Model = refModel;
+                    refContext.MapMergeRoles[refModel] = roles;
+                    //set filter option
+                    var chckBtn = gbFilter.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked);
+                    switch (chckBtn.Name)
+                    {
+                        case "rbDefault":
+                            break;
+                        case "rbPickList":
+                            refContext.ExcludeFromPickList = true;
+                            break;
+                        case "rbNoFilters":
+                            refContext.Exclude.Clear();
+                            break;
+                        default:
+                            break;
+                    }
+
+                    // Create COBieReader
+                    LogBackground("Generating COBie data...");
+                    builder = new COBieBuilder(refContext);
+                    workbooks.Add(builder.Workbook);
+                }
+            }
+            if (workbooks.Count > 1)
+            {
+                FederateCOBie fedCOBie = new FederateCOBie(_worker.ReportProgress);
+                fedWorkBook = fedCOBie.Merge(workbooks);
+            }
+            else if (workbooks.Count == 1)
+            {
+                fedWorkBook = workbooks[0];
+            }
+
+            return fedWorkBook;
+        }
+
+        /// <summary>
+        /// Create XLS file from ifc/xbim files
+        /// </summary>
+        /// <param name="parameters">Params</param>
+        private void GenerateFederatedCOBieFile(Params parameters)
+        {
+            string outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            COBieWorkbook fedWorkBook = GenerateFederatedCOBieWorkBook(parameters);
+            timer.Stop();
+            LogBackground(String.Format("Time to generate Federated COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+
+            // Export
+            LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
+            ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, parameters.TemplateFile);
+            serialiser.Serialise(fedWorkBook);
+
+            LogBackground(String.Format("Export Complete: {0}", outputFile));
+
+            Process.Start(outputFile);
+
+            LogBackground("Finished Federation COBie Generation");
         }
 
         /// <summary>
@@ -493,6 +589,13 @@ namespace Xbim.COBie.Client
                     ValidateChkBox.Enabled = true;
                 else
                     ValidateChkBox.Enabled = false;
+
+                if ((Path.GetExtension(dlg.FileName).ToLower() == ".ifc") ||
+                    (Path.GetExtension(dlg.FileName).ToLower() == ".xbim")
+                    )
+                    checkedListRoles.Enabled = true;
+                else
+                    checkedListRoles.Enabled = false;
             }
         }
 
