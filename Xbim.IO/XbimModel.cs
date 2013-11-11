@@ -388,7 +388,11 @@ namespace Xbim.IO
                 default:
                     return false;
             }
-            if (keepOpen) GetModelFactors();
+            if (keepOpen) 
+            {
+                GetModelFactors();
+                this.LoadReferenceModels();
+            }
             return true;
         }
 

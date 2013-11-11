@@ -516,16 +516,19 @@ namespace Xbim
 				{
 					{
 						// IfcDirection^ normal = ((IFace^)fc)->Normal;
-						IVector3D^ normal = ((IFace^)fc)->Normal;
-
+						IfcFaceBound^ outerBound = Enumerable::FirstOrDefault(Enumerable::OfType<IfcFaceOuterBound^>(fc->Bounds)); //get the outer bound
+						if(outerBound == nullptr) outerBound = Enumerable::FirstOrDefault(fc->Bounds); //if one not defined explicitly use first found
+						if(outerBound == nullptr || !dynamic_cast<IfcPolyLoop^>(outerBound->Bound)|| ((IfcPolyLoop^)(outerBound->Bound))->Polygon->Count<3) 
+							continue; //invalid polygonal face
+						XbimVector3D normal = PolyLoopExtensions::NewellsNormal((IfcPolyLoop^)(outerBound->Bound));
 						//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
-						if(normal->IsInvalid()) 
+						if(normal.IsInvalid()) 
 							continue;
 						tms.BeginFace((int)-1);
 						tms.SetNormal(
-							(float)normal->X, 
-							(float)normal->Y, 
-							(float)normal->Z
+							(float)normal.X, 
+							(float)normal.Y, 
+							(float)normal.Z
 							);
 					}
 					gluTessBeginPolygon(ActiveTss, &tms);

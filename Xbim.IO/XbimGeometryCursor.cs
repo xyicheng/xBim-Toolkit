@@ -9,7 +9,9 @@ using Xbim.XbimExtensions;
 using Microsoft.Isam.Esent.Interop.Windows7;
 using System.Threading;
 using System.Diagnostics;
-
+#if CREATEGEOMHASH
+using System.Security.Cryptography;
+#endif
 namespace Xbim.IO
 {
     public class XbimGeometryCursor : XbimCursor
@@ -48,15 +50,12 @@ namespace Xbim.IO
         ByteColumnValue _colValGeomType;
         Int16ColumnValue _colValProductIfcTypeId;
         Int16ColumnValue _colValSubPart;
-        BytesColumnValue _colValTransformMatrix;  
-        BytesColumnValue _colValShapeData; 
+        BytesColumnValue _colValTransformMatrix;
+        BytesColumnValue _colValShapeData;
         Int32ColumnValue _colValGeometryHash;
         Int32ColumnValue _colValStyleLabel;
-        ColumnValue[] _colValues; 
-        
-        
+        ColumnValue[] _colValues;
 
-       
         internal static void CreateTable(JET_SESID sesid, JET_DBID dbid)
         {
             JET_TABLEID tableid;
@@ -172,94 +171,117 @@ namespace Xbim.IO
         /// <returns></returns>
         public int AddGeometry(int prodLabel, XbimGeometryType type, short ifcType, byte[] transform, byte[] shapeData, short subPart = 0, int styleLabel = 0, int? geometryHash = null)
         {
-            
-            ////hash the geometry
-            //int geomHash;
-            //if (geometryHash.HasValue)
-            //    geomHash = geometryHash.Value;
-            //else
-            //{
-            //    Debug.Assert(shapeData != null);
-            //    geomHash = XbimGeometryData.GenerateGeometryHash(shapeData);
-            //}
-            //int? geomId;
-            ////if we already have one in there just reference it
-            //Api.JetSetCurrentIndex(sesid, table, geometryTableHashIndex);
-            //Api.MakeKey(sesid, table, geomHash, MakeKeyGrbit.NewKey);
-            //if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ)) //if we find any one
-            //{
-               
-            //    using (var update = new Update(sesid, table, JET_prep.InsertCopy))
-            //    {
-                   
-            //        Api.SetColumn(sesid, table, _colIdProductLabel, prodLabel);
-            //        Api.SetColumn(sesid, table, _colIdGeomType, (Byte)type);
-            //        Api.SetColumn(sesid, table, _colIdProductIfcTypeId, ifcType);
-            //        Api.SetColumn(sesid, table, _colIdSubPart, subPart);
-            //        Api.SetColumn(sesid, table, _colIdTransformMatrix, transform);
-            //        if (styleLabel > 0)
-            //            Api.SetColumn(sesid, table, _colIdStyleLabel, styleLabel);
-            //        else
-            //            Api.SetColumn(sesid, table, _colIdStyleLabel, -ifcType); //use the negative type id as a style for object that have no render material
-            //        UpdateCount(1);
-            //        geomId = Api.RetrieveColumnAsInt32(sesid,table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy);
-            //        update.Save();
-            //    }
-            //}
-            //else
-          //  {
-          //      Debug.Assert(shapeData != null); //we should not be here if a valid hash was sent and we have no shape data
-                using (var update = new Update(sesid, table, JET_prep.Insert))
+            int mainId;
+            using (var update = new Update(sesid, table, JET_prep.Insert))
+            {
+                _colValProductLabel.Value = prodLabel;
+                _colValGeomType.Value = (Byte)type;
+                _colValProductIfcTypeId.Value = ifcType;
+                _colValSubPart.Value = subPart;
+                _colValTransformMatrix.Value = transform;
+                _colValShapeData.Value = shapeData;
+                _colValGeometryHash.Value = 0;// geomHash;
+                if (styleLabel > 0)
+                    _colValStyleLabel.Value = styleLabel;
+                else
+                    _colValStyleLabel.Value = -ifcType; //use the negative type id as a style for object that have no render material
+                Api.SetColumns(sesid, table, _colValues);
+                UpdateCount(1);
+                int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy);
+                update.Save();
+                mainId = geomId.Value;
+            }
+#if CREATEGEOMHASH
+            if (type == XbimGeometryType.TriangulatedMesh && shapeData.Length > 0)
+            {
+                int hashId;
+                Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
+                Api.MakeKey(sesid, table, mainId, MakeKeyGrbit.NewKey);
+                Api.TrySeek(sesid, table, SeekGrbit.SeekEQ);
+
+                //Create a hash provider
+                var Sha = new SHA1CryptoServiceProvider();
+                Byte[] hashdata = Sha.ComputeHash(shapeData);
+                using (var update = new Update(sesid, table, JET_prep.InsertCopy))
                 {
-                    _colValProductLabel.Value = prodLabel;
-                    _colValGeomType.Value = (Byte)type;
-                    _colValProductIfcTypeId.Value = ifcType;
-                    _colValSubPart.Value = subPart;
-                    _colValTransformMatrix.Value = transform;
-                    _colValShapeData.Value = shapeData;
-                    _colValGeometryHash.Value = 0;// geomHash;
-                    if (styleLabel > 0)
-                        _colValStyleLabel.Value = styleLabel;
-                    else
-                        _colValStyleLabel.Value = -ifcType; //use the negative type id as a style for object that have no render material
-                    Api.SetColumns(sesid, table, _colValues);
+                    Api.SetColumn(sesid, table, _colIdShapeData, hashdata); //change the shapeData variable
+                    Api.SetColumn(sesid, table, _colIdGeomType, (Byte)XbimGeometryType.TriangulatedMeshHash);
+                    Api.SetColumn(sesid, table, _colIdGeometryHash, mainId);// id of main geom this is a hash of;
                     UpdateCount(1);
-                    int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy);
-                    update.Save(); 
-                    return geomId.Value;
+                    hashId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
+                    update.Save();
                 }
-           // }
-           
+
+                Api.MakeKey(sesid, table, mainId, MakeKeyGrbit.NewKey);
+
+                if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ)) //find the main geometry
+                {
+                    using (var update = new Update(sesid, table, JET_prep.Replace))
+                    {
+                        Api.SetColumn(sesid, table, _colIdGeometryHash, hashId);// id of main geom this is a hash of;
+                        update.Save();
+                    }
+
+                }
+            }
+#endif
+            return mainId;
         }
 
 
-        public int AddMapGeometry(int geomId, int prodLabel, short ifcType, byte[] transform, int styleLabel=0)
+        public int AddMapGeometry(int geomId, int prodLabel, short ifcType, byte[] transform, int styleLabel = 0)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, geomId, MakeKeyGrbit.NewKey);
-           
+            int mainId;
+            int mapId;
+            XbimGeometryType geomType;
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ)) //find map
             {
                 using (var update = new Update(sesid, table, JET_prep.InsertCopy))
                 {
-                    if (styleLabel > 0)
-                        _colValStyleLabel.Value = styleLabel;
-                    else
-                        _colValStyleLabel.Value = -ifcType; //use the negative type id as a style for object that have no render material
+
                     Api.SetColumn(sesid, table, _colIdProductLabel, prodLabel);
                     Api.SetColumn(sesid, table, _colIdProductIfcTypeId, ifcType);
                     Api.SetColumn(sesid, table, _colIdTransformMatrix, transform);
                     if (styleLabel > 0)
                         Api.SetColumn(sesid, table, _colIdStyleLabel, styleLabel);
+                    else
+                        Api.SetColumn(sesid, table, _colIdStyleLabel, -ifcType); //use the negative type id as a style for object that have no render material
                     UpdateCount(1);
                     int? mapGeomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy);
                     update.Save();
-                    return mapGeomId.Value;
+                    mapId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryHash, RetrieveColumnGrbit.RetrieveCopy).Value;
+                    geomType = (XbimGeometryType)Api.RetrieveColumnAsByte(sesid, table, _colIdGeomType, RetrieveColumnGrbit.RetrieveCopy).Value;
+                    mainId = mapGeomId.Value;
                 }
-
+#if CREATEGEOMHASH
+                if (geomType == XbimGeometryType.TriangulatedMesh)
+                {
+                    Api.MakeKey(sesid, table, mapId, MakeKeyGrbit.NewKey); //find the hash record and make a copy of the hash
+                    if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ)) //find map
+                    {
+                        using (var update = new Update(sesid, table, JET_prep.InsertCopy))
+                        {
+                            Api.SetColumn(sesid, table, _colIdProductLabel, prodLabel);
+                            Api.SetColumn(sesid, table, _colIdProductIfcTypeId, ifcType);
+                            Api.SetColumn(sesid, table, _colIdTransformMatrix, transform);
+                            if (styleLabel > 0)
+                                Api.SetColumn(sesid, table, _colIdStyleLabel, styleLabel);
+                            else
+                                Api.SetColumn(sesid, table, _colIdStyleLabel, -ifcType); //use the negative type id as a style for object that have no render material
+                            UpdateCount(1);
+                            update.Save();
+                        }
+                    }
+                }
+#endif
             }
             else
                 throw new XbimException("Mapped geometry not found = #" + geomId);
+
+            return mainId;
+
         }
 
         internal IEnumerable<XbimGeometryData> GeometryData(short typeId, int productLabel, XbimGeometryType geomType)
