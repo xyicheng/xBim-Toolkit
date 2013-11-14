@@ -107,10 +107,14 @@ namespace Xbim.COBie.Federate
                     }
 
                     //copy the removed rows to the federated sheet
-                    foreach (var row in worksheet.RemovedRows)
+                    if (worksheet.RemovedRows != null)
                     {
-                        fedSheet.AddRemovedRow(row);
+                        foreach (var row in worksheet.RemovedRows)
+                        {
+                            fedSheet.AddRemovedRow(row);
+                        }
                     }
+                    
 
                     cOBieProgress.Initialise(string.Format("Federate workbook {0}, Merging {1}", index, worksheet.SheetName), worksheet.RowCount);
                     bool copy = (worksheet.SheetName == Constants.WORKSHEET_COORDINATE);
