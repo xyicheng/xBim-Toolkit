@@ -1459,13 +1459,13 @@ namespace Xbim.Script
         {
             SystemsCreator creator = new SystemsCreator();
 
-            if (name.ToLower() == "uniclass")
+            try
             {
-                creator.CreateSystem(_model, SYSTEM.UNICLASS);
+                creator.CreateSystem(_model, name);
             }
-            if (name.ToLower() == "nrm")
+            catch (Exception e)
             {
-                creator.CreateSystem(_model, SYSTEM.NRM);
+                Scanner.yyerror("Classification {0} couldn't have been created: {1}", name, e.Message);
             }
         }
         #endregion

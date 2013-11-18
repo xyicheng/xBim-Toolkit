@@ -7,6 +7,7 @@ using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.Extensions;
 using System.IO;
 using Xbim.IO;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 
 namespace Xbim.Script
 {
@@ -14,42 +15,59 @@ namespace Xbim.Script
     {
         private XbimModel _model;
 
-        public void CreateSystem(XbimModel model, SYSTEM system)
+        public void CreateSystem(XbimModel model, string classificationName)
         {
             //set model in which the systems are to be created
             _model = model;
-            
-            //get data
-            string data = null;
-            CsvLineParser parser = null;
-            switch (system)
+
+            //get list of classifications available
+            var dir = Directory.EnumerateFiles("Classifications");
+            string clasPath = null;
+            foreach (var f in dir)
             {
-                case SYSTEM.NRM:
-                    if (model.Instances.Where<IfcSystem>(s => s.Name == "NRM").FirstOrDefault() != null) return;
-                    data = Properties.Resources.NRM;
-                    parser = new CsvLineParser(';');
+                if (Path.GetFileNameWithoutExtension(f) == classificationName)
+                {
+                    clasPath = f;
                     break;
-                case SYSTEM.UNICLASS:
-                    if (model.Instances.Where<IfcSystem>(s => s.Name == "uniclass").FirstOrDefault() != null) return;
-                    data = Properties.Resources.Uniclass;
-                    parser = new CsvLineParser();
-                    break;
-                default:
-                    break;
+                }
             }
+            if (clasPath == null)
+                throw new ArgumentException("Specified classification doesn't exist");
+            var clasName = Path.GetFileNameWithoutExtension(clasPath);
+
+
+            //get data
+            string data = File.ReadAllText(clasPath);
+
+
+            CsvLineParser parser = null;
+            if (clasName.Contains("NRM"))
+            {
+                parser = new CsvLineParser(';');
+            }
+            else
+                parser = new CsvLineParser();
+            
+
+            //create classification source
+            var source = model.Instances.New<IfcClassification>(c => {
+                c.Source = clasName;
+                c.Edition = "Default edition";
+                c.Name = clasName;
+            });
 
             //process file
             if (_model.IsTransacting)
-                ParseCSV(data, parser);
+                ParseCSV(data, parser, source);
             else
                 using (var txn = model.BeginTransaction("Systems creation"))
                 {
-                    ParseCSV(data, parser);
+                    ParseCSV(data, parser, source);
                     txn.Commit();
                 }
         }
 
-        private void ParseCSV(string data, CsvLineParser parser)
+        private void ParseCSV(string data, CsvLineParser parser, IfcClassification source)
         {
             TextReader csvReader = new StringReader(data);
 
@@ -68,9 +86,10 @@ namespace Xbim.Script
 
                 //create IFC object
                 IfcSystem system = GetOrCreateSystem(parsedLine.Code, parsedLine.Description);
-                if (system == null) continue;
+                var classification = GetOrCreateClassificationReference(parsedLine.Code, parsedLine.Description, source);
 
                 //set up hierarchy
+                if (system == null) continue;
                 IfcSystem parentSystem = GetOrCreateSystem(parsedLine.ParentCode);
                 if (parentSystem != null) parentSystem.AddObjectToGroup(system);
 
@@ -94,6 +113,21 @@ namespace Xbim.Script
             return system;
         }
 
+        private IfcClassificationReference GetOrCreateClassificationReference(string code, string name, IfcClassification source)
+        {
+            if (code == null) return null;
+
+            IfcClassificationReference classification = _model.Instances.Where<IfcClassificationReference>(s => s.ItemReference == code).FirstOrDefault();
+            if (classification == null)
+                classification = _model.Instances.New<IfcClassificationReference>(s =>
+                {
+                    s.ItemReference = code;
+                });
+            if (name != null) classification.Name = name;
+            if (source != null) classification.ReferencedSource = source;
+
+            return classification;
+        }
 
         private class CsvLineParser
         {
@@ -158,11 +192,5 @@ namespace Xbim.Script
             public string Description;
             public string ParentCode;
         }
-    }
-
-    internal enum SYSTEM
-    {
-        NRM,
-        UNICLASS
     }
 }
