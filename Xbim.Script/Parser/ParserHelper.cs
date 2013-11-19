@@ -421,16 +421,15 @@ namespace Xbim.Script
 
         private IEnumerable<IPersistIfcEntity> Select(Type type, Expression condition = null)
         {
-            //create type expression
-            var evaluateMethod = GetType().GetMethod("IsOfType", BindingFlags.Static | BindingFlags.NonPublic);
-            Expression typeExpr = Expression.Call(null, evaluateMethod, Expression.Constant(type), _input);
-
-            //create body expression
-            Expression exprBody = typeExpr;
+            MethodInfo method = _model.Instances.GetType().GetMethod("OfType", new Type[] { typeof(bool) });
+            MethodInfo generic = method.MakeGenericMethod(type);
+            var typeFiltered = generic.Invoke(_model.Instances, new object[] { false }) as IEnumerable<IPersistIfcEntity>;
             if (condition != null)
-                exprBody = Expression.AndAlso(typeExpr, condition);
+            {
+                return typeFiltered.Where(Expression.Lambda<Func<IPersistIfcEntity, bool>>(condition, _input).Compile());
+            }
 
-            return _model.Instances.Where(Expression.Lambda<Func<IPersistIfcEntity, bool>>(exprBody, _input).Compile());
+            return typeFiltered;
         }
 
         private IEnumerable<IPersistIfcEntity> SelectClassification(string code)
