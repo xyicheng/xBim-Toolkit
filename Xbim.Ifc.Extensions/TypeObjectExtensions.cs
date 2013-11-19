@@ -213,6 +213,34 @@ namespace Xbim.Ifc2x3.Extensions
                 return null;
         }
 
+
+        /// <summary>
+        /// Use this to get all physical simple quantities (like length, area, volume, count, etc.)
+        /// </summary>
+        /// <returns>All physical simple quantities (like length, area, volume, count, etc.)</returns>
+        public static IEnumerable<IfcPhysicalSimpleQuantity> GetAllPhysicalSimpleQuantities(this IfcTypeObject elem)
+        {
+            foreach (var eq in elem.GetAllElementQuantities())
+            {
+                foreach (var q in eq.Quantities)
+                {
+                    var psq = q as IfcPhysicalSimpleQuantity;
+                    if (psq != null) yield return psq;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Use this method to get all element quantities related to this object
+        /// </summary>
+        /// <returns>All related element quantities</returns>
+        public static IEnumerable<IfcElementQuantity> GetAllElementQuantities(this IfcTypeObject elem)
+        {
+            if (elem.HasPropertySets != null)
+                return elem.HasPropertySets.OfType<IfcElementQuantity>();
+            return new IfcElementQuantity[] { };
+        }
+
         public static IfcElementQuantity GetElementQuantity(this IfcTypeObject elem, string pSetName)
         {
             if (elem.HasPropertySets == null) return null;

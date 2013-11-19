@@ -49,6 +49,7 @@
 %token  REFERENCE
 %token  ORGANIZATION
 %token  OWNER
+%token  CODE
 
 /*operations and keywords*/
 %token  WHERE
@@ -100,6 +101,12 @@
 %token  SPATIALLY_CONTAINS
 %token  OVERLAPS
 %token  RELATE
+
+/* existance keywords */
+%token THE_SAME	
+%token DELETED	
+%token INSERTED	
+%token EDITED	
 
 %%
 expressions
@@ -179,6 +186,7 @@ selection_statement
 	: EVERY object														{$$.val = Select($2.typeVal);}
 	| EVERY object STRING												{$$.val = Select($2.typeVal, $3.strVal);}
 	| EVERY object WHERE conditions_set									{$$.val = Select($2.typeVal, ((Expression)($4.val)));}
+	| EVERY CLASSIFICATION CODE STRING									{$$.val = SelectClassification($4.strVal);}
 	;
 	
 creation
@@ -232,6 +240,7 @@ condition
 	| groupCondition						{$$.val = $1.val;}
 	| spatialCondition						{$$.val = $1.val;}
 	| modelCondition						{$$.val = $1.val;}
+	| existanceCondition					{$$.val = $1.val;}
 	;
 
 attributeCondition	
@@ -287,13 +296,25 @@ propertyCondition
 	;
 
 spatialCondition
-	: IT op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition(((Tokens)($2.val)), $3.strVal);}
+	: IT op_bool op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition((Tokens)($2.val), (Tokens)($3.val), $4.strVal);}
 	;
 
 modelCondition
-	: MODEL op_bool	STRING					{$$.val = GenerateModelCondition(Tokens.MODEL, (Tokens)($2.val), $3.strVal);}
-	| MODEL OWNER op_bool STRING			{$$.val = GenerateModelCondition(Tokens.OWNER, (Tokens)($3.val), $4.strVal);}
-	| MODEL ORGANIZATION op_bool STRING		{$$.val = GenerateModelCondition(Tokens.ORGANIZATION, (Tokens)($3.val), $4.strVal);}
+	: MODEL op_bool	STRING						{$$.val = GenerateModelCondition(Tokens.MODEL, (Tokens)($2.val), $3.strVal);}
+	| MODEL OWNER op_bool STRING				{$$.val = GenerateModelCondition(Tokens.OWNER, (Tokens)($3.val), $4.strVal);}
+	| MODEL ORGANIZATION op_bool STRING			{$$.val = GenerateModelCondition(Tokens.ORGANIZATION, (Tokens)($3.val), $4.strVal);}
+	;
+
+existanceCondition
+	: IT OP_EQ op_existance IN MODEL STRING								{$$.val = GenerateExistanceCondition((Tokens)($3.val), $6.strVal); }
+	| IT op_bool IN MODEL STRING OP_AND IT op_bool IN MODEL STRING		{$$.val = GenerateExistanceCondition((Tokens)($2.val), $5.strVal, (Tokens)($8.val), $11.strVal); }
+	;
+
+op_existance
+	: THE_SAME				{ $$.val = Tokens.THE_SAME; }
+	| DELETED				{ $$.val = Tokens.DELETED; }
+	| INSERTED				{ $$.val = Tokens.INSERTED;}
+	| EDITED				{ $$.val = Tokens.EDITED;}
 	;
 
 op_spatial

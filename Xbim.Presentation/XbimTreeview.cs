@@ -387,5 +387,30 @@ namespace Xbim.Presentation
                 //}
             }
         }
+
+        public void Regenerate()
+        {
+            if (Model != null )
+            {
+                Model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
+                switch (ViewDefinition)
+                {
+                    case XbimViewType.SpatialStructure:
+                        ViewModel();
+                        break;
+                    case XbimViewType.Classification:
+                        break;
+                    case XbimViewType.Materials:
+                        break;
+                    case XbimViewType.IfcEntityType:
+                        break;
+                    case XbimViewType.Groups:
+                        ViewGroups();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 }

@@ -26,47 +26,48 @@
 
 
 /* ********************** Identifiers ************************** */
-"$"[a-z$][a-z0-9_]*		            { return (int)SetValue(Tokens.IDENTIFIER); }
+"$"[a-z$][a-z0-9_]*		        { return (int)SetValue(Tokens.IDENTIFIER); }
 
 /* ********************** Operators ************************** */
 "="	|
 "equals" |
 "is" |
-"is equal to"		{  return ((int)Tokens.OP_EQ); }
+"is equal to"					{  return ((int)Tokens.OP_EQ); }
 
 "!=" |
 "is not equal to" |
 "is not" |
 "does not equal" |
-"doesn't equal"		{ return ((int)Tokens.OP_NEQ); }
+"doesn't equal" |
+"doesn't"						{ return ((int)Tokens.OP_NEQ); }
 
 ">" |
-"is greater than"		{  return ((int)Tokens.OP_GT); }
+"is greater than"				{  return ((int)Tokens.OP_GT); }
 
 "<"	|
-"is less than"		{  return ((int)Tokens.OP_LT); }
+"is less than"					{  return ((int)Tokens.OP_LT); }
 
 ">=" |
-"is greater than or equal to"		{  return ((int)Tokens.OP_GTE); }
+"is greater than or equal to"	{  return ((int)Tokens.OP_GTE); }
 
 "<=" |
 "is less than or equal to"		{  return ((int)Tokens.OP_LTQ); }
 
 "&&" |
-"and"		{  return ((int)Tokens.OP_AND); }
+"and"							{  return ((int)Tokens.OP_AND); }
 
 "||" |
-"or"		{  return ((int)Tokens.OP_OR); }
+"or"							{  return ((int)Tokens.OP_OR); }
 
 "~"	|
 "contains" |
-"is like"			{return ((int)Tokens.OP_CONTAINS);}
+"is like"						{return ((int)Tokens.OP_CONTAINS);}
 
 "!~" |
 "does not contain" |
 "doesn't contain" |
 "is not like" |
-"isn't like"			{return ((int)Tokens.OP_NOT_CONTAINS);}
+"isn't like"					{return ((int)Tokens.OP_NOT_CONTAINS);}
 
 ";"		{  return (';'); }
 ","		{  return (','); }
@@ -75,20 +76,30 @@
 ")"		{  return (')'); }
 
 
-"is north from"		{return ((int)Tokens.NORTH_OF); }
-"is south from"		{return ((int)Tokens.SOUTH_OF); }
-"is west from"		{return ((int)Tokens.WEST_OF); }
-"is east from"		{return ((int)Tokens.EAST_OF); }
-"is above from"		{return ((int)Tokens.ABOVE); }
-"is below from"		{return ((int)Tokens.BELOW); }
-"spatialy equals"	{return ((int)Tokens.SPATIALLY_EQUALS); }
-"is disjoint from"	{return ((int)Tokens.DISJOINT); }
-"intersects with"	{return ((int)Tokens.INTERSECTS); }
-"touches"			{return ((int)Tokens.TOUCHES); }
-"crosses"			{return ((int)Tokens.CROSSES); }
-"is within"			{return ((int)Tokens.WITHIN); }
-"overlaps"			{return ((int)Tokens.OVERLAPS); }
-"relates to"			{return ((int)Tokens.RELATE); }
+"north from"		{return ((int)Tokens.NORTH_OF); }
+"south from"		{return ((int)Tokens.SOUTH_OF); }
+"west from"			{return ((int)Tokens.WEST_OF); }
+"east from"			{return ((int)Tokens.EAST_OF); }
+"above from"		{return ((int)Tokens.ABOVE); }
+"below from"		{return ((int)Tokens.BELOW); }
+"spatialy equal"	{return ((int)Tokens.SPATIALLY_EQUALS); }
+"disjoint from"		{return ((int)Tokens.DISJOINT); }
+"intersects with" |
+"intersect with"	{return ((int)Tokens.INTERSECTS); }
+"touches" |
+"touch"				{return ((int)Tokens.TOUCHES); }
+"crosses" |
+"cross"				{return ((int)Tokens.CROSSES); }
+"within"			{return ((int)Tokens.WITHIN); }
+"overlaps" |
+"overlap"			{return ((int)Tokens.OVERLAPS); }
+"relates to" |
+"relate to"		{return ((int)Tokens.RELATE); }
+
+"the same"		{return (int)Tokens.THE_SAME; }
+"deleted"		{return (int)Tokens.DELETED; }
+"inserted"		{return (int)Tokens.INSERTED; }
+"edited"		{return (int)Tokens.EDITED; }
 					 
 /* ********************** Keywords ************************** */
 "select"			{ return (int)Tokens.SELECT;}
@@ -139,6 +150,7 @@
 "layer set" |
 "layer_set"	|
 "layerset"		{ return (int)Tokens.LAYER_SET; }
+"code"		{ return (int)Tokens.CODE; }
 
 "null" |
 "undefined" |

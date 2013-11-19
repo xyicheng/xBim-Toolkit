@@ -16,6 +16,8 @@ using Xbim.Ifc2x3.ProductExtension;
 using System.IO;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.MaterialPropertyResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 
 namespace Xbim.Script
 {
@@ -122,11 +124,11 @@ namespace Xbim.Script
             var attrNameExpr = Expression.Constant(attribute);
             var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
-            var scannExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateAttributeCondition", BindingFlags.Static | BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluateAttributeCondition", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            return Expression.Call(null, evaluateMethod, _input, attrNameExpr, valExpr, condExpr, scannExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, attrNameExpr, valExpr, condExpr);
         }
 
         private Expression GeneratePropertyCondition(string property, object value, Tokens condition)
@@ -134,14 +136,14 @@ namespace Xbim.Script
             var propNameExpr = Expression.Constant(property);
             var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
-            var scannExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluatePropertyCondition", BindingFlags.Static | BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluatePropertyCondition", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            return Expression.Call(null, evaluateMethod, _input, propNameExpr, valExpr, condExpr, scannExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, propNameExpr, valExpr, condExpr);
         }
 
-        private static bool EvaluatePropertyCondition(IPersistIfcEntity input, string propertyName, object value, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluatePropertyCondition(IPersistIfcEntity input, string propertyName, object value, Tokens condition)
         {
             var prop = GetProperty(propertyName, input);
             //try to get attribute if any exist with this name
@@ -150,13 +152,13 @@ namespace Xbim.Script
                 var attr = GetAttributeValue(propertyName, input);
                 prop = attr as IfcValue;
             }
-            return EvaluateValueCondition(prop, value, condition, scanner);
+            return EvaluateValueCondition(prop, value, condition);
         }
 
-        private static bool EvaluateAttributeCondition(IPersistIfcEntity input, string attribute, object value, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateAttributeCondition(IPersistIfcEntity input, string attribute, object value, Tokens condition)
         {
             var attr = GetAttributeValue(attribute, input);
-            return EvaluateValueCondition(attr, value, condition, scanner);
+            return EvaluateValueCondition(attr, value, condition);
         }
         #endregion
 
@@ -178,7 +180,7 @@ namespace Xbim.Script
             }
         }
 
-        private static bool EvaluateValueCondition(object ifcVal, object val, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateValueCondition(object ifcVal, object val, Tokens condition)
         {
             //special handling for null value comparison
             if (val == null || ifcVal == null)
@@ -189,7 +191,7 @@ namespace Xbim.Script
                 }
                 catch (Exception e)
                 {
-                    scanner.yyerror(e.Message);
+                    Scanner.yyerror(e.Message);
                     return false;
                 }
             }
@@ -205,7 +207,7 @@ namespace Xbim.Script
             catch (Exception)
             {
 
-                scanner.yyerror(val.ToString() + " is not compatible type with type of " + ifcVal.GetType());
+                Scanner.yyerror(val.ToString() + " is not compatible type with type of " + ifcVal.GetType());
                 return false;
             }
             
@@ -241,7 +243,7 @@ namespace Xbim.Script
                 default:
                     throw new ArgumentOutOfRangeException("Unexpected token used as a condition");
             }
-            scanner.yyerror("Can't compare " + left + " and " + right + ".");
+            Scanner.yyerror("Can't compare " + left + " and " + right + ".");
             return false;
         }
 
@@ -290,16 +292,20 @@ namespace Xbim.Script
 
         private static IfcValue GetProperty(string name, IPersistIfcEntity entity)
         {
-            IfcObject obj = entity as IfcObject;
             Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> pSets = null;
+            IEnumerable<IfcPhysicalSimpleQuantity> quants = null;
+
+            IfcObject obj = entity as IfcObject;
             if (obj != null)
             {
+                quants = obj.GetAllPhysicalSimpleQuantities();
                 pSets = obj.GetAllPropertySingleValues();
             }
             IfcTypeObject typeObj = entity as IfcTypeObject;
             if (typeObj != null)
             {
                 pSets = typeObj.GetAllPropertySingleValues();
+                quants = typeObj.GetAllPhysicalSimpleQuantities();
             }
             IfcMaterial material = entity as IfcMaterial;
             if (material != null)
@@ -315,8 +321,33 @@ namespace Xbim.Script
                         if (prop.Key.ToString().ToLower() == name.ToLower()) return prop.Value;
                     }
                 }
+            if (quants != null)
+            {
+                var quant = quants.Where(q => q.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
+                if (quant != null)
+                {
+                    var a = quant as IfcQuantityArea;
+                    if (a != null) return a.AreaValue;
+
+                    var c = quant as IfcQuantityCount;
+                    if (c != null) return c.CountValue;
+
+                    var l = quant as IfcQuantityLength;
+                    if (l != null) return l.LengthValue;
+
+                    var t = quant as IfcQuantityTime;
+                    if (t != null) return t.TimeValue;
+
+                    var v = quant as IfcQuantityVolume;
+                    if (v != null) return v.VolumeValue;
+
+                    var w = quant as IfcQuantityWeight;
+                    if (w != null) return w.WeightValue;
+                }
+            }
             return null;
         }
+
 
         private static object PromoteType(Type targetType, object value)
         {
@@ -401,6 +432,12 @@ namespace Xbim.Script
 
             return _model.Instances.Where(Expression.Lambda<Func<IPersistIfcEntity, bool>>(exprBody, _input).Compile());
         }
+
+        private IEnumerable<IPersistIfcEntity> SelectClassification(string code)
+        {
+            return _model.Instances.Where<IfcClassificationReference>(c => c.ItemReference.ToString().ToLower() == code.ToLower());
+        }
+        
         #endregion
 
         #region TypeObject conditions 
@@ -408,23 +445,23 @@ namespace Xbim.Script
         {
             var typeNameExpr = Expression.Constant(typeName);
             var condExpr = Expression.Constant(condition);
-            var scanExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectName", BindingFlags.Static | BindingFlags.NonPublic);
-            return Expression.Call(null, evaluateMethod, _input, typeNameExpr, condExpr, scanExpr);
+            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectName", BindingFlags.Instance | BindingFlags.NonPublic);
+            return Expression.Call(thisExpr, evaluateMethod, _input, typeNameExpr, condExpr);
         }
 
         private Expression GenerateTypeObjectTypeCondition(Type type, Tokens condition)
         {
             var typeExpr = Expression.Constant(type, typeof(Type));
             var condExpr = Expression.Constant(condition);
-            var scanExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectType", BindingFlags.Static | BindingFlags.NonPublic);
-            return Expression.Call(null, evaluateMethod, _input, typeExpr, condExpr, scanExpr);
+            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectType", BindingFlags.Instance | BindingFlags.NonPublic);
+            return Expression.Call(thisExpr, evaluateMethod, _input, typeExpr, condExpr);
         }
 
-        private static bool EvaluateTypeObjectName(IPersistIfcEntity input, string typeName, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateTypeObjectName(IPersistIfcEntity input, string typeName, Tokens condition)
         {
             IfcObject obj = input as IfcObject;
             if (obj == null) return false;
@@ -448,12 +485,12 @@ namespace Xbim.Script
                 case Tokens.OP_NOT_CONTAINS:
                     return !type.Name.ToString().ToLower().Contains(typeName.ToLower());
                 default:
-                    scanner.yyerror("Unexpected Token in this function. Only equality or containment expected.");
+                    Scanner.yyerror("Unexpected Token in this function. Only equality or containment expected.");
                     return false;
             }
         }
 
-        private static bool EvaluateTypeObjectType(IPersistIfcEntity input, Type type, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateTypeObjectType(IPersistIfcEntity input, Type type, Tokens condition)
         {
             IfcObject obj = input as IfcObject;
             if (obj == null) return false;
@@ -469,7 +506,7 @@ namespace Xbim.Script
                 }
                 catch (Exception e)
                 {
-                    scanner.yyerror(e.Message);
+                    Scanner.yyerror(e.Message);
                     return false;
                 }
             }
@@ -481,7 +518,7 @@ namespace Xbim.Script
                 case Tokens.OP_NEQ:
                     return typeObj.GetType() != type;
                 default:
-                    scanner.yyerror("Unexpected Token in this function. Only OP_EQ or OP_NEQ expected.");
+                    Scanner.yyerror("Unexpected Token in this function. Only OP_EQ or OP_NEQ expected.");
                     return false;
             }
         }
@@ -609,11 +646,11 @@ namespace Xbim.Script
             var thisExpr = Expression.Constant(this);
             var modelExpr = Expression.Constant(_model);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateModelCondition");
+            var evaluateMethod = GetType().GetMethod("EvaluateModelCondition", BindingFlags.Instance | BindingFlags.NonPublic);
             return Expression.Call(thisExpr, evaluateMethod, _input, valExpr, typeExpr, condExpr);
         }
 
-        public bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens type, Tokens condition)
+        private bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens type, Tokens condition)
         {
             IModel model = input.ModelOf;
             IModel testModel = null;
@@ -830,9 +867,9 @@ namespace Xbim.Script
             IfcGroup group = Variables[aggregation].FirstOrDefault() as IfcGroup;
             IfcTypeObject typeObject = Variables[aggregation].FirstOrDefault() as IfcTypeObject;
             IfcSpatialStructureElement spatialStructure = Variables[aggregation].FirstOrDefault() as IfcSpatialStructureElement;
+            IfcClassificationNotationSelect classification = Variables[aggregation].FirstOrDefault() as IfcClassificationNotationSelect;
 
-
-            if (group == null && typeObject == null && spatialStructure == null)
+            if (group == null && typeObject == null && spatialStructure == null && classification == null)
             {
                 Scanner.yyerror("Only 'group', 'system', 'spatial element' or 'type object' should be in '" + aggregation + "'.");
                 return;
@@ -840,6 +877,31 @@ namespace Xbim.Script
             
             //Action which will be performed
             Action perform = null;
+
+            if (classification != null)
+            {
+                var objects = Variables[productsIdentifier].OfType<IfcRoot>().Cast<IfcRoot>();
+                if (objects.Count() != Variables[productsIdentifier].Count())
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcRoot' can be assigned to classification '" + aggregation + "'.");
+
+                perform = () => {
+                    foreach (var obj in objects)
+                    {
+
+                        switch (action)
+                        {
+                            case Tokens.ADD:
+                                classification.AddObjectToClassificationNotation(obj);
+                                break;
+                            case Tokens.REMOVE:
+                                classification.RemoveObjectFromClassificationNotation(obj);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException("Unexpected action. Only ADD or REMOVE can be used in this context.");
+                        }
+                    }
+                };
+            }
 
             if (group != null)
             {
@@ -973,6 +1035,7 @@ namespace Xbim.Script
                     _model.CreateFrom(path, null, null, true);
                 else
                     _model.Open(path, XbimExtensions.XbimDBAccess.ReadWrite);
+                ModelChanged(_model);
             }
             catch (Exception e)
             {
@@ -987,6 +1050,7 @@ namespace Xbim.Script
                 _model.Close();
                 _variables.Clear();
                 _model = XbimModel.CreateTemporaryModel();
+                ModelChanged(_model);
             }
             catch (Exception e)
             {
@@ -1032,6 +1096,7 @@ namespace Xbim.Script
         public void AddReferenceModel(string refModel, string organization, string owner)
         {
             _model.AddModelReference(refModel, organization, owner);
+            ModelChanged(_model);
         }
 
         public void CopyToModel(string variable, string model)
@@ -1108,25 +1173,35 @@ namespace Xbim.Script
         private static void SetProperty(IPersistIfcEntity entity, string name, object newVal)
         {
             List<IfcPropertySet> pSets = null;
-            List<IfcExtendedMaterialProperties> pSetsMaterial = null;
+            IEnumerable<IfcExtendedMaterialProperties> pSetsMaterial = null;
+            IEnumerable<IfcElementQuantity> elQuants = null;
             IfcPropertySingleValue property = null;
-            PropertyInfo info = null;
+            IfcPhysicalSimpleQuantity quantity = null;
             IfcPropertySet ps = null;
+            IfcElementQuantity eq = null;
             IfcExtendedMaterialProperties eps = null;
 
             IfcObject obj = entity as IfcObject;
             if (obj != null)
             {
                 if (_actualPsetName != null)
+                {
                     ps = obj.GetPropertySet(_actualPsetName);
+                    eq = obj.GetElementQuantity(_actualPsetName);
+                }
                 pSets =  ps == null ? obj.GetAllPropertySets() : new List<IfcPropertySet>(){ps};
+                elQuants = eq == null ? obj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq };
             }
             IfcTypeObject typeObj = entity as IfcTypeObject;
             if (typeObj != null)
             {
                 if (_actualPsetName != null)
+                {
                     ps = typeObj.GetPropertySet(_actualPsetName);
+                    eq = typeObj.GetElementQuantity(_actualPsetName);
+                }
                 pSets = ps == null ? typeObj.GetAllPropertySets() : new List<IfcPropertySet>() { ps };
+                elQuants = eq == null ? typeObj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq};
             }
             IfcMaterial material = entity as IfcMaterial;
             if (material != null)
@@ -1152,6 +1227,16 @@ namespace Xbim.Script
                         if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
                     }
                 }
+            if (elQuants != null)
+                foreach (var quant in elQuants)
+                {
+                    foreach (var item in quant.Quantities)
+                    {
+                        if (item.Name.ToString().ToLower() == name.ToLower()) quantity = item as IfcPhysicalSimpleQuantity;
+                    }
+                }
+
+            PropertyInfo info = null;
 
             //set property
             if (property != null)
@@ -1160,7 +1245,40 @@ namespace Xbim.Script
                 SetValue(info, property, newVal);
             }
 
-            //create new property if no such a property exists
+            //set simple quantity
+            else if (quantity != null)
+            {
+                var qType = quantity.GetType();
+                switch (qType.Name)
+                {
+                    case "IfcQuantityLength":
+                        info = qType.GetProperty("LengthValue");
+                        break;
+                    case "IfcQuantityArea":
+                        info = qType.GetProperty("AreaValue");
+                        break;
+                    case "IfcQuantityVolume":
+                        info = qType.GetProperty("VolumeValue");
+                        break;
+                    case "IfcQuantityCount":
+                        info = qType.GetProperty("CountValue");
+                        break;
+                    case "IfcQuantityWeight":
+                        info = qType.GetProperty("WeightValue");
+                        break;
+                    case "IfcQuantityTime":
+                        info = qType.GetProperty("TimeValue");
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+                if (info != null)
+                    SetValue(info, quantity, newVal);
+                else
+                    throw new Exception("Failed to find the PropertyInfo of the simple element quantity.");
+            }
+
+            //create new property if no such a property or quantity exists
             else
             {
                 string pSetName = _actualPsetName ?? Defaults.DefaultPSet;
@@ -1210,7 +1328,7 @@ namespace Xbim.Script
                     //this can throw error if the property can't be null (like structure)
                     info.SetValue(instance, null, null);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 throw new Exception("Value "+ (value != null ? value.ToString() : "NULL") +" could not be set to "+ info.Name+" of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
             }
@@ -1371,15 +1489,15 @@ namespace Xbim.Script
         #region Creation of classification systems
         private void CreateClassification(string name)
         {
-            SystemsCreator creator = new SystemsCreator();
+            ClassificationCreator creator = new ClassificationCreator();
 
-            if (name.ToLower() == "uniclass")
+            try
             {
-                creator.CreateSystem(_model, SYSTEM.UNICLASS);
+                creator.CreateSystem(_model, name);
             }
-            if (name.ToLower() == "nrm")
+            catch (Exception e)
             {
-                creator.CreateSystem(_model, SYSTEM.NRM);
+                Scanner.yyerror("Classification {0} couldn't have been created: {1}", name, e.Message);
             }
         }
         #endregion
@@ -1426,17 +1544,29 @@ namespace Xbim.Script
         #endregion
 
         #region Spatial conditions
-        private Expression GenerateSpatialCondition(Tokens condition, string identifier)
+        private Expression GenerateSpatialCondition(Tokens op, Tokens condition, string identifier)
         {
-            var identExpr = Expression.Constant(identifier, typeof(string));
+            IEnumerable<IfcProduct> right = _variables[identifier].OfType<IfcProduct>();
+            if (right.Count() == 0)
+            {
+                Scanner.yyerror("There are no suitable objects for spatial condition in " + identifier + ".");
+                return Expression.Empty();
+            }
+            if (right.Count() != _variables[identifier].Count())
+                Scanner.yyerror("Some of the objects in " + identifier + " can't be in a spatial condition.");
+
+            var rightExpr = Expression.Constant(right);
             var condExpr = Expression.Constant(condition);
+            var opExpr = Expression.Constant(op);
+            var scanExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateSpatialCondition", BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluateSpatialCondition", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            return Expression.Call(null, evaluateMethod, _input, condExpr, identExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, opExpr, condExpr, rightExpr, scanExpr);
         }
 
-        private bool EvaluateSpatialCondition(IPersistIfcEntity input, Tokens condition, string identifier)
+        private bool EvaluateSpatialCondition(IPersistIfcEntity input, Tokens op, Tokens condition, IEnumerable<IfcProduct> right)
         {
             IfcProduct left = input as IfcProduct;
             if (left == null)
@@ -1444,15 +1574,6 @@ namespace Xbim.Script
                 Scanner.yyerror(input.GetType().Name + " can't have a spatial condition.");
                 return false;
             }
-            IEnumerable<IfcProduct> right = _variables[identifier].OfType<IfcProduct>();
-            if (right.Count() != _variables[identifier].Count())
-                Scanner.yyerror("Some of the objects in "+identifier+" can't be in a spatial condition.");
-            if (right.Count() == 0)
-            {
-                Scanner.yyerror("There are no suitable objects for spatial condition in " + identifier + ".");
-                return false;
-            }
-
 
             switch (condition)
             {
@@ -1494,6 +1615,19 @@ namespace Xbim.Script
         }
         #endregion
 
+
+        #region Existance conditions
+        private Expression GenerateExistanceCondition(Tokens existanceCondition, string modelName)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Expression GenerateExistanceCondition(Tokens conditionA, string modelA, Tokens conditionB, string modelB)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
         /// <summary>
         /// Unified function so that the same output can be send 
         /// to the Console and to the optional text writer as well.
@@ -1518,6 +1652,13 @@ namespace Xbim.Script
                 Output.Write(message);
         }
 
+        //event to be used in the event driven environment
+        public event ModelChangedHandler OnModelChanged;
+        private void ModelChanged(XbimModel newModel)
+        {
+            if (OnModelChanged != null)
+                OnModelChanged(this, new ModelChangedEventArgs(newModel));
+        }
     }
 
     internal struct Layer
@@ -1537,6 +1678,18 @@ namespace Xbim.Script
         public static bool AlmostEquals(this double number, double value)
         {
             return Math.Abs(number - value) < 0.000000001;
+        }
+    }
+
+    public delegate void ModelChangedHandler(object sender, ModelChangedEventArgs e);
+
+    public class ModelChangedEventArgs : EventArgs
+    {
+        private XbimModel _newModel;
+        public XbimModel NewModel { get { return _newModel; } }
+        public ModelChangedEventArgs(XbimModel newModel)
+        {
+            _newModel = newModel;
         }
     }
 }
