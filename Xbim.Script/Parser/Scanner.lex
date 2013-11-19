@@ -150,6 +150,7 @@
 "layer set" |
 "layer_set"	|
 "layerset"		{ return (int)Tokens.LAYER_SET; }
+"code"		{ return (int)Tokens.CODE; }
 
 "null" |
 "undefined" |

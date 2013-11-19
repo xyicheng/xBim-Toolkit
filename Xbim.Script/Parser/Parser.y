@@ -49,6 +49,7 @@
 %token  REFERENCE
 %token  ORGANIZATION
 %token  OWNER
+%token  CODE
 
 /*operations and keywords*/
 %token  WHERE
@@ -185,6 +186,7 @@ selection_statement
 	: EVERY object														{$$.val = Select($2.typeVal);}
 	| EVERY object STRING												{$$.val = Select($2.typeVal, $3.strVal);}
 	| EVERY object WHERE conditions_set									{$$.val = Select($2.typeVal, ((Expression)($4.val)));}
+	| EVERY CLASSIFICATION CODE STRING									{$$.val = SelectClassification($4.strVal);}
 	;
 	
 creation

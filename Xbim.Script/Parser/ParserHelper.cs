@@ -17,6 +17,7 @@ using System.IO;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.MaterialPropertyResource;
 using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 
 namespace Xbim.Script
 {
@@ -431,6 +432,12 @@ namespace Xbim.Script
 
             return _model.Instances.Where(Expression.Lambda<Func<IPersistIfcEntity, bool>>(exprBody, _input).Compile());
         }
+
+        private IEnumerable<IPersistIfcEntity> SelectClassification(string code)
+        {
+            return _model.Instances.Where<IfcClassificationReference>(c => c.ItemReference.ToString().ToLower() == code.ToLower());
+        }
+        
         #endregion
 
         #region TypeObject conditions 
@@ -860,9 +867,9 @@ namespace Xbim.Script
             IfcGroup group = Variables[aggregation].FirstOrDefault() as IfcGroup;
             IfcTypeObject typeObject = Variables[aggregation].FirstOrDefault() as IfcTypeObject;
             IfcSpatialStructureElement spatialStructure = Variables[aggregation].FirstOrDefault() as IfcSpatialStructureElement;
+            IfcClassificationNotationSelect classification = Variables[aggregation].FirstOrDefault() as IfcClassificationNotationSelect;
 
-
-            if (group == null && typeObject == null && spatialStructure == null)
+            if (group == null && typeObject == null && spatialStructure == null && classification == null)
             {
                 Scanner.yyerror("Only 'group', 'system', 'spatial element' or 'type object' should be in '" + aggregation + "'.");
                 return;
@@ -870,6 +877,31 @@ namespace Xbim.Script
             
             //Action which will be performed
             Action perform = null;
+
+            if (classification != null)
+            {
+                var objects = Variables[productsIdentifier].OfType<IfcRoot>().Cast<IfcRoot>();
+                if (objects.Count() != Variables[productsIdentifier].Count())
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcRoot' can be assigned to classification '" + aggregation + "'.");
+
+                perform = () => {
+                    foreach (var obj in objects)
+                    {
+
+                        switch (action)
+                        {
+                            case Tokens.ADD:
+                                classification.AddObjectToClassificationNotation(obj);
+                                break;
+                            case Tokens.REMOVE:
+                                classification.RemoveObjectFromClassificationNotation(obj);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException("Unexpected action. Only ADD or REMOVE can be used in this context.");
+                        }
+                    }
+                };
+            }
 
             if (group != null)
             {
@@ -1457,7 +1489,7 @@ namespace Xbim.Script
         #region Creation of classification systems
         private void CreateClassification(string name)
         {
-            SystemsCreator creator = new SystemsCreator();
+            ClassificationCreator creator = new ClassificationCreator();
 
             try
             {

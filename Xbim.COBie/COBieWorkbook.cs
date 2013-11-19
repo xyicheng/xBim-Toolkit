@@ -67,8 +67,7 @@ namespace Xbim.COBie
         /// </summary>
         /// <param name="model"></param>
         /// <param name="fileRoles">bit fields enumeration to hold all the roles in one place using bitwise AND, OR, EXCLUSIVE OR</param>
-        /// <param name="progressCallback"></param>
-        public void ValidateMerge(XbimModel model, COBieMergeRoles fileRoles) 
+        public void ValidateRoles(XbimModel model, COBieMergeRoles fileRoles) 
         {
 #if DEBUG
             Stopwatch timer = new Stopwatch();
@@ -85,20 +84,25 @@ namespace Xbim.COBie
                 sheet = this[Constants.WORKSHEET_COMPONENT];
                 List<string> keyList = new List<string>();
                 List<string> nameList = new List<string>();
-                foreach (var item in sheet.RemovedRows)
+                if (sheet.RemovedRows != null)
                 {
-                    string sheetName = "Component";
-                    COBieColumn colName = item.ParentSheet.Columns.Where(c => c.Value.ColumnName == "Name").Select(c => c.Value).FirstOrDefault();
-                    var name = item[colName.ColumnOrder].CellValue;
-                    nameList.Add(name);
-                    keyList.Add(sheetName + name);
+                    foreach (var item in sheet.RemovedRows)
+                    {
+                        string sheetName = "Component";
+                        COBieColumn colName = item.ParentSheet.Columns.Where(c => c.Value.ColumnName == "Name").Select(c => c.Value).FirstOrDefault();
+                        var name = item[colName.ColumnOrder].CellValue;
+                        nameList.Add(name);
+                        keyList.Add(sheetName + name);
+                    } 
+
+                    sheet = this[Constants.WORKSHEET_ATTRIBUTE];
+                    int attRemNo = sheet.ValidateAttributeMerge(keyList);
+
+                    sheet = this[Constants.WORKSHEET_SYSTEM];
+                    int systemRemNo = sheet.ValidateSystemMerge(nameList);
                 }
 
-                sheet = this[Constants.WORKSHEET_ATTRIBUTE];
-                int attRemNo = sheet.ValidateAttributeMerge(keyList);
-
-                sheet = this[Constants.WORKSHEET_SYSTEM];
-                int systemRemNo = sheet.ValidateSystemMerge(nameList);
+                
             }
 
 #if DEBUG

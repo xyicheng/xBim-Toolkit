@@ -44,6 +44,7 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.ProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.StatusMsg = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.gbFilter = new System.Windows.Forms.GroupBox();
             this.rbNoFilters = new System.Windows.Forms.RadioButton();
             this.rbPickList = new System.Windows.Forms.RadioButton();
@@ -52,9 +53,11 @@
             this.SkipGeoChkBox = new System.Windows.Forms.CheckBox();
             this.checkedListRoles = new System.Windows.Forms.CheckedListBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.gbFilter.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -151,7 +154,7 @@
             // mergeBtn
             // 
             this.mergeBtn.Enabled = false;
-            this.mergeBtn.Location = new System.Drawing.Point(229, 114);
+            this.mergeBtn.Location = new System.Drawing.Point(234, 15);
             this.mergeBtn.Name = "mergeBtn";
             this.mergeBtn.Size = new System.Drawing.Size(130, 23);
             this.mergeBtn.TabIndex = 7;
@@ -165,7 +168,7 @@
             this.GeoOnlyChkBox.Checked = true;
             this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.GeoOnlyChkBox.Enabled = false;
-            this.GeoOnlyChkBox.Location = new System.Drawing.Point(13, 137);
+            this.GeoOnlyChkBox.Location = new System.Drawing.Point(6, 38);
             this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
             this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
             this.GeoOnlyChkBox.TabIndex = 6;
@@ -175,7 +178,7 @@
             // MergeChkBox
             // 
             this.MergeChkBox.AutoSize = true;
-            this.MergeChkBox.Location = new System.Drawing.Point(13, 118);
+            this.MergeChkBox.Location = new System.Drawing.Point(6, 19);
             this.MergeChkBox.Name = "MergeChkBox";
             this.MergeChkBox.Size = new System.Drawing.Size(210, 17);
             this.MergeChkBox.TabIndex = 5;
@@ -210,10 +213,10 @@
             this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutput.Location = new System.Drawing.Point(13, 161);
+            this.txtOutput.Location = new System.Drawing.Point(13, 176);
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
-            this.txtOutput.Size = new System.Drawing.Size(400, 280);
+            this.txtOutput.Size = new System.Drawing.Size(400, 265);
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
             // 
@@ -221,7 +224,8 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ProgressBar,
-            this.StatusMsg});
+            this.StatusMsg,
+            this.toolStripStatusLabel1});
             this.statusStrip1.Location = new System.Drawing.Point(0, 450);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(523, 22);
@@ -241,13 +245,18 @@
             this.StatusMsg.Spring = true;
             this.StatusMsg.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
+            // 
             // gbFilter
             // 
             this.gbFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.gbFilter.Controls.Add(this.rbNoFilters);
             this.gbFilter.Controls.Add(this.rbPickList);
             this.gbFilter.Controls.Add(this.rbDefault);
-            this.gbFilter.Location = new System.Drawing.Point(419, 165);
+            this.gbFilter.Location = new System.Drawing.Point(424, 140);
             this.gbFilter.Name = "gbFilter";
             this.gbFilter.Size = new System.Drawing.Size(87, 98);
             this.gbFilter.TabIndex = 9;
@@ -292,7 +301,7 @@
             this.ValidateChkBox.AutoSize = true;
             this.ValidateChkBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.ValidateChkBox.Enabled = false;
-            this.ValidateChkBox.Location = new System.Drawing.Point(410, 120);
+            this.ValidateChkBox.Location = new System.Drawing.Point(417, 117);
             this.ValidateChkBox.Name = "ValidateChkBox";
             this.ValidateChkBox.Size = new System.Drawing.Size(95, 17);
             this.ValidateChkBox.TabIndex = 10;
@@ -303,7 +312,7 @@
             // 
             this.SkipGeoChkBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.SkipGeoChkBox.AutoSize = true;
-            this.SkipGeoChkBox.Location = new System.Drawing.Point(419, 271);
+            this.SkipGeoChkBox.Location = new System.Drawing.Point(424, 244);
             this.SkipGeoChkBox.Name = "SkipGeoChkBox";
             this.SkipGeoChkBox.Size = new System.Drawing.Size(93, 17);
             this.SkipGeoChkBox.TabIndex = 11;
@@ -328,19 +337,31 @@
             this.label3.TabIndex = 12;
             this.label3.Text = "Roles";
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.MergeChkBox);
+            this.groupBox2.Controls.Add(this.GeoOnlyChkBox);
+            this.groupBox2.Controls.Add(this.mergeBtn);
+            this.groupBox2.Location = new System.Drawing.Point(13, 101);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(400, 69);
+            this.groupBox2.TabIndex = 13;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Merge to IFC";
+            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(523, 472);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.checkedListRoles);
             this.Controls.Add(this.SkipGeoChkBox);
             this.Controls.Add(this.ValidateChkBox);
-            this.Controls.Add(this.mergeBtn);
-            this.Controls.Add(this.GeoOnlyChkBox);
             this.Controls.Add(this.gbFilter);
-            this.Controls.Add(this.MergeChkBox);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.btnClear);
@@ -356,6 +377,8 @@
             this.statusStrip1.PerformLayout();
             this.gbFilter.ResumeLayout(false);
             this.gbFilter.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -387,6 +410,8 @@
         private System.Windows.Forms.CheckBox SkipGeoChkBox;
         private System.Windows.Forms.CheckedListBox checkedListRoles;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
     }
 }
 

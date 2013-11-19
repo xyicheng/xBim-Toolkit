@@ -100,7 +100,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SystemsCreator.cs" />
+    <Compile Include="ClassificationCreator.cs" />
     <Compile Include="XbimQueryParser.cs" />
     <Compile Include="XbimVariables.cs" />
   </ItemGroup>

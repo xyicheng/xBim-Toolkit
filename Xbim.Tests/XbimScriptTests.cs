@@ -12,9 +12,11 @@ using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.MaterialResource;
 using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 
 namespace XbimQueryTest
 {
+    [DeploymentItem("Classifications", "Classifications")]
     [TestClass]
     public class XbimScriptTests
     {
@@ -799,6 +801,42 @@ namespace XbimQueryTest
             Assert.IsNotNull(gr);
             Assert.AreEqual("External walls above ground floor", gr.Description.ToString());
             Assert.AreEqual(4, gr.GetGroupedObjects().Count());
+
+            //get classification
+            var classifications = model.Instances.OfType<IfcClassification>();
+            var references = model.Instances.OfType<IfcClassificationReference>();
+            Assert.IsTrue(classifications.Count() == 1);
+            Assert.IsTrue(references.Count() > 1);
+
+        }
+
+        [TestMethod]
+        public void AssignToClassification()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            XbimQueryParser parser = new XbimQueryParser(model);
+
+            //create data using queries
+            parser.Parse(@"
+                Create new slab 'Test slab';
+                Create new slab 'Test slab';
+                Create new slab 'Test slab';
+                Create new slab 'Test slab';
+
+                Create classification NRM;
+                $foundationsClas is every classification code '01.01';
+                $foundations is every slab;
+                Add $foundations to $foundationsClas;
+            ");
+
+            var clRef = parser.Results["$foundationsClas"].FirstOrDefault() as IfcClassificationReference;
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.IsNotNull(clRef);
+
+            //referenced elements
+            var rel = model.Instances.Where<IfcRelAssociatesClassification>(r => r.RelatingClassification as IfcClassificationReference == clRef).FirstOrDefault();
+            var elements = rel.RelatedObjects;
+            Assert.IsTrue(elements.Count == 4);
         }
 
         [TestMethod]

@@ -81,6 +81,7 @@
     <Compile Include="CalendarDateExtensions.cs" />
     <Compile Include="CartesianPointExtensions.cs" />
     <Compile Include="CartesianTransformationOperatorExtensions.cs" />
+    <Compile Include="ClassificationNotationSelectExtension.cs" />
     <Compile Include="ClassMaker\CodeGenerator.cs" />
     <Compile Include="ClassMaker\IfcEntityAttribute.cs" />
     <Compile Include="ConnectedFaceSetExtensions.cs" />

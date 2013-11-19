@@ -30,7 +30,11 @@ namespace Xbim.COBie
         int ValidateSystemMerge(List<string> names);
         void BuildIndices();
         void SetRowsHashCode();
+        bool HasMergeHashCode(string hash, bool addHash);
         T AddNewRow();
+        void AddRow(COBieRow cOBieRow);
+        void AddRemovedRow(COBieRow cOBieRow);
+        
         
     }
 }

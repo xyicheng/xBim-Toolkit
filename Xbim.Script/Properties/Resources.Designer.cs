@@ -59,50 +59,5 @@ namespace Xbim.Script.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Code; Description; Parent
-        ///NRM; New Rules of Measurement
-        ///01; Substructure; NRM
-        ///01.01; Foundations; 01
-        ///01.02; Basement Excavation; 01
-        ///01.03; Basement Retaining Walls; 01
-        ///01.04; Ground Floor Construction; 01
-        ///02; Superstructure; NRM
-        ///02.01; Frame; 02
-        ///02.01.01; Steel Frames; 02.01
-        ///02.01.02; Space Frames/Decks; 02.01
-        ///02.01.03; Concrete Casings to Steel Frames; 02.01
-        ///02.01.04; Concrete Frames; 02.01
-        ///02.01.05; Timber Frames; 02.01
-        ///02.01.06; Specialist Frames; 02.01
-        ///02.02; Upper Floors; 02
-        ///02.03; Roof [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string NRM {
-            get {
-                return ResourceManager.GetString("NRM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &quot;Code&quot;,&quot;Description&quot;,&quot;Parent&quot;,&quot;Table&quot;,&quot;Version&quot;
-        ///&quot;A&quot;,&quot;Form of information&quot;,&quot;uniclass&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A1&quot;,&quot;General reference works&quot;,&quot;A&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A11&quot;,&quot;Dictionaries, encyclopedias&quot;,&quot;A1&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A111&quot;,&quot;Dictionaries&quot;,&quot;A11&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A112&quot;,&quot;Encyclopedias&quot;,&quot;A11&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A12&quot;,&quot;Guides, directories&quot;,&quot;A1&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A121&quot;,&quot;Guides&quot;,&quot;A12&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A122&quot;,&quot;Directories&quot;,&quot;A12&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A13&quot;,&quot;Catalogues&quot;,&quot;A1&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A14&quot;,&quot;Surveys, maps&quot;,&quot;A1&quot;,&quot;A&quot;,&quot;1.4&quot;
-        ///&quot;A15....
-        /// </summary>
-        internal static string Uniclass {
-            get {
-                return ResourceManager.GetString("Uniclass", resourceCulture);
-            }
-        }
     }
 }
