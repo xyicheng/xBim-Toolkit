@@ -423,13 +423,17 @@ namespace Xbim.Script
         {
             MethodInfo method = _model.Instances.GetType().GetMethod("OfType", new Type[] { typeof(bool) });
             MethodInfo generic = method.MakeGenericMethod(type);
-            var typeFiltered = generic.Invoke(_model.Instances, new object[] { false }) as IEnumerable<IPersistIfcEntity>;
             if (condition != null)
             {
+                var typeFiltered = generic.Invoke(_model.Instances, new object[] { true }) as IEnumerable<IPersistIfcEntity>;
                 return typeFiltered.Where(Expression.Lambda<Func<IPersistIfcEntity, bool>>(condition, _input).Compile());
             }
+            else
+            {
+                var typeFiltered = generic.Invoke(_model.Instances, new object[] { false }) as IEnumerable<IPersistIfcEntity>;
+                return typeFiltered;
+            }
 
-            return typeFiltered;
         }
 
         private IEnumerable<IPersistIfcEntity> SelectClassification(string code)
