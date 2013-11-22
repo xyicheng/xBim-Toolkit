@@ -138,7 +138,7 @@ namespace XbimQueryTest
                 {"Set name to 'New name', description to 'New description' for $wall;", true},
                 {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
                 {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
-                {"Set name to 'Some name', Description to 'Property description', fire_rating to 123.5 for $wall in property set 'PSet_Wall_Common';", true},
+                {"Set property name from property set 'Testing pSet' to 'Some name' for $wall;", true},
 
                 //element type attributes and properties
                 {"Select every wall where type name is 'Some name';",true},
@@ -151,6 +151,12 @@ namespace XbimQueryTest
                 {"Select every wall where group description is 'Some description';",true},
                 {"Select every slab where group predefined type is 'ROOF';",true},
                 {"Select every slab where group 'Fire rating' is 'Great';",true},
+
+                //specific property and attribute conditions
+                {"Select every wall where property name is 'alternative name';", true},
+                {"Select every wall where property 'Fire Protection' from property set 'PSet_WallCommon' is true;", true},
+                {"Select every wall where attribute tag is not defined;", true},
+                {"Select every wall where attribute name is 'Name as an attribute';", true},
             };
 
             Xbim.IO.XbimModel model = Xbim.IO.XbimModel.CreateTemporaryModel();
@@ -213,12 +219,16 @@ namespace XbimQueryTest
                 model.Instances.New<IfcWall>(w => {
                     w.Name = "Wall No. 1";
                     w.Description = "Some description of the wall No. 1";
+                    w.Tag = "Wall Tag";
+                    w.ObjectType = "Wall";
                 });
 
                 model.Instances.New<IfcWall>(w =>
                 {
                     w.Name = "Wall No. 2";
                     w.Description = "Some description of the wall No. 2";
+                    w.Tag = "Wall Tag No.2";
+                    w.ObjectType = "Wall";
                 });
 
                 model.Instances.New<IfcWall>(w =>
@@ -250,11 +260,19 @@ namespace XbimQueryTest
 
                 parser.Parse("Select every wall where name contains'wall';");
                 count = parser.Results["$$"].Count();
-                Assert.AreEqual(count, 3 , "There should be three wall now selected in '$$'");
+                Assert.AreEqual(3, count, "There should be three walls now selected in '$$'");
 
                 parser.Parse("Select every wall where name contains'WaLL';");
                 count = parser.Results["$$"].Count();
-                Assert.AreEqual(count, 3, "There should be three wall now selected in '$$'");
+                Assert.AreEqual(3, count, "There should be three walls now selected in '$$'");
+
+                parser.Parse("Select every wall where tag contains 'WaLL';");
+                count = parser.Results["$$"].Count();
+                Assert.AreEqual(2, count, "There should be three walls now selected in '$$'");
+
+                parser.Parse("Select every wall where attribute tag contains 'WaLL';");
+                count = parser.Results["$$"].Count();
+                Assert.AreEqual(2, count, "There should be three walls now selected in '$$'");
 
                 parser.Parse("$slabs is every slab where predefined type is 'ROOF';");
                 var roof = parser.Results["$slabs"].FirstOrDefault();
@@ -282,6 +300,8 @@ namespace XbimQueryTest
                 w1.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(true));
                 //null property value
                 w1.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                w1.SetPropertySingleValue("Special properties", "Name", new IfcLabel("Alternative"));
+                w1.SetPropertySingleValue("Special properties", "Name2", new IfcLabel("Alternative 2"));
                 var nulProp = w1.GetPropertySingleValue("Test set 1", "Null value");
                 nulProp.NominalValue = null;
 
@@ -324,6 +344,8 @@ namespace XbimQueryTest
             {"Select every wall where 'null value' is undefined;",3},
             {"Select every wall where 'null value' = null;",3},
             {"Select every wall where 'null value' doesn't equal null;",0},
+            {"Select every wall where property name is 'alternative';",1},
+            {"Select every wall where property name from property set 'special properties' is 'alternative';",1},
             };
 
             //create parser and perform the test
@@ -430,7 +452,11 @@ namespace XbimQueryTest
             Set 'Testing not defined' to 'New label value' for $wall;
             $slab is new slab 'Roof slab';
             Set predefined type to 'roof' for $slab;
-            Set name to 'Some name', Description to 'Property description', fire_rating to 123.5 for $slab in property set 'PSet_Slab_Common';
+            Set 
+                property name from property set 'PSet_Slab_Common' to 'Some name', 
+                property Description from property set 'PSet_Slab_Common' to 'Property description', 
+                property fire_rating from property set 'PSet_Slab_Common' to 123.5 
+            for $slab;
             ");
 
             //testing object
@@ -856,7 +882,10 @@ namespace XbimQueryTest
             $building = new building with name 'Default building';
             Add $walls to $group;
             Add $walls to $building;
-            Set 'Fire protection' to 'Great', 'Warranty date' to '12/05/2016' for $walls in property set 'Testing property set';
+            Set 
+                property 'Fire protection' from property set 'Testing property set' to 'Great', 
+                property 'Warranty date' from property set 'Testing property set' to '12/05/2016' 
+            for $walls;
             
             $test1 is every wall where (description contains cat OR description contains cow) AND description contains dog;
             ");

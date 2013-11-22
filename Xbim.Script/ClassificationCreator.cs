@@ -28,7 +28,7 @@ namespace Xbim.Script
             string clasPath = null;
             foreach (var f in dir)
             {
-                if (Path.GetFileNameWithoutExtension(f) == classificationName)
+                if (Path.GetFileNameWithoutExtension(f).ToLower() == classificationName.ToLower())
                 {
                     clasPath = f;
                     break;

@@ -103,9 +103,11 @@ namespace Xbim.Ifc2x3.Extensions
         /// <param name="obj"></param>
         /// <param name="pSetName"></param>
         /// <returns></returns>
-        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName)
+        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, bool caseSensitive = true)
         {
-            IfcRelDefinesByProperties rel= obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName).FirstOrDefault();
+            IfcRelDefinesByProperties rel = caseSensitive ?
+                obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName).FirstOrDefault()
+                : obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name.ToString().ToLower() == pSetName.ToLower()).FirstOrDefault();
             if (rel != null) return rel.RelatingPropertyDefinition as IfcPropertySet;
             else return null;
         }
@@ -320,9 +322,11 @@ namespace Xbim.Ifc2x3.Extensions
                 && r.RelatedBuildingElement != null).Select(rsb => rsb.RelatedBuildingElement).Distinct();
         }
 
-        public static IfcElementQuantity GetElementQuantity(this IfcObject elem, string pSetName)
+        public static IfcElementQuantity GetElementQuantity(this IfcObject elem, string pSetName, bool caseSensitive = true)
         {
-            IfcRelDefinesByProperties rel = elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault();
+            IfcRelDefinesByProperties rel = caseSensitive ?
+                elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault()
+                : elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name.ToString().ToLower() == pSetName.ToLower() && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault();
             if (rel != null) return rel.RelatingPropertyDefinition as IfcElementQuantity;
             else return null;
         }

@@ -113,20 +113,18 @@ namespace Xbim.Ifc2x3.Extensions
         }
 
         public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, IModel model,
-                                                                          string pSetName)
+                                                                          string pSetName, bool caseSensitive = true)
         {
-            IfcExtendedMaterialProperties result =
-                model.Instances.Where<IfcExtendedMaterialProperties>(
-                    pSet => pSet.Name == pSetName && pSet.Material == material).FirstOrDefault();
-            IEnumerable<IfcExtendedMaterialProperties> resultTemp =
-                model.Instances.OfType<IfcExtendedMaterialProperties>();
+            IfcExtendedMaterialProperties result = caseSensitive ?
+                model.Instances.Where<IfcExtendedMaterialProperties>(pSet => pSet.Name == pSetName && pSet.Material == material).FirstOrDefault() :
+                model.Instances.Where<IfcExtendedMaterialProperties>(pSet => pSet.Name.ToString().ToLower() == pSetName.ToLower() && pSet.Material == material).FirstOrDefault();
             return result;
         }
 
-        public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, string pSetName)
+        public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, string pSetName, bool caseSensitive = true)
         {
             IModel model = material.ModelOf;
-            return GetExtendedProperties(material, model, pSetName);
+            return GetExtendedProperties(material, model, pSetName, caseSensitive);
         }
 
         public static List<IfcExtendedMaterialProperties> GetAllExtendedPropertySets(this IfcMaterial material,

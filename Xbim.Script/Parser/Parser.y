@@ -50,6 +50,8 @@
 %token  ORGANIZATION
 %token  OWNER
 %token  CODE
+%token  ATTRIBUTE
+%token  PROPERTY
 
 /*operations and keywords*/
 %token  WHERE
@@ -126,7 +128,6 @@ expression
 
 attr_setting
 	: SET value_setting_list FOR IDENTIFIER								{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)));}
-	| SET value_setting_list FOR IDENTIFIER IN PROPERTY_SET STRING		{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)), $7.strVal);}
 	;
 
 value_setting_list
@@ -135,8 +136,7 @@ value_setting_list
 	;
 
 value_setting
-	: attribute TO value					{$$.val = GenerateSetExpression($1.strVal, $3.val);}
-	| STRING TO value						{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	: attrOrProp TO value					{$$.val = GenerateSetExpression($1.strVal, $3.val, (Tokens)($1.val));}
 	| MATERIAL TO IDENTIFIER				{$$.val = GenerateSetMaterialExpression($3.strVal);}
 	;	
 
@@ -159,7 +159,7 @@ model_actions
 	| VALIDATE MODEL																			{ValidateModel();}
 	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
 	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
-	/* | COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);} */
+	/* | COPY IDENTIFIER TO MODEL STRING														{CopyToModel($2.strVal, $5.strVal);} */
 	;
 
 variables_actions
@@ -233,27 +233,14 @@ conditions
 	
 condition
 	: 
-	| attributeCondition					{$$.val = $1.val;}
 	| materialCondition						{$$.val = $1.val;}
 	| typeCondition							{$$.val = $1.val;}
-	| propertyCondition						{$$.val = $1.val;}
 	| groupCondition						{$$.val = $1.val;}
 	| spatialCondition						{$$.val = $1.val;}
 	| modelCondition						{$$.val = $1.val;}
 	| existanceCondition					{$$.val = $1.val;}
+	| attrOrPropCondition					{$$.val = $1.val;}
 	;
-
-attributeCondition	
-	: attribute op_bool STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
-	| attribute op_bool NONDEF				{$$.val = GenerateAttributeCondition($1.strVal, null, ((Tokens)($2.val)));}
-	| attribute op_cont STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
-	;
-
-attribute
-	: NAME						{$$.strVal = "Name";}
-	| DESCRIPTION				{$$.strVal = "Description";}
-	| PREDEFINED_TYPE			{$$.strVal = "PredefinedType";}
-	;	
 	
 materialCondition	
 	: MATERIAL op_bool STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
@@ -270,29 +257,51 @@ typeCondition
 	| TYPE op_bool NONDEF				{$$.val = GenerateTypeObjectTypeCondition(null, ((Tokens)($2.val)));}
 	| TYPE OP_NEQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_EQ);}
 	| TYPE OP_EQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_NEQ);}
-	| TYPE propertyCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
-	| TYPE attributeCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
+	| TYPE attrOrPropCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
 	;
 
 groupCondition
-	: GROUP propertyCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
-	| GROUP attributeCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
+	: GROUP attrOrPropCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
 	;
 
-propertyCondition	
-	: STRING op_bool    INTEGER			{$$.val = GeneratePropertyCondition($1.strVal, $3.intVal, ((Tokens)($2.val)));}
-	| STRING op_num_rel INTEGER			{$$.val = GeneratePropertyCondition($1.strVal, $3.intVal, ((Tokens)($2.val)));}
-	
-	| STRING  op_bool    DOUBLE			{$$.val = GeneratePropertyCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)));}
-	| STRING op_num_rel DOUBLE			{$$.val = GeneratePropertyCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)));}
-	
-	| STRING op_bool STRING				{$$.val = GeneratePropertyCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
-	| STRING op_cont STRING				{$$.val = GeneratePropertyCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
-	
-	| STRING op_bool BOOLEAN			{$$.val = GeneratePropertyCondition($1.strVal, $3.boolVal, ((Tokens)($2.val)));}
-    | STRING op_bool NONDEF				{$$.val = GeneratePropertyCondition($1.strVal, null, ((Tokens)($2.val)));}
-    | STRING OP_NEQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_EQ);}
-    | STRING OP_EQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_NEQ);}
+property
+	: PROPERTY STRING							{$$.strVal = $2.strVal;}
+	| PROPERTY NAME								{$$.strVal = "Name";}
+	| PROPERTY DESCRIPTION						{$$.strVal = "Description";}
+	| PROPERTY PREDEFINED_TYPE					{$$.strVal = "PredefinedType";}
+	| property FROM PROPERTY_SET STRING			{$$.strVal = $4.strVal + "\n" + $1.strVal;}
+	;
+
+attribute
+	: NAME							{$$.strVal = "Name";}
+	| DESCRIPTION					{$$.strVal = "Description";}
+	| PREDEFINED_TYPE				{$$.strVal = "PredefinedType";}
+	| ATTRIBUTE STRING				{$$.strVal = $2.strVal;}
+	| ATTRIBUTE NAME				{$$.strVal = "Name";}
+	| ATTRIBUTE DESCRIPTION			{$$.strVal = "Description";}
+	| ATTRIBUTE PREDEFINED_TYPE		{$$.strVal = "PredefinedType";}
+	;	
+
+attrOrProp
+	: STRING		{$$.strVal = $1.strVal; $$.val = Tokens.STRING;}
+	| property		{$$.strVal = $1.strVal; $$.val = Tokens.PROPERTY;}
+	| attribute		{$$.strVal = $1.strVal; $$.val = Tokens.ATTRIBUTE;}
+	;
+
+attrOrPropCondition	
+	: attrOrProp op_bool    INTEGER			{$$.val = GenerateValueCondition($1.strVal, $3.intVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	| attrOrProp op_num_rel INTEGER			{$$.val = GenerateValueCondition($1.strVal, $3.intVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	  
+	| attrOrProp  op_bool    DOUBLE			{$$.val = GenerateValueCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	| attrOrProp op_num_rel DOUBLE			{$$.val = GenerateValueCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	  
+	| attrOrProp op_bool STRING				{$$.val = GenerateValueCondition($1.strVal, $3.strVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	| attrOrProp op_cont STRING				{$$.val = GenerateValueCondition($1.strVal, $3.strVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	  
+	| attrOrProp op_bool BOOLEAN			{$$.val = GenerateValueCondition($1.strVal, $3.boolVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+    | attrOrProp op_bool NONDEF				{$$.val = GenerateValueCondition($1.strVal, null, ((Tokens)($2.val)), (Tokens)($1.val));}
+    | attrOrProp OP_NEQ DEFINED				{$$.val = GenerateValueCondition($1.strVal, null, Tokens.OP_EQ, (Tokens)($1.val));}
+    | attrOrProp OP_EQ DEFINED				{$$.val = GenerateValueCondition($1.strVal, null, Tokens.OP_NEQ, (Tokens)($1.val));}
 	;
 
 spatialCondition

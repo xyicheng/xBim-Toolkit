@@ -151,6 +151,8 @@
 "layer_set"	|
 "layerset"		{ return (int)Tokens.LAYER_SET; }
 "code"		{ return (int)Tokens.CODE; }
+"property"		{ return (int)Tokens.PROPERTY; }
+"attribute"		{ return (int)Tokens.ATTRIBUTE; }
 
 "null" |
 "undefined" |

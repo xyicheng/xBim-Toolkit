@@ -119,46 +119,57 @@ namespace Xbim.Script
         #endregion
 
         #region Attribute and property conditions
-        private Expression GenerateAttributeCondition(string attribute, object value, Tokens condition)
-        {
-            var attrNameExpr = Expression.Constant(attribute);
-            var valExpr = Expression.Constant(value, typeof(object));
-            var condExpr = Expression.Constant(condition);
-            var thisExpr = Expression.Constant(this);
-
-            var evaluateMethod = GetType().GetMethod("EvaluateAttributeCondition", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            return Expression.Call(thisExpr, evaluateMethod, _input, attrNameExpr, valExpr, condExpr);
-        }
-
-        private Expression GeneratePropertyCondition(string property, object value, Tokens condition)
+        private Expression GenerateValueCondition(string property, object value, Tokens condition, Tokens type)
         {
             var propNameExpr = Expression.Constant(property);
             var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
             var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluatePropertyCondition", BindingFlags.Instance | BindingFlags.NonPublic);
+            string method = null;
+            switch (type)
+            {
+                case Tokens.STRING:
+                    method = "EvaluateValueCondition";
+                    break;
+                case Tokens.PROPERTY:
+                    method = "EvaluatePropertyCondition";
+                    break;
+                case Tokens.ATTRIBUTE:
+                    method = "EvaluateAttributeCondition";
+                    break;
+                default:
+                    throw new ArgumentException("Unexpected value of the 'type'. Expected values: STRING, PROPERTY, ATTRIBUTE.");
+            }
+
+            var evaluateMethod = GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
 
             return Expression.Call(thisExpr, evaluateMethod, _input, propNameExpr, valExpr, condExpr);
         }
 
+        private bool EvaluateValueCondition(IPersistIfcEntity input, string propertyName, object value, Tokens condition)
+        {
+            //try to get attribute
+            var attr = GetAttributeValue(propertyName, input);
+            var prop = attr as IfcValue;
+            
+            //try to get property if attribute doesn't exist
+            if (prop == null)
+             prop = GetPropertyValue(propertyName, input);
+
+            return EvaluateValue(prop, value, condition);
+        }
+
         private bool EvaluatePropertyCondition(IPersistIfcEntity input, string propertyName, object value, Tokens condition)
         {
-            var prop = GetProperty(propertyName, input);
-            //try to get attribute if any exist with this name
-            if (prop == null)
-            {
-                var attr = GetAttributeValue(propertyName, input);
-                prop = attr as IfcValue;
-            }
-            return EvaluateValueCondition(prop, value, condition);
+            var prop = GetPropertyValue(propertyName, input);
+            return EvaluateValue(prop, value, condition);
         }
 
         private bool EvaluateAttributeCondition(IPersistIfcEntity input, string attribute, object value, Tokens condition)
         {
             var attr = GetAttributeValue(attribute, input);
-            return EvaluateValueCondition(attr, value, condition);
+            return EvaluateValue(attr, value, condition);
         }
         #endregion
 
@@ -180,7 +191,7 @@ namespace Xbim.Script
             }
         }
 
-        private bool EvaluateValueCondition(object ifcVal, object val, Tokens condition)
+        private bool EvaluateValue(object ifcVal, object val, Tokens condition)
         {
             //special handling for null value comparison
             if (val == null || ifcVal == null)
@@ -217,8 +228,12 @@ namespace Xbim.Script
             switch (condition)
             {
                 case Tokens.OP_EQ:
+                    if (left is string  && right is string)
+                        return ((string)left).ToLower() == ((string)right).ToLower();
                     return left.Equals(right);
                 case Tokens.OP_NEQ:
+                    if (left is string && right is string)
+                        return ((string)left).ToLower() != ((string)right).ToLower();
                     return !left.Equals(right);
                 case Tokens.OP_GT:
                     result = GreaterThan(left, right);
@@ -290,62 +305,139 @@ namespace Xbim.Script
             return pInfo.GetValue(entity, null);
         }
 
-        private static IfcValue GetProperty(string name, IPersistIfcEntity entity)
+        private static PropertyInfo GetPropertyInfo(string name, IPersistIfcEntity entity, out object propertyObject)
         {
-            Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> pSets = null;
-            IEnumerable<IfcPhysicalSimpleQuantity> quants = null;
+            //try to get the name of the pSet if it is encoded in there
+            var split = name.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string pSetName = null;
+            if (split.Count() == 2)
+            {
+                pSetName = split[0];
+                name = split[1];
+            }
+            var specificPSet = pSetName != null;
+
+            List<IfcPropertySet> pSets = null;
+            IEnumerable<IfcExtendedMaterialProperties> pSetsMaterial = null;
+            IEnumerable<IfcElementQuantity> elQuants = null;
+            IfcPropertySingleValue property = null;
+            IfcPhysicalSimpleQuantity quantity = null;
+            IfcPropertySet ps = null;
+            IfcElementQuantity eq = null;
+            IfcExtendedMaterialProperties eps = null;
 
             IfcObject obj = entity as IfcObject;
             if (obj != null)
             {
-                quants = obj.GetAllPhysicalSimpleQuantities();
-                pSets = obj.GetAllPropertySingleValues();
+                if (specificPSet)
+                {
+                    ps = obj.GetPropertySet(pSetName);
+                    eq = obj.GetElementQuantity(pSetName);
+                }
+                pSets =  ps == null ? obj.GetAllPropertySets() : new List<IfcPropertySet>(){ps};
+                elQuants = eq == null ? obj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq };
             }
             IfcTypeObject typeObj = entity as IfcTypeObject;
             if (typeObj != null)
             {
-                pSets = typeObj.GetAllPropertySingleValues();
-                quants = typeObj.GetAllPhysicalSimpleQuantities();
+                if (specificPSet)
+                {
+                    ps = typeObj.GetPropertySet(pSetName);
+                    eq = typeObj.GetElementQuantity(pSetName);
+                }
+                pSets = ps == null ? typeObj.GetAllPropertySets() : new List<IfcPropertySet>() { ps };
+                elQuants = eq == null ? typeObj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq};
             }
             IfcMaterial material = entity as IfcMaterial;
             if (material != null)
             {
-                pSets = material.GetAllPropertySingleValues();
+                if (specificPSet)
+                    eps = material.GetExtendedProperties(pSetName);
+                pSetsMaterial = eps == null ? material.GetAllPropertySets() : new List<IfcExtendedMaterialProperties>() { eps };
             }
 
             if (pSets != null)
                 foreach (var pSet in pSets)
                 {
-                    foreach (var prop in pSet.Value)
+                    foreach (var prop in pSet.HasProperties)
                     {
-                        if (prop.Key.ToString().ToLower() == name.ToLower()) return prop.Value;
+                        if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
                     }
                 }
-            if (quants != null)
-            {
-                var quant = quants.Where(q => q.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
-                if (quant != null)
+            if (pSetsMaterial != null)
+                foreach (var pSet in pSetsMaterial)
                 {
-                    var a = quant as IfcQuantityArea;
-                    if (a != null) return a.AreaValue;
+                    foreach (var prop in pSet.ExtendedProperties)
+                    {
+                        if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
+                    }
+                }
+            if (elQuants != null)
+                foreach (var quant in elQuants)
+                {
+                    foreach (var item in quant.Quantities)
+                    {
+                        if (item.Name.ToString().ToLower() == name.ToLower()) quantity = item as IfcPhysicalSimpleQuantity;
+                    }
+                }
 
-                    var c = quant as IfcQuantityCount;
-                    if (c != null) return c.CountValue;
 
-                    var l = quant as IfcQuantityLength;
-                    if (l != null) return l.LengthValue;
+            //set property
+            if (property != null)
+            {
+                propertyObject = property;
+                return property.GetType().GetProperty("NominalValue");
+            }
 
-                    var t = quant as IfcQuantityTime;
-                    if (t != null) return t.TimeValue;
-
-                    var v = quant as IfcQuantityVolume;
-                    if (v != null) return v.VolumeValue;
-
-                    var w = quant as IfcQuantityWeight;
-                    if (w != null) return w.WeightValue;
+            //set simple quantity
+            else if (quantity != null)
+            {
+                PropertyInfo info = null;
+                var qType = quantity.GetType();
+                switch (qType.Name)
+                {
+                    case "IfcQuantityLength":
+                        info = qType.GetProperty("LengthValue");
+                        break;
+                    case "IfcQuantityArea":
+                        info = qType.GetProperty("AreaValue");
+                        break;
+                    case "IfcQuantityVolume":
+                        info = qType.GetProperty("VolumeValue");
+                        break;
+                    case "IfcQuantityCount":
+                        info = qType.GetProperty("CountValue");
+                        break;
+                    case "IfcQuantityWeight":
+                        info = qType.GetProperty("WeightValue");
+                        break;
+                    case "IfcQuantityTime":
+                        info = qType.GetProperty("TimeValue");
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+                if (info != null)
+                {
+                    propertyObject = quantity;
+                    return info;
                 }
             }
+
+            propertyObject = null;
             return null;
+        }
+
+
+        private static IfcValue GetPropertyValue(string name, IPersistIfcEntity entity)
+        {
+            object pObject = null;
+            var pInfo = GetPropertyInfo(name, entity, out pObject);
+
+            if (pInfo == null) return null;
+
+            var result = pInfo.GetValue(pObject, null);
+            return result as IfcValue;
         }
 
 
@@ -415,7 +507,7 @@ namespace Xbim.Script
         private IEnumerable<IPersistIfcEntity> Select(Type type, string name)
         {
             if (!typeof(IfcRoot).IsAssignableFrom(type)) return new IPersistIfcEntity[]{};
-            Expression expression = GenerateAttributeCondition("Name", name, Tokens.OP_EQ);
+            Expression expression = GenerateValueCondition("Name", name, Tokens.OP_EQ, Tokens.ATTRIBUTE);
             return Select(type, expression);
         }
 
@@ -785,7 +877,7 @@ namespace Xbim.Script
                             //get attribute
                             var attr = GetAttributeValue(name, entity);
                             if (attr == null)
-                                attr = GetProperty(name, entity);
+                                attr = GetPropertyValue(name, entity);
                             if (attr != null)
                                 line += attr.ToString() + "; ";
                             else
@@ -1109,13 +1201,9 @@ namespace Xbim.Script
         #endregion
 
         #region Objects manipulation
-        private static string _actualPsetName = null;
-
-        private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions, string pSetName = null)
+        private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions)
         {
-            _actualPsetName = pSetName;
             if (identifier == null || expressions == null) throw new ArgumentNullException();
-            
 
             Action<string, IEnumerable<Expression>> perform = (ident, exprs) => {
                 var entities = _variables.GetEntities(ident);
@@ -1144,168 +1232,106 @@ namespace Xbim.Script
                 }
         }
 
-        private Expression GenerateSetExpression(string attrName, object newVal)
+        private Expression GenerateSetExpression(string attrName, object newVal, Tokens type)
         {
             var nameExpr = Expression.Constant(attrName);
             var valExpr = Expression.Convert(Expression.Constant(newVal), typeof(object));
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("SetAttribute", BindingFlags.Static | BindingFlags.NonPublic);
-            return Expression.Call(null, evaluateMethod, _input, nameExpr, valExpr);
+            string methodName = null;
+            switch (type)
+            {
+                case Tokens.STRING:
+                    methodName = "SetAttributeOrProperty";
+                    break;
+                case Tokens.PROPERTY:
+                    methodName = "SetProperty";
+                    break;
+                case Tokens.ATTRIBUTE:
+                    methodName = "SetAttribute";
+                    break;
+                default:
+                    throw new ArgumentException("Unexpected value of the type. STRING, PROPERTY and ATTRIBUTE tokens expected only.");
+            }
+
+            var evaluateMethod = GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+            return Expression.Call(thisExpr, evaluateMethod, _input, nameExpr, valExpr);
         }
 
-        private static void SetAttribute(IPersistIfcEntity input, string attrName, object newVal)
+        private void SetAttributeOrProperty(IPersistIfcEntity input, string attrName, object newVal)
+        {
+            //try to set attribute as a priority
+            var attr = GetAttributeInfo(attrName, input);
+            if (attr != null)
+                SetValue(attr, input, newVal);
+            else
+                //set property if no such an attribute exist
+                SetProperty(input, attrName, newVal);
+        }
+
+        private void SetAttribute(IPersistIfcEntity input, string attrName, object newVal)
         {
             if (input == null) return;
 
-            //if property set is specified don't even try to set attribute
-            if (_actualPsetName != null)
-            {
-                SetProperty(input, attrName, newVal);
-                return;
-            }
-
-            var attr = input.GetType().GetProperty(attrName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-            if (attr == null)
-            {
-                SetProperty(input, attrName, newVal);
-                return;
-            }
+            var attr = GetAttributeInfo(attrName, input);
             SetValue(attr, input, newVal);
         }
 
-        private static void SetProperty(IPersistIfcEntity entity, string name, object newVal)
+        private void SetProperty(IPersistIfcEntity entity, string name, object newVal)
         {
-            List<IfcPropertySet> pSets = null;
-            IEnumerable<IfcExtendedMaterialProperties> pSetsMaterial = null;
-            IEnumerable<IfcElementQuantity> elQuants = null;
-            IfcPropertySingleValue property = null;
-            IfcPhysicalSimpleQuantity quantity = null;
-            IfcPropertySet ps = null;
-            IfcElementQuantity eq = null;
-            IfcExtendedMaterialProperties eps = null;
-
-            IfcObject obj = entity as IfcObject;
-            if (obj != null)
+            //try to get existing property
+            object pObject = null;
+            var pInfo = GetPropertyInfo(name, entity, out pObject);
+            if (pInfo != null)
             {
-                if (_actualPsetName != null)
-                {
-                    ps = obj.GetPropertySet(_actualPsetName);
-                    eq = obj.GetElementQuantity(_actualPsetName);
-                }
-                pSets =  ps == null ? obj.GetAllPropertySets() : new List<IfcPropertySet>(){ps};
-                elQuants = eq == null ? obj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq };
-            }
-            IfcTypeObject typeObj = entity as IfcTypeObject;
-            if (typeObj != null)
-            {
-                if (_actualPsetName != null)
-                {
-                    ps = typeObj.GetPropertySet(_actualPsetName);
-                    eq = typeObj.GetElementQuantity(_actualPsetName);
-                }
-                pSets = ps == null ? typeObj.GetAllPropertySets() : new List<IfcPropertySet>() { ps };
-                elQuants = eq == null ? typeObj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq};
-            }
-            IfcMaterial material = entity as IfcMaterial;
-            if (material != null)
-            {
-                if (_actualPsetName != null)
-                    eps = material.GetExtendedProperties(_actualPsetName);
-                pSetsMaterial = eps == null ? material.GetAllPropertySets() : new List<IfcExtendedMaterialProperties>() { eps };
-            }
-
-            if (pSets != null)
-                foreach (var pSet in pSets)
-                {
-                    foreach (var prop in pSet.HasProperties)
-                    {
-                        if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
-                    }
-                }
-            if (pSetsMaterial != null)
-                foreach (var pSet in pSetsMaterial)
-                {
-                    foreach (var prop in pSet.ExtendedProperties)
-                    {
-                        if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
-                    }
-                }
-            if (elQuants != null)
-                foreach (var quant in elQuants)
-                {
-                    foreach (var item in quant.Quantities)
-                    {
-                        if (item.Name.ToString().ToLower() == name.ToLower()) quantity = item as IfcPhysicalSimpleQuantity;
-                    }
-                }
-
-            PropertyInfo info = null;
-
-            //set property
-            if (property != null)
-            {
-                info = property.GetType().GetProperty("NominalValue");
-                SetValue(info, property, newVal);
-            }
-
-            //set simple quantity
-            else if (quantity != null)
-            {
-                var qType = quantity.GetType();
-                switch (qType.Name)
-                {
-                    case "IfcQuantityLength":
-                        info = qType.GetProperty("LengthValue");
-                        break;
-                    case "IfcQuantityArea":
-                        info = qType.GetProperty("AreaValue");
-                        break;
-                    case "IfcQuantityVolume":
-                        info = qType.GetProperty("VolumeValue");
-                        break;
-                    case "IfcQuantityCount":
-                        info = qType.GetProperty("CountValue");
-                        break;
-                    case "IfcQuantityWeight":
-                        info = qType.GetProperty("WeightValue");
-                        break;
-                    case "IfcQuantityTime":
-                        info = qType.GetProperty("TimeValue");
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                if (info != null)
-                    SetValue(info, quantity, newVal);
-                else
-                    throw new Exception("Failed to find the PropertyInfo of the simple element quantity.");
+            SetValue(pInfo, pObject, newVal);
             }
 
             //create new property if no such a property or quantity exists
             else
             {
-                string pSetName = _actualPsetName ?? Defaults.DefaultPSet;
+                //try to get the name of the pSet if it is encoded in there
+                var split = name.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                string pSetName = null;
+                if (split.Count() == 2)
+                {
+                    pSetName = split[0];
+                    name = split[1];
+                }
+
+                //prepare potential objects
+                IfcObject obj = entity as IfcObject;
+                IfcTypeObject typeObj = entity as IfcTypeObject;
+                IfcMaterial material = entity as IfcMaterial;
+
+                //set new property in specified or default property set
+                pSetName = pSetName ?? Defaults.DefaultPSet;
                 IfcValue val = null;
                 if (newVal != null)
                     val = CreateIfcValueFromBasicValue(newVal, name);
-                
+
                 if (obj != null)
                 {
                     obj.SetPropertySingleValue(pSetName, name, val);
                 }
-                if (typeObj != null)
+                else if (typeObj != null)
                 {
                     typeObj.SetPropertySingleValue(pSetName, name, val);
-                }
-                if (material != null)
+                } 
+                else if (material != null)
                 {
                     material.SetExtendedSingleValue(pSetName, name, val);
                 }
             }
         }
 
-        private static void SetValue(PropertyInfo info, object instance, object value)
+        private void SetValue(PropertyInfo info, object instance, object value)
         {
+            if (info == null)
+            {
+                Scanner.yyerror("It is not possible to set value of the property or attribute which doesn't exist.");
+                return;
+            }
             try
             {
                 if (value != null)
@@ -1333,7 +1359,7 @@ namespace Xbim.Script
             }
             catch (Exception)
             {
-                throw new Exception("Value "+ (value != null ? value.ToString() : "NULL") +" could not be set to "+ info.Name+" of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
+                throw new Exception("Value "+ (value != null ? value.ToString() : "NULL") +" could not have been set to "+ info.Name + " of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
             }
             
         }
