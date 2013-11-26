@@ -1096,5 +1096,40 @@ namespace XbimQueryTest
             Assert.AreEqual(3, walls.Count());
             Assert.AreEqual(2, slabs.Count());
         }
+
+
+        [TestMethod]
+        public void ClassificationSelectionTest()
+        {
+            var parser = new XbimQueryParser();
+            parser.Parse(@"
+                Create classification 'NRM';
+                Create new wall 'Wall No.1';
+                Create new wall 'Wall No.2';
+                Create new wall 'Wall No.3';
+                Create new wall 'Wall No.4';
+                Create new wall 'Wall No.5';
+                
+                $node1 is every classification code '01.03';
+                $node2 is every classification code '02.05';
+                $walls1 is every wall where name contains '1' or name contains '2';
+                $walls2 is every wall where name contains '2' or name contains '3';
+                Add $walls1 to $node1;
+                Add $walls2 to $node2;
+                
+                $test1 is every wall where classification code is '01.03';
+                $test2 is every wall where classification code is '02.05';
+                $test3 is every wall where classification code is not '01.03';
+                $test4 is every wall where classification code is not defined;
+                $test5 is every wall where classification code is defined;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            Assert.AreEqual(2, parser.Results["$test1"].Count());
+            Assert.AreEqual(2, parser.Results["$test2"].Count());
+            Assert.AreEqual(3, parser.Results["$test3"].Count());
+            Assert.AreEqual(2, parser.Results["$test4"].Count());
+            Assert.AreEqual(3, parser.Results["$test5"].Count());
+        }
     }
 }

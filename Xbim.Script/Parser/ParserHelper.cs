@@ -622,13 +622,14 @@ namespace Xbim.Script
         {
             var function = Expression.Lambda<Func<IPersistIfcEntity, bool>>(expression, _input).Compile();
             var fceExpr = Expression.Constant(function);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateTypeCondition", BindingFlags.Static | BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluateTypeCondition", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            return Expression.Call(null, evaluateMethod, _input, fceExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, fceExpr);
         }
 
-        private static bool EvaluateTypeCondition(IPersistIfcEntity input, Func<IPersistIfcEntity, bool> function)
+        private bool EvaluateTypeCondition(IPersistIfcEntity input, Func<IPersistIfcEntity, bool> function)
         {
             var obj = input as IfcObject;
             if (obj == null) return false;
@@ -639,6 +640,91 @@ namespace Xbim.Script
             return function(defObj);
         }
 
+        #endregion
+
+        #region Classification conditions
+
+        private Expression GenerateClassificationCondition(string code, Tokens condition)
+        {
+            var codeExpr = Expression.Constant(code, typeof(String));
+            var condExpr = Expression.Constant(condition);
+            var thisExpr = Expression.Constant(this);
+
+            var evaluateMethod = GetType().GetMethod("EvaluateClassificationCondition", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            return Expression.Call(thisExpr, evaluateMethod, _input, codeExpr, condExpr);
+        }
+
+        private bool EvaluateClassificationCondition(IPersistIfcEntity input, string code, Tokens condition)
+        {
+            var root = input as IfcRoot;
+            if (root == null)
+            {
+                Scanner.yyerror("Object of type {0} can't have a classification associated.", input.GetType().Name);
+                return false;
+            }
+
+            var codes = new List<string>();
+            var model = input.ModelOf;
+            var rels = model.Instances.Where<IfcRelAssociatesClassification>(r => r.RelatedObjects.Contains(input));
+            foreach (var rel in rels)
+            {
+                string classCode = null;
+                var reference = rel.RelatingClassification as IfcClassificationReference;
+                if (reference != null) 
+                    classCode = reference.ItemReference;
+                
+                var notation = rel.RelatingClassification as IfcClassificationNotation;
+                if (notation != null)
+                    classCode = ConcatClassFacets(notation.NotationFacets);
+
+                if (!String.IsNullOrEmpty( classCode))
+                {
+                    codes.Add(classCode.ToLower());
+                }
+            }
+
+            if (code == null)
+            {
+                switch (condition)
+                {
+                    case Tokens.OP_EQ:
+                        return codes.Count == 0; 
+                    case Tokens.OP_NEQ:
+                        return codes.Count != 0;
+                    default:
+                        throw new ArgumentException("Unexpected value of the 'condition' variable. OP_EQ or OP_NEQ expected only.");
+                }
+            }
+            else
+            {
+                code = code.ToLower(); //normalization for case insensitive search
+                switch (condition)
+                {
+                    case Tokens.OP_EQ:
+                        return codes.Contains(code);
+                    case Tokens.OP_NEQ:
+                        return !codes.Contains(code);
+                    default:
+                        throw new ArgumentException("Unexpected value of the 'condition' variable. OP_EQ or OP_NEQ expected only.");
+                }
+            }
+
+            return false;
+        }
+
+        private string ConcatClassFacets(IEnumerable<IfcClassificationNotationFacet> facets)
+        {
+            var result = "";
+            foreach (var item in facets)
+            {
+                result += item.NotationValue + "-";
+            }
+            //trim from the last '-'
+            result = result.Trim('-');
+            return result;
+        }
+        
         #endregion
 
         #region Material conditions

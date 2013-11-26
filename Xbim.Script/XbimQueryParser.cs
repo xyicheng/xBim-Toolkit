@@ -133,10 +133,27 @@ namespace Xbim.Script
         /// <returns>False if parsing failed, true otherwise.</returns>
         public bool Parse()
         {
+            //no protection in debug mode so that it is easier to find problems
+#if DEBUG
             ResetSource();
             var res = _parser.Parse();
             ScriptParsed();
             return res;
+#else
+            try
+            {
+                ResetSource();
+                var res = _parser.Parse();
+                ScriptParsed();
+                return res;
+            }
+            catch (Exception)
+            {
+                //report error using standard error log of the scanner
+                _scanner.Errors.Add("General parser error.");
+                return false;
+            }
+#endif
         }
 
         /// <summary>
