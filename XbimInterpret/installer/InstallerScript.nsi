@@ -65,8 +65,10 @@ Section "MainSection" SEC01
   File "..\bin\Release\Xbim.IO.dll"
   File "..\bin\Release\Xbim.Script.dll"
   File "..\bin\Release\XbimInterpret.exe"
+  File "..\..\Xbim.Script\BQL_documentation.pdf"
   CreateDirectory "$SMPROGRAMS\XbimInterpret"
   CreateShortCut "$SMPROGRAMS\XbimInterpret\XbimInterpret.lnk" "$INSTDIR\XbimInterpret.exe"
+  CreateShortCut "$SMPROGRAMS\XbimInterpret\Documentation.lnk" "$INSTDIR\BQL_documentation.pdf"
   CreateShortCut "$DESKTOP\XbimInterpret.lnk" "$INSTDIR\XbimInterpret.exe"
   File "..\bin\Release\XbimInterpret.exe.config"
   File "..\bin\Release\XbimInterpret.vshost.exe"
@@ -126,9 +128,11 @@ Section Uninstall
   Delete "$INSTDIR\log4net.dll"
   Delete "$INSTDIR\ICSharpCode.SharpZipLib.dll"
   Delete "$INSTDIR\Esent.Interop.dll"
+  Delete "$INSTDIR\BQL_documentation.pdf"
 
   Delete "$SMPROGRAMS\XbimInterpret\Uninstall.lnk"
   Delete "$SMPROGRAMS\XbimInterpret\Website.lnk"
+  Delete "$SMPROGRAMS\XbimInterpret\Documentation.lnk"
   Delete "$DESKTOP\XbimInterpret.lnk"
   Delete "$SMPROGRAMS\XbimInterpret\XbimInterpret.lnk"
 

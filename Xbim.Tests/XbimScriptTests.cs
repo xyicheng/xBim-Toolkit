@@ -443,7 +443,8 @@ namespace XbimQueryTest
             parser.Parse(@"
             $wall = every wall 'Wall No.1';
             Set name to 'Changed name' for $wall;
-            Set description to null for $wall;
+            Set attribute description to null for $wall;
+            Set tag to 'Tag of the wall' for $wall;
             Set 'Testing label' to 'New label' for $wall;
             Set 'Testing length' to 123.5 for $wall;
             Set 'Testing integer' to 78 for $wall;
@@ -465,6 +466,7 @@ namespace XbimQueryTest
 
             Assert.AreEqual(0, parser.Errors.Count());
             Assert.AreEqual("Changed name", wall.Name.ToString());
+            Assert.AreEqual("Tag of the wall", wall.Tag.ToString());
             Assert.IsNull(wall.Description);
             Assert.AreEqual("New label", wall.GetPropertySingleNominalValue("Testing property set", "Testing label").ToString());
             Assert.AreEqual(123.5, wall.GetPropertySingleNominalValue("Testing property set", "Testing length").Value);

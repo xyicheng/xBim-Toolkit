@@ -43,7 +43,6 @@ namespace XbimInterpret
             }
 
 
-            Console.WriteLine("XbimInterpret is command line interface which can execute BQL script as a file or interactively line by line.");
             Console.WriteLine("Enter your commands (use 'exit' command to quit):");
             Console.Write(">>> ");
             string command = Console.ReadLine();

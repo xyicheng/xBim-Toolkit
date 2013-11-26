@@ -240,8 +240,16 @@ condition
 	| modelCondition						{$$.val = $1.val;}
 	| existanceCondition					{$$.val = $1.val;}
 	| attrOrPropCondition					{$$.val = $1.val;}
+	| classificationCondition				{$$.val = $1.val;}
 	;
-	
+
+classificationCondition
+	: CLASSIFICATION CODE op_bool STRING	{$$.val = GenerateClassificationCondition($4.strVal, (Tokens)($3.val));}
+	| CLASSIFICATION op_bool NONDEF			{$$.val = GenerateClassificationCondition(null, (Tokens)($2.val));}
+	| CLASSIFICATION OP_NEQ DEFINED			{$$.val = GenerateClassificationCondition(null, Tokens.OP_EQ);}
+	| CLASSIFICATION OP_EQ DEFINED			{$$.val = GenerateClassificationCondition(null, Tokens.OP_NEQ);}
+	;
+		
 materialCondition	
 	: MATERIAL op_bool STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
 	| MATERIAL op_cont STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
