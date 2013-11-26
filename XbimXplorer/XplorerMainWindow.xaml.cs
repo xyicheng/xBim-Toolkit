@@ -609,7 +609,7 @@ namespace XbimXplorer
             context.Model = Model;
             //set filter option
             context.Exclude = UserFilters;
-            
+
             //set the UI language to get correct resource file for template
             //if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
             //{
@@ -820,6 +820,38 @@ namespace XbimXplorer
                 UK.IsChecked = true;
                 COBieTemplate = _UKTemplate;
             }
+        }
+
+        private void OpenScriptingWindow(object sender, RoutedEventArgs e)
+        {
+            var win = new Scripting.ScriptingWindow();
+            win.Owner = this;
+
+            win.ScriptingConcrol.DataContext = ModelProvider;
+            var binding = new Binding();
+            win.ScriptingConcrol.SetBinding(ScriptingControl.ModelProperty, binding);
+
+            win.ScriptingConcrol.OnModelChangedByScript += delegate(object o, Xbim.Script.ModelChangedEventArgs arg)
+            {
+                ModelProvider.ObjectInstance = null;
+                XbimMesher.GenerateGeometry(arg.NewModel);
+                ModelProvider.ObjectInstance = arg.NewModel;
+                ModelProvider.Refresh();
+            };
+
+            win.ScriptingConcrol.OnScriptParsed += delegate(object o, Xbim.Script.ScriptParsedEventArgs arg)
+            {
+                GroupControl.Regenerate();
+                //SpatialControl.Regenerate();
+            };
+            
+
+            ScriptResults.Visibility = Visibility.Visible;
+            win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg) {
+                ScriptResults.Visibility = Visibility.Collapsed; 
+            });
+            
+            win.Show();
         }
     }
 }

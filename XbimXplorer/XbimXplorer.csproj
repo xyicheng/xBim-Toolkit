@@ -158,6 +158,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Scripting\ScriptingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Simplify\IfcSimplify.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -197,6 +201,9 @@
     <Compile Include="Querying\TreeQuery.cs" />
     <Compile Include="Querying\wdwQuery.xaml.cs">
       <DependentUpon>wdwQuery.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Scripting\ScriptingWindow.xaml.cs">
+      <DependentUpon>ScriptingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Simplify\FileTextParser.cs" />
     <Compile Include="Simplify\IfcSimplify.xaml.cs">
@@ -284,6 +291,10 @@
     <ProjectReference Include="..\Xbim.Presentation\Xbim.Presentation.csproj">
       <Project>{89f98e53-de4e-4427-8244-d5934ad08849}</Project>
       <Name>Xbim.Presentation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Script\Xbim.Script.csproj">
+      <Project>{BAE9A827-0620-4F68-A384-336A491EDD91}</Project>
+      <Name>Xbim.Script</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

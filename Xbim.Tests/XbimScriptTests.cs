@@ -11,9 +11,12 @@ using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 
 namespace XbimQueryTest
 {
+    [DeploymentItem("Classifications", "Classifications")]
     [TestClass]
     public class XbimScriptTests
     {
@@ -448,6 +451,106 @@ namespace XbimQueryTest
         }
 
         [TestMethod]
+        public void QuantitySettingTest()
+        {
+            var model = CreateQuantityModel();
+            var parser = new XbimQueryParser(model);
+            
+            //this should change all values of simple element quantities
+            parser.Parse(@"
+                $o is every wall;
+                $o is every walltype;
+                
+                Set 'Area' to 2.3, 'Count' to 2, 'Length' to 2.3, 'Time' to 2.3, 'Volume' to 2.3, 'Weight' to 2.3 for $o;
+                Dump 'Area', 'Count', 'Length', 'Time', 'Volume', 'Weight'from $o to file 'Values.txt';
+                Save model to file 'Quantities.ifc';
+            ");
+
+            //check parser errors
+            Assert.AreEqual(0, parser.Errors.Count());
+
+            IfcWall wall = model.Instances.OfType<IfcWall>().FirstOrDefault();;
+            IfcWallType wallType = model.Instances.OfType<IfcWallType>().FirstOrDefault();
+            
+            var wArea = wall.GetElementPhysicalSimpleQuantity("BasicSet", "Area") as IfcQuantityArea;
+            var wCount = wall.GetElementPhysicalSimpleQuantity("BasicSet", "Count") as IfcQuantityCount;
+            var wLength = wall.GetElementPhysicalSimpleQuantity("BasicSet", "Length") as IfcQuantityLength;
+            var wTime = wall.GetElementPhysicalSimpleQuantity("BasicSet", "Time") as IfcQuantityTime;
+            var wVolume = wall.GetElementPhysicalSimpleQuantity("BasicSet", "Volume") as IfcQuantityVolume;
+            var wWeight = wall.GetElementPhysicalSimpleQuantity("BasicSet", "Weight") as IfcQuantityWeight;
+
+            Assert.IsTrue(AlmostEqual(2.3, wArea.AreaValue));
+            Assert.IsTrue(AlmostEqual(2, wCount.CountValue));
+            Assert.IsTrue(AlmostEqual(2.3, wLength.LengthValue));
+            Assert.IsTrue(AlmostEqual(2.3, wTime.TimeValue));
+            Assert.IsTrue(AlmostEqual(2.3, wVolume.VolumeValue));
+            Assert.IsTrue(AlmostEqual(2.3, wWeight.WeightValue));
+
+            wArea = wallType.GetElementPhysicalSimpleQuantity("BasicSet", "Area") as IfcQuantityArea;
+            wCount = wallType.GetElementPhysicalSimpleQuantity("BasicSet", "Count") as IfcQuantityCount;
+            wLength = wallType.GetElementPhysicalSimpleQuantity("BasicSet", "Length") as IfcQuantityLength;
+            wTime = wallType.GetElementPhysicalSimpleQuantity("BasicSet", "Time") as IfcQuantityTime;
+            wVolume = wallType.GetElementPhysicalSimpleQuantity("BasicSet", "Volume") as IfcQuantityVolume;
+            wWeight = wallType.GetElementPhysicalSimpleQuantity("BasicSet", "Weight") as IfcQuantityWeight;
+
+            Assert.IsTrue(AlmostEqual(2.3, wArea.AreaValue));
+            Assert.IsTrue(AlmostEqual(2, wCount.CountValue));
+            Assert.IsTrue(AlmostEqual(2.3, wLength.LengthValue));
+            Assert.IsTrue(AlmostEqual(2.3, wTime.TimeValue));
+            Assert.IsTrue(AlmostEqual(2.3, wVolume.VolumeValue));
+            Assert.IsTrue(AlmostEqual(2.3, wWeight.WeightValue));
+        }
+
+        private bool AlmostEqual(double a, double b)
+        {
+            return Math.Abs(a - b) < 0.0001;
+        }
+
+        private XbimModel CreateQuantityModel()
+        {
+            var model = XbimModel.CreateTemporaryModel();
+            using (var txn = model.BeginTransaction())
+            {
+                var wall = model.Instances.New<IfcWall>(w => { w.Name = "Wall No.1"; });
+                var wallType = model.Instances.New<IfcWallType>(wt => { wt.Name = "Wall Type No.1"; });
+
+                wall.SetElementPhysicalSimpleQuantity("BasicSet", "Area", 123.5, XbimQuantityTypeEnum.AREA, null);
+                wall.SetElementPhysicalSimpleQuantity("BasicSet", "Count", 123, XbimQuantityTypeEnum.COUNT, null);
+                wall.SetElementPhysicalSimpleQuantity("BasicSet", "Length", 123.5, XbimQuantityTypeEnum.LENGTH, null);
+                wall.SetElementPhysicalSimpleQuantity("BasicSet", "Time", 123.5, XbimQuantityTypeEnum.TIME, null);
+                wall.SetElementPhysicalSimpleQuantity("BasicSet", "Volume", 123.5, XbimQuantityTypeEnum.VOLUME, null);
+                wall.SetElementPhysicalSimpleQuantity("BasicSet", "Weight", 123.5, XbimQuantityTypeEnum.WEIGHT, null);
+
+                wallType.SetElementPhysicalSimpleQuantity("BasicSet", "Area", 123.5, XbimQuantityTypeEnum.AREA, null);
+                wallType.SetElementPhysicalSimpleQuantity("BasicSet", "Count", 123, XbimQuantityTypeEnum.COUNT, null);
+                wallType.SetElementPhysicalSimpleQuantity("BasicSet", "Length", 123.5, XbimQuantityTypeEnum.LENGTH, null);
+                wallType.SetElementPhysicalSimpleQuantity("BasicSet", "Time", 123.5, XbimQuantityTypeEnum.TIME, null);
+                wallType.SetElementPhysicalSimpleQuantity("BasicSet", "Volume", 123.5, XbimQuantityTypeEnum.VOLUME, null);
+                wallType.SetElementPhysicalSimpleQuantity("BasicSet", "Weight", 123.5, XbimQuantityTypeEnum.WEIGHT, null);
+
+                txn.Commit();
+            }
+
+            return model;
+        }
+
+        [TestMethod]
+        public void QuanityConditionTest()
+        {
+            var model = CreateQuantityModel();
+            var parser = new XbimQueryParser(model);
+
+            parser.Parse(@"
+                $test1 = every wall where 'length' is 123.5 and 'area' is 123.5;
+                $test2 = every walltype where 'length' is 123.5 and 'area' is 123.5;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(1, parser.Results["$test1"].Count());
+            Assert.AreEqual(1, parser.Results["$test2"].Count());
+        }
+
+        [TestMethod]
         public void TypeConditionTest()
         {
             XbimModel model = XbimModel.CreateTemporaryModel();
@@ -698,6 +801,42 @@ namespace XbimQueryTest
             Assert.IsNotNull(gr);
             Assert.AreEqual("External walls above ground floor", gr.Description.ToString());
             Assert.AreEqual(4, gr.GetGroupedObjects().Count());
+
+            //get classification
+            var classifications = model.Instances.OfType<IfcClassification>();
+            var references = model.Instances.OfType<IfcClassificationReference>();
+            Assert.IsTrue(classifications.Count() == 1);
+            Assert.IsTrue(references.Count() > 1);
+
+        }
+
+        [TestMethod]
+        public void AssignToClassification()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            XbimQueryParser parser = new XbimQueryParser(model);
+
+            //create data using queries
+            parser.Parse(@"
+                Create new slab 'Test slab';
+                Create new slab 'Test slab';
+                Create new slab 'Test slab';
+                Create new slab 'Test slab';
+
+                Create classification NRM;
+                $foundationsClas is every classification code '01.01';
+                $foundations is every slab;
+                Add $foundations to $foundationsClas;
+            ");
+
+            var clRef = parser.Results["$foundationsClas"].FirstOrDefault() as IfcClassificationReference;
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.IsNotNull(clRef);
+
+            //referenced elements
+            var rel = model.Instances.Where<IfcRelAssociatesClassification>(r => r.RelatingClassification as IfcClassificationReference == clRef).FirstOrDefault();
+            var elements = rel.RelatedObjects;
+            Assert.IsTrue(elements.Count == 4);
         }
 
         [TestMethod]

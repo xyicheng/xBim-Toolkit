@@ -54,7 +54,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// This function will execute the script if there is any defined. 
-        /// If no sript is defined this will return empty set.
+        /// If no script is defined this will return empty set.
         /// </summary>
         /// <returns>Set of the results or empty set if there are no results or no script defined.</returns>
         public static IEnumerable<IfcObjectDefinition> ExecuteScript(this IfcGroup group)
