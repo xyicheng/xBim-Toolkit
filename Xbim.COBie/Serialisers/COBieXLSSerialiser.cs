@@ -23,6 +23,7 @@ namespace Xbim.COBie.Serialisers
         const string DefaultTemplateFileName = @"Templates\COBie-UK-2012-template.xls";
         const string InstructionsSheet = "Instruction";
         const string ErrorsSheet = "Errors";
+        const string RulesSheet = "Rules";
 
         Dictionary<COBieAllowedType, HSSFCellStyle> _cellStyles = new Dictionary<COBieAllowedType, HSSFCellStyle>();
         Dictionary<string, HSSFColor> _colours = new Dictionary<string, HSSFColor>();
@@ -41,6 +42,7 @@ namespace Xbim.COBie.Serialisers
             TemplateFileName = templateFileName;
             hasErrorLevel = typeof(COBieError).GetProperties().Where(prop => prop.Name == "ErrorLevel").Any();
             _commentCount = 0;
+            Excludes = new FilterValues();//get the rules for excludes for generating COBie
         }
 
         public string FileName { get; set; }
@@ -50,6 +52,11 @@ namespace Xbim.COBie.Serialisers
         /// COBeError has the ErrorLevel property
         /// </summary>
         private bool hasErrorLevel { get;  set; }
+
+        /// <summary>
+        /// Class holds exclude rules, now required as a tab to excel workbook
+        /// </summary>
+        public FilterValues Excludes { get; set; }
 
         /// <summary>
         /// Formats the COBie data into an Excel XLS file
@@ -76,6 +83,8 @@ namespace Xbim.COBie.Serialisers
             UpdateInstructions();
 
             ReportErrors(workbook);
+
+            ReportRules();
 
             using (FileStream exportFile = File.Open(FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
             {
@@ -369,6 +378,110 @@ namespace Xbim.COBie.Serialisers
 
         }
 
+        /// <summary>
+        /// Create a rules sheet
+        /// </summary>
+        private void ReportRules()
+        {
+            ISheet rulesSheet = XlsWorkbook.GetSheet(RulesSheet) ?? XlsWorkbook.CreateSheet(RulesSheet);
+            //Add Header
+            List<string> headings = new List<string>() {   "Component Sheet Excluded Objects",
+                                                           "Type Sheet Excluded Objects",
+                                                           "Assembly Sheet Excluded Objects",
+                                                           "Attributes Excludes All Sheets (Name Containing)",
+                                                           "Attributes Excludes All Sheets (Name Equal)",
+                                                           "Attributes Excludes All Sheets (Name Starts With)",
+                                                           "Attributes Excludes Components (Name Containing)",
+                                                           "Attributes Excludes Components (Name Equal)",
+                                                           "Attributes Excludes Facility (Name Containing)",
+                                                           "Attributes Excludes Facility (Name Equal)",
+                                                           "Attributes Excludes Floor (Name Containing)",
+                                                           "Attributes Excludes Floor (Name Equal)",
+                                                           "Attributes Excludes Space (Name Containing)",
+                                                           "Attributes Excludes Space (Name Equal)",
+                                                           "Attributes Excludes Space (PropertySet Name)",
+                                                           "Attributes Excludes Spare (Name Containing)",
+                                                           "Attributes Excludes Spare (Name Equal)",
+                                                           "Attributes Excludes Types (Name Containing)",
+                                                           "Attributes Excludes Types (Name Equal)",
+                                                           "Attributes Excludes Types (PropertySet Name)",
+                                                           "Attributes Excludes Zone (Name Containing)"
+                                                           };
+            int col = 0;
+
+            IRow excelRow = rulesSheet.GetRow(0) ?? rulesSheet.CreateRow(0);
+            foreach (string title in headings)
+            {
+                ICell excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(title);
+                col++;
+            }
+
+            WriteExcludesObjects(0, rulesSheet, Excludes.ObjectType.Component);
+            WriteExcludesObjects(1, rulesSheet, Excludes.ObjectType.Types);
+            WriteExcludesObjects(2, rulesSheet, Excludes.ObjectType.Assembly);
+
+            WriteExcludesStrings(3, rulesSheet, Excludes.Common.AttributesContain);
+            WriteExcludesStrings(4, rulesSheet, Excludes.Common.AttributesEqualTo);
+            WriteExcludesStrings(5, rulesSheet, Excludes.Common.AttributesStartWith);
+            WriteExcludesStrings(6, rulesSheet, Excludes.Component.AttributesContain);
+            WriteExcludesStrings(7, rulesSheet, Excludes.Component.AttributesEqualTo);
+            WriteExcludesStrings(8, rulesSheet, Excludes.Facility.AttributesContain);
+            WriteExcludesStrings(9, rulesSheet, Excludes.Facility.AttributesEqualTo);
+            WriteExcludesStrings(10, rulesSheet, Excludes.Floor.AttributesContain);
+            WriteExcludesStrings(11, rulesSheet, Excludes.Floor.AttributesEqualTo);
+            WriteExcludesStrings(12, rulesSheet, Excludes.Space.AttributesContain);
+            WriteExcludesStrings(13, rulesSheet, Excludes.Space.AttributesEqualTo);
+            WriteExcludesStrings(14, rulesSheet, Excludes.Space.PropertySetsEqualTo);
+            WriteExcludesStrings(15, rulesSheet, Excludes.Spare.AttributesContain);
+            WriteExcludesStrings(16, rulesSheet, Excludes.Spare.AttributesEqualTo);
+            WriteExcludesStrings(17, rulesSheet, Excludes.Types.AttributesContain);
+            WriteExcludesStrings(18, rulesSheet, Excludes.Types.AttributesEqualTo);
+            WriteExcludesStrings(19, rulesSheet, Excludes.Types.PropertySetsEqualTo);
+            WriteExcludesStrings(20, rulesSheet, Excludes.Zone.AttributesContain);
+
+            for (int c = 0; c < headings.Count; c++)
+            {
+                rulesSheet.AutoSizeColumn(c);
+            }
+        }
+
+        /// <summary>
+        /// Write object types to the excel cells
+        /// </summary>
+        /// <param name="col">column index</param>
+        /// <param name="rulesSheet">Sheet</param>
+        /// <param name="excludeObjects">List of types</param>
+        private void WriteExcludesObjects(int col, ISheet rulesSheet, List<Type> excludeObjects)
+        {
+            int row = 2;
+            foreach (Type typeobj in excludeObjects)
+            {
+                IRow excelRow = rulesSheet.GetRow(row) ?? rulesSheet.CreateRow(row);
+                ICell excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(typeobj.Name.ToString());
+                row++;
+            }
+        }
+
+        /// <summary>
+        /// Write strings to excel cells
+        /// </summary>
+        /// <param name="col">column index</param>
+        /// <param name="rulesSheet">Sheet</param>
+        /// <param name="excludeStrings">List of strings</param>
+        private void WriteExcludesStrings(int col, ISheet rulesSheet, List<string> excludeStrings)
+        {
+            int row = 2;
+            foreach (string str in excludeStrings)
+            {
+                IRow excelRow = rulesSheet.GetRow(row) ?? rulesSheet.CreateRow(row);
+                ICell excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue("\"" + str + "\"");
+                row++;
+            }
+        }
+
         
 
         private void ValidateHeaders(List<COBieColumn> columns, List<string> sheetHeaders, string sheetName)
@@ -382,12 +495,11 @@ namespace Xbim.COBie.Serialisers
             {
                 if (!columns[i].IsMatch(sheetHeaders[i]))
                 {
-                    Console.WriteLine(@"{2} column {3}
-Mismatch: {0}
-          {1}",
+                    Console.WriteLine(@"{2} column {3} Mismatch: {0} {1}",
               columns[i].ColumnName, sheetHeaders[i], sheetName, i);
                 }
             }
+
         }
 
 

@@ -138,6 +138,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialogs\COBieClassFilter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\CreateFederationWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -173,6 +177,10 @@
     </Compile>
     <Compile Include="Dialogs\AddFederatedModel.xaml.cs">
       <DependentUpon>AddFederatedModel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\CheckedListItem.cs" />
+    <Compile Include="Dialogs\COBieClassFilter.xaml.cs">
+      <DependentUpon>COBieClassFilter.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
       <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
