@@ -67,6 +67,11 @@ namespace Xbim.Presentation
             ClearGraphics();
             MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
+
+#if VisualGroupingTest
+            VisualGrouping = VisualGroupingMethod.EntityLabel;
+#endif
+
         }
 
         // elements associated with vector polygons drafted interactively on the model by the user
@@ -333,8 +338,6 @@ namespace Xbim.Presentation
         
         private PointGeomInfo GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
         {
-            // List<PointGeomInfo> gret = new List<PointGeomInfo>();
-
             int[] pts = new int[] {
                 hit.VertexIndex1,
                 hit.VertexIndex2,
@@ -369,9 +372,6 @@ namespace Xbim.Presentation
             pRet.Point = hit.MeshHit.Positions[iClosest];
 
             return pRet;
-
-            //gret.Add(pRet);
-            //return gret;
         }
 
         private static IPersistIfcEntity GetClickedEntity(RayMeshGeometry3DHitTestResult hit)
@@ -409,7 +409,6 @@ namespace Xbim.Presentation
         // Using a DependencyProperty as the backing store for ModelOpacity.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ModelOpacityProperty =
             DependencyProperty.Register("ModelOpacity", typeof(double), typeof(DrawingControl3D), new UIPropertyMetadata(1.0, OnModelOpacityChanged));
-
 
         private static void OnModelOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -483,10 +482,15 @@ namespace Xbim.Presentation
             DrawingControl3D d3d = d as DrawingControl3D;
             if (d3d != null)
             {
-                XbimModel model = e.NewValue as XbimModel;
-                d3d.LoadGeometry(model);
-                d3d.SetValue(LayerSetProperty, d3d.LayerSetRefresh());
+                // XbimModel model = e.NewValue as XbimModel;
+                d3d.ReloadModel();
             }
+        }
+
+        private void ReloadModel()
+        {
+            LoadGeometry((XbimModel)this.GetValue(ModelProperty));
+            SetValue(LayerSetProperty, LayerSetRefresh());
         }
 
         public bool ForceRenderBothSides
@@ -513,6 +517,7 @@ namespace Xbim.Presentation
             SingleSelection,
             MultipleSelection
         }
+
 #if DEBUG
         public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.MultipleSelection;
 #else
@@ -946,7 +951,6 @@ namespace Xbim.Presentation
                                         new UIPropertyMetadata(0.0));
         private XbimVector3D _modelTranslation;
         public XbimMatrix3D wcsTransform;
-      
 
         private void ClearGraphics()
         {
@@ -960,9 +964,6 @@ namespace Xbim.Presentation
             Opaques.Children.Clear();
             Transparents.Children.Clear();
             Extras.Children.Clear();
-
-
-            
 
             this.ClearCutPlane();
 
@@ -1149,6 +1150,25 @@ namespace Xbim.Presentation
             return scene;
         }
 
+        private VisualGroupingMethod _VisualGrouping = VisualGroupingMethod.ElementType;
+
+        public VisualGroupingMethod VisualGrouping
+        {
+            get {
+                return _VisualGrouping;
+            }
+            set {
+                _VisualGrouping = value;
+                ReloadModel();
+            }
+        }
+
+        public enum VisualGroupingMethod
+        {
+            ElementType,
+            EntityLabel
+        }
+
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
             // spaces are not excluded from the model to make the ShowSpaces property meaningful
@@ -1170,7 +1190,14 @@ namespace Xbim.Presentation
             double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
 
-            Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
+            Dictionary<string, XbimGeometryHandleCollection> Grouping = null;
+            if (_VisualGrouping == VisualGroupingMethod.ElementType)
+                Grouping = handles.GroupByBuildingElementTypes();
+            else
+                Grouping = handles.GroupByEntityLabel();
+
+
+            Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(Grouping, layerContent =>
             // foreach (var layerContent in handles.FilterByBuildingElementTypes())
             {
                 string elementTypeName = layerContent.Key;
@@ -1178,7 +1205,7 @@ namespace Xbim.Presentation
                 IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
                 XbimColour colour = scene.LayerColourMap[elementTypeName];
                 XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = elementTypeName };
-                //add all content initially into the hidden field
+                // add all content initially into the hidden field
                 foreach (var geomData in geomColl)
                 {
                     geomData.TransformBy(wcsTransform);
@@ -1207,13 +1234,13 @@ namespace Xbim.Presentation
         /// </summary>
         private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerely called DrawLayer
         {
-            //move it to the visual element
-            // byte[] bytes = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
+            // move it to the visual element
+            // 
             layer.Show();
 
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
             m3d.SetValue(TagProperty, layer);
-            //sort out materials and bind
+            // sort out materials and bind
             if (layer.Style.RenderBothFaces)
                 m3d.BackMaterial = m3d.Material = (WpfMaterial)layer.Material;
             else if (layer.Style.SwitchFrontAndRearFaces)
@@ -1241,8 +1268,26 @@ namespace Xbim.Presentation
         public IEnumerable<string> ListItems(string OfItem)
         {
             foreach (var scene in scenes)
-                foreach (var layer in scene.SubLayers) //go over top level layers only
+                foreach (var layer in scene.SubLayers) //go over top level layers 
+                {
                     yield return layer.Name;
+                }
+        }
+
+        /// <summary>
+        /// Useful for analysis and debugging purposes (invoked by Querying interface)
+        /// </summary>
+        /// <returns>A string tree of layers in scenes</returns>
+        public IEnumerable<string> LayersTree()
+        {
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers 
+                {
+                    foreach (var item in layer.LayersTree(0))
+                    {
+                        yield return item;    
+                    }
+                }   
         }
 
 
@@ -1277,9 +1322,7 @@ namespace Xbim.Presentation
                     if (toHide.Contains(layer.Name + ";"))
                         layer.HideAll();
         }
-
-
-        
+       
         public static readonly DependencyProperty LayerSetProperty =
             DependencyProperty.Register("LayerSet", typeof(List<LayerViewModel>), typeof(DrawingControl3D));
 
@@ -1294,7 +1337,7 @@ namespace Xbim.Presentation
             var ret = new List<LayerViewModel>();
             ret.Add(new LayerViewModel("All", this));
             foreach (var scene in scenes)
-                foreach (var layer in scene.SubLayers) //go over top level layers only
+                foreach (var layer in scene.SubLayers) // go over top level layers only
                     ret.Add(new LayerViewModel(layer.Name, this));
             return ret;
         }
@@ -1362,7 +1405,6 @@ namespace Xbim.Presentation
         /// <param name="DoubleRectSize">Effectively doubles the size of the bounding box so to fit more space around it.</param>
         private void ZoomTo(Rect3D r3d, bool DoubleRectSize = true)
         {
-            
             if (!r3d.IsEmpty)
             {
                 Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
@@ -1375,7 +1417,7 @@ namespace Xbim.Presentation
                 }
                 if (!r3d.IsEmpty)
                 {
-                    if (r3d.Contains(bounds)) //if bigger than bounds zoom bounds
+                    if (r3d.Contains(bounds)) // if bigger than bounds zoom bounds
                         Viewport.ZoomExtents(bounds, 200);
                     else
                         Viewport.ZoomExtents(r3d, 200);

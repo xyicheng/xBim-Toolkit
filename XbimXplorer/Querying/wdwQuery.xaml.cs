@@ -360,7 +360,7 @@ namespace XbimXplorer.Querying
                             if (mode.ToLower() == "short ")
                                 BeVerbose = false;
                             foreach (var item in ret)
-                        {
+                            {
                                 ReportAdd(ReportEntity(item, 0, Verbose: BeVerbose));
                             }
                         }
@@ -463,14 +463,14 @@ namespace XbimXplorer.Querying
                                     msg = string.Format("Clip 1m above storey elevation {0} (height: {1})", pt.Z, transformed.Z + 1);
                                     pz = transformed.Z + 1;
                                 }
-                        }
+                            }
                             if (msg == "")
                             {
                                 ReportAdd(string.Format("Something wrong with storey name: '{0}'", storName));
                                 ReportAdd("Names that should work are: ");
                                 var strs = Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>();
                                 foreach (var str in strs)
-                        {
+                                {
                                     ReportAdd(string.Format(" - '{0}'", str.Name));
 	                            }
                                 continue;
@@ -499,28 +499,49 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"^Visual (?<action>list|on|off)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^Visual (?<action>list|tree|on|off|mode)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string Name = m.Groups["Name"].Value;
-                        if (m.Groups["action"].Value == "list")
+                        if (m.Groups["action"].Value.ToLowerInvariant() == "list")
                         {
                             foreach (var item in ParentWindow.DrawingControl.ListItems(Name))
                             {
                                 ReportAdd(item);
                             }
                         }
-                        else 
+                        else if (m.Groups["action"].Value.ToLowerInvariant() == "tree")
+                        {
+                            foreach (var item in ParentWindow.DrawingControl.LayersTree())
                             {
+                                ReportAdd(item);
+                            }
+                        }
+                        else if (m.Groups["action"].Value.ToLowerInvariant() == "mode")
+                        {
+                            string t = Name.ToLowerInvariant();
+                            if (t == "entity")
+                            {
+                                ParentWindow.DrawingControl.VisualGrouping = DrawingControl3D.VisualGroupingMethod.EntityLabel;
+                            }
+                            else if (t == "type")
+                            {
+                                ParentWindow.DrawingControl.VisualGrouping = DrawingControl3D.VisualGroupingMethod.ElementType;
+                            }
+                            else
+                            {
+                                ReportAdd(string.Format("mode not understood: {0}.", t));
+                            }
+                        }
+                        else
+                        {
                             bool bVis = false;
-                            if (m.Groups["action"].Value == "on")
+                            if (m.Groups["action"].Value.ToLowerInvariant() == "on")
                                 bVis = true;
                             ParentWindow.DrawingControl.SetVisibility(Name, bVis);
-                            }
+                        }
                         continue;
                         }
-
-
                     m = Regex.Match(cmd, @"^SimplifyGUI$", RegexOptions.IgnoreCase);
                     if (m.Success)  
                     {
@@ -645,9 +666,11 @@ namespace XbimXplorer.Querying
             
             t.AppendFormat("- zoom <Region name>");
             t.Append("    'zoom ?' provides a list of valid region names", Brushes.Gray);
-            
-            t.AppendFormat("- Visual [list|[on|off <name>]]");
+
+            t.AppendFormat("- Visual [list|tree|[on|off <name>]|mode [entity|type]]");
             t.Append("    'Visual list' provides a list of valid layer names", Brushes.Gray);
+            t.Append("    'Visual tree' provides a tree layer structure", Brushes.Gray);
+            t.Append("    'Visual mode ...' changes the mode of the layer tree structure", Brushes.Gray);
             
             t.AppendFormat("- clear [on|off]");
             
