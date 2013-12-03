@@ -65,6 +65,10 @@ namespace Xbim
 				return ToPolyHedron(deflection,  precision, precisionMax);
 				
 			}
+			XbimMeshFragment XbimFeaturedShape::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			{
+				return mResultShape->MeshTo(mesh3D,product,transform,deflection);
+			}
 			//divides the openings into a list of list of non-intersecting shapes
 			XbimGeometryModelCollection^ XbimFeaturedShape::PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax)
 			{

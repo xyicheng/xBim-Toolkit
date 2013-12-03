@@ -34,6 +34,7 @@
 #include <BRepLib.hxx>
 #include <Poly.hxx>
 #include <BRepBuilderAPI.hxx>
+#include <GeomLib_IsPlanarSurface.hxx>
 #include <ShapeFix_ShapeTolerance.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <carve/triangulator.hpp>
@@ -45,6 +46,7 @@ using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace  System::Threading;
+using namespace  System::Text;
 class Message_ProgressIndicator {};
 
 namespace Xbim
@@ -525,27 +527,35 @@ TryIntersectSolid:
 				return this;//stick with what we started with
 			}
 
-			IXbimMeshGeometry3D^ XbimGeometryModel::TriangulatedMesh(double deflection)
+			XbimMeshFragment XbimGeometryModel::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
 			{
-				Monitor::Enter(this);
-				XbimMeshGeometry3D^ mesh3D = gcnew XbimMeshGeometry3D();
+				
+				
+				bool doTranform = !transform.IsIdentity;
 				IXbimTriangulatesToPositionsIndices^ theMesh = dynamic_cast<IXbimTriangulatesToPositionsIndices^>(mesh3D);
-				TopoDS_Shape shape = *(this->Handle);
+				theMesh->BeginBuild();
+                XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount);
+                fragment.EntityLabel = product->EntityLabel;
+                fragment.EntityType = product->GetType();
 
+				TopoDS_Shape shape = *(this->Handle);
+				Monitor::Enter(this);
 				try
 				{
 					BRepMesh_IncrementalMesh incrementalMesh(shape, deflection); //triangulate the first time
+					
 				}
 				finally
 				{
 					Monitor::Exit(this);
 				}
 				std::unordered_map<Float3D, size_t> vertexMap;
+				int offset=-1; //opencascade indexes are 1 based, so we need to move back 1 index
 				for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
-				{
-					
+				{		
 					for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 	
 					{
+						
 						const TopoDS_Face & face = TopoDS::Face(faceEx.Current());
 						TopAbs_Orientation orient = face.Orientation();
 						TopLoc_Location loc;
@@ -554,45 +564,68 @@ TryIntersectSolid:
 
 						Standard_Integer nbNodes = facing->NbNodes();
 						Standard_Integer nbTriangles = facing->NbTriangles();
-
+						
 						const TColgp_Array1OfPnt& points = facing->Nodes();
-						std::unordered_map<Standard_Integer,size_t> posMap;
+						//std::unordered_map<Standard_Integer,size_t> posMap;
 						for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 						{
 							gp_XYZ p = points(nd).XYZ();
 							loc.Transformation().Transforms(p);			 
-							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z());
-							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
-							if(hit==vertexMap.end()) //not found add it in
-							{	
-								posMap.insert(std::make_pair(nd,mesh3D->PositionCount));
-								vertexMap.insert(std::make_pair(p3D,mesh3D->PositionCount));
-								theMesh->AddPosition(XbimPoint3D(p.X(),p.Y(),p.Z()));
-							}
+							//Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z()); 
+							//std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+							//if(hit==vertexMap.end()) //not found add it in
+							//{	
+								//posMap.insert(std::make_pair(nd,mesh3D->PositionCount));
+								//vertexMap.insert(std::make_pair(p3D,mesh3D->PositionCount));
+								if(doTranform)
+									theMesh->AddPosition(transform.Transform(XbimPoint3D(p.X(),p.Y(),p.Z())));
+								else
+									theMesh->AddPosition(XbimPoint3D(p.X(),p.Y(),p.Z()));
+								
+							/*}
 							else
-								posMap.insert(std::make_pair(nd,hit->second));
+								posMap.insert(std::make_pair(nd,hit->second));*/
 						}
+		
 						const Poly_Array1OfTriangle& triangles = facing->Triangles();
-						Standard_Integer n1, n2, n3;			
+						Standard_Integer n1, n2, n3;	
+						
 						for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
 						{
+							
+						    theMesh->BeginPolygon(TriangleType::GL_Triangles, 0);
 							triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
 							if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
 							{
-								theMesh->AddTriangleIndex(posMap[n3]);
-								theMesh->AddTriangleIndex(posMap[n2]);
-								theMesh->AddTriangleIndex(posMap[n1]);
+								theMesh->AddTriangleIndex(offset+n3);
+								theMesh->AddTriangleIndex(offset+n2);
+								theMesh->AddTriangleIndex(offset+n1);
 							}
 							else
 							{
-								theMesh->AddTriangleIndex(posMap[n1]);
-								theMesh->AddTriangleIndex(posMap[n2]);
-								theMesh->AddTriangleIndex(posMap[n3]);
+								theMesh->AddTriangleIndex(offset+n1);
+								theMesh->AddTriangleIndex(offset+n2);
+								theMesh->AddTriangleIndex(offset+n3);
 							}
-						}
+						}	
+						offset+=nbNodes;
 					}
 				}
-				return mesh3D;
+                fragment.EndPosition = mesh3D->PositionCount-1;
+                fragment.EndTriangleIndex = mesh3D->TriangleIndexCount-1;
+                theMesh->EndBuild();
+				mesh3D->Meshes->Add(fragment);
+				Monitor::Enter(this);
+				try
+				{
+					BRepTools::Clean(shape); //remove all triangulatulation
+					
+				}
+				finally
+				{
+					Monitor::Exit(this);
+				}
+				return fragment;
 			}
 
 			XbimTriangulatedModelCollection^ XbimGeometryModel::Mesh(double deflection )
@@ -643,8 +676,143 @@ TryIntersectSolid:
 
 			String^ XbimGeometryModel::WriteAsString()
 			{
-				throw gcnew NotImplementedException();
+				double deflection = 10;
+				double precision = 1e-5;
+				StringBuilder^ sb = gcnew StringBuilder();
+				TopoDS_Shape shape = *(this->Handle);
+				Monitor::Enter(this);
+				try
+				{
+					BRepMesh_IncrementalMesh incrementalMesh(shape, deflection); //triangulate the first time				
+				}
+				finally
+				{
+					Monitor::Exit(this);
+				}
+				std::unordered_map<Float3D, size_t> vertexMap;
+				
+				int normalsOffset = -1; //corrects for 1 based arrays in open cascade
+				for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
+				{		
+					for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 	
+					{
+						const TopoDS_Face & face = TopoDS::Face(faceEx.Current());
+						TopAbs_Orientation orient = face.Orientation();
+						TopLoc_Location loc;
+						Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
+						if(facing.IsNull()) continue;
+
+						Standard_Integer nbNodes = facing->NbNodes();
+						Standard_Integer nbNormals; //set when we know if it planar or not
+						Standard_Integer nbTriangles = facing->NbTriangles();
+						
+						const TColgp_Array1OfPnt& points = facing->Nodes();
+						std::vector<size_t> posMap;
+						posMap.reserve(nbNodes+1);
+						posMap.push_back(-1); //Opencascade lists are 1 based, move on one to avoid decrementing all indexes
+						bool vWritten = false;
+						for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
+						{
+							gp_XYZ p = points(nd).XYZ();
+							loc.Transformation().Transforms(p);			 
+							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z()); 
+							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+							if(hit==vertexMap.end()) //not found add it in
+							{	size_t idx = vertexMap.size();
+								vertexMap.insert(std::make_pair(p3D,idx));
+								posMap.push_back(idx);
+								if(!vWritten)
+								{
+									sb->AppendFormat("V");
+									vWritten=true;
+								}
+								sb->AppendFormat(" {0},{1},{2}",p3D.Dim1, p3D.Dim2, p3D.Dim3);	
+								
+							}
+							else
+								posMap.push_back(hit->second);
+						}
+						if(vWritten) sb->AppendLine();
+						GeomLib_IsPlanarSurface ps(BRep_Tool::Surface(face), precision);
+						bool planar = ps.IsPlanar();
+						String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
+						if(planar)
+						{
+							gp_Dir normal = ps.Plan().Axis().Direction();
+							if(orient == TopAbs_REVERSED) normal.Reverse();
+							nbNormals=0; //reset we will only write one if it is not a face as below
+							
+							if(normal.IsEqual(gp::DX(),0.1)) f="R";
+							else if(normal.IsOpposite(gp::DX(),0.1)) f="L";
+							else if(normal.IsEqual(gp::DY(),0.1)) f="B";
+							else if(normal.IsOpposite(gp::DY(),0.1)) f="F";
+							else if(normal.IsEqual(gp::DZ(),0.1)) f="U";
+							else if(normal.IsOpposite(gp::DZ(),0.1)) f="D";
+							else
+							{	sb->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z());	
+								sb->AppendLine();
+								nbNormals=1;
+							}
+						}
+						else
+						{
+							Poly::ComputeNormals(facing);
+							nbNormals = nbNodes;
+							const TShort_Array1OfShortReal& normals = facing->Normals();
+							sb->AppendFormat("N");
+							for (Standard_Integer nm = 1 ; nm <= nbNodes ; nm++)
+							{
+
+								sb->AppendFormat(" {0},{1},{2}", (float)normals(nm),(float)normals(nm+1),(float)normals(nm+2));	
+							    
+								
+							}
+							sb->AppendLine();
+						}
+						const Poly_Array1OfTriangle& triangles = facing->Triangles();
+						Standard_Integer n1, n2, n3;	
+
+
+						sb->Append("T");
+						for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
+						{
+							if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
+								triangles(tr).Get(n3, n2, n1); // triangle indices are 1 based
+							else
+								triangles(tr).Get(n1, n2, n3);
+
+							if(nbNormals>1) //we have a normal for every point
+								sb->AppendFormat(" {0}/{3},{1}/{4},{2}/{5}", posMap[n1], posMap[n2], posMap[n3], normalsOffset+n1,normalsOffset+n2,normalsOffset+n3);
+							else //we only have one normal for each point it is a plane
+								if(tr==1) //only do the first one
+								{
+									if(f=="$") //face name is undefined
+										sb->AppendFormat(" {0}/{3},{1},{2}", posMap[n1], posMap[n2], posMap[n3],normalsOffset+1);
+									else
+										sb->AppendFormat(" {0}/{3},{1},{2}", posMap[n1], posMap[n2], posMap[n3],f);
+								}
+								else
+									sb->AppendFormat(" {0},{1},{2}", posMap[n1], posMap[n2], posMap[n3]);
+
+
+						}	
+						sb->AppendLine();
+						normalsOffset+=nbNormals;//we will have written out this number of normals
+					}
+				}
+				Monitor::Enter(this);
+				try
+				{
+					BRepTools::Clean(shape); //remove all triangulatulation
+					
+				}
+				finally
+				{
+					Monitor::Exit(this);
+				}
+				return sb->ToString();
 			}
+
 
 
 			XbimRect3D XbimGeometryModel::GetAxisAlignedBoundingBox()

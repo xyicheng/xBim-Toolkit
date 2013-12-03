@@ -82,7 +82,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <remarks>
         ///   Reference to the representations of the product, being either a representation (IfcProductRepresentation) or as a special case a shape representations (IfcProductDefinitionShape). The product definition shape provides for multiple geometric representations of the shape property of the object within the same object coordinate system, defined by the object placement.
         /// </remarks>
-        [IfcAttribute(7, IfcAttributeState.Optional)]
+        [IfcAttribute(7, IfcAttributeState.Optional),IndexedProperty]
         public IfcProductRepresentation Representation
         {
             get

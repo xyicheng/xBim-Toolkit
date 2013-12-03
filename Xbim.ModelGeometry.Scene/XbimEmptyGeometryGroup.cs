@@ -37,9 +37,16 @@ namespace Xbim.ModelGeometry.Scene
             return XbimRect3D.Empty;
         }
 
-        public IXbimMeshGeometry3D TriangulatedMesh(double deflection)
+       
+        public XbimMeshFragment MeshTo(IXbimMeshGeometry3D mesh3D, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double deflection)
         {
-            return new XbimMeshGeometry3D();
+            return default(XbimMeshFragment);
+        }
+
+
+        public XbimPoint3D CentreOfMass
+        {
+            get { return default(XbimPoint3D); }
         }
     }
 }

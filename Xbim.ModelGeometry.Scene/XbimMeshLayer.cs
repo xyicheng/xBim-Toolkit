@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Geometry;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.PresentationResource;
 using Xbim.IO;
@@ -117,6 +118,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// A mesh that is loaded but not visible on the graphics display
         /// </summary>
+      //  public IXbimMeshGeometry3D Hidden = new TVISIBLE();
         public IXbimMeshGeometry3D Hidden = new XbimMeshGeometry3D();
       
         public string Name
@@ -206,17 +208,17 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public void AddGeometry(IEnumerable<IXbimGeometryModelGroup> geomColls)
-        {
-            throw new NotFiniteNumberException();
-        }
 
-        public void AddGeometry(IXbimGeometryModelGroup geomColl)
+        /// <summary>
+        /// Adds the geometry to the mesh for the given product, returns the mesh fragment details
+        /// </summary>
+        /// <param name="geometryModel">Geometry to add</param>
+        /// <param name="product">The product the geometry represents (this may be a partial representation)</param>
+        /// <param name="transform">Transform the geometry to a new location or rotation</param>
+        /// <param name="deflection">Deflection for triangulating curves, if null default defelction for the model is used</param>
+        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null)
         {
-            foreach (IXbimGeometryModel geom in geomColl)
-            {
-                Hidden.Add(geom);
-            }
+            return Hidden.Add(geometryModel, product, transform, deflection);
         }
 
         /// <summary>

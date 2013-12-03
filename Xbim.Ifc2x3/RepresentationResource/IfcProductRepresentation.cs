@@ -160,7 +160,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Contained list of representations (including shape representations). Each member defines a valid representation of a particular type within a particular representation context.
         /// </summary>
-        [IfcAttribute(3, IfcAttributeState.Mandatory, IfcAttributeType.List, 1)]
+        [IfcAttribute(3, IfcAttributeState.Mandatory, IfcAttributeType.List, 1),IndexedProperty]
         public XbimList<IfcRepresentation> Representations
         {
             get

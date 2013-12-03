@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Geometry;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 
 namespace Xbim.ModelGeometry.Scene
 {
-    public interface IXbimMeshGeometry3D
+    public interface IXbimMeshGeometry3D : IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
     {
         IEnumerable<XbimPoint3D> Positions { get; set; }
         IEnumerable<XbimVector3D> Normals { get; set; }
@@ -15,7 +16,7 @@ namespace Xbim.ModelGeometry.Scene
         XbimMeshFragmentCollection Meshes { get; set; }
         
         bool Add(XbimGeometryData geometryMeshData);
-        void Add(IXbimGeometryModel geometryModel);
+        XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection);
         void MoveTo(IXbimMeshGeometry3D toMesh);
         void BeginUpdate();
         void EndUpdate();
@@ -28,6 +29,5 @@ namespace Xbim.ModelGeometry.Scene
         IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag);
         XbimRect3D GetBounds();
 
-        
     }
 }

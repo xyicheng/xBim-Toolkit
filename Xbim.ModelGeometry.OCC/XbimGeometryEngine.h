@@ -20,6 +20,7 @@ namespace Xbim
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcProduct^ product,  XbimGeometryType xbimGeometryType);
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcSolidModel^ solid, XbimGeometryType geomType);
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcRepresentation^ representation);
+			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcRepresentationItem^ repItem);
 			virtual IXbimGeometryModel^      GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType);
 			virtual void Init(XbimModel^ model)
 			{

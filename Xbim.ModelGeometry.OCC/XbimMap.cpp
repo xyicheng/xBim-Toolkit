@@ -104,6 +104,19 @@ namespace Xbim
 				return theMesh;
 			}
 
+			XbimMeshFragment XbimMap::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			{				
+				Monitor::Enter(_mappedItem);
+				try
+				{
+					return _mappedItem->MeshTo(mesh3D,  product, transform, deflection);	
+				}
+				finally
+				{
+					Monitor::Exit(_mappedItem);
+				}
+			}
+
 			void XbimMap::ToSolid(double precision, double maxPrecision) 
 			{
 				_mappedItem->ToSolid(precision, maxPrecision);

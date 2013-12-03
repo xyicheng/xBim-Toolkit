@@ -163,7 +163,7 @@ private:
 			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision);
 			virtual XbimGeometryModel^ CopyTo(	IfcAxis2Placement^ placement) abstract;
 			virtual void ToSolid(double precision, double maxPrecision) abstract;
-			virtual  IXbimMeshGeometry3D^ TriangulatedMesh(double deflection);
+			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection);
 			
 #if USE_CARVE
 			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) abstract ;
@@ -236,12 +236,28 @@ private:
 						return 0;
 				}
 			}
+			virtual property XbimPoint3D CentreOfMass
+			{
+				XbimPoint3D get()  
+				{
+					if(nativeHandle!=nullptr)
+					{
+						GProp_GProps System;
+						BRepGProp::VolumeProperties(*Handle, System, Standard_True);
+						gp_Pnt pnt = System.CentreOfMass();
+						return  XbimPoint3D(pnt.X(), pnt.Y(), pnt.Z());
+						
+					}
+					else
+						return XbimPoint3D();
+				}
+			}
 			virtual property XbimMatrix3D Transform
 				{
 					XbimMatrix3D get() 
 					{
-						return XbimGeomPrim::ToMatrix3D( Handle->Location());
-						//return XbimMatrix3D::Identity;
+						//return XbimGeomPrim::ToMatrix3D( Handle->Location());
+						return XbimMatrix3D::Identity;
 					}
 				}
 		};

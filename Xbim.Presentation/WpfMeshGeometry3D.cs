@@ -14,6 +14,30 @@ namespace Xbim.Presentation
     {
         public GeometryModel3D WpfMesh;
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
+        private TriangleType _meshType;
+
+        uint _previousToLastIndex;
+        uint _lastIndex;
+        uint _pointTally;
+        uint _fanStartIndex;
+        uint indexOffset;
+
+#region standard calls
+
+        private void Init()
+        {
+            indexOffset = (uint)Mesh.Positions.Count;
+        }
+
+        private void StandardBeginPolygon(TriangleType meshType)
+        {
+            _meshType = meshType;
+            _pointTally = 0;
+            _previousToLastIndex = 0;
+            _lastIndex = 0;
+            _fanStartIndex = 0;
+        }
+ #endregion
 
         public void ReportGeometryTo(StringBuilder sb)
         {
@@ -42,8 +66,10 @@ namespace Xbim.Presentation
 
         public WpfMeshGeometry3D()
         {
-
+            //WpfMesh = new GeometryModel3D();
+            //WpfMesh.Geometry = new MeshGeometry3D();
         }
+
         public WpfMeshGeometry3D(IXbimMeshGeometry3D mesh)
         {
             WpfMesh = new GeometryModel3D();
@@ -233,38 +259,128 @@ namespace Xbim.Presentation
         }
 
 
-        public void Add(IXbimGeometryModel geometryModel)
+
+        public int PositionCount
         {
-            Add((IXbimMeshGeometry3D)geometryModel);
+            get { return Mesh.Positions.Count; }
         }
 
-        /// <summary>
-        /// Adds a geometry mesh to this, includes all mesh fragments
-        /// </summary>
-        /// <param name="geom"></param>
-        public void Add(IXbimMeshGeometry3D geom)
+        public int TriangleIndexCount
         {
-            //if (geom.Positions.Any()) //if no positions nothing to add
-            //{
-            //    this.BeginUpdate();
-            //    int startPos = Mesh.Positions.Count;
-            //    int startIndices = Mesh.TriangleIndices.Count;
-            //    foreach (var pos in geom.Positions)
-            //    {
-            //        Mesh.Positions.Add(pos);
-            //    }
-            //     Mesh.Positions.AddRange(geom.Positions);
-            //    Mesh.Normals.AddRange(geom.Normals);
-            //    foreach (var indices in geom.TriangleIndices)
-            //        TriangleIndices.Add(indices + startPos);
-            //    foreach (var fragment in geom.Meshes)
-            //    {
-            //        fragment.Offset(startPos, startIndices);
-            //        Meshes.Add(fragment);
-            //    }
+            get { return Mesh.TriangleIndices.Count; }
+        }
 
-            //    this.EndUpdate();
-            //}
+        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double? deflection = null)
+        {
+            return geometryModel.MeshTo(this, product, transform, deflection ?? product.ModelOf.ModelFactors.DeflectionTolerance);
+        }
+
+        public void BeginBuild()
+        {
+            Init();
+        }
+
+        public void BeginPositions(uint numPoints)
+        {
+            Mesh.Positions = new WpfPoint3DCollection((int) numPoints);
+        }
+
+        public void AddPosition(XbimPoint3D pt)
+        {
+            Mesh.Positions.Add(new Point3D(pt.X, pt.Y, pt.Z));
+        }
+
+        public void EndPositions()
+        {
+           
+        }
+
+        public void BeginPolygons(uint totalNumberTriangles, uint numPolygons)
+        {
+           
+        }
+
+        public void BeginPolygon(TriangleType meshType, uint indicesCount)
+        {
+            StandardBeginPolygon(meshType);
+        }
+
+        private int Offset(uint index)
+        {
+            return (int)(index + indexOffset);
+        }
+
+        public void AddTriangleIndex(uint index)
+        {
+            if (_pointTally == 0)
+                _fanStartIndex = index;
+            if (_pointTally < 3) //first time
+            {
+                TriangleIndices.Add(Offset(index));
+                // _meshGeometry.Positions.Add(_points[(int)index]);
+            }
+            else
+            {
+                switch (_meshType)
+                {
+                    case TriangleType.GL_Triangles://      0x0004
+                        TriangleIndices.Add(Offset(index));
+                        break;
+                    case TriangleType.GL_Triangles_Strip:// 0x0005
+                        if (_pointTally % 2 == 0)
+                        {
+                            TriangleIndices.Add(Offset(_previousToLastIndex));
+                            TriangleIndices.Add(Offset(_lastIndex));
+                        }
+                        else
+                        {
+                            TriangleIndices.Add(Offset(_lastIndex));
+                            TriangleIndices.Add(Offset(_previousToLastIndex));
+                        }
+                        TriangleIndices.Add(Offset(index));
+                        break;
+                    case TriangleType.GL_Triangles_Fan://   0x0006
+                        TriangleIndices.Add(Offset(_fanStartIndex));
+                        TriangleIndices.Add(Offset(_lastIndex));
+                        TriangleIndices.Add(Offset(index));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            _previousToLastIndex = _lastIndex;
+            _lastIndex = index;
+            _pointTally++;
+        }
+
+        public void EndPolygon()
+        {
+        }
+
+        public void EndPolygons()
+        {
+            
+        }
+
+        public void EndBuild()
+        {
+            
+        }
+
+
+        public void BeginPoints(uint numPoints)
+        {
+            
+        }
+
+        public void AddNormal(XbimVector3D normal)
+        {
+           // throw new NotImplementedException();
+        }
+
+        public void EndPoints()
+        {
+            
         }
     }
 }

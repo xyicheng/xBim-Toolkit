@@ -63,6 +63,7 @@ namespace Xbim.Presentation
          : IEnumerable<XbimPoint3D>
     {
         Point3DCollection wpfPoints;
+       
         public WpfPoint3DCollection(Point3DCollection wpfPoints)
         {
             this.wpfPoints = wpfPoints;
@@ -76,6 +77,12 @@ namespace Xbim.Presentation
             foreach (var pt in realPoints)
                 wpfPoints.Add(new Point3D(pt.X, pt.Y, pt.Z));
         }
+
+        public WpfPoint3DCollection(int c)
+        {
+            wpfPoints = new Point3DCollection(c);
+        }
+
         public static implicit operator Point3DCollection(WpfPoint3DCollection points)
         {
             return points.wpfPoints;

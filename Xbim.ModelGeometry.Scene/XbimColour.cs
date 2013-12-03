@@ -13,6 +13,7 @@ namespace Xbim.ModelGeometry.Scene
     /// </summary>
     public class XbimColour
     {
+        public static XbimColour LightGrey = new XbimColour("LightGrey", 0.47, 0.53, 0.60, 1);
         /// <summary>
         /// True if the cuolour is not opaque
         /// </summary>

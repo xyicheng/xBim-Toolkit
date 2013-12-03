@@ -114,7 +114,7 @@ namespace Xbim
 				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
 				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override ;
 				virtual String^ WriteAsString() override;
-				
+				virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
 				
 			};
 		}

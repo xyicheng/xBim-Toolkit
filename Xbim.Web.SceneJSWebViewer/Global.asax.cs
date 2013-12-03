@@ -6,6 +6,7 @@ using System.Web.Security;
 using System.Web.SessionState;
 using System.Web.Routing;
 using SignalR;
+using System.Configuration;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -16,6 +17,7 @@ namespace Xbim.SceneJSWebViewer
         {
             // Code that runs on application startup
             RouteTable.Routes.MapConnection<ModelStreamer>("xbim", "xbim/{*operation}");
+            
         }
 
         void Application_End(object sender, EventArgs e)
@@ -44,6 +46,7 @@ namespace Xbim.SceneJSWebViewer
             // or SQLServer, the event is not raised.
 
         }
+        
 
     }
 }

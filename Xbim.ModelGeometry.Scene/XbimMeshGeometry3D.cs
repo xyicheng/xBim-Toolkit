@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Exceptions;
 using Xbim.Common.Geometry;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.IO;
 using Xbim.XbimExtensions;
 
@@ -13,7 +15,7 @@ namespace Xbim.ModelGeometry.Scene
     /// <summary>
     /// This class provide support for geoemtry triangulated neshes
     /// </summary>
-    public class XbimMeshGeometry3D : IXbimMeshGeometry3D, IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
+    public class XbimMeshGeometry3D : IXbimMeshGeometry3D
     {
         const int defaultSize = 0x4000;
         public List<XbimPoint3D> Positions;
@@ -21,7 +23,7 @@ namespace Xbim.ModelGeometry.Scene
         public List<Int32> TriangleIndices;
 
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
-        List<XbimPoint3D> _points;
+        List<XbimPoint3D> _points = new List<XbimPoint3D>(512);
         TriangleType _meshType;
         uint _previousToLastIndex;
         uint _lastIndex;
@@ -64,6 +66,119 @@ namespace Xbim.ModelGeometry.Scene
         public XbimMeshGeometry3D() :this(defaultSize)
         {
 
+        }
+
+        /// <summary>
+        /// Reads an ascii string of Xbim mesh geometry data
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public bool Read(String data)
+        {
+            using (StringReader sr = new StringReader(data))
+            {
+
+                List<XbimPoint3D> vertexList = new List<XbimPoint3D>(); //holds the actual positions of the vertices in this data set in the mesh
+                List<XbimVector3D> normalList = new List<XbimVector3D>(); //holds the actual normals of the vertices in this data set in the mesh
+                String line;
+                // Read and display lines from the data until the end of
+                // the data is reached.
+                while ((line = sr.ReadLine()) != null)
+                {
+                    string[] tokens = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if(tokens.Length>1) //we need a command and some data
+                    {
+                        string command = tokens[0].Trim().ToUpper();
+                        switch (command)
+                        {
+                            case "V": //process vertices
+                                for (int i = 1; i < tokens.Length; i++)
+                                {
+                                   string[] xyz = tokens[i].Split(',');
+                                   vertexList.Add(new XbimPoint3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                                                      Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
+                                                                      Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture)));
+                                }
+                                break;
+                            case "N": //processes normals
+                                for (int i = 1; i < tokens.Length; i++)
+                                {
+                                    string[] xyz = tokens[i].Split(',');
+                                    normalList.Add(new  XbimVector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                                                       Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
+                                                                       Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture)));
+                                }
+                                break;
+                            case "T": //process triangulated meshes
+                                XbimVector3D currentNormal = XbimVector3D.Zero;
+                                //each time we start a new mesh face we have to duplicate the vertices to ensure that we get correct shading of planar and non planar faces
+                                Dictionary<int, int> writtenVertices = new Dictionary<int, int>();
+
+                                for (int i = 1; i < tokens.Length; i++)
+                                {
+                                    string[] triangleIndices = tokens[i].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (triangleIndices.Length != 3) throw new Exception("Invalid triangle definition");
+                                    for (int t = 0; t < 3; t++)
+                                    {
+                                        string[] indexNormalPair = triangleIndices[t].Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                                        if (indexNormalPair.Length > 1) //we have a normal defined
+                                        {
+                                            string normalStr = indexNormalPair[1].Trim();
+                                            switch (normalStr)
+                                            {
+                                                case "F": //Front
+                                                    currentNormal = new XbimVector3D(0, -1, 0);
+                                                    break;
+                                                case "B": //Back
+                                                    currentNormal = new XbimVector3D(0, 1, 0);
+                                                    break;
+                                                case "L": //Left
+                                                    currentNormal = new XbimVector3D(-1, 0, 0);
+                                                    break;
+                                                case "R": //Right
+                                                    currentNormal = new XbimVector3D(1, 0, 0);
+                                                    break;
+                                                case "U": //Up
+                                                    currentNormal = new XbimVector3D(0, 0, 1);
+                                                    break;
+                                                case "D": //Down
+                                                    currentNormal = new XbimVector3D(0, 0, -1);
+                                                    break;
+                                                default: //it is an index number
+                                                    int normalIndex = int.Parse(indexNormalPair[1]);
+                                                    currentNormal = normalList[normalIndex];
+                                                    break;
+                                            }
+                                        }
+                                        //now add the index
+                                        int index = int.Parse(indexNormalPair[0]);
+                                       
+                                        int alreadyWrittenAt = index; //in case it is the first mesh
+                                        if (!writtenVertices.TryGetValue(index, out alreadyWrittenAt)) //if we haven't  written it in this mesh pass, add it again unless it is the first one which we know has been written
+                                        {
+                                            //all vertices will be unique and have only one normal
+                                            writtenVertices.Add(index, this.PositionCount);
+                                            this.TriangleIndices.Add(this.PositionCount);
+                                            this.Positions.Add(vertexList[index]);
+                                            this.Normals.Add(currentNormal);
+                                        }
+                                        else //just add the index reference
+                                        {
+                                            this.TriangleIndices.Add(alreadyWrittenAt);
+                                        }
+                                    }
+                                }
+                                
+                                break;
+                            default:
+                                throw new Exception("Invalid Geometry Command");
+                               
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         static public XbimMeshGeometry3D MakeBoundingBox(XbimRect3D r3D, XbimMatrix3D transform)
@@ -188,9 +303,7 @@ namespace Xbim.ModelGeometry.Scene
 
         void IXbimTriangulatesToPositionsIndices.BeginPolygons(uint totalNumberTriangles, uint numPolygons)
         {
-            // three position for each triangle
-            //_meshGeometry.Positions = new XbimPoint3DCollection((int)(totalNumberTriangles * 3));
-            //_meshGeometry.TriangleIndices = new System.Windows.Media.Int32Collection((int)(totalNumberTriangles * 3));
+
         }
 
         void IXbimTriangulatesToPositionsIndices.BeginPolygon(TriangleType meshType, uint indicesCount)
@@ -211,11 +324,11 @@ namespace Xbim.ModelGeometry.Scene
             {
                 switch (_meshType)
                 {
-                    case TriangleType.GL_TRIANGLES://      0x0004
+                    case TriangleType.GL_Triangles://      0x0004
                         TriangleIndices.Add(Positions.Count);
                         Positions.Add(_points[(int)index]);
                         break;
-                    case TriangleType.GL_TRIANGLE_STRIP:// 0x0005
+                    case TriangleType.GL_Triangles_Strip:// 0x0005
                         if (_pointTally % 2 == 0)
                         {
                             TriangleIndices.Add(Positions.Count);
@@ -233,7 +346,7 @@ namespace Xbim.ModelGeometry.Scene
                         TriangleIndices.Add(Positions.Count);
                         Positions.Add(_points[(int)index]);
                         break;
-                    case TriangleType.GL_TRIANGLE_FAN://   0x0006
+                    case TriangleType.GL_Triangles_Fan://   0x0006
                         TriangleIndices.Add(Positions.Count);
                         Positions.Add(_points[(int)_fanStartIndex]);
                         TriangleIndices.Add(Positions.Count);
@@ -322,10 +435,10 @@ namespace Xbim.ModelGeometry.Scene
             {
                 switch (_meshType)
                 {
-                    case TriangleType.GL_TRIANGLES://      0x0004
+                    case TriangleType.GL_Triangles://      0x0004
                         TriangleIndices.Add(Offset(index));
                         break;
-                    case TriangleType.GL_TRIANGLE_STRIP:// 0x0005
+                    case TriangleType.GL_Triangles_Strip:// 0x0005
                         if (_pointTally % 2 == 0)
                         {
                             TriangleIndices.Add(Offset(_previousToLastIndex));
@@ -338,7 +451,7 @@ namespace Xbim.ModelGeometry.Scene
                         }
                         TriangleIndices.Add(Offset(index));
                         break;
-                    case TriangleType.GL_TRIANGLE_FAN://   0x0006
+                    case TriangleType.GL_Triangles_Fan://   0x0006
                         TriangleIndices.Add(Offset(_fanStartIndex));
                         TriangleIndices.Add(Offset(_lastIndex));
                         TriangleIndices.Add(Offset(index));
@@ -568,11 +681,16 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
-
-
-        public void Add(IXbimGeometryModel geometryModel)
+        /// <summary>
+        /// Adds the geometry to the mesh for the given product, returns the mesh fragment details
+        /// </summary>
+        /// <param name="geometryModel">Geometry to add</param>
+        /// <param name="product">The product the geometry represents (this may be a partial representation)</param>
+        /// <param name="transform">Transform the geometry to a new location or rotation</param>
+        /// <param name="deflection">Deflection for triangulating curves, if null default defelction for the model is used</param>
+        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null)
         {
-            Add((IXbimMeshGeometry3D)geometryModel);
+            return geometryModel.MeshTo(this,product,transform,deflection??product.ModelOf.ModelFactors.DeflectionTolerance);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   Formal Propositions:
     ///   WR11   :   Only representations of type IfcShapeModel, i.e. either IfcShapeRepresentation or IfcTopologyRepresentation should be used to represent a product through the IfcProductDefinitionShape.
     /// </remarks>
-    [IfcPersistedEntityAttribute]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcProductDefinitionShape : IfcProductRepresentation
     {
         #region Fields

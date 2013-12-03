@@ -35,10 +35,12 @@ namespace Xbim.SceneJSWebViewer
                 dynamic obj = serializer.Deserialize(data, typeof(object));
 
                 string ifcDir = "models\\";
+                modelId = obj.ModelID.ToString();
+                modelId=modelId.Split(new char[] { '.' }).FirstOrDefault();
                 //if (obj.fromTemp != null)
                 //    if (obj.fromTemp.ToString() == "True") 
                 //        ifcDir = "Temp\\";
-                modelId = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + ifcDir + obj.ModelID.ToString().Split(new char[] { '.' })[0];
+                modelId = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + ifcDir + modelId;
                 if (modelId == String.Empty)
                 {
                     return null;

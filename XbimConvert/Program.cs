@@ -24,6 +24,7 @@ using System.Diagnostics;
 using Xbim.ModelGeometry.Converter;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
 
 namespace XbimConvert
 {
@@ -76,22 +77,44 @@ namespace XbimConvert
                     watch.Start();
                     using (XbimModel model = ParseModelFile(origFileName, xbimFileName, arguments.Caching))
                     {
-                        foreach (var product in model.Instances.OfType<IfcProduct>())
-                        {
-                            IXbimGeometryModelGroup grp = product.Geometry3D();
-                            Console.WriteLine(grp.Count());
-                            XbimRect3D b = grp.GetBoundingBox();
-                            Console.WriteLine(b.ToString());
-                            foreach (IXbimGeometryModel poly in grp)
-                            {
-                                XbimRect3D r3d = poly.GetBoundingBox();
-                                Console.WriteLine(r3d.ToString());
-                                Console.WriteLine(poly.GetAxisAlignedBoundingBox().ToString());
-                            }
-                        }
-                        //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                        parseTime = watch.ElapsedMilliseconds;
-                        if (!arguments.NoGeometry)
+
+
+                        Xbim3DModelContext m3d = new Xbim3DModelContext(model);
+                        Console.WriteLine(m3d.ProductDefinitions.Count());
+                        Console.WriteLine(m3d.Shapes.Count());
+                        Console.WriteLine(m3d.RepresentationItems.Count());
+                        Console.WriteLine(m3d.ShapeMaps.Count());
+                        Console.WriteLine(m3d.BooleanResults.Count());
+                      //  int s = model.Instances.OfType<IfcSolidModel>().Count();
+                      //  int sh = model.Instances.OfType<IfcShellBasedSurfaceModel>().Count();
+                      //  int fb = model.Instances.OfType<IfcFaceBasedSurfaceModel>().Count();
+                      ////  foreach (var rep in model.Instances.OfType<IfcSolidModel>())
+                        ParallelOptions opts = new ParallelOptions();
+                opts.MaxDegreeOfParallelism = 16;
+                  IfcDoor door = model.Instances.OfType<IfcDoor>().FirstOrDefault();
+                 // List<IfcSolidModel> solids = model.Instances.OfType<IfcSolidModel>().ToList();
+                //Parallel.ForEach<IfcSolidModel>(solids, opts, rep =>
+                //{
+
+                //    IXbimGeometryModelGroup grp = rep.Geometry3D();
+                //    //Console.WriteLine(grp.Count());
+                //    //XbimRect3D b = grp.GetBoundingBox();
+                //    //Console.WriteLine(b.ToString());
+
+                //    foreach (IXbimGeometryModel poly in grp)
+                //    {
+                //        XbimMeshGeometry3D m3D = new XbimMeshGeometry3D();
+                //        poly.MeshTo(m3D, door, XbimMatrix3D.Identity, 10);
+                //        //XbimRect3D r3d = poly.GetBoundingBox();
+                //        //Console.WriteLine(r3d.ToString());
+                //        //Console.WriteLine(poly.GetAxisAlignedBoundingBox().ToString());
+                //        // Console.WriteLine(poly.WriteAsString());
+                //    }
+                //}
+                //);
+                //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                parseTime = watch.ElapsedMilliseconds;
+                if (!arguments.NoGeometry)
                         {
                            
                             XbimMesher.GenerateGeometry(model, Logger, progDelegate);

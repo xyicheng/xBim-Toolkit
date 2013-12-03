@@ -56,6 +56,14 @@ namespace Xbim
 				return geom;
 		}
 
+		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcRepresentationItem^ repItem)
+		{
+			XbimGeometryModel^ geom = CreateFrom(repItem,maps,false,XbimLOD::LOD_Unspecified,false);
+			if( geom==nullptr)
+				return XbimEmptyGeometryGroup::Empty;
+			else
+				return geom;
+		}
 
 		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType)
 		{

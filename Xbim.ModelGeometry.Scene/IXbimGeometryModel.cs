@@ -27,12 +27,22 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="deflection"></param>
         /// <returns></returns>
         XbimTriangulatedModelCollection Mesh(double deflection);
-        IXbimMeshGeometry3D TriangulatedMesh(double deflection);
+        /// <summary>
+        /// Write the geometry as a triangulated mesh onto the mesh geometry and returns the details about the fragment on the mesh
+        /// </summary>
+        /// <param name="mesh3D">The mesh to write the geometry on to</param>
+        /// <param name="product">The product that the geometry represents</param>
+        /// <param name="transform">Tranforms all point before writing to the meshs</param>
+        /// <param name="deflection">The tangental deflection to use for curved surfaces</param>
+        /// <returns>The fragment of the mesh that has been added</returns>
+        XbimMeshFragment MeshTo(IXbimMeshGeometry3D mesh3D, IfcProduct product, XbimMatrix3D transform, double deflection);
         /// <summary>
         /// Returns a string containing the geometry in PLY format
         /// </summary>
         /// <returns></returns>
         string WriteAsString();
         double Volume { get; }
+
+        XbimPoint3D CentreOfMass { get; }
     }
 }

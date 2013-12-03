@@ -32,7 +32,7 @@ namespace Xbim.ModelGeometry.Scene
     public class XbimColourMap : KeyedCollection<string, XbimColour>
     {
 
-
+        
         protected override string GetKeyForItem(XbimColour item)
         {
             return item.Name;

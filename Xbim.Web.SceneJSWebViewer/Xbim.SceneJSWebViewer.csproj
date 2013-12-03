@@ -37,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <DesktopBuildPackageLocation>obj\Debug\Package\Xbim.SceneJSWebViewer.zip</DesktopBuildPackageLocation>
     <DeployIisAppPath>Default Web Site/Xbim.Web.SceneJSWebViewer_deploy</DeployIisAppPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>

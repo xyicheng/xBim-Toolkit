@@ -26,7 +26,7 @@ namespace Xbim
 			void Build(IfcConnectedFaceSet^ repItem);
 			void Build(IfcClosedShell^ repItem);
 			XbimTriangulatedModel^ TriangulateFaceSet(IEnumerable<IfcFace^>^ faces);
-
+			
 		public:
 			void Build();
 			XbimFacetedShell(bool isSolid,IfcRepresentationItem^ faceSet, bool hasCurves,int representationLabel, int surfaceStyleLabel );
@@ -86,8 +86,8 @@ namespace Xbim
 				}
 
 			virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
+			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
 			
-
 			virtual property TopoDS_Shape* Handle
 			{
 				TopoDS_Shape* get() override;

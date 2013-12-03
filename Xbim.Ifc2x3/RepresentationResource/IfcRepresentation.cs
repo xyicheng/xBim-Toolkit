@@ -38,7 +38,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   IFC2x Edition 3 NOTE  Users should not instantiate the entity IfcRepresentation from IFC2x Edition 3 onwards. It will be changed into an ABSTRACT supertype in future releases of IFC.
     ///   IFC2x Edition 3 CHANGE  The inverse attributes LayerAssignments and RepresentationMap have been added with upward compatibility.
     /// </remarks>
-    [IfcPersistedEntityAttribute]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcRepresentation : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                      IfcLayeredItem, INotifyPropertyChanging
     {
@@ -139,7 +139,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Definition of the representation context for which the different subtypes of representation are valid.
         /// </summary>
-        [IfcAttribute(1, IfcAttributeState.Mandatory)]
+        [IfcAttribute(1, IfcAttributeState.Mandatory), IndexedProperty]
         public IfcRepresentationContext ContextOfItems
         {
             get
@@ -264,13 +264,13 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// </summary>
         
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
-        internal IEnumerable<IfcProductRepresentation> OfProductRepresentation
+        public IEnumerable<IfcProductRepresentation> OfProductRepresentation
         {
             get
             {
                 return
                     ModelOf.Instances.Where<IfcProductRepresentation>(
-                        p => (p.Representations != null && p.Representations.Contains(this)));
+                        p => ( p.Representations.Contains(this)));
             }
         }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.IO;
@@ -35,6 +36,14 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <param name="model"></param>
         void Init(XbimModel model);
+
+        /// <summary>
+        /// Returns the 3D geometry for the representation item
+        /// </summary>
+        /// <param name="repItem"></param>
+        /// <returns></returns>
+        IXbimGeometryModelGroup GetGeometry3D(IfcRepresentationItem repItem);
+
 
         IXbimGeometryModelGroup GetGeometry3D(IfcRepresentation representation);
         /// <summary>

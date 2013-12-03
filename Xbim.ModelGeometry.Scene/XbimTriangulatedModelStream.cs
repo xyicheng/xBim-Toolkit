@@ -91,9 +91,9 @@ namespace Xbim.ModelGeometry.Scene
 {
 	public enum TriangleType : byte
 	{
-		GL_TRIANGLES = 0x0004,
-		GL_TRIANGLE_STRIP = 0x0005, 
-		GL_TRIANGLE_FAN = 0x0006
+		GL_Triangles = 0x0004,
+        GL_Triangles_Strip = 0x0005,
+        GL_Triangles_Fan = 0x0006
 	}
 
 	/// <summary>
@@ -437,7 +437,7 @@ namespace Xbim.ModelGeometry.Scene
         /// If there is no data an empty fragment is returned, if the mesh is goinng to excees the size of a an unsigned short
         /// then the data is not added and a fragement with zero number of points is returned and 
         /// a start position that is equal to the length of the mesh. The Entity Label is also sent to int.MinValue</returns>
-		public XbimMeshFragment BuildWithNormals<TGeomType>(TGeomType builder, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+		public XbimMeshFragment BuildWithNormals<TGeomType>(TGeomType builder, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices
         {
             _dataStream.Seek(0, SeekOrigin.Begin);
             BinaryReader br = new BinaryReader(_dataStream);
@@ -467,7 +467,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="br"></param>
         /// <param name="transform"></param>
         /// <returns></returns>
-        private bool BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+        private bool BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices
 		{
            
 			uint numPositions = br.ReadUInt32();
@@ -657,11 +657,11 @@ namespace Xbim.ModelGeometry.Scene
 					{
 						switch (meshType)
 						{
-							case TriangleType.GL_TRIANGLES://      0x0004
+							case TriangleType.GL_Triangles://      0x0004
 								builder.AddTriangleIndex(index);
 								// _meshGeometry.Positions.Add(_points[(int)index]);
 								break;
-							case TriangleType.GL_TRIANGLE_STRIP:// 0x0005
+							case TriangleType.GL_Triangles_Strip:// 0x0005
 								if (_pointTally % 2 == 0)
 								{
 									builder.AddTriangleIndex(_previousToLastIndex);
@@ -674,7 +674,7 @@ namespace Xbim.ModelGeometry.Scene
 								}
 								builder.AddTriangleIndex(index);
 								break;
-							case TriangleType.GL_TRIANGLE_FAN://   0x0006
+							case TriangleType.GL_Triangles_Fan://   0x0006
 								builder.AddTriangleIndex(_fanStartIndex);
 								builder.AddTriangleIndex(_lastIndex);                                
 								builder.AddTriangleIndex(index);

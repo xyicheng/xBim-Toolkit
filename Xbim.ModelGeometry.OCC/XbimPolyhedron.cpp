@@ -382,10 +382,20 @@ namespace Xbim
 							sw->Write(Convert::ToString(idx));
 						}
 					}
-					sw->WriteLine();        
+					sw->WriteLine(); 
+					std::vector<carve::geom::vector<2> > projectedVerts;
+					face->getProjectedVertices(projectedVerts);
+					std::vector<carve::triangulate::tri_idx> result;
+					carve::triangulate::triangulate(projectedVerts,result,0.00001);
+					sw->Write(Convert::ToString(result.size()));
+					for (size_t i = 0; i < result.size(); i++)
+					{
+						sw->Write(String::Format("{0} {1} {2}",result[i].a,result[i].b,result[i].c));
+					}
+					sw->WriteLine(); 
 				}
 				return sw->ToString();
-				
+
 			}
 			
 			XbimPolyhedron^ XbimPolyhedron::ToPolyHedron(double deflection, double precision,double precisionMax)
@@ -469,6 +479,27 @@ namespace Xbim
 				if(_meshSet==nullptr || poly->MeshSet==nullptr) return false;
 				return _meshSet->getAABB().intersects(poly->MeshSet->getAABB());
 			}
+
+			XbimMeshFragment XbimPolyhedron::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			{
+				XbimTriangulatedModelCollection^ triangles = Mesh(deflection);
+				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount);
+                fragment.EntityLabel = product->EntityLabel;
+                fragment.EntityType = product->GetType();
+				
+				for each (XbimTriangulatedModel^ tm in triangles) //add each mesh to the collective mesh
+				{
+					XbimTriangulatedModelStream^ streamer = gcnew XbimTriangulatedModelStream(tm->Triangles);
+					XbimMeshFragment f = streamer->BuildWithNormals<IXbimTriangulatesToPositionsNormalsIndices^>((IXbimTriangulatesToPositionsNormalsIndices^)mesh3D,transform);
+				}
+
+				fragment.EndPosition = mesh3D->PositionCount-1;
+                fragment.EndTriangleIndex = mesh3D->TriangleIndexCount-1;
+				mesh3D->Meshes->Add(fragment);
+				return fragment;
+			}
+
+
 			XbimTriangulatedModelCollection^ XbimPolyhedron::Mesh(double deflection)
 			{
 				XbimTriangularMeshStreamer tms (RepresentationLabel, SurfaceStyleLabel);
