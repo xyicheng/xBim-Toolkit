@@ -276,14 +276,20 @@ namespace Xbim.Presentation
                         foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //only handle simple properties
                         {
                             string val="";
-                            if(item.NominalValue!=null) 
-                                val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
-                            _properties.Add(new PropertyItem()
+                            if (item.NominalValue != null)
                             {
-                                PropertySetName = pSet.Name,
-                                Name = item.Name,
-                                Value = val
-                            });
+                                if (((ExpressType)(item.NominalValue)) != null && ((ExpressType)(item.NominalValue)).Value != null)
+                                {
+                                    val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
+
+                                    _properties.Add(new PropertyItem()
+                                    {
+                                        PropertySetName = pSet.Name,
+                                        Name = item.Name,
+                                        Value = val
+                                    });
+                                }
+                            }
                         }
                     }
                 }
