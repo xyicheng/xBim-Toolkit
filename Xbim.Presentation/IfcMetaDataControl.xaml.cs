@@ -282,14 +282,15 @@ namespace Xbim.Presentation
                                 {
                                     val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
 
-                                    _properties.Add(new PropertyItem()
-                                    {
-                                        PropertySetName = pSet.Name,
-                                        Name = item.Name,
-                                        Value = val
-                                    });
                                 }
                             }
+                            _properties.Add(new PropertyItem()
+                            {
+                                PropertySetName = pSet.Name,
+                                Name = item.Name,
+                                Value = val
+                            });
+
                         }
                     }
                 }
