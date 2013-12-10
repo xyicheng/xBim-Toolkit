@@ -55,7 +55,7 @@ namespace Xbim.Presentation
     ///   Interaction logic for DrawingControl3D.xaml
     /// </summary>
     public partial class DrawingControl3D : UserControl
-    {
+    {   
         public DrawingControl3D()
         {
             InitializeComponent();
@@ -67,12 +67,76 @@ namespace Xbim.Presentation
             ClearGraphics();
             MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);
 
-#if VisualGroupingTest
             VisualGrouping = VisualGroupingMethod.EntityLabel;
-#endif
-
         }
+
+        CombinedManipulator ClipHandler = null;
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            var plane = GetCutPlane();
+            if (e.Key == Key.LeftShift && ClipHandler == null && plane != null)
+                ClipPlaneHandlesShow();
+            else if (e.Key == Key.Delete &&
+                ((e.KeyboardDevice.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) // shift is pressed
+                )
+            {
+                if (plane != null)
+                {
+                    ClearCutPlane();
+                }
+                ClipPlaneHandlesHide();
+                ClipHandler = null;
+            }
+            base.OnPreviewKeyDown(e);
+        }
+
+        private void ClipPlaneHandlesPlace(Point3D pos)
+        {
+            Matrix3D m = Matrix3D.Identity;
+            m.Translate(new Vector3D(
+                pos.X, pos.Y, pos.Z)
+                );
+            Extras.Transform = new MatrixTransform3D(m);
+            // ClipPlaneHandlesShow();
+        }
+
+        private void ClipPlaneHandlesShow()
+        {
+            ClipHandler = new CombinedManipulator();
+            Extras.Children.Add(ClipHandler);
+        }
+
+        protected override void OnPreviewKeyUp(KeyEventArgs e)
+        {
+            // dealing with cutting plane update
+            //
+            if (e.Key == Key.LeftShift && ClipHandler != null)
+            {
+                var m1 = Extras.Transform.Value;
+                var m2 = ClipHandler.Transform.Value;
+
+                ClipPlaneHandlesHide();
+
+                var newMatrix = Matrix3D.Multiply(m2, m1);
+                Extras.Transform = new MatrixTransform3D(newMatrix);
+
+                Point3D p = new Point3D(newMatrix.OffsetX, newMatrix.OffsetY, newMatrix.OffsetZ);
+                var n = newMatrix.Transform(new Vector3D(0, 0, -1));
+                ClearCutPlane();
+                SetCutPlane(p.X, p.Y, p.Z, n.X, n.Y, n.Z);
+            }
+            base.OnPreviewKeyUp(e);
+        }
+
+        private void ClipPlaneHandlesHide()
+        {
+            Extras.Children.Clear();
+            ClipHandler = null;
+        }
+
 
         // elements associated with vector polygons drafted interactively on the model by the user
         //
@@ -144,32 +208,38 @@ namespace Xbim.Presentation
         void Viewport_CameraChanged(object sender, RoutedEventArgs e)
         {
             HelixViewport3D snd = sender as HelixViewport3D;
-            if (viewBounds.Length() > 0 && snd != null)
-            {
-                var middlePoint = viewBounds.Centroid();
-                double CentralDistance = Math.Sqrt(
+            if (snd == null)
+                return;
+
+            var middlePoint = viewBounds.Centroid();
+            double CentralDistance = Math.Sqrt(
                     Math.Pow(snd.Camera.Position.X, 2) + Math.Pow(middlePoint.X, 2) +
                     Math.Pow(snd.Camera.Position.Y, 2) + Math.Pow(middlePoint.Y, 2) +
                     Math.Pow(snd.Camera.Position.Z, 2) + Math.Pow(middlePoint.Z, 2)
                     );
 
-                double FarPlane = CentralDistance + 1.5 * viewBounds.Length();
-                double NearPlane = CentralDistance - 1.5 * viewBounds.Length();
-
-                const double nearLimit = 0.125;
-                if (NearPlane < nearLimit)
-                {
-                    NearPlane = nearLimit;
-                }
-                if (Viewport.Camera.NearPlaneDistance != NearPlane)
-                {
-                    Viewport.Camera.NearPlaneDistance = NearPlane;  // Debug.WriteLine("Near: " + NearPlane);
-                }
-                if (Viewport.Camera.FarPlaneDistance != FarPlane)
-                {
-                    Viewport.Camera.FarPlaneDistance = FarPlane;    // Debug.WriteLine("Far: " + FarPlane);
-                }
+            double diag = 40;
+            if (viewBounds.Length() > 0)
+            {
+                diag = viewBounds.Length();
             }
+            double FarPlane = CentralDistance + 1.5 * diag;
+            double NearPlane = CentralDistance - 1.5 * diag;
+
+            const double nearLimit = 0.125;
+            if (NearPlane < nearLimit)
+            {
+                NearPlane = nearLimit;
+            }
+            if (Viewport.Camera.NearPlaneDistance != NearPlane)
+            {
+                Viewport.Camera.NearPlaneDistance = NearPlane;  // Debug.WriteLine("Near: " + NearPlane);
+            }
+            if (Viewport.Camera.FarPlaneDistance != FarPlane)
+            {
+                Viewport.Camera.FarPlaneDistance = FarPlane;    // Debug.WriteLine("Far: " + FarPlane);
+            }
+
         }
 
         void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
@@ -193,6 +263,17 @@ namespace Xbim.Presentation
         /// </summary>
         /// <value>The model.</value>
         public Model3D Model3d { get; set; }
+
+        public Plane3D GetCutPlane()
+        {
+            object p = this.FindName("cuttingGroup");
+            XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
+            if (cpg == null || cpg.IsEnabled == false) 
+                return null;
+            if (cpg.CuttingPlanes.Count == 1)
+                return cpg.CuttingPlanes[0];
+            return null;
+        }
 
         public void SetCutPlane(double PosX, double PosY, double PosZ, double NrmX, double NrmY, double NrmZ)
         {   
@@ -241,7 +322,8 @@ namespace Xbim.Presentation
             Remove,
             Single,
             Ignore,
-            Measure
+            Measure,
+            SetClip
         }
 
         public Dictionary<ModifierKeys, MouseClickActions> MouseModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
@@ -324,6 +406,12 @@ namespace Xbim.Presentation
                             FirePrevPointsChanged();
                             
                             // UserModeledDimension.SetToVisual(FurtherGeometries); 
+                            break;
+                        case MouseClickActions.SetClip:
+                            SetCutPlane(
+                                hit.PointHit.X, hit.PointHit.Y, hit.PointHit.Z,
+                                0, 0, -1);
+                            ClipPlaneHandlesPlace(hit.PointHit);
                             break;
                     }
                 }
@@ -968,7 +1056,7 @@ namespace Xbim.Presentation
             this.ClearCutPlane();
 
             modelBounds = XbimRect3D.Empty;
-            viewBounds = new XbimRect3D(0, 0, 0, 10000, 10000, 5000);    
+            viewBounds = new XbimRect3D(0, 0, 0, 10, 10, 5);    
             scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
             Viewport.ResetCamera();
             Highlighted.Mesh = null;
