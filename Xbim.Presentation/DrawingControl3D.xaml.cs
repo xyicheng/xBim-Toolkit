@@ -281,6 +281,7 @@ namespace Xbim.Presentation
             XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
             if (cpg != null)
             {
+                cpg.IsEnabled = false;
                 cpg.CuttingPlanes.Clear();
                 cpg.CuttingPlanes.Add(
                     new Plane3D(
@@ -1481,8 +1482,24 @@ namespace Xbim.Presentation
             if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
             {
                 Rect3D r3d = Highlighted.Mesh.GetBounds();
-                // Debug.WriteLine("SelectedBBox: " + r3d.ToString());
                 ZoomTo(r3d);
+            }
+        }
+
+        /// <summary>
+        /// This functions sets a cutting plane at a distance of delta over the base of the selected element.
+        /// It is useful when the selected element is obscured by elements surrounding it.
+        /// </summary>
+        /// <param name="delta">positive distance of the cutting plane above the base of the selected element.</param>
+        public void ClipBaseSelected(double delta)
+        {
+            if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
+            {
+                Rect3D r3d = Highlighted.Mesh.GetBounds();
+                SetCutPlane(
+                    r3d.X, r3d.Y, r3d.Z + delta, 
+                    0, 0, -1
+                    );
             }
         }
 
@@ -1495,7 +1512,10 @@ namespace Xbim.Presentation
         {
             if (!r3d.IsEmpty)
             {
-                Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
+                Rect3D bounds = new Rect3D(
+                    viewBounds.X, viewBounds.Y, viewBounds.Z, 
+                    viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ
+                    );
                 if (DoubleRectSize)
                 {
                     r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
