@@ -69,7 +69,7 @@ namespace Xbim.Presentation
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);
 
-            VisualGrouping = VisualGroupingMethod.EntityLabel;
+            VisualGrouping = VisualGroupingMethod.ElementType;
         }
 
         CombinedManipulator ClipHandler = null;
