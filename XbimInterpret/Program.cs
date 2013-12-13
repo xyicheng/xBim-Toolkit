@@ -43,7 +43,7 @@ namespace XbimInterpret
             }
 
 
-            Console.WriteLine("Enter your commands (use 'exit' command to quit):");
+            Console.WriteLine("Enter your commands (use 'exit' command to quit or 'help' for help):");
             Console.Write(">>> ");
             string command = Console.ReadLine();
             IEnumerable<IPersistIfcEntity> lastResults = null;
@@ -56,6 +56,14 @@ namespace XbimInterpret
                     parser.Model.CreateFrom(testModelPath, null, null, true);
                     Console.WriteLine("Model ready...");
                 }
+                if (command.ToLower() == "help")
+                {
+                    System.Diagnostics.Process.Start("BQL_documentation.pdf");
+                    Console.Write(">>> ");
+                    command = Console.ReadLine();
+                    continue;
+                }
+
                 parser.Parse(command);
                 if (parser.Errors.Count() != 0)
                     foreach (var error in parser.Errors)

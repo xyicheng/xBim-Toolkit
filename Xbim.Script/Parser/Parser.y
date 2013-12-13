@@ -123,7 +123,6 @@ expression
 	| attr_setting ';'
 	| variables_actions ';'
 	| model_actions ';'
-	| error
 	;
 
 attr_setting
@@ -232,8 +231,7 @@ conditions
 	;
 	
 condition
-	: 
-	| materialCondition						{$$.val = $1.val;}
+	: materialCondition						{$$.val = $1.val;}
 	| typeCondition							{$$.val = $1.val;}
 	| groupCondition						{$$.val = $1.val;}
 	| spatialCondition						{$$.val = $1.val;}
