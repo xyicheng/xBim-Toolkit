@@ -520,18 +520,26 @@ namespace XbimXplorer.Querying
                         else if (m.Groups["action"].Value.ToLowerInvariant() == "mode")
                         {
                             string t = Name.ToLowerInvariant();
-                            if (t == "entity")
+                            if (t == "type")
                             {
-                                ParentWindow.DrawingControl.VisualGrouping = DrawingControl3D.VisualGroupingMethod.EntityLabel;
+                                ReportAdd("Visual mode set to EntityType.");
+                                ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyle();
+                                ParentWindow.DrawingControl.ReloadModel();
                             }
-                            else if (t == "type")
+                            else if (t == "entity")
                             {
-                                ParentWindow.DrawingControl.VisualGrouping = DrawingControl3D.VisualGroupingMethod.ElementType;
+                                ReportAdd("Visual mode set to EntityLabel.");
+                                ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerPerEntity();
+                                ParentWindow.DrawingControl.ReloadModel();
+                            }
+                            else if (t == "oddeven")
+                            {
+                                ReportAdd("Visual mode set to Odd/Even.");
+                                ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerEvenOdd();
+                                ParentWindow.DrawingControl.ReloadModel();
                             }
                             else
-                            {
                                 ReportAdd(string.Format("mode not understood: {0}.", t));
-                            }
                         }
                         else
                         {

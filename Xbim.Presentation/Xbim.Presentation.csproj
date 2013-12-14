@@ -102,6 +102,10 @@
     <Compile Include="DynamicProductSelectionControl.xaml.cs">
       <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LayerStyling\LayerStylerPerEntity.cs" />
+    <Compile Include="LayerStyling\ILayerStyler.cs" />
+    <Compile Include="LayerStyling\LayerStylerEvenOdd.cs" />
+    <Compile Include="LayerStyling\LayerStylerTypeAndIFCStyle.cs" />
     <Compile Include="SynchronizedView.xaml.cs">
       <DependentUpon>SynchronizedView.xaml</DependentUpon>
     </Compile>

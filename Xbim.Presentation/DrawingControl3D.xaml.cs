@@ -67,9 +67,7 @@ namespace Xbim.Presentation
             ClearGraphics();
             MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
-            MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);
-
-            VisualGrouping = VisualGroupingMethod.ElementType;
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);            
         }
 
         CombinedManipulator ClipHandler = null;
@@ -576,7 +574,7 @@ namespace Xbim.Presentation
             }
         }
 
-        private void ReloadModel()
+        public void ReloadModel()
         {
             LoadGeometry((XbimModel)this.GetValue(ModelProperty));
             SetValue(LayerSetProperty, LayerSetRefresh());
@@ -1238,25 +1236,12 @@ namespace Xbim.Presentation
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
             return scene;
         }
-
-        private VisualGroupingMethod _VisualGrouping = VisualGroupingMethod.ElementType;
-
-        public VisualGroupingMethod VisualGrouping
-        {
-            get {
-                return _VisualGrouping;
-            }
-            set {
-                _VisualGrouping = value;
-                ReloadModel();
-            }
-        }
-
-        public enum VisualGroupingMethod
-        {
-            ElementType,
-            EntityLabel
-        }
+        
+        /// <summary>
+        /// LayerStyler provides a mechanism to define colouring schemes for elements in DrawingControl3D.
+        /// After setting a new LayerStyler issue a ReloadModel (<see cref="Xbim.Presentation.DrawingControl3D.ReloadModel()"/>). 
+        /// </summary>
+        public LayerStyling.ILayerStyler LayerStyler = null;
 
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
@@ -1279,26 +1264,27 @@ namespace Xbim.Presentation
             double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
 
-            Dictionary<string, XbimGeometryHandleCollection> Grouping = null;
-            if (_VisualGrouping == VisualGroupingMethod.ElementType)
-                Grouping = handles.GroupByBuildingElementTypes();
-            else
-                Grouping = handles.GroupByEntityLabel();
+            // prepare groping and layering behaviours
+            if (LayerStyler == null)
+                LayerStyler = new LayerStyling.LayerStylerTypeAndIFCStyle();
 
+            Dictionary<string, XbimGeometryHandleCollection> GroupedHandlers = LayerStyler.GroupLayers(handles);
 
-            Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(Grouping, layerContent =>
-            // foreach (var layerContent in handles.FilterByBuildingElementTypes())
+            Parallel.ForEach<string>(GroupedHandlers.Keys, LayerName =>
             {
-                string elementTypeName = layerContent.Key;
-                XbimGeometryHandleCollection layerHandles = layerContent.Value;
-                IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
-                XbimColour colour = scene.LayerColourMap[elementTypeName];
-                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = elementTypeName };
-                // add all content initially into the hidden field
+                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = LayerStyler.GetLayer(LayerName, model, scene);
+                IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(GroupedHandlers[LayerName]);
+
+                // initially add all content into the hidden field (underlying geometry info)
+                // it will later be moved to the visible WPF implementation
                 foreach (var geomData in geomColl)
                 {
                     geomData.TransformBy(wcsTransform);
-                    layer.AddToHidden(geomData, model);
+
+                    if (LayerStyler.UseIfcSubStyles)
+                        layer.AddToHidden(geomData, model);
+                    else
+                        layer.AddToHidden(geomData, null);
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
