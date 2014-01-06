@@ -175,15 +175,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Q /Y "C:\Working Folder\Development\ProductDevelopment\xBIM\XbimFramework\Dev\NBS\Xbim.DOM\bin\Debug\Xbim.DOM.dll" "C:\Working Folder\Development\ProductDevelopment\NBLTools\packages\xBIM-NBS"
-
-xcopy /Q /Y "C:\Working Folder\Development\ProductDevelopment\xBIM\XbimFramework\Dev\NBS\Xbim.DOM\bin\Debug\Xbim.Common.dll" "C:\Working Folder\Development\ProductDevelopment\NBLTools\packages\xBIM-NBS"
-
-xcopy /Q /Y "C:\Working Folder\Development\ProductDevelopment\xBIM\XbimFramework\Dev\NBS\Xbim.DOM\bin\Debug\Xbim.Ifc.Extensions.dll" "C:\Working Folder\Development\ProductDevelopment\NBLTools\packages\xBIM-NBS"
-
-xcopy /Q /Y "C:\Working Folder\Development\ProductDevelopment\xBIM\XbimFramework\Dev\NBS\Xbim.DOM\bin\Debug\Xbim.Ifc2x3.dll" "C:\Working Folder\Development\ProductDevelopment\NBLTools\packages\xBIM-NBS"
-
-xcopy /Q /Y "C:\Working Folder\Development\ProductDevelopment\xBIM\XbimFramework\Dev\NBS\Xbim.DOM\bin\Debug\Xbim.IO.dll" "C:\Working Folder\Development\ProductDevelopment\NBLTools\packages\xBIM-NBS"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -73,11 +73,11 @@ namespace Xbim.Ifc2x3.MaterialResource
         {
             return !(left == right);
         }
+
         #region IPersistIfcEntity Members
 
         private int _entityLabel;
         private IModel _model;
-
         public IModel ModelOf
         {
             get { return _model; }
