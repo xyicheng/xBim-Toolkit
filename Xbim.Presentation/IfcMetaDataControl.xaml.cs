@@ -149,8 +149,6 @@ namespace Xbim.Presentation
             get { return _typeProperties; }
         }
 
-    
-
         public IPersistIfcEntity SelectedEntity
         {
             get { return (IPersistIfcEntity)GetValue(SelectedEntityProperty); }
@@ -276,8 +274,14 @@ namespace Xbim.Presentation
                         foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //only handle simple properties
                         {
                             string val="";
-                            if(item.NominalValue!=null) 
-                                val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
+                            if (item.NominalValue != null)
+                            {
+                                var nomVal = (ExpressType)(item.NominalValue);
+                                if (nomVal.Value != null)
+                                    val = nomVal.Value.ToString(); // value (not ToPart21) for visualisation
+                                else
+                                    val = item.NominalValue.ToString();
+                            }
                             _properties.Add(new PropertyItem()
                             {
                                 PropertySetName = pSet.Name,

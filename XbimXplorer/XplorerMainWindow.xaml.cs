@@ -462,14 +462,26 @@ namespace XbimXplorer
             if (msg != null) StatusMsg.Text = msg;
         }
 
+        
+        // this variable is used to determine when the user is trying again to double click on the selected item
+        // from this we detect that he's probably not happy with the view, therefore we add a cutting plane to make the 
+        // element visible.
+        //
+        private bool _camChanged = false;
         private void SpatialControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            _camChanged = false;
+            DrawingControl.Viewport.Camera.Changed += Camera_Changed;
             DrawingControl.ZoomSelected();
+            DrawingControl.Viewport.Camera.Changed -= Camera_Changed;
+            if (!_camChanged)
+                DrawingControl.ClipBaseSelected(0.15);
         }
 
-       
-          
-
+        void Camera_Changed(object sender, EventArgs e)
+        {
+            _camChanged = true;
+        }
 
         private void dlg_FileSaveAs(object sender, CancelEventArgs e)
         {
@@ -772,16 +784,15 @@ namespace XbimXplorer
             Gat.Controls.About about = new Gat.Controls.About();
             //
             about.Title = "xBIM Xplorer";
-            about.Hyperlink = new Uri("http://www.codeplex.com",UriKind.Absolute);
-            about.HyperlinkText = "http://www.codeplex.com";
+            about.Hyperlink = new Uri("http://xbim.codeplex.com",UriKind.Absolute);
+            about.HyperlinkText = "http://xbim.codeplex.com";
             about.Publisher="xBIM Team - Steve Lockley";
-            about.Description = "This is a demonstratore application designed to show some of the potential of the xBIM toolkit";
+            about.Description = "This application is designed to demonstrate potential usages of the xBIM toolkit";
             about.ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,/xBIM.ico", UriKind.RelativeOrAbsolute));
             about.Copyright = "Prof. Steve Lockley";
             about.PublisherLogo = about.ApplicationLogo;
-            about.AdditionalNotes = "The xBIM toolkit is an Open Source software initiative to help software developers and researchers to support the next generation of BIM tools ";
+            about.AdditionalNotes = "The xBIM toolkit is an Open Source software initiative to help software developers and researchers to support the next generation of BIM tools; unlike other open source application xBIM license is compatible with commercial environments (http://xbim.codeplex.com/license)";
             about.Show();
-
         }
 
         private void UKTemplate_Click(object sender, RoutedEventArgs e)
