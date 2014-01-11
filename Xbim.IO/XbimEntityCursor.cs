@@ -65,7 +65,13 @@ namespace Xbim.IO
 
         public override void Dispose()
         {
-            Api.JetCloseTable(sesid, this._indexTable);
+            try
+            {
+                Api.JetCloseTable(sesid, this._indexTable);
+            }
+            catch (Exception)
+            {                
+            }    
             base.Dispose();
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -253,14 +254,8 @@ namespace Xbim.Common.Geometry
 
         public override string ToString()
         {
-            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} {3} {4} {5}", 
-                _x.ToString("f99").TrimEnd(new char[] {'0', ','}),
-                _y.ToString("f99").TrimEnd(new char[] { '0', ',' }),
-                _z.ToString("f99").TrimEnd(new char[] { '0', ',' }),
-                _sizeX.ToString("f99").TrimEnd(new char[] { '0', ',' }),
-                _sizeY.ToString("f99").TrimEnd(new char[] { '0', ',' }),
-                _sizeZ.ToString("f99").TrimEnd(new char[] {'0', ','})
-                );
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} {3} {4} {5}",
+                _x, _y, _z, _sizeX, _sizeY, _sizeZ);
         }
 
         /// <summary>
@@ -271,30 +266,15 @@ namespace Xbim.Common.Geometry
         public bool FromString(string Value)
         {
             string[] itms = Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            if (itms.Length != 6)
-                return false;
+            Debug.Assert(itms.Length == 6);
 
-            double[] vals = new double[6];
-            try
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    vals[i] = Convert.ToDouble(itms[i], System.Globalization.CultureInfo.InvariantCulture);    
-                }   
-                
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            _x = Convert.ToSingle(itms[0], System.Globalization.CultureInfo.InvariantCulture);
+            _y = Convert.ToSingle(itms[1], System.Globalization.CultureInfo.InvariantCulture);
+            _z = Convert.ToSingle(itms[2], System.Globalization.CultureInfo.InvariantCulture);
 
-            _x = (float)vals[0];
-            _y = (float)vals[1];
-            _z = (float)vals[2];
-           
-            _sizeX = (float)vals[3];
-            _sizeY = (float)vals[4];
-            _sizeZ = (float)vals[5];
+            _sizeX = Convert.ToSingle(itms[3], System.Globalization.CultureInfo.InvariantCulture);
+            _sizeY = Convert.ToSingle(itms[4], System.Globalization.CultureInfo.InvariantCulture);
+            _sizeZ = Convert.ToSingle(itms[5], System.Globalization.CultureInfo.InvariantCulture);
 
             return true;
         }
@@ -343,7 +323,12 @@ namespace Xbim.Common.Geometry
                 return new XbimPoint3D((X + SizeX / 2), (Y + SizeY / 2), (Z + SizeZ / 2));
         }
 
-
+        /// <summary>
+        /// Transforms a bounding rect so that it is still axis aligned
+        /// </summary>
+        /// <param name="rect3d"></param>
+        /// <param name="m"></param>
+        /// <returns></returns>
         static public XbimRect3D TransformBy(XbimRect3D rect3d, XbimMatrix3D m)
         {
             XbimPoint3D min = rect3d.Min;
@@ -471,6 +456,59 @@ namespace Xbim.Common.Geometry
             var max = this.Max * composed;
 
             return new XbimRect3D(min, max);
+        }
+
+        /// <summary>
+        /// Rounds the values of the bounding box to the specified precision
+        /// </summary>
+        /// <param name="digits"></param>
+        public void Round(int digits)
+        {
+
+            _x = (float)Math.Round(_x, digits);
+            _y = (float)Math.Round(_y, digits);
+            _z = (float)Math.Round(_z, digits);
+            _sizeX = (float)Math.Round(_sizeX, digits);
+            _sizeY = (float)Math.Round(_sizeY, digits);
+            _sizeZ = (float)Math.Round(_sizeZ, digits);
+        }
+
+        /// <summary>
+        /// Rounds the values of the bounding box to the specified precision and returns a copy
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="digits"></param>
+        /// <returns></returns>
+        public static XbimRect3D Round(XbimRect3D r, int digits)
+        {
+            return new XbimRect3D((float)Math.Round(r.X, digits),
+                (float)Math.Round(r.Y, digits),
+                (float)Math.Round(r.Z, digits),
+                (float)Math.Round(r.SizeX, digits),
+                (float)Math.Round(r.SizeY, digits),
+                (float)Math.Round(r.SizeZ, digits)
+                );
+        }
+
+
+        /// <summary>
+        /// true if the rect fits inside thsi rectangle when it is either inflated or defalted by the tolerance
+        /// </summary>
+        /// <param name="xbimRect3D"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public bool IsSimilar(XbimRect3D rect, double tolerance)
+        {
+            double t = Math.Abs(tolerance);
+            double t2 = 2 * t;
+            return 
+                Math.Abs(_x - rect.X) <= t &&
+                Math.Abs(_y - rect.Y) <= t &&
+                Math.Abs(_z - rect.Z) <= t &&
+                Math.Abs(_sizeX - rect.SizeX) <= t2 &&
+                Math.Abs(_sizeY - rect.SizeY) <= t2 &&
+                Math.Abs(_sizeZ - rect.SizeZ) <= t2;
+
         }
     }
 }

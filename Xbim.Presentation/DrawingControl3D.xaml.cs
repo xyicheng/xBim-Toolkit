@@ -980,7 +980,7 @@ namespace Xbim.Presentation
             bool first = true;
             foreach (XbimGeometryData shape in model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
-                XbimMatrix3D matrix3d = shape.Transform;
+                XbimMatrix3D matrix3d = XbimMatrix3D.FromArray(shape.DataArray2);
                 XbimRect3D bb = XbimRect3D.FromArray(shape.ShapeData);
                 bb = XbimRect3D.TransformBy(bb, matrix3d);  
                 if (first) { box = bb; first = false; }
@@ -1151,6 +1151,7 @@ namespace Xbim.Presentation
 
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
+
             // spaces are not excluded from the model to make the ShowSpaces property meaningful
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             XbimGeometryHandleCollection handles; 

@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   Formal Propositions:
     ///   WR1   :   The dimensionality of the first operand shall be the same as the dimensionality of the second operand.
     /// </remarks>
-    [IfcPersistedEntityAttribute]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcBooleanResult : IfcGeometricRepresentationItem, IfcBooleanOperand, IfcCsgSelect
     {
         #region Part 21 Step file Parse routines

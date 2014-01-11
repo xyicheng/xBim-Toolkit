@@ -309,7 +309,7 @@ TryBuildLoop:
 			{
 				hasCurves=true;
 				IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)circProfile->Position;
-				gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+				gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0].X, ax2->P[0].Y,0.));			
 				
 				//make the outer wire
 				gp_Circ outer(gpax2,circProfile->Radius);

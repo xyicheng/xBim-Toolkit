@@ -16,6 +16,9 @@ namespace Xbim
 			{
 				//_representationItemCache = gcnew ConcurrentDictionary<int, XbimGeometryModel^>();
 			};
+			virtual void CacheStart(bool clear){if(clear) _cache = gcnew ConcurrentDictionary<int, Object^>(); _caching=true;};
+			virtual void CacheStop(bool clear){if(clear) _cache = gcnew ConcurrentDictionary<int, Object^>(); _caching=false;};
+	
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcProduct^ product);
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcProduct^ product,  XbimGeometryType xbimGeometryType);
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcSolidModel^ solid, XbimGeometryType geomType);
@@ -26,11 +29,17 @@ namespace Xbim
 			{
 				_model = model;
 				Standard::SetReentrant(Standard_True);
-				maps = gcnew ConcurrentDictionary<int, Object^>();
+				_cache = gcnew ConcurrentDictionary<int, Object^>();
 				_deflection=model->ModelFactors->DeflectionTolerance;
 				_precision = model->ModelFactors->Precision;
 				_precisionMax = model->ModelFactors->PrecisionMax;
+				_caching=false;
 			}
+			virtual property bool Caching
+			{
+				bool get() {return _caching;}
+			}
+
 			virtual property double Deflection
 			{
 				double get() {return _deflection;}
@@ -53,7 +62,8 @@ namespace Xbim
 			double _deflection;
 			double _precisionMax;
 			double _precision;
-			ConcurrentDictionary<int, Object^>^ maps;
+			bool _caching;
+			ConcurrentDictionary<int, Object^>^ _cache;
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod, bool occOut);

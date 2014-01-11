@@ -7,6 +7,7 @@ using Xbim.Analysis.Comparitors;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.IO;
+using Xbim.ModelGeometry.Converter;
 using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Analysis
@@ -60,16 +61,17 @@ namespace Xbim.Analysis
             return ret;
         }
 
+
         public Int32 StartProductsComparison()
         {
-            if (ItemsNeedMatching())
-                CheckGuids();
-            if (ItemsNeedMatching())
-                CheckNames();
-            if (ItemsNeedMatching())
-                CheckRelationships();
-            if (ItemsNeedMatching())
-                CheckProperties();
+            //if (ItemsNeedMatching())
+            //    CheckGuids();
+            //if (ItemsNeedMatching())
+            //    CheckNames();
+            //if (ItemsNeedMatching())
+            //    CheckRelationships();
+            //if (ItemsNeedMatching())
+            //    CheckProperties();
             if (ItemsNeedMatching())
                 CheckGeometry();
 
@@ -196,7 +198,45 @@ namespace Xbim.Analysis
         private void CheckGeometry()
         {
             Message("Starting - Geometry Check");
-            Message("Check Not Implemented Yet");
+            GeometryComparer gc = new GeometryComparer();
+            Xbim3DModelContext baseContext = new Xbim3DModelContext(Baseline);
+            Xbim3DModelContext revisionContext = new Xbim3DModelContext(Revision);
+            //we have to sort out comparision and units, this assumes they are both in the same units at the moment
+            //suggest all geometry is kept in metres SI
+            var results = gc.Compare(baseContext, revisionContext, Baseline.ModelFactors.OneMilliMetre);
+            //update working copies as we go with those still yet to resolve
+            WorkingCopyBaseline.Clear(); WorkingCopyDelta.Clear();
+
+            foreach (var item in results.Where(x => x.Value == ChangeType.Matched))
+            {
+                Message(String.Format("Found a Match for type {1} with GUID: {0}", item.Key.GlobalId, item.Key.GetType().ToString()));
+                EntityLabelChanges[item.Key] = item.Value;
+            }
+            foreach (var item in results.Where(x => x.Value == ChangeType.Added))
+            {
+                WorkingCopyDelta.Add(item.Key);
+                Message(String.Format("Found a new item of type {1} with GUID: {0}", item.Key.GlobalId, item.Key.GetType().ToString()));
+                EntityLabelChanges[item.Key] = item.Value;
+            }
+            foreach (var item in results.Where(x => x.Value == ChangeType.Deleted))
+            {
+                WorkingCopyBaseline.Add(item.Key);
+                Message(String.Format("Found a missing item of type {1} with GUID: {0}", item.Key.GlobalId, item.Key.GetType().ToString()));
+                EntityLabelChanges[item.Key] = item.Value;
+            }
+            foreach (var item in results.Where(x => x.Value == ChangeType.Unknown))
+            {
+                WorkingCopyBaseline.Add(item.Key);
+                Message(String.Format("Found duplicate possibilities for item of type {1} with GUID: {0}", item.Key.GlobalId, item.Key.GetType().ToString()));
+                EntityLabelChanges[item.Key] = item.Value;
+            }
+
+            var m = gc.GetMap();
+            foreach (var key in m)
+            {
+                EntityMapping[key.Key] = m[key.Key];
+            }
+
             Message("Geometry Check - complete");
         }
         private void CheckRelationships()

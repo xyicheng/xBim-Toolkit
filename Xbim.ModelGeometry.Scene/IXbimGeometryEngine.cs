@@ -73,6 +73,22 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         double PrecisionMax { get; set; }
 
-       
+        /// <summary>
+        /// Starts or resumes the caching of  geometries
+        /// </summary>
+        /// <param name="clear">If true any existing cached data is cleared</param>
+        void CacheStart(bool clear);
+
+        /// <summary>
+        /// Stops or pauses the caching of geometries
+        /// </summary>
+        /// <param name="p">If true any existing cached data is cleared</param>
+        void CacheStop(bool clear);
+
+        /// <summary>
+        /// True if geometry caching is currently on
+        /// </summary>
+        /// <returns></returns>
+        bool Caching { get; }
     }
 }

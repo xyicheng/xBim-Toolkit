@@ -332,7 +332,7 @@ namespace Xbim
 		{
 
 			IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)profile->Position;
-			gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+			gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0].X, ax2->P[0].Y,0.));			
 			double semiAx1 =profile->SemiAxis1;
 			double semiAx2 =profile->SemiAxis2;
 			if(semiAx1<=0 ) 
@@ -659,7 +659,7 @@ namespace Xbim
 		{
 			hasCurves=true;
 			IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)circProfile->Position;
-			gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+			gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0].X, ax2->P[0].Y,0.));			
 			gp_Circ gc(gpax2,circProfile->Radius);
 			Handle(Geom_Circle) hCirc = GC_MakeCircle(gc);
 			TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(hCirc);
@@ -817,7 +817,7 @@ namespace Xbim
 			if(dynamic_cast<IfcAxis2Placement2D^>(circle->Position))
 			{
 				IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)circle->Position;
-				gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+				gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0].X, ax2->P[0].Y,0.));			
 				gp_Circ gc(gpax2,circle->Radius);
 				curve = GC_MakeCircle(gc);
 			}
@@ -983,7 +983,7 @@ namespace Xbim
 				if(dynamic_cast<IfcAxis2Placement2D^>(c->Position))
 				{
 					IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)c->Position;
-					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));	
+					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0].X, ax2->P[0].Y,0.));	
 					gp_Circ gc(gpax2,c->Radius);
 					curve = GC_MakeCircle(gc);
 				}
@@ -1024,7 +1024,7 @@ namespace Xbim
 						rotateElipse=true;
 					}
 
-					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[rotateElipse?1:0]->X, ax2->P[rotateElipse?1:0]->Y,0.));	
+					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[rotateElipse?1:0].X, ax2->P[rotateElipse?1:0].Y,0.));	
 					
 					gp_Elips gc(gpax2,s1, s2);
 					curve = GC_MakeEllipse(gc);

@@ -26,6 +26,7 @@ using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Logging;
 using namespace Xbim::Ifc2x3::SharedBldgElements;
 using namespace System::Collections::Concurrent;
+using namespace Xbim::Common;
 using namespace Xbim::Common::Logging;
 
 
@@ -168,7 +169,7 @@ private:
 #if USE_CARVE
 			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) abstract ;
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) ;
-			virtual String^ WriteAsString();
+			virtual String^ WriteAsString(XbimModelFactors^ modelFactors);
 #endif
 			virtual property XbimLocation ^ Location 
 			{

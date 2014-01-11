@@ -65,11 +65,25 @@ namespace Xbim
 				}
 			}
 			
+			virtual XbimRect3D GetBoundingBox() override
+			{
+				if(!_bounds.IsEmpty) return _bounds;
+				if(Handle!=nullptr) //we don't have a collection
+					return XbimGeometryModel::GetBoundingBox(); //calculate the single shaep
+				else
+					return XbimGeometryModelCollection::GetBoundingBox(); //add up all the components
+
+			}
+
 #if USE_CARVE
 				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override;
 				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
 
 #endif
+				virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
+		private:
+				String^ WriteAsString(XbimModelFactors^ modelFactors, IEnumerable<IfcFace^>^ faces);
+		public:
 				~XbimFacetedShell()
 				{
 					InstanceCleanup();

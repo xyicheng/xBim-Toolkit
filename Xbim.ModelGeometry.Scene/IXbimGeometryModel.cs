@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Common;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.Interfaces;
@@ -40,7 +41,7 @@ namespace Xbim.ModelGeometry.Scene
         /// Returns a string containing the geometry in PLY format
         /// </summary>
         /// <returns></returns>
-        string WriteAsString();
+        string WriteAsString(XbimModelFactors modelFactors);
         double Volume { get; }
 
         XbimPoint3D CentreOfMass { get; }

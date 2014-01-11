@@ -65,8 +65,28 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AssemblyResolver.cs" />
+    <Compile Include="IfcArbitraryClosedProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcAxis2Placement2DGeometricExtensions.cs" />
+    <Compile Include="IfcAxis2Placement3DGeometricExtensions.cs" />
+    <Compile Include="IfcBooleanResultGeometricExtensions.cs" />
+    <Compile Include="IfcCartesianPointGeometricExtensions.cs" />
+    <Compile Include="IfcCircleHollowProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcCircleProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcConnectedFaceSetGeometricExtensions.cs" />
+    <Compile Include="IfcCurveGeometricExtensions.cs" />
+    <Compile Include="IfcDirectionGeometricExtensions.cs" />
+    <Compile Include="IfcExtrudedAreaSolidGeometryExtensions.cs" />
+    <Compile Include="IfcFaceBasedSurfaceModelGeometricExtensions.cs" />
+    <Compile Include="IfcFaceBoundGeometricExtensions.cs" />
+    <Compile Include="IfcFaceGeometricExtensions.cs" />
+    <Compile Include="IfcLoopGeometricExtensions.cs" />
+    <Compile Include="IfcManifoldSolidBrepGeometricExtensions.cs" />
+    <Compile Include="IfcLShapeProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcPolyLoopGeometricExtensions.cs" />
     <Compile Include="IfcProductGeometryExtensions.cs" />
     <Compile Include="IfcProductRepresentationGeometryExtensions.cs" />
+    <Compile Include="IfcProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcRectangleProfileDefGeometricExtensions.cs" />
     <Compile Include="IfcRepresentationGeometryExtensions.cs" />
     <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
     <Compile Include="IfcSolidModelGeometryExtensions.cs" />
@@ -79,6 +99,7 @@
     <Compile Include="XbimRepresentationItem.cs" />
     <Compile Include="XbimSceneBuilder.cs" />
     <Compile Include="XbimShape.cs" />
+    <Compile Include="XbimShapeGroup.cs" />
     <Compile Include="XbimShapeMap.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -97,10 +118,6 @@
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
       <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
       <Name>Xbim.IO</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC64.vcxproj">
-      <Project>{bb0e1c7a-c255-41cb-814d-894193ab6424}</Project>
-      <Name>Xbim.ModelGeometry.OCC64 %28Visual Studio 2010%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>

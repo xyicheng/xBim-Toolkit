@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Common;
 using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
@@ -30,7 +31,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTriangulatedModelCollection Mesh(double deflection) { return new XbimTriangulatedModelCollection(); }
 
-        public String WriteAsString() { return "EMPTY"; }
+        public String WriteAsString(XbimModelFactors modelFactors) { return "EMPTY"; }
 
         public XbimRect3D GetAxisAlignedBoundingBox()
         {

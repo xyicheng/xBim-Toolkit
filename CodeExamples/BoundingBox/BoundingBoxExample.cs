@@ -58,7 +58,7 @@ namespace CodeExamples.BoundingBox
                              XbimRect3D boundBox = XbimRect3D.FromArray(geoData.ShapeData);//size information for the IfcDoor, but the information is for the bounding box which encloses the door 
 
                              //if want want in World space 
-                             XbimMatrix3D worldMatrix = geoData.Transform;
+                             XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.DataArray2);
                              //if we want to convert to World space we can use the geoData.Transform property and create the world matrix
                              XbimPoint3D MinPtOCS = new XbimPoint3D(boundBox.X, boundBox.Y, boundBox.Z);
                              XbimPoint3D MaxPtOCS = new XbimPoint3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);

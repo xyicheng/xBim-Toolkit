@@ -92,6 +92,7 @@ namespace Xbim.IO
                
 
                 columndef.coltyp = JET_coltyp.Binary;
+                columndef.grbit = ColumndefGrbit.ColumnMaybeNull;
                 Api.JetAddColumn(sesid, tableid, colNameTransformMatrix, columndef, null, 0, out columnid);
                
                 columndef.coltyp = JET_coltyp.LongBinary;
@@ -186,11 +187,11 @@ namespace Xbim.IO
                     _colValSubPart.Value = subPart;
                     _colValTransformMatrix.Value = transform;
                     _colValShapeData.Value = shapeData;
-                    _colValGeometryHash.Value = 0;// geomHash;
-                    if (styleLabel > 0)
+                    _colValGeometryHash.Value = geometryHash.HasValue ? geometryHash.Value : 0;// geomHash;
+                   // if (styleLabel > 0)
                         _colValStyleLabel.Value = styleLabel;
-                    else
-                        _colValStyleLabel.Value = -ifcType; //use the negative type id as a style for object that have no render material
+                   // else
+                   //     _colValStyleLabel.Value = -ifcType; //use the negative type id as a style for object that have no render material
                     Api.SetColumns(sesid, table, _colValues);
                     UpdateCount(1);
                     int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy);
@@ -516,6 +517,62 @@ namespace Xbim.IO
             }
             else
                 return null;
+        }
+
+        /// <summary>
+        /// Updates the number of references to a geomentry, a value of 1 indicates 1 reference in addition to one original use.
+        /// A value of 0 means there is only the single use and no other references to this geometry
+        /// </summary>
+        /// <param name="geomLabel"></param>
+        /// <param name="refCount"></param>
+        /// <returns></returns>
+        public int UpdateReferenceCount(int geomLabel, int refCount)
+        {
+            if (refCount < 1) return 0;
+            Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
+            Api.MakeKey(sesid, table, geomLabel, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
+            {
+                short size = Api.RetrieveColumnAsInt16(sesid, table, _colIdSubPart, RetrieveColumnGrbit.RetrieveCopy).Value;
+                int cost = refCount * size;
+                using (var update = new Update(sesid, table, JET_prep.Replace))
+                {
+                    
+                    Api.SetColumn(sesid, table, _colIdGeometryHash, -cost); //change the hash variable to hold the weighting for the saving this object yields on tranfer of data
+                    update.Save();
+                } 
+                return cost;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Returns the records for all geometries of the specified type
+        /// </summary>
+        /// <param name="xbimGeometryType"></param>
+        /// <returns></returns>
+        public IEnumerable<XbimGeometryData>  GeometryData(XbimGeometryType xbimGeometryType)
+        {
+            
+            Api.JetSetCurrentIndex(sesid, table, geometryTableGeomTypeIndex);
+            Api.MakeKey(sesid, table, (byte)xbimGeometryType, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
+            {
+                Api.MakeKey(sesid, table, (byte)xbimGeometryType, MakeKeyGrbit.NewKey | MakeKeyGrbit.FullColumnEndLimit);
+                if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                {
+                    do
+                    {
+
+                        Api.RetrieveColumns(sesid, table, _colValues);
+                        System.Diagnostics.Debug.Assert((byte)xbimGeometryType == _colValGeomType.Value);
+                        _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
+                        yield return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0);
+
+                    } while (Api.TryMoveNext(sesid, table));
+                }
+            }
+            
         }
     }
 }

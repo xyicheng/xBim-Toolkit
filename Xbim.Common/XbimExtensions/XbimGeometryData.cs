@@ -28,32 +28,25 @@ namespace Xbim.XbimExtensions
         readonly public int IfcProductLabel;
         readonly public XbimGeometryType GeometryType;
         readonly public byte[] ShapeData;
-        
+        readonly public byte[] DataArray2;
         readonly public int GeometryHash;
         readonly public short IfcTypeId;
         readonly public int StyleLabel;
         private XbimMatrix3D transform;
 
-        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] transform, int geometryHash, int styleLabel)
+        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel)
         {
             GeometryLabel = geometrylabel;
             GeometryType = geomType;
             IfcTypeId = ifcTypeId;
             ShapeData = shape;
-           // TransformData = transform;
             IfcProductLabel = productLabel;
             GeometryHash = geometryHash;
             StyleLabel = styleLabel;
-            this.transform = XbimMatrix3D.FromArray(transform);
+            DataArray2 = dataArray2;
         }
 
-        public XbimMatrix3D Transform
-        {
-            get
-            {
-                return transform;
-            }
-        }
+       
 
         /// <summary>
         /// Transforms the shape data of the geometry by the matrix
@@ -65,10 +58,7 @@ namespace Xbim.XbimExtensions
            
         }
 
-        public byte[] TransformData()
-        {
-            return transform.ToArray();
-        }
+       
         /// <summary>
         /// The constructs an XbimGeoemtryData object, the geometry hash is calculated from the array of shape data
         /// </summary>

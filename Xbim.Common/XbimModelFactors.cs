@@ -46,6 +46,10 @@ namespace Xbim.Common
         /// The  maximum tolerance under which two given points are still assumed to be identical
         /// </summary>
         readonly public double PrecisionMax;
+        /// <summary>
+        /// The number of decimal places to round a number to in order to truncate to the model precision
+        /// </summary>
+        readonly public int Rounding;
         readonly public double OneMetre;
         /// <summary>
         /// Returns the value for one millimetre in the units of the model
@@ -68,6 +72,7 @@ namespace Xbim.Common
             MaxBRepSewFaceCount = 1024;
             PrecisionBoolean = OneMilliMetre / 100;
             PrecisionBooleanMax = OneMilliMetre *10;
+            Rounding = Math.Abs((int)Math.Log10(Precision));
         }
     }
 }

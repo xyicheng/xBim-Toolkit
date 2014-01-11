@@ -88,6 +88,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Examples\4WallsWithWindowsCV2.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Examples\4WallsWithWindowsCV2OneWindowMoved.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Examples\Duplex_baseline.ifc" />
     <None Include="Examples\Duplex_baseline.xBIM" />
     <None Include="Examples\Duplex_cutpastewindow.ifc" />

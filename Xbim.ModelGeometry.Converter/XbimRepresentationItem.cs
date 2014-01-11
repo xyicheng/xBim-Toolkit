@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Common;
 using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.ModelGeometry.Converter
@@ -78,7 +79,7 @@ namespace Xbim.ModelGeometry.Converter
             throw new NotImplementedException();
         }
 
-        string IXbimGeometryModel.WriteAsString()
+        string IXbimGeometryModel.WriteAsString(XbimModelFactors modelFactors)
         {
             throw new NotImplementedException();
         }

@@ -275,7 +275,7 @@ namespace Xbim.ModelGeometry.Converter
                             XbimGeometryData geomdata = model.GetGeometryData(storey.EntityLabel, XbimGeometryType.TransformOnly).FirstOrDefault();
                             if (geomdata != null)
                             {
-                                storeyHeight = geomdata.Transform.OffsetZ;
+                                storeyHeight = XbimMatrix3D.FromArray(geomdata.DataArray2).OffsetZ;
                                 // apply the transformation previously applied to the building 
                                 XbimPoint3D InTranslatedReference = composed.Transform(
                                     new XbimPoint3D(0, 0, storeyHeight)

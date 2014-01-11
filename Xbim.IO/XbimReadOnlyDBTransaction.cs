@@ -6,7 +6,7 @@ using Microsoft.Isam.Esent.Interop;
 
 namespace Xbim.IO
 {
-    internal struct XbimReadOnlyDBTransaction: IDisposable
+    public struct XbimReadOnlyDBTransaction: IDisposable
     {
          /// <summary>
         /// The session that has the transaction.

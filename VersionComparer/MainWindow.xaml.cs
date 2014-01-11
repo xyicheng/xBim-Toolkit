@@ -24,6 +24,10 @@ namespace VersionComparer
         public MainWindow()
         {
             InitializeComponent();
+#if DEBUG
+            BaselineTextBox.Text = @"examples\4WallsWithWindowsCV2.xbim";
+            RevisedTextBox.Text = @"examples\4WallsWithWindowsCV2OneWindowMoved.xbim";
+#endif
         }
 
         private void StartComparison_Click(object sender, RoutedEventArgs e)

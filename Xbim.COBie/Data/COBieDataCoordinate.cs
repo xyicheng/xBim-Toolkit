@@ -106,7 +106,7 @@ namespace Xbim.COBie.Data
                         
                         if (geoData != null)
                         {
-                            XbimMatrix3D worldMatrix = geoData.Transform;
+                            XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.DataArray2);
                             ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
                         }
                         coordinate.SheetName = "Floor";
@@ -118,7 +118,7 @@ namespace Xbim.COBie.Data
                         if (geoData != null)
                         {
                             XbimRect3D boundBox = XbimRect3D.FromArray(geoData.ShapeData);
-                            XbimMatrix3D worldMatrix = geoData.Transform;
+                            XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.DataArray2);
                             //do the transform in the next call to the structure TransformedBoundingBox constructor
                             TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
                             ClockwiseRotation = tranBox.ClockwiseRotation;

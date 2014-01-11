@@ -28,22 +28,45 @@ namespace Xbim
 				float Dim1;
 				float Dim2;
 				float Dim3;
+				double Precision2;
+
 				Float3D(float D1,	float D2,	float D3)
-					:Dim1(D1),Dim2(D2),Dim3(D3)
+					:Dim1(D1),Dim2(D2),Dim3(D3), Precision2(1e-5*1e-5)
 				{
 
+				}
+
+				Float3D(float D1,	float D2,	float D3, double precision)
+					:Dim1(D1),Dim2(D2),Dim3(D3), Precision2(precision*precision)
+				{
+
+				}
+
+				void Round(float roundPlaces)
+				{
+					float rounding10P = std::pow(10, roundPlaces);
+					Dim1 = (long)(Dim1 * rounding10P) / rounding10P;
+					Dim2 = (long)(Dim2 * rounding10P) / rounding10P;
+					Dim3 = (long)(Dim3 * rounding10P) / rounding10P;
 				}
 
 				operator size_t () const
 				{
-					std::hash<float> h;
-					return (size_t)(h(Dim1) ^ h(Dim2) ^ h(Dim3));
+					
+					std::hash<float> h; 
+					return h(Dim1)^
+						   h(Dim2)^
+						   h(Dim3); 
 				}
 
-
-				bool operator==(const Float3D& A) const
+				bool operator==(const Float3D& b) const
 				{
-					return Dim1 == A.Dim1 && Dim2 == A.Dim2 && Dim3==A.Dim3;	
+					double d = 0, dd;
+					double x1 = Dim1, y1 = Dim2, z1=Dim3, x2=b.Dim1, y2=b.Dim2, z2=b.Dim3;
+					dd = x1; dd -= x2; dd *= dd; d += dd;
+					dd = y1; dd -= y2; dd *= dd; d += dd;
+					dd = z1; dd -= z2; dd *= dd; d += dd;
+					return d <= Precision2;	
 				}
 
 				bool operator<(const Float3D& A) const

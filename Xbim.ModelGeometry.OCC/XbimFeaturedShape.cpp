@@ -49,7 +49,7 @@ namespace Xbim
 				RepresentationLabel= baseShape->RepresentationLabel;
 				SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				_hasCurvedEdges = mBaseShape->HasCurvedEdges;	
-				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->PrecisionBoolean,product->ModelOf->ModelFactors->PrecisionBooleanMax); //openings work best at .1mm tolerance
+				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->Precision,product->ModelOf->ModelFactors->PrecisionBooleanMax); //openings work best at .1mm tolerance
 				mResultShape->RepresentationLabel= baseShape->RepresentationLabel;
 				mResultShape->SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				
@@ -370,6 +370,11 @@ TryCutPolyhedron:
 				mResultShape->Move(location);
 			}
 
-		}
+
+			String^ XbimFeaturedShape::WriteAsString(XbimModelFactors^ modelFactors)
+			{
+				return mResultShape->WriteAsString(modelFactors);
+			}
+}
 	}
 }

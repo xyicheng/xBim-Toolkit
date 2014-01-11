@@ -35,6 +35,7 @@ namespace Xbim
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
 			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
 #endif
+			virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
 			XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, XbimGeometryModelCollection^ openings, XbimGeometryModelCollection^ projections);
 			virtual property bool IsValid
 			{

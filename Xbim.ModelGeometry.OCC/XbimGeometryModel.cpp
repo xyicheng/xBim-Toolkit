@@ -47,6 +47,8 @@ using namespace Xbim::Common::Exceptions;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace  System::Threading;
 using namespace  System::Text;
+
+
 class Message_ProgressIndicator {};
 
 namespace Xbim
@@ -317,6 +319,7 @@ TryCutSolid:
 				{
 					
 					BRepAlgoAPI_Cut boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
 					if(boolOp.ErrorStatus() == 0)
 					{
 						//make sure it is a valid geometry
@@ -398,6 +401,7 @@ TryCutSolid:
 					Logger->ErrorFormat("Boolean error {0} on shape #{1} with shape #{2}. Discarded", err, RepresentationLabel,shape->RepresentationLabel );
 					
 				}		
+				
 				return this;//stick with what we started with
 			}
 
@@ -670,14 +674,17 @@ TryIntersectSolid:
 				Marshal::FreeHGlobal(BonghiUnManMem);
 				XbimTriangulatedModelCollection^ list = gcnew XbimTriangulatedModelCollection();
 				list->Add(gcnew XbimTriangulatedModel(BmanagedArray, GetBoundingBox() ,RepresentationLabel, SurfaceStyleLabel) );
-				
+
 				return list;
 			};
 
-			String^ XbimGeometryModel::WriteAsString()
+		
+
+			String^ XbimGeometryModel::WriteAsString(XbimModelFactors^ modelFactors)
 			{
-				double deflection = 10;
-				double precision = 1e-5;
+				double deflection = modelFactors->DeflectionTolerance;
+				double precision = modelFactors->Precision;
+				int rounding =  modelFactors->Rounding;
 				StringBuilder^ sb = gcnew StringBuilder();
 				TopoDS_Shape shape = *(this->Handle);
 				Monitor::Enter(this);
@@ -715,7 +722,8 @@ TryIntersectSolid:
 						{
 							gp_XYZ p = points(nd).XYZ();
 							loc.Transformation().Transforms(p);			 
-							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z()); 
+							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z(),precision); 
+							p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
 							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
 							if(hit==vertexMap.end()) //not found add it in
 							{	size_t idx = vertexMap.size();
@@ -734,7 +742,7 @@ TryIntersectSolid:
 						}
 						if(vWritten) sb->AppendLine();
 						GeomLib_IsPlanarSurface ps(BRep_Tool::Surface(face), precision);
-						bool planar = ps.IsPlanar();
+						Standard_Boolean planar = ps.IsPlanar();
 						String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
 						if(planar)
 						{
@@ -749,7 +757,11 @@ TryIntersectSolid:
 							else if(normal.IsEqual(gp::DZ(),0.1)) f="U";
 							else if(normal.IsOpposite(gp::DZ(),0.1)) f="D";
 							else
-							{	sb->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z());	
+							{
+								if(abs(normal.X())<precision) normal.SetX(0.);
+								if(abs(normal.Y())<precision) normal.SetY(0.);
+								if(abs(normal.Z())<precision) normal.SetZ(0.);
+								sb->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z());	
 								sb->AppendLine();
 								nbNormals=1;
 							}
@@ -810,6 +822,7 @@ TryIntersectSolid:
 				{
 					Monitor::Exit(this);
 				}
+				GC::KeepAlive(this);
 				return sb->ToString();
 			}
 

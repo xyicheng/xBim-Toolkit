@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -355,12 +356,40 @@ namespace Xbim.Common.Geometry
             _m44 = (float)m44;
             _isNotDefaultInitialised = true;
         }
-        
-        public static XbimMatrix3D FromArray(byte[] array, bool useDouble = true)
+        /// <summary>
+        /// Converts string of 15 reals to a matrix
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static XbimMatrix3D FromString(string val)
         {
+            string[] itms = val.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            Debug.Assert(itms.Length == 16);
+            return new XbimMatrix3D(
+                Convert.ToSingle(itms[0], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[1], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[2], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[3], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[4], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[5], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[6], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[7], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[8], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[9], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[10], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[11], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[12], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[13], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[14], System.Globalization.CultureInfo.InvariantCulture),
+                Convert.ToSingle(itms[15], System.Globalization.CultureInfo.InvariantCulture));   
+        }
+
+        public static XbimMatrix3D FromArray(byte[] array)
+        {
+            if (array.Length == 0) return XbimMatrix3D.Identity;
             MemoryStream ms = new MemoryStream(array);
             BinaryReader strm = new BinaryReader(ms);
-           
+            bool useDouble = array.Length > 16 * sizeof(Single);
             if (useDouble)
                 return new XbimMatrix3D(
                 (float)strm.ReadDouble(),
@@ -429,7 +458,9 @@ namespace Xbim.Common.Geometry
         }
         public override int GetHashCode()
         {
-            return this.ToString().GetHashCode();
+            XbimPoint3D p = new XbimPoint3D(1, 3, 5); //get a point
+            p = this.Transform(p); //tranform
+            return p.GetHashCode(); //use the hash of the point
         }
         #endregion
 
@@ -658,10 +689,13 @@ namespace Xbim.Common.Geometry
         /// <returns>String representation of mat</returns>
         public  string Str()
         {
-            return "[" + M11 + ", " + M12 + ", " + M13 + ", " + M14 +
-                  ", " + M21 + ", " + M22 + ", " + M23 + ", " + M24 +
-                  ", " + M31 + ", " + M32 + ", " + M33 + ", " + M34 +
-                  ", " + OffsetX + ", " + OffsetY + ", " + OffsetZ + ", " + M44 + "]";
+            if(this.IsIdentity)
+                return "I";
+            else
+                return string.Format(System.Globalization.CultureInfo.InvariantCulture, 
+                    "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15}", 
+                    M11, M12, M13, M14, M21, M22, M23, M24, M31, M32, M33, M34, OffsetX, OffsetY, OffsetZ, M44);
+
         }
         #endregion
 
@@ -718,6 +752,7 @@ namespace Xbim.Common.Geometry
             OffsetZ = (-a30 * b03 + a31 * b01 - a32 * b00) * invDet;
             M44 = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
         }
+
 
         public byte[] ToArray(bool useDouble = true)
         {

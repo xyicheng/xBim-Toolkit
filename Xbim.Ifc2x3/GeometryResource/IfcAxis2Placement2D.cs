@@ -18,6 +18,7 @@ using System.Runtime.Serialization;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.Common.Geometry;
 
 #endregion
 
@@ -82,20 +83,20 @@ namespace Xbim.Ifc2x3.GeometryResource
         /// <summary>
         ///   Optional.   P[1]: The normalized direction of the placement X Axis. This is (1.0,0.0,0.0) if RefDirection is omitted. P[2]: The normalized direction of the placement Y Axis. This is a derived attribute and is orthogonal to P[1].
         /// </summary>
-        public List<IfcDirection> P
+        public List<XbimVector3D> P
         {
             get
             {
-                List<IfcDirection> p = new List<IfcDirection>(2);
+                List<XbimVector3D> p = new List<XbimVector3D>(2);
                 if (RefDirection == null)
                 {
-                    p.Add(new IfcDirection(1, 0));
-                    p.Add(new IfcDirection(0, 1));
+                    p.Add(new XbimVector3D(1, 0,0));
+                    p.Add(new XbimVector3D(0, 1,0));
                 }
                 else
                 {
-                    p.Add(RefDirection);
-                    p.Add(new IfcDirection(-RefDirection[1], RefDirection[0]));
+                    p.Add(new XbimVector3D( RefDirection[0], RefDirection[1], 0));
+                    p.Add(new XbimVector3D(-RefDirection[1], RefDirection[0], 0));
                 }
                 return p;
             }

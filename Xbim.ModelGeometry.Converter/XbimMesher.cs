@@ -377,7 +377,7 @@ namespace Xbim.ModelGeometry.Converter
                 foreach (var geomData in model.GetGeometryData(XbimGeometryType.BoundingBox))
                 {
                     XbimRect3D bound = XbimRect3D.FromArray(geomData.ShapeData);
-                    XbimMatrix3D m3D = geomData.Transform;
+                    XbimMatrix3D m3D = XbimMatrix3D.FromArray(geomData.DataArray2);
                     bound = XbimRect3D.TransformBy(bound, m3D);
                     ElementsToCluster.Add(new XbimBBoxClusterElement(geomData.GeometryLabel, bound));
                 }

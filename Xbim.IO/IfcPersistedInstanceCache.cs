@@ -1349,7 +1349,7 @@ namespace Xbim.IO
             return null;
         }
 
-        public void SaveAs(XbimStorageType _storageType, string _storageFileName, ReportProgressDelegate progress = null)
+        public void SaveAs(XbimStorageType _storageType, string _storageFileName, ReportProgressDelegate progress = null, IDictionary<int, int> map = null)
         {
             switch (_storageType)
             {
@@ -1357,7 +1357,7 @@ namespace Xbim.IO
                     SaveAsIfcXml(_storageFileName);
                     break;
                 case XbimStorageType.IFC:
-                    SaveAsIfc(_storageFileName);
+                    SaveAsIfc(_storageFileName,map);
                     break;
                 case XbimStorageType.IFCZIP:
                     SaveAsIfcZip(_storageFileName);
@@ -1410,9 +1410,9 @@ namespace Xbim.IO
             }
         }
 
-       
 
-        private void SaveAsIfc(string storageFileName)
+
+        private void SaveAsIfc(string storageFileName, IDictionary<int, int> map = null)
         {
             if (string.IsNullOrWhiteSpace(Path.GetExtension(storageFileName))) //make sure we have an extension
                 storageFileName = Path.ChangeExtension(storageFileName, "Ifc");
@@ -1424,7 +1424,7 @@ namespace Xbim.IO
                     using (TextWriter tw = new StreamWriter(storageFileName))
                     {
                         Part21FileWriter p21 = new Part21FileWriter();
-                        p21.Write(_model, tw);
+                        p21.Write(_model, tw,map);
                         tw.Flush();
                     }  
                 }

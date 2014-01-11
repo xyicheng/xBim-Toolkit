@@ -23,17 +23,30 @@ namespace Xbim.XbimExtensions
         /// For products with no geometry use TransformOnly to store the transform matrix associated with the placement.
         /// </summary>
         TransformOnly = 0x5,
-                /// <summary>
+        /// <summary>
         /// 128 bit hash of a geometry
         /// </summary>
         TriangulatedMeshHash = 0x6,
         /// <summary>
-        /// The Stanford PLY format, a set of nominally planar polygons
+        /// The xBIM variant of the PLY format, a set of nominally planar polygons
         /// </summary>
         Polyhedron = 0x7,
-         /// <summary>
+        /// <summary>
+        /// A map, or reference to one or more Polyhedron shapes
+        /// </summary> = 
+        PolyhedronMap = 0x8,
+        /// <summary>
+        /// The map of polyhedron that represent this product
+        /// </summary>
+        ProductPolyhedronMap = 0x9,
+        /// <summary>
+        /// The Polyhedron that represents this product after openings and additions have been applied
+        /// </summary>
+        NetProductPolyhedronMap = 0xA,
+        /// <summary>
         /// A boundary representation using the OpenCascade model
         /// </summary>
-        BRep = 0x8
+        BRep = 0xE,
+        
     }
 }

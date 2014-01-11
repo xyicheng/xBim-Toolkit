@@ -168,7 +168,7 @@ namespace Xbim.IO
         /// commit call has to be made.
         /// </summary>
         /// <returns>The new transaction.</returns>
-        internal XbimReadOnlyDBTransaction BeginReadOnlyTransaction()
+        public XbimReadOnlyDBTransaction BeginReadOnlyTransaction()
         {
             return new XbimReadOnlyDBTransaction(this.sesid);
         }
@@ -213,11 +213,18 @@ namespace Xbim.IO
 
         virtual public void Dispose()
         {
-          
-            Api.JetCloseTable(sesid, table);
-            Api.JetCloseTable(sesid, globalsTable);
-            Api.JetCloseDatabase(this.sesid, this.dbId, CloseDatabaseGrbit.None);
-            Api.JetEndSession(this.sesid,EndSessionGrbit.None);
+            try
+            {
+                Api.JetCloseTable(sesid, table);
+                Api.JetCloseTable(sesid, globalsTable);
+                Api.JetCloseDatabase(this.sesid, this.dbId, CloseDatabaseGrbit.None);
+                Api.JetEndSession(this.sesid, EndSessionGrbit.None);
+            }
+            catch (Exception)
+            {
+               
+            }
+            
         }
     }
 }

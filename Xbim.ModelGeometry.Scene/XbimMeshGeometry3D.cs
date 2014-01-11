@@ -543,7 +543,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="geometryMeshData"></param>
         public bool Add(XbimGeometryData geometryMeshData)
         {
-            XbimMatrix3D transform = geometryMeshData.Transform;
+            XbimMatrix3D transform = XbimMatrix3D.FromArray(geometryMeshData.DataArray2);
             if (geometryMeshData.GeometryType == XbimGeometryType.TriangulatedMesh)
             {
                 XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);

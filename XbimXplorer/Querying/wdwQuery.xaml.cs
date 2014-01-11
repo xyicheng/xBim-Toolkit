@@ -457,7 +457,7 @@ namespace XbimXplorer.Querying
                                 Xbim.XbimExtensions.XbimGeometryData geomdata = Model.GetGeometryData(storey.EntityLabel, Xbim.XbimExtensions.XbimGeometryType.TransformOnly).FirstOrDefault();
                                 if (geomdata != null)
                                 {
-                                    Xbim.Common.Geometry.XbimPoint3D pt = new Xbim.Common.Geometry.XbimPoint3D(0, 0, geomdata.Transform.OffsetZ);
+                                    Xbim.Common.Geometry.XbimPoint3D pt = new Xbim.Common.Geometry.XbimPoint3D(0, 0, XbimMatrix3D.FromArray(geomdata.DataArray2).OffsetZ);
                                     Xbim.Common.Geometry.XbimMatrix3D mcp = Xbim.Common.Geometry.XbimMatrix3D.Copy(ParentWindow.DrawingControl.wcsTransform);
                                     var transformed = mcp.Transform(pt);
                                     msg = string.Format("Clip 1m above storey elevation {0} (height: {1})", pt.Z, transformed.Z + 1);

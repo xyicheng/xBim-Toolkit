@@ -214,7 +214,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         public XbimVector3D XbimVector3D()
         {
             ((IPersistIfcEntity) this).Activate(false);
-            return new XbimVector3D(_x, _y, _z);
+            return new XbimVector3D(_x, _y, double.IsNaN(_z) ? 0 : _z);
         }
 
         public double this[int axis]

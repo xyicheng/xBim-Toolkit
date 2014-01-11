@@ -774,7 +774,22 @@ namespace Xbim.IO
             }
         }
 
+        public bool SaveAs(string outputFileName)
+        {
+            return SaveAs(outputFileName, null, null, null);
+        }
+
+        public bool SaveAs(string outputFileName, XbimStorageType? storageType = null)
+        {
+            return SaveAs(outputFileName, storageType, null, null);
+        }
+
         public bool SaveAs(string outputFileName, XbimStorageType? storageType = null, ReportProgressDelegate progress = null)
+        {
+            return SaveAs(outputFileName, storageType, progress, null);
+        }
+
+        public bool SaveAs(string outputFileName, XbimStorageType? storageType = null, ReportProgressDelegate progress = null, IDictionary<int, int> map = null)
         {
 
             try
@@ -819,7 +834,7 @@ namespace Xbim.IO
                 }
                 else
                 {
-                    cache.SaveAs(storageType.Value, outputFileName, progress);
+                    cache.SaveAs(storageType.Value, outputFileName, progress, map);
                     return true;
                 }
             }
@@ -1396,5 +1411,6 @@ namespace Xbim.IO
         }
 
         public object Tag { get; set; }
+
     }
 }

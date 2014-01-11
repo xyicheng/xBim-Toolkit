@@ -163,10 +163,11 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entityWriter">The TextWriter</param>
         /// <param name="entity">The entity to write</param>
-        internal static void WriteEntity( this IPersistIfcEntity entity, TextWriter entityWriter)
+        internal static void WriteEntity(this IPersistIfcEntity entity, TextWriter entityWriter, IDictionary<int, int> map = null)
         {
-
-            entityWriter.Write(string.Format("#{0}={1}(", Math.Abs(entity.EntityLabel), entity.GetType().Name.ToUpper()));
+            int entityLabel = Math.Abs(entity.EntityLabel);
+            if(map!=null && map.Keys.Contains(entityLabel)) return; //if the entity is replaced in the map do not write it
+            entityWriter.Write(string.Format("#{0}={1}(", entityLabel, entity.GetType().Name.ToUpper()));
             IfcType ifcType = IfcMetaData.IfcType(entity);
             bool first = true;
             
@@ -186,7 +187,7 @@ namespace Xbim.IO
                     object propVal = ifcProperty.PropertyInfo.GetValue(entity, null);
                     if (!first)
                         entityWriter.Write(',');
-                    WriteProperty(propType, propVal, entityWriter);
+                    WriteProperty(propType, propVal, entityWriter, map);
                     first = false;
                 }
             }
@@ -200,7 +201,7 @@ namespace Xbim.IO
         /// <param name="propType"></param>
         /// <param name="propVal"></param>
         /// <param name="entityWriter"></param>
-        private static void WriteProperty(Type propType, object propVal, TextWriter entityWriter)
+        private static void WriteProperty(Type propType, object propVal, TextWriter entityWriter,IDictionary<int,int> map)
         {
             Type itemType;
             if (propVal == null) //null or a value type that maybe null
@@ -217,7 +218,7 @@ namespace Xbim.IO
                     {
                         if (!first)
                             entityWriter.Write(',');
-                        WriteProperty(compVal.GetType(), compVal, entityWriter);
+                        WriteProperty(compVal.GetType(), compVal, entityWriter,map);
                         first = false;
                     }
                     entityWriter.Write(')');
@@ -241,7 +242,7 @@ namespace Xbim.IO
                 {
                     if (!first)
                         entityWriter.Write(',');
-                    WriteProperty(compVal.GetType(), compVal, entityWriter);
+                    WriteProperty(compVal.GetType(), compVal, entityWriter, map);
                     first = false;
                 }
                 entityWriter.Write(')');
@@ -255,7 +256,7 @@ namespace Xbim.IO
                 {
                     entityWriter.Write(realType.Name.ToUpper());
                     entityWriter.Write('(');
-                    WriteProperty(realType, propVal, entityWriter);
+                    WriteProperty(realType, propVal, entityWriter, map);
                     entityWriter.Write(')');
                 }
                 else //need to write out underlying property value
@@ -274,7 +275,7 @@ namespace Xbim.IO
                 {
                     if (!first)
                         entityWriter.Write(',');
-                    WriteProperty(itemType, item, entityWriter);
+                    WriteProperty(itemType, item, entityWriter, map);
                     first = false;
                 }
                 entityWriter.Write(')');
@@ -283,7 +284,11 @@ namespace Xbim.IO
             //all writable entities must support this interface and ExpressType have been handled so only entities left
             {
                 entityWriter.Write('#');
-                entityWriter.Write(Math.Abs(((IPersistIfcEntity)propVal).EntityLabel));
+                int label = Math.Abs(((IPersistIfcEntity)propVal).EntityLabel);
+                int mapLabel;
+                if(map!=null &&  map.TryGetValue(label, out mapLabel))
+                    label = mapLabel;
+                entityWriter.Write(label);
             }
             else if (propType.IsValueType) //it might be an in-built value type double, string etc
             {
@@ -296,12 +301,12 @@ namespace Xbim.IO
                 {
                     entityWriter.Write(propVal.GetType().Name.ToUpper());
                     entityWriter.Write('(');
-                    WriteProperty(propVal.GetType(), propVal, entityWriter);
+                    WriteProperty(propVal.GetType(), propVal, entityWriter, map);
                     entityWriter.Write(')');
                 }
                 else //could be anything so re-evaluate actual type
                 {
-                    WriteProperty(propVal.GetType(), propVal, entityWriter);
+                    WriteProperty(propVal.GetType(), propVal, entityWriter, map);
                 }
             }
             else

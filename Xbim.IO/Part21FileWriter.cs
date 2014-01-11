@@ -29,15 +29,15 @@ namespace Xbim.IO
     public class Part21FileWriter 
     {
         private HashSet<long> _written;
-        
-        public void Write(XbimModel model, TextWriter output)
+
+        public void Write(XbimModel model, TextWriter output, IDictionary<int, int> map = null)
         {
             _written = new HashSet<long>();
             output.Write(HeaderAsString(model.Header ?? new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults)));
             foreach (XbimInstanceHandle item in model.InstanceHandles /*.Types.OrderBy(t=>t.Name)*/)
             {
                 IPersistIfcEntity entity = model.GetInstanceVolatile(item);
-                entity.WriteEntity(output);
+                entity.WriteEntity(output, map);
             }
 
             output.WriteLine("ENDSEC;");

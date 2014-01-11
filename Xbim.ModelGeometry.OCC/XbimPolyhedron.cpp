@@ -15,6 +15,7 @@
 
 using namespace  System::Threading;
 using System::Runtime::InteropServices::Marshal;
+using namespace  System::Text;
 
 namespace Xbim
 {
@@ -351,51 +352,81 @@ namespace Xbim
 			}*/
 
 			
-			String^ XbimPolyhedron::WriteAsString()
+			String^ XbimPolyhedron::WriteAsString(XbimModelFactors^ modelFactors)
 			{
-				StringWriter^ sw = gcnew StringWriter();
-				sw->WriteLine("PLY");
-				int faceCount = 0;
-				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) faceCount++;
-				sw->WriteLine(Convert::ToString(_meshSet->vertex_storage.size()));
-				sw->WriteLine(Convert::ToString(faceCount));
-				for (std::vector<meshset_t::vertex_t>::const_iterator i = _meshSet->vertex_storage.begin(); i!=_meshSet->vertex_storage.end(); ++i)
+				double deflection = modelFactors->DeflectionTolerance;
+				double precision = modelFactors->Precision;
+				int rounding =  modelFactors->Rounding;
+				StringBuilder^ sw = gcnew StringBuilder();
+				size_t normalsOffset=0;
+				double rounding10P = Math::Pow(10, rounding);
+					
+				if(_meshSet==nullptr || _meshSet->vertex_storage.size() ==0) return "";
+				sw->Append("V");
+				for (std::vector<meshset_t::vertex_t>::const_iterator 
+					i = _meshSet->vertex_storage.begin(); i!=_meshSet->vertex_storage.end(); ++i)
 				{
 					vertex_t vt = *i;
-					sw->WriteLine(String::Format("{0} {1} {2}",vt.v.x,vt.v.y,vt.v.z));
+					vt.v.x = (long)(vt.v.x * rounding10P) / rounding10P;
+					vt.v.y = (long)(vt.v.y * rounding10P) / rounding10P;
+					vt.v.z = (long)(vt.v.z * rounding10P) / rounding10P;
+					sw->Append(String::Format(" {0},{1},{2}",vt.v.x,vt.v.y,vt.v.z));
 				}
+				sw->AppendLine();
 				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) 
 				{
 					face_t *face = *i;
 					int numVertices = face->nVertices();
-					sw->Write(Convert::ToString(numVertices));
-
 					if(numVertices>0)
 					{
-						edge_t *e1 = face->edge;
-						sw->Write(" ");
-						sw->Write(Convert::ToString(carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,e1->v1())));
-						for (edge_t *e2 = e1 ;e2->next != e1; e2 = e2->next) 
+						
+						//sort the normal
+						vector_t n =  face->plane.N;
+						gp_Dir normal(n.x,n.y,n.z);
+						String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
+						if(normal.IsEqual(gp::DX(),0.1)) f="R";
+						else if(normal.IsOpposite(gp::DX(),0.1)) f="L";
+						else if(normal.IsEqual(gp::DY(),0.1)) f="B";
+						else if(normal.IsOpposite(gp::DY(),0.1)) f="F";
+						else if(normal.IsEqual(gp::DZ(),0.1)) f="U";
+						else if(normal.IsOpposite(gp::DZ(),0.1)) f="D";
+						else
 						{
-							sw->Write(" ");
-							size_t idx = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,e2->v2());
-							sw->Write(Convert::ToString(idx));
+							if(abs(normal.X())<precision) normal.SetX(0.);
+							if(abs(normal.Y())<precision) normal.SetY(0.);
+							if(abs(normal.Z())<precision) normal.SetZ(0.);
+							sw->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z());	
+							sw->AppendLine();
+							normalsOffset++;//we will have written out this number of normals
 						}
+
+						std::vector<carve::geom::vector<2> > projectedVerts;
+						face->getProjectedVertices(projectedVerts);
+						std::vector<carve::triangulate::tri_idx> result;
+						carve::triangulate::triangulate(projectedVerts,result,0.00001);
+
+						bool firstTime=true;
+						sw->Append("T");
+						for (size_t i = 0; i < result.size(); i++)
+						{
+
+							if(firstTime)
+							{
+								if(f=="$") //face name is undefined
+									sw->AppendFormat(" {0}/{3},{1},{2}", result[i].a,result[i].b,result[i].c, normalsOffset);
+								else
+									sw->AppendFormat(" {0}/{3},{1},{2}", result[i].a,result[i].b,result[i].c, f);
+								firstTime=false;
+							}
+							else
+								sw->AppendFormat(" {0},{1},{2}", result[i].a,result[i].b,result[i].c, f);
+						}	
+
+						sw->AppendLine();
 					}
-					sw->WriteLine(); 
-					std::vector<carve::geom::vector<2> > projectedVerts;
-					face->getProjectedVertices(projectedVerts);
-					std::vector<carve::triangulate::tri_idx> result;
-					carve::triangulate::triangulate(projectedVerts,result,0.00001);
-					sw->Write(Convert::ToString(result.size()));
-					for (size_t i = 0; i < result.size(); i++)
-					{
-						sw->Write(String::Format("{0} {1} {2}",result[i].a,result[i].b,result[i].c));
-					}
-					sw->WriteLine(); 
+					
 				}
 				return sw->ToString();
-
 			}
 			
 			XbimPolyhedron^ XbimPolyhedron::ToPolyHedron(double deflection, double precision,double precisionMax)

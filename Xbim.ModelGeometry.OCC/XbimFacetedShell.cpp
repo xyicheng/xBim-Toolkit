@@ -15,6 +15,7 @@ using namespace Xbim::Common::Exceptions;
 using namespace Xbim::Common::Geometry;
 using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::IO;
+using namespace  System::Text;
 
 #include <carve/csg.hpp>
 #include <carve/mesh.hpp>
@@ -645,6 +646,263 @@ namespace Xbim
 
 				XbimRect3D boundingBox((float)xmin, (float)ymin, (float)zmin, (float)(xmax-xmin),  (float)(ymax-ymin), (float)(zmax-zmin));
 				return gcnew XbimTriangulatedModel(BmanagedArray, boundingBox, RepresentationLabel, SurfaceStyleLabel);
+			}
+
+#pragma unmanaged
+			public class TriangleIndicesStream
+			{
+			private:
+				size_t _previousToLastIndex;
+				size_t _lastIndex;
+				size_t _pointTally;
+				size_t _fanStartIndex;
+				size_t _indexOffset;
+				GLenum _meshType;
+			public:
+				std::vector<size_t> Indices;
+				static void __stdcall AddVertexIndex(void *pVertexData, void *pStreamer)
+				{
+					TriangleIndicesStream* This = ((TriangleIndicesStream*)pStreamer);
+					size_t index = (size_t)pVertexData;
+					if (This->_pointTally == 0)
+						This->_fanStartIndex = index;
+					if (This->_pointTally < 3) //first time
+						This->Indices.push_back(index);
+					else
+					{
+						switch (This->_meshType)
+						{
+						case GL_TRIANGLES://      0x0004
+							This->Indices.push_back(index);
+							break;
+						case GL_TRIANGLE_STRIP:// 0x0005
+							if (This->_pointTally % 2 == 0)
+							{				
+								This->Indices.push_back(This->_previousToLastIndex);
+								This->Indices.push_back(This->_lastIndex);
+								This->Indices.push_back(index);
+							}
+							else
+							{
+								This->Indices.push_back(This->_lastIndex);
+								This->Indices.push_back(This->_previousToLastIndex);
+								This->Indices.push_back(index);
+							}
+							break;
+						case GL_TRIANGLE_FAN://   0x0006
+							This->Indices.push_back(This->_fanStartIndex);
+							This->Indices.push_back(This->_lastIndex);
+							This->Indices.push_back(index);
+							break;
+						default:
+							break;
+						}
+					}
+					This->_previousToLastIndex = This->_lastIndex;
+					This->_lastIndex = index;
+					This->_pointTally++;
+				};
+				static void __stdcall BeginTessellate(GLenum type, void *pStreamer)
+				{
+					TriangleIndicesStream* This = ((TriangleIndicesStream*)pStreamer);
+					This->_meshType = type;
+					This->_pointTally = 0;
+					This->_previousToLastIndex = 0;
+					This->_lastIndex = 0;
+					This->_fanStartIndex = 0;
+					This->Indices.clear();
+
+				};
+				static void __stdcall EndTessellate(void *pStreamer)
+				{
+					TriangleIndicesStream* This = ((TriangleIndicesStream*)pStreamer);
+				};
+				static void __stdcall TessellateError(GLenum err)
+				{
+					// swallow the error.
+				};
+			};
+
+			
+			
+			
+
+
+#pragma managed
+			String^ XbimFacetedShell::WriteAsString(XbimModelFactors^ modelFactors)
+			{
+				IfcRepresentationItem^ faceSet = (IfcRepresentationItem^)_faceSet->ModelOf->Instances[_faceSet->EntityLabel];
+				String^ result;
+				if(dynamic_cast<IfcClosedShell^>(faceSet))
+					result = WriteAsString(modelFactors, ((IfcClosedShell^)faceSet)->CfsFaces);
+				else if(dynamic_cast<IfcOpenShell^>(faceSet))
+					result = WriteAsString(modelFactors, ((IfcOpenShell^)faceSet)->CfsFaces);
+				else if(dynamic_cast<IfcConnectedFaceSet^>(faceSet))
+					result = WriteAsString(modelFactors, ((IfcConnectedFaceSet^)faceSet)->CfsFaces);
+				else if(dynamic_cast<IfcFacetedBrep^>(faceSet))
+					result = WriteAsString(modelFactors, ((IfcFacetedBrep^)faceSet)->Outer->CfsFaces);
+				else if (dynamic_cast<IfcFaceBasedSurfaceModel^>(faceSet))
+				{
+					List<IfcFace^>^ allFaces = gcnew List<IfcFace^>();
+					for each (IfcConnectedFaceSet^ fbsmFaces in ((IfcFaceBasedSurfaceModel^)faceSet)->FbsmFaces)
+						allFaces->AddRange(fbsmFaces->CfsFaces);
+					result = WriteAsString(modelFactors,allFaces);
+				}
+				else if (dynamic_cast<IfcShellBasedSurfaceModel^>(faceSet))
+				{
+					List<IfcFace^>^ allFaces = gcnew List<IfcFace^>();
+					for each (IfcConnectedFaceSet^ sbsmFaces in ((IfcShellBasedSurfaceModel^)faceSet)->SbsmBoundary)
+						allFaces->AddRange(sbsmFaces->CfsFaces);
+					result = WriteAsString(modelFactors,allFaces);
+				}
+				else
+					result = "";
+				return result;
+			}
+
+			String^ XbimFacetedShell::WriteAsString(XbimModelFactors^ modelFactors, IEnumerable<IfcFace^>^ faces)
+			{
+				double deflection = modelFactors->DeflectionTolerance;
+				double precision = modelFactors->Precision;
+				int rounding =  modelFactors->Rounding;
+				TriangleIndicesStream tms;
+				size_t normalsOffset=0;
+				StringBuilder^ sb = gcnew StringBuilder();
+				double xmin = 0; double ymin = 0; double zmin = 0; double xmax = 0; double ymax = 0; double zmax = 0;
+				bool first = true;
+				GLdouble glPt3D[3];
+				// OPENGL TESSELLATION
+				GLUtesselator *ActiveTss = gluNewTess();
+				gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (GLUTessCallback) TriangleIndicesStream::AddVertexIndex);
+				gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (GLUTessCallback) TriangleIndicesStream::BeginTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (GLUTessCallback) TriangleIndicesStream::EndTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (GLUTessCallback) TriangleIndicesStream::TessellateError);
+
+				std::unordered_map<Float3D, size_t> vertexMap;
+
+				for each (IfcFace^ fc in  faces)
+				{
+					bool vWritten = false;
+					IfcFaceBound^ outerBound = Enumerable::FirstOrDefault(Enumerable::OfType<IfcFaceOuterBound^>(fc->Bounds)); //get the outer bound
+					if(outerBound == nullptr) outerBound = Enumerable::FirstOrDefault(fc->Bounds); //if one not defined explicitly use first found
+					if(outerBound == nullptr || !dynamic_cast<IfcPolyLoop^>(outerBound->Bound)|| ((IfcPolyLoop^)(outerBound->Bound))->Polygon->Count<3) 
+						continue; //invalid polygonal face
+					XbimVector3D n = PolyLoopExtensions::NewellsNormal((IfcPolyLoop^)(outerBound->Bound));
+					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
+					if(n.IsInvalid()) 
+						continue;
+
+					gluTessBeginPolygon(ActiveTss, &tms);
+					// go over each boundary
+					for each (IfcFaceBound^ bound in fc->Bounds)
+					{
+						gluTessBeginContour(ActiveTss);
+						IfcPolyLoop^ polyLoop=(IfcPolyLoop^)bound->Bound;
+						if(polyLoop->Polygon->Count < 3) 
+						{
+							Logger->WarnFormat("Invalid bound #{0}, less than 3 points",bound->EntityLabel);
+							continue;
+						}
+
+						IEnumerable<IfcCartesianPoint^>^ pts = polyLoop->Polygon;
+						if(!bound->Orientation)
+							pts = Enumerable::Reverse(pts);
+						//add all the points into shell point map
+
+						for each(IfcCartesianPoint^ p in pts)
+						{
+							size_t index;
+							Float3D p3D((float)p->X,(float)p->Y,(float)p->Z,precision); 
+							p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
+							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+							if(hit==vertexMap.end()) //not found add it in
+							{	
+								index = vertexMap.size();
+								vertexMap.insert(std::make_pair(p3D,index));
+								//posMap.push_back(index);
+								if(!vWritten)
+								{
+									sb->AppendFormat("V");
+									vWritten=true;
+								}
+								sb->AppendFormat(" {0},{1},{2}",p3D.Dim1, p3D.Dim2, p3D.Dim3);	
+
+							}
+							else
+								index = hit->second;
+							//posMap.push_back(hit->second);
+							glPt3D[0] = p3D.Dim1;
+							glPt3D[1] = p3D.Dim2;
+							glPt3D[2] = p3D.Dim3;
+
+							//get the bounding box as we go
+							if (first)
+							{
+								xmin = glPt3D[0];
+								ymin = glPt3D[1];
+								zmin = glPt3D[2];
+								xmax = glPt3D[0];
+								ymax = glPt3D[1];
+								zmax = glPt3D[2];
+								first = false;
+							}
+							else
+							{
+								xmin = Math::Min(xmin,glPt3D[0]);
+								ymin = Math::Min(ymin,glPt3D[1]);
+								zmin = Math::Min(zmin, glPt3D[2]);
+								xmax = Math::Max(xmax,glPt3D[0]);
+								ymax = Math::Max(ymax,glPt3D[1]);
+								zmax = Math::Max(zmax, glPt3D[2]);
+							}
+							gluTessVertex(ActiveTss, glPt3D, (void*)index); 
+						}
+						gluTessEndContour(ActiveTss);
+					}
+					gluTessEndPolygon(ActiveTss);
+					if(vWritten) sb->AppendLine();
+					gp_Dir normal(n.X,n.Y,n.Z);
+					String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
+					if(normal.IsEqual(gp::DX(),0.1)) f="R";
+					else if(normal.IsOpposite(gp::DX(),0.1)) f="L";
+					else if(normal.IsEqual(gp::DY(),0.1)) f="B";
+					else if(normal.IsOpposite(gp::DY(),0.1)) f="F";
+					else if(normal.IsEqual(gp::DZ(),0.1)) f="U";
+					else if(normal.IsOpposite(gp::DZ(),0.1)) f="D";
+					else
+					{
+						if(abs(normal.X())<precision) normal.SetX(0.);
+						if(abs(normal.Y())<precision) normal.SetY(0.);
+						if(abs(normal.Z())<precision) normal.SetZ(0.);
+						sb->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z());	
+						sb->AppendLine();
+						normalsOffset++;//we will have written out this number of normals
+					}
+					//Now write the face
+					bool firstTime=true;
+					sb->Append("T");
+					for (std::vector<size_t>::iterator it = tms.Indices.begin(); it != tms.Indices.end(); it++) 
+					{
+
+						size_t x = *it; it++;
+						size_t y = *it; it++;
+						size_t z = *it;
+						if(firstTime)
+						{
+							if(f=="$") //face name is undefined
+								sb->AppendFormat(" {0}/{3},{1},{2}", x, y, z, normalsOffset);
+							else
+								sb->AppendFormat(" {0}/{3},{1},{2}", x, y, z, f);
+							firstTime=false;
+						}
+						else
+							sb->AppendFormat(" {0},{1},{2}", x, y, z, f);
+					}	
+					sb->AppendLine();
+				}
+				gluDeleteTess(ActiveTss);
+				_bounds = XbimRect3D((float)xmin, (float)ymin, (float)zmin, (float)(xmax-xmin),  (float)(ymax-ymin), (float)(zmax-zmin));
+				return sb->ToString();
 			}
 		}
 	}

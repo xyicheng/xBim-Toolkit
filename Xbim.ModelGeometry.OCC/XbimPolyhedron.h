@@ -32,6 +32,8 @@ typedef mesh_t::vertex_t vertex_t;
 typedef mesh_t::edge_t edge_t;
 typedef mesh_t::face_t face_t;
 typedef face_t::aabb_t aabb_t;
+typedef carve::geom::plane<3U> plane_t;
+typedef carve::geom::vector<3U> vector_t;
 typedef carve::geom::RTreeNode<3, carve::mesh::Face<3> *> face_rtree_t;
 
 namespace Xbim
@@ -113,7 +115,7 @@ namespace Xbim
 				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
 				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
 				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override ;
-				virtual String^ WriteAsString() override;
+				virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
 				virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
 				
 			};

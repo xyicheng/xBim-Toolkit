@@ -132,7 +132,7 @@ namespace Xbim.SceneJSWebViewer
             foreach (XbimGeometryData shape in _model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
 
-                XbimMatrix3D matrix3d = shape.Transform;
+                XbimMatrix3D matrix3d = XbimMatrix3D.FromArray(shape.DataArray2);
                 BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
                 bb.TransformBy(matrix3d);
                 box.IncludeBoundingBox(bb);
@@ -170,7 +170,7 @@ namespace Xbim.SceneJSWebViewer
                 PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
                 if (PNI_SW.Stream.Length > 0)
                 {
-                    byte[] t = geom.TransformData();
+                    byte[] t = geom.DataArray2;
                     ms.Write(t, 0, t.Length); // send transform 
                     ms.Flush();
                 }
@@ -201,7 +201,7 @@ namespace Xbim.SceneJSWebViewer
                 {
                     PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
                     // PositionsNormalsIndicesBinaryStreamWriter.DebugStream(PNI_SW.Stream.ToArray(), false, "merge geom source " + geom.GeometryLabel);
-                    mrger.Merge(PNI_SW.Stream.ToArray(), geom.TransformData());
+                    mrger.Merge(PNI_SW.Stream.ToArray(), geom.DataArray2);
                 }
 
                 if (mrger.iTotPosNormals > 0)

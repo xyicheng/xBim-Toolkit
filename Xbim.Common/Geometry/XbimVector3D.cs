@@ -245,5 +245,11 @@ namespace Xbim.Common.Geometry
         {
             return (X == 0.0) && (Y == 0.0) && (Z == 0.0);
         }
+
+        public bool IsEqual(XbimVector3D b, double precision = 1e-9)
+        {
+            float p = this.DotProduct(b);
+            return Math.Abs(p - 1) <= precision;
+        }
     }
 }
