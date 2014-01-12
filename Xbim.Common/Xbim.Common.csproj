@@ -54,6 +54,7 @@
     <Compile Include="Exceptions\XbimGeometryException.cs" />
     <Compile Include="Exceptions\XbimParserException.cs" />
     <Compile Include="Geometry\IGeometryManager.cs" />
+    <Compile Include="Geometry\XbimDirectionEnum.cs" />
     <Compile Include="Geometry\XbimMatrix3D.cs" />
     <Compile Include="Geometry\XbimPoint3D.cs" />
     <Compile Include="Geometry\XbimQuaternion.cs" />

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		Xbim.ModelGeometry.OCC\Version.rc = Xbim.ModelGeometry.OCC\Version.rc
@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.txt = Readme.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 		XbimComplete.vsmdi = XbimComplete.vsmdi
+		XbimSpatial.testsettings = XbimSpatial.testsettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
@@ -87,6 +88,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial", "Xbim.Spatial\Xbim.Spatial.csproj", "{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.NuGet", "Nuget Distribution\Xbim.NuGet.csproj", "{71BE5A26-FD3E-470B-9525-B115079732C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial.Tests", "Xbim.Spatial.Tests\Xbim.Spatial.Tests.csproj", "{B0EBA5AF-9911-4487-B4F6-3187087723CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignatureExporter", "SignatureExporter\SignatureExporter.csproj", "{5BA35E6E-5125-4530-8C48-E85BF845E8C8}"
 EndProject
@@ -177,10 +180,10 @@ Global
 		SccProjectUniqueName24 = Nuget\u0020Distribution\\Xbim.NuGet.csproj
 		SccProjectName24 = Nuget\u0020Distribution
 		SccLocalPath24 = Nuget\u0020Distribution
-		SccProjectUniqueName25 = SignatureExporter\\SignatureExporter.csproj
+		SccProjectUniqueName25 = Xbim.Spatial.Tests\\Xbim.Spatial.Tests.csproj
 		SccProjectTopLevelParentUniqueName25 = XbimComplete.sln
-		SccProjectName25 = SignatureExporter
-		SccLocalPath25 = SignatureExporter
+		SccProjectName25 = Xbim.Spatial.Tests
+		SccLocalPath25 = Xbim.Spatial.Tests
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -284,6 +287,11 @@ Global
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71BE5A26-FD3E-470B-9525-B115079732C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71BE5A26-FD3E-470B-9525-B115079732C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71BE5A26-FD3E-470B-9525-B115079732C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -303,5 +311,6 @@ Global
 		{5BA35E6E-5125-4530-8C48-E85BF845E8C8} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{B0EBA5AF-9911-4487-B4F6-3187087723CC} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 	EndGlobalSection
 EndGlobal

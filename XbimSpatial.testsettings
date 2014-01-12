@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestSettings name="Local" id="d997ab2a-42f4-485e-b884-f0d82402da0e" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestSettings name="XbimSpatial" id="7a16a7cf-65f3-4172-9ad4-f1f7dee0f1db" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>These are default test settings for a local test run.</Description>
-  <Deployment enabled="false" />
-  <Execution>
+  <Deployment>
+    <DeploymentItem filename="Xbim.Spatial.Tests\bin\Debug\TestFiles\" />
+    <DeploymentItem filename="Xbim.Spatial.Tests\bin\Debug\x64\" outputDirectory="x64" />
+  </Deployment>
+  <Execution hostProcessPlatform="MSIL">
     <TestTypeSpecific>
       <UnitTestRunConfig testTypeId="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b">
         <AssemblyResolution>
@@ -10,7 +13,7 @@
         </AssemblyResolution>
       </UnitTestRunConfig>
     </TestTypeSpecific>
-    <AgentRule name="LocalMachineDefaultRole">
+    <AgentRule name="Execution Agents">
     </AgentRule>
   </Execution>
 </TestSettings>

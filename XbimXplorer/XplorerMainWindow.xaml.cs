@@ -203,6 +203,7 @@ namespace XbimXplorer
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress,true,false);
               //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+
                // model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
                 {

@@ -163,21 +163,21 @@ namespace Xbim.Common.Geometry
         /// <summary>
         /// Minimum vertex
         /// </summary>
-        public XbimPoint3D Min
+        public XbimPoint3D Min //This was returning maximum instead of minimum. Fixed by Martin Cerny 6/1/2014
         {
             get
             {
-                return new XbimPoint3D(_x+_sizeX,_y+_sizeY,_z+_sizeZ);
+                return this.Location;
             }
         }
         /// <summary>
         /// Maximum vertex
         /// </summary>
-        public XbimPoint3D Max
+        public XbimPoint3D Max  //This was returning minimum instead of maximum. Fixed by Martin Cerny 6/1/2014
         {
             get
             {
-                return this.Location;
+                return new XbimPoint3D(_x + _sizeX, _y + _sizeY, _z + _sizeZ);
             }
         }
 
@@ -403,6 +403,23 @@ namespace Xbim.Common.Geometry
 
         public bool Intersects(XbimRect3D rect)
         {
+            //Martin Cerny: I don't think this is correct as this will find only one specific intersection case but it is not general.
+            //I propose variant based on size and envelope bounding box which would be invariant
+
+            //XbimRect3D envelope = XbimRect3D.Empty;
+            //envelope.Union(rect);
+            //envelope.Union(this);
+
+            //var xSize = rect.SizeX + this.SizeX;
+            //var ySize = rect.SizeY + this.SizeY;
+            //var zSize = rect.SizeZ + this.SizeZ;
+
+            //return
+            //    xSize >= envelope.SizeX &&
+            //    ySize >= envelope.SizeY &&
+            //    zSize >= envelope.SizeZ
+            //    ;
+
             if (this.IsEmpty || rect.IsEmpty)
             {
                 return false;
@@ -416,9 +433,9 @@ namespace Xbim.Common.Geometry
             if (this.IsEmpty)
                 return false;
             return 
-                this.ContainsCoords(rect.X, rect.Y, rect.Z) 
+                this.Contains(rect.Min) 
                 && 
-                this.ContainsCoords(rect.X + rect.SizeX, rect.Y + rect.SizeY, rect.Z+rect.SizeZ);
+                this.Contains(rect.Max);
         }
 
        /// <summary>

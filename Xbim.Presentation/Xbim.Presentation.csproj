@@ -110,6 +110,7 @@
     <Compile Include="ModelGeomInfo\PolylineGeomInfo.cs" />
     <Compile Include="ModelGeomInfo\PointGeomInfo.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
+    <Compile Include="WpfXbimRectangle3D.cs" />
     <Compile Include="XbimCuttingPlaneGroup.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
     <Compile Include="FederatedModelItem.cs" />

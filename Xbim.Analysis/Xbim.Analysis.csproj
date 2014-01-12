@@ -50,6 +50,14 @@
     <Compile Include="IfcElementSignatureSummary.cs" />
     <Compile Include="IModelComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Spatial\ISpatialAnalyser.cs" />
+    <Compile Include="Spatial\ISpatialDirections.cs" />
+    <Compile Include="Spatial\ISpatialFunctions.cs" />
+    <Compile Include="Spatial\ISpatialRelations.cs" />
+    <Compile Include="Spatial\XbimAABBoxAnalyser.cs" />
+    <Compile Include="Spatial\XbimSemanticAnalyser.cs" />
+    <Compile Include="Spatial\XbimSpatialAnalyser.cs" />
+    <Compile Include="Spatial\XbimSpatialModelComparer.cs" />
     <Compile Include="VersionComparison.cs" />
   </ItemGroup>
   <ItemGroup>

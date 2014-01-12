@@ -1,4 +1,7 @@
-﻿using System;
+﻿//This implementation of octree is modification of the 
+//code from Ploobs Engine http://ploobs.com.br/?p=1622
+//
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -64,6 +67,16 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary> 
         private XbimOctree<T>[] children = null;
 
+        /// <summary>
+        /// Parent of this subtree or null if this is the root node
+        /// </summary>
+        private XbimOctree<T> parent = null;
+
+        /// <summary>
+        /// Local address of this node (like [1,1,1]), null for the root node
+        /// </summary>
+        private OctAddress localAddress = null;
+
         ///  <summary>
         /// The octree's world size.
         /// </summary> 
@@ -76,8 +89,8 @@ namespace Xbim.ModelGeometry.Scene
         /// Creates a new octree.
         /// </summary>
         /// <param name="worldSize">/// The octree's world size.</param>
-        /// <param name="targetCanvasSize">The octree's looseness value.</param>
-        /// <param name="looseness">The octree recursion depth.</param>
+        /// <param name="targetCanvasSize">The octree recursion depth.</param>
+        /// <param name="looseness">The octree's looseness value.</param>
         public XbimOctree(float worldSize, float targetCanvasSize, float looseness)
             : this(worldSize, targetCanvasSize, looseness, 0, XbimPoint3D.Zero)
         {
@@ -127,6 +140,27 @@ namespace Xbim.ModelGeometry.Scene
             centre = copy.centre;
             bounds = copy.bounds;
         }
+
+        public XbimRect3D Bounds { get 
+        { 
+            return new XbimRect3D() 
+            { 
+                X = bounds.X, 
+                Y = bounds.Y, 
+                Z = bounds.Z, 
+                SizeX = bounds.SizeX, 
+                SizeY = bounds.SizeY, 
+                SizeZ = bounds.SizeZ
+            }; } 
+        }
+
+        public IEnumerable<XbimOctree<T>> Children { get 
+        {
+            if (children == null) return new XbimOctree<T>[] { };
+            return children;
+        } }
+
+        public int Depth { get { return depth; } }
 
         /// <summary>
         /// Returns the main octrees that are populated
@@ -268,9 +302,11 @@ namespace Xbim.ModelGeometry.Scene
             return this;
         }
         /// <summary>
-        /// Returns the total content of this octree and all its children
+        /// Returns the total content of this octree and all its children (recursive in the tree structure)
+        /// This was wrong implementation (not recursive but only for 2 levels) until 20/12/2013. 
+        /// Fixed by Martin Cerny
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Overall content of the tree node and all subtrees</returns>
         public IEnumerable<T> ContentIncludingChildContent()
         {
             foreach (var o in objects)
@@ -281,12 +317,38 @@ namespace Xbim.ModelGeometry.Scene
             {
                 foreach (var child in children)
                 {
-                    foreach (var co in child.objects)
+                    foreach (var co in child.ContentIncludingChildContent())
                     {
                         yield return co;
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the content of this node and content of all it't parents but only in the upper direction.
+        /// </summary>
+        /// <returns>Returns the content of this node and content of all it't parents.</returns>
+        public IEnumerable<T> ContentIncludingParentContent()
+        {
+            foreach (var o in objects)
+            {
+                yield return o;
+            }
+
+            if (parent != null)
+            {
+                foreach (var item in parent.ContentIncludingParentContent())
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        public IEnumerable<T> Content()
+        {
+            foreach (var item in objects)
+                yield return item;
         }
        
         /// <summary>
@@ -299,25 +361,319 @@ namespace Xbim.ModelGeometry.Scene
             float quarter = this.length / this.looseness / 4f;
 
             this.children[0] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(-quarter, quarter, -quarter));
+                 depth, this.centre + new XbimVector3D(-quarter, quarter, -quarter)) { localAddress = new OctAddress( new int[]{ -1, 1, -1 } ) };
             this.children[1] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(quarter, quarter, -quarter));
+                 depth, this.centre + new XbimVector3D(quarter, quarter, -quarter)) { localAddress = new OctAddress( new int[] { 1, 1, -1 } ) };
             this.children[2] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(-quarter, quarter, quarter));
+                 depth, this.centre + new XbimVector3D(-quarter, quarter, quarter)) { localAddress = new OctAddress( new int[] { -1, 1, 1 } ) };
             this.children[3] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(quarter, quarter, quarter));
+                 depth, this.centre + new XbimVector3D(quarter, quarter, quarter)) { localAddress = new OctAddress( new int[] { 1, 1, 1 } ) };
             this.children[4] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(-quarter, -quarter, -quarter));
+                 depth, this.centre + new XbimVector3D(-quarter, -quarter, -quarter)) { localAddress = new OctAddress( new int[] { -1, -1, -1 } ) };
             this.children[5] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(quarter, -quarter, -quarter));
+                 depth, this.centre + new XbimVector3D(quarter, -quarter, -quarter)) { localAddress = new OctAddress( new int[] { 1, -1, -1 } ) };
             this.children[6] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(-quarter, -quarter, quarter));
+                 depth, this.centre + new XbimVector3D(-quarter, -quarter, quarter)) { localAddress = new OctAddress( new int[] { -1, -1, 1 } ) };
             this.children[7] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
-                 depth, this.centre + new XbimVector3D(quarter, -quarter, quarter));
+                 depth, this.centre + new XbimVector3D(quarter, -quarter, quarter)) { localAddress = new OctAddress( new int[] { 1, -1, 1 } ) };
             for (int i = 0; i < children.Length; i++)
             {
                 children[i].Name = this.Name + i.ToString();
+                children[i].parent = this;
             }
+        }
+
+        /// <summary>
+        /// Function for search in the tree
+        /// </summary>
+        /// <param name="item">Object to be found</param>
+        /// <returns>Tree or subtree which contains the item as it's own content (not just in the subtree)</returns>
+        public XbimOctree<T> Find(T item)
+        {
+            //if this node contains the item return this
+            if (objects.Contains(item))
+                return this;
+            
+            //try to find the item in subtrees
+            if (children != null)
+            {
+                foreach (var child in children)
+                {
+                    //recursive call on the deeper level
+                    var res = child.Find(item);
+                    if (res != null) 
+                        return res;
+                }
+            }
+
+            //return null if there is none
+            return null;
+        }
+
+        /// <summary>
+        /// This will get the neighbour cells on the same level of resolution
+        /// </summary>
+        /// <param name="direction">Direction where to look for the neighbour</param>
+        /// <param name="onlySameResolution">If this is true and node of the same 
+        /// resolution doesn't exist as a neighbour NULL will be returned</param>
+        /// <returns>neighbouring cell on the same or lower level of resolution or null.</returns>
+        public XbimOctree<T> GetNeighbour(XbimDirectionEnum direction, bool onlySameResolution)
+        {
+            //if there is no parent there are no neighbours
+            if (parent == null) 
+                return null;
+            int[] directionCode = new int[] { 0, 0, 0 };
+            switch (direction)
+            {
+                case XbimDirectionEnum.WEST:
+                    directionCode = new int[] { -1, 0, 0 };
+                    break;
+                case XbimDirectionEnum.EAST:
+                    directionCode = new int[] { 1, 0, 0 };
+                    break;
+                case XbimDirectionEnum.NORTH:
+                    directionCode = new int[] { 0, 1, 0 };
+                    break;
+                case XbimDirectionEnum.SOUTH:
+                    directionCode = new int[] { 0, -1, 0 };
+                    break;
+                case XbimDirectionEnum.UP:
+                    directionCode = new int[] { 0, 0, 1 };
+                    break;
+                case XbimDirectionEnum.DOWN:
+                    directionCode = new int[] { 0, 0, -1 };
+                    break;
+                default:
+                    break;
+            }
+
+            if (localAddress.IsStillIn(directionCode))
+            {
+                //moved address is still within the same parent
+                return parent.GetChild(localAddress.Move(directionCode));
+            }
+            else
+            {
+                //this is recursive call drilling up in the tree to get neighbour from the next branch
+                var masterNeighbour = parent.GetNeighbour(direction, onlySameResolution);
+                if (masterNeighbour != null)
+                    //if there is master neighbour but there is not a child it just means that there is 
+                    //nothing in the same level of resolution. But higher resolution shouldn't be ignored.
+                    return 
+                        masterNeighbour.GetChild(localAddress.Move(directionCode)) ?? 
+                        masterNeighbour;
+            }
+
+            return null;
+        }
+
+        public XbimOctree<T> GetCommonParentInDirection(XbimDirectionEnum direction, bool controlRange)
+        {
+            //if there is no parent there are no neighbours
+            if (parent == null)
+                return null;
+            int[] directionCode = new int[] { 0, 0, 0 };
+            switch (direction)
+            {
+                case XbimDirectionEnum.WEST:
+                    directionCode = new int[] { -1, 0, 0 };
+                    break;
+                case XbimDirectionEnum.EAST:
+                    directionCode = new int[] { 1, 0, 0 };
+                    break;
+                case XbimDirectionEnum.NORTH:
+                    directionCode = new int[] { 0, 1, 0 };
+                    break;
+                case XbimDirectionEnum.SOUTH:
+                    directionCode = new int[] { 0, -1, 0 };
+                    break;
+                case XbimDirectionEnum.UP:
+                    directionCode = new int[] { 0, 0, 1 };
+                    break;
+                case XbimDirectionEnum.DOWN:
+                    directionCode = new int[] { 0, 0, -1 };
+                    break;
+                default:
+                    break;
+            }
+
+            if (localAddress.IsStillIn(directionCode))
+                //moved address is still within the same parent
+                return parent;
+            else if (parent != null)
+            {
+                //this is recursive call drilling up in the tree
+                return parent.GetCommonParentInDirection(direction, controlRange);
+            }
+
+            if (controlRange)
+                throw new IndexOutOfRangeException("Direction goes out of the tree world.");
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Returns all 8 subtrees or empty set if this is a leaf
+        /// </summary>
+        public IEnumerable<XbimOctree<T>> Subtrees
+        {
+            get 
+            {
+                return children ?? new XbimOctree<T>[0];
+            }
+        }
+
+        /// <summary>
+        /// Returns parent node or null for the root
+        /// </summary>
+        public XbimOctree<T> Parent
+        {
+            get
+            {
+                return parent;
+            }
+        }
+
+        private XbimOctree<T> GetChild(OctAddress address)
+        {
+            return this[address[0], address[1], address[2]];
+        }
+
+        private XbimOctree<T> this[int x, int y, int z]
+        {
+            get
+            {
+                if (children == null || x == 0 || y == 0 || z == 0)
+                    return null;
+                if (x > 0)
+                {
+                    if (y > 0)
+                    {
+                        if (z > 0)
+                            return children[4];
+                        else
+                            return children[2];
+                    }
+                    else
+                    {
+                        if (z > 0)
+                            return children[8];
+                        else
+                            return children[6];
+                    }
+                }
+                else
+                {
+                    if (y > 0)
+                    {
+                        if (z > 0)
+                            return children[3];
+                        else
+                            return children[1];
+                    }
+                    else
+                    {
+                        if (z > 0)
+                            return children[7];
+                        else
+                            return children[5];
+                    }
+                }
+            }
+            
+        }
+    }
+
+    internal class OctAddress
+    {
+        private int[] _address;
+
+        public OctAddress(int x, int y, int z)
+        {
+            _address = new int[] { x, y, z };
+            CheckAddress(_address);
+        }
+        public OctAddress(int[] address)
+        {
+            _address = address;
+            CheckAddress(_address);
+        }
+
+        /// <summary>
+        /// This will return new address moved to the new position. 
+        /// Result is always in the correct format +1/-1
+        /// </summary>
+        /// <param name="x">move directions +1/-1/0</param>
+        /// <param name="y">move directions +1/-1/0</param>
+        /// <param name="z">move directions +1/-1/0</param>
+        /// <returns>New address</returns>
+        public OctAddress Move(int x, int y, int z)
+        {
+            return Move(new[] { x, y, z });
+        }
+
+        /// <summary>
+        /// This will return new address moved to the new position. 
+        /// Result is always in the correct format +1/-1
+        /// </summary>
+        /// <param name="move">move directions +1/-1/0</param>
+        /// <returns>New address</returns>
+        public OctAddress Move(int[] move)
+        {
+            CheckMove(move);
+            var result = new int[3];
+            for (int i = 0; i < 3; i++)
+            {
+                result[i] = Addition(_address[i], move[i]);
+            }
+            return new OctAddress(result);
+        }
+
+        public bool IsStillIn(int[] move)
+        {
+            CheckMove(move);
+            for (int i = 0; i < 3; i++)
+                if (Math.Abs(_address[i] + move[i]) > 1) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Result will allways stay in the bounds of the address
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="move"></param>
+        /// <returns></returns>
+        private int Addition(int address, int move)
+        {
+            var res = address+move;
+            if (res == 1 || res == -1) return res;
+            //reverse addres to the other side
+            if (res == 0 || Math.Abs(res) > 1) return -address;
+
+            throw new NotImplementedException("Unexpected argument or execution path.");
+        }
+
+        //numbers and operations restricted to +1, -1
+        private void CheckAddress(int[] i)
+        {
+            if (i.Length != 3)
+                throw new Exception("This is not legal format of the address.");
+            foreach (var item in i)
+                if (item != 1 && item != -1) throw new Exception("This is not legal format of the address.");
+        }
+
+        //numbers and operations restricted to +1, -1
+        private void CheckMove(int[] i)
+        {
+            if (i.Length != 3)
+                throw new Exception("This is not legal format of the move.");
+            foreach (var item in i)
+                if (item != 1 && item != -1 && item != 0) throw new Exception("This is not legal format of the move.");
+        }
+
+        public int this[int i]
+        {
+            get { return _address[i]; }
         }
     }
 }

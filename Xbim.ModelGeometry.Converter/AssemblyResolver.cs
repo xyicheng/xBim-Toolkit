@@ -10,7 +10,12 @@ namespace Xbim.ModelGeometry.Converter
 {
     public class AssemblyResolver
     {
+#if DEBUG
+        internal const string geomModuleName = "Xbim.ModelGeometry.OCCd";
+#else
         internal const string geomModuleName = "Xbim.ModelGeometry.OCC";
+#endif
+
         public static void HandleUnresolvedAssemblies()
         {
             AppDomain currentDomain = AppDomain.CurrentDomain;
@@ -78,11 +83,8 @@ namespace Xbim.ModelGeometry.Converter
             {
                 path = Path.Combine(path, "x86");
             }
-#if DEBUG
-            path = Path.Combine(path, geomModuleName + "d.dll");
-#else
             path = Path.Combine(path, geomModuleName + ".dll");
-#endif
+     
             if (File.Exists(path))
             {
                 Assembly assembly = Assembly.LoadFile(path);

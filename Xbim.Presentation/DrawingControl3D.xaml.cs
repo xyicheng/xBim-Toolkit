@@ -486,6 +486,12 @@ namespace Xbim.Presentation
                 XbimModel model = e.NewValue as XbimModel;
                 d3d.LoadGeometry(model);
                 d3d.SetValue(LayerSetProperty, d3d.LayerSetRefresh());
+
+                //if (model != null)
+                //{
+                //    var analyser = new Xbim.ModelGeometry.Spatial.XbimSpatialAnalyser(model);
+                //    d3d.ShowOctree(analyser.Octree, -1, true);
+                //}
             }
         }
 
@@ -1356,6 +1362,7 @@ namespace Xbim.Presentation
             }
         }
 
+
         /// <summary>
         /// Zooms to a selected portion of the space.
         /// </summary>
@@ -1391,6 +1398,52 @@ namespace Xbim.Presentation
                         new Size3D(r3d.SizeX, r3d.SizeY, r3d.SizeZ)
                         ),
                    false);
+        }
+
+
+
+        public void ShowOctree(XbimOctree<IfcProduct> octree, int specificLevel = -1, bool onlyWithContent = false)
+        {
+            if (Viewport.Children.Contains(OctreeVisualization))
+                Viewport.Children.Remove(OctreeVisualization);
+            OctreeVisualization.Children.Clear();
+            ShowOctree<IfcProduct>(octree, specificLevel, onlyWithContent);
+            Viewport.Children.Add(OctreeVisualization);
+            
+        }
+
+        ModelVisual3D OctreeVisualization = new ModelVisual3D();
+
+        private void ShowOctree<T>(XbimOctree<T> octree, int specificLevel = -1, bool onlyWithContent = false)
+        {
+            //prepare action
+            Action show = () => {
+                WpfXbimRectangle3D rect = new WpfXbimRectangle3D(octree.Bounds);
+
+                //create transformation
+                var scale = 1f / Model.ModelFactors.OneMetre;
+                var transformation = Transform3DHelper.CombineTransform(
+                    new TranslateTransform3D(_modelTranslation.X, _modelTranslation.Y, _modelTranslation.Z),
+                    new ScaleTransform3D(scale, scale, scale)
+                    );
+
+                //Add octree geometry
+                OctreeVisualization.Children.Add(new ModelVisual3D() { Content = rect.Geometry, Transform = transformation });
+            };
+
+            if (specificLevel == -1 || specificLevel == octree.Depth)
+            {
+                if (onlyWithContent && octree.Content().FirstOrDefault() != null)
+                    show();
+                else if (!onlyWithContent)
+                    show();
+            }
+
+            if (specificLevel == -1 || specificLevel > octree.Depth)
+                foreach (var child in octree.Children)
+                {
+                    ShowOctree(child, specificLevel, onlyWithContent);
+                }
         }
     }
 }
