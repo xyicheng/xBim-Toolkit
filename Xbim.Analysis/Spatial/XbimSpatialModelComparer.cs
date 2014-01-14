@@ -63,25 +63,26 @@ namespace Xbim.Analysis.Spatial
                 }
 
                 //initialize octree with all the objects
-                var prods = model.Instances.OfType<IfcProduct>();
+               // var prods = model.Instances.OfType<IfcProduct>();
                 //var prods = model.Instances.OfType<IfcWall>();
-
+                Xbim3DModelContext context = new Xbim3DModelContext(model);
+                var prods = context.ProductShapes;
                 //we need to preprocess all the products first to get the world size. Will keep results to avoid repetition.
                 foreach (var prod in prods)
                 {
                     //bounding boxes are lightweight and are produced when geometry is created at first place
-                    var geom = prod.Geometry3D();
-                    var trans = prod.Transform();
+                    //var geom = prod.Geometry3D();
+                    //var trans = prod.Transform();
 
-                    if (geom != null && geom.FirstOrDefault() != null)
-                    {
+                  //  if (geom != null && geom.FirstOrDefault() != null)
+                  //  {
                         //var mesh = geom.Mesh(model.ModelFactors.DeflectionTolerance);
                         //var bb = mesh.Bounds;
 
                         //Axis aligned BBox
-                        var bb = geom.GetAxisAlignedBoundingBox();
+                        var bb = prod.BoundingBox;//.GetAxisAlignedBoundingBox();
                         //bb = bb.Transform(trans);
-                        bb = new XbimRect3D(trans.Transform(bb.Min), trans.Transform(bb.Max));
+                       // bb = new XbimRect3D(trans.Transform(bb.Min), trans.Transform(bb.Max));
 
 
 #if DEBUG
@@ -89,16 +90,16 @@ namespace Xbim.Analysis.Spatial
                         //                                    prod.Name, bb.X, bb.Y, bb.Z, bb.SizeX, bb.SizeY, bb.SizeZ);
 #endif
 
-                        if (prod.ModelOf == modelA)
-                            _prodBBsA.Add(prod, bb);
+                        if (prod.Product.ModelOf == modelA)
+                            _prodBBsA.Add(prod.Product, bb);
                         else
-                            _prodBBsB.Add(prod, bb);
+                            _prodBBsB.Add(prod.Product, bb);
 
                         //add every BBox to the world to get the size and position of the world
                         //if it contains valid BBox
                         if (!float.IsNaN(bb.SizeX))
                             worldBB.Union(bb);
-                    }
+                   // }
                 }
             });
 
