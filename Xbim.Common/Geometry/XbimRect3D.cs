@@ -278,6 +278,20 @@ namespace Xbim.Common.Geometry
 
             return true;
         }
+
+        static public XbimRect3D Parse(string Value)
+        {
+            string[] itms = Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            Debug.Assert(itms.Length == 6);
+            return new XbimRect3D(Convert.ToSingle(itms[0], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToSingle(itms[1], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToSingle(itms[2], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToSingle(itms[3], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToSingle(itms[4], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToSingle(itms[5], System.Globalization.CultureInfo.InvariantCulture));
+
+        }
+
         #endregion
 
         static public XbimRect3D Inflate( double x, double y, double z)

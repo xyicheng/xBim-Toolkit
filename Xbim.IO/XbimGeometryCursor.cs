@@ -504,7 +504,7 @@ namespace Xbim.IO
 
 
 
-        internal XbimGeometryData GetGeometryData(int geomLabel)
+        public XbimGeometryData GetGeometryData(int geomLabel)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, geomLabel, MakeKeyGrbit.NewKey);
@@ -534,14 +534,14 @@ namespace Xbim.IO
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
             {
                 short size = Api.RetrieveColumnAsInt16(sesid, table, _colIdSubPart, RetrieveColumnGrbit.RetrieveCopy).Value;
-                int cost = refCount * size;
+                short count = (short)Math.Min(refCount,short.MaxValue);
                 using (var update = new Update(sesid, table, JET_prep.Replace))
                 {
                     
-                    Api.SetColumn(sesid, table, _colIdGeometryHash, -cost); //change the hash variable to hold the weighting for the saving this object yields on tranfer of data
+                    Api.SetColumn(sesid, table, _colIdSubPart, count); //change the order variable to hold the number of references to this object
                     update.Save();
-                } 
-                return cost;
+                }
+                return (size+1)*refCount;
             }
             return 0;
         }

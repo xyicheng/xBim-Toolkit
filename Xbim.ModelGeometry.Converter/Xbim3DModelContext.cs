@@ -39,6 +39,34 @@ namespace Xbim.ModelGeometry.Converter
             public XbimRect3D BoundingBox;
         }
 
+        private struct RepresentationItemGeometricHashKey
+        {
+            private int _hash;
+            public IfcRepresentationItem Item;
+            public RepresentationItemGeometricHashKey(IfcRepresentationItem item)
+            {
+                Item = item;
+                _hash = Item.GetGeometryHashCode();
+            }
+
+            public override int GetHashCode()
+            {
+                return _hash;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if(obj==null || !(obj is RepresentationItemGeometricHashKey)) return false;
+
+                return Item.GeometricEquals(((RepresentationItemGeometricHashKey)obj).Item);
+            }
+
+            public override string ToString()
+            {
+                return Item.ToString() + " Hash[" + _hash + "]";
+            }
+        }
+
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
         private XbimModel _model;
         private IfcGeometricRepresentationContext _context;
@@ -142,8 +170,8 @@ namespace Xbim.ModelGeometry.Converter
 
             //create the product records and record the reference counts
 
-            ConcurrentDictionary<IfcRepresentationItem, GeometryReferenceCounter> geomHash = new       
-                            ConcurrentDictionary<IfcRepresentationItem, GeometryReferenceCounter>(new RepresentationItemComparer());
+            ConcurrentDictionary<RepresentationItemGeometricHashKey, GeometryReferenceCounter> geomHash = new
+                            ConcurrentDictionary<RepresentationItemGeometricHashKey, GeometryReferenceCounter>();
             int tally = 0;
             int percentageParsed = 0;
             List<IfcProduct> products = _model.Instances.OfType<IfcProduct>().Where(p => p.Representation != null).ToList();
@@ -190,13 +218,13 @@ namespace Xbim.ModelGeometry.Converter
                                         || shape is IfcBoundingBox
                                         || shape is IfcSectionedSpine)
                                     {
-                                        
-                                        GeometryReferenceCounter counter = geomHash.AddOrUpdate(mapShape, new GeometryReferenceCounter(), 
-                                            (key, oldValue) =>{ Interlocked.Increment(ref  oldValue.ReferenceCount); return oldValue; });
+                                        RepresentationItemGeometricHashKey keyValue = new RepresentationItemGeometricHashKey(mapShape);
+                                        GeometryReferenceCounter counter = geomHash.AddOrUpdate(keyValue, new GeometryReferenceCounter(),
+                                            (key, oldValue) => { keyValue = key; Interlocked.Increment(ref  oldValue.ReferenceCount); return oldValue; });
                                         bool isMap = counter.ReferenceCount > 0; //we have already written it
                                         if (!isMap) //need to write the shape
                                         {
-                                            WritePolygonalGeometryToDB(_model, mapShape, ref counter, 1);
+                                            WritePolygonalGeometryToDB(_model, mapShape,keyValue.GetHashCode(), ref counter, 1);
                                         }
                                         mapShapes.Add(counter.GeometryId);
                                         if (mapBounds.IsEmpty) mapBounds = counter.BoundingBox;
@@ -221,11 +249,12 @@ namespace Xbim.ModelGeometry.Converter
                                 || shape is IfcBoundingBox
                                 || shape is IfcSectionedSpine)
                             {
-                                GeometryReferenceCounter counter = geomHash.AddOrUpdate(shape, new GeometryReferenceCounter(),
-                                             (key, oldValue) => { Interlocked.Increment(ref  oldValue.ReferenceCount); return oldValue; });
+                                RepresentationItemGeometricHashKey keyValue = new RepresentationItemGeometricHashKey(shape);
+                                GeometryReferenceCounter counter = geomHash.AddOrUpdate(keyValue, new GeometryReferenceCounter(),
+                                             (key, oldValue) => { keyValue = key; Interlocked.Increment(ref  oldValue.ReferenceCount); return oldValue; });
                                 bool isMap = counter.ReferenceCount > 0; //we have already written it                           
                                 if (!isMap) //need to create a  record
-                                    WritePolygonalGeometryToDB(_model, shape, ref counter, 1);
+                                    WritePolygonalGeometryToDB(_model, shape, keyValue.GetHashCode(), ref counter, 1);
                                 geomLabels.Add(counter.GeometryId);
                                 if (productBounds.IsEmpty) productBounds = counter.BoundingBox;
                                 else productBounds.Union(counter.BoundingBox);
@@ -235,6 +264,7 @@ namespace Xbim.ModelGeometry.Converter
 
                         }
                     }
+                    productBounds = productBounds.Transform(placementTransform);
                     WriteProductMapToDB(_model, geomLabels, _context, product, placementTransform, productBounds);
                     Interlocked.Increment(ref tally);
                     if (progDelegate != null)
@@ -254,7 +284,7 @@ namespace Xbim.ModelGeometry.Converter
             if (!wasCaching && cacheOn)  engine.CacheStop(false);
             int totalMapCost = 0;
             //Write out the actual representation item reference count
-            Parallel.ForEach<KeyValuePair<IfcRepresentationItem, GeometryReferenceCounter>>(geomHash, pOpts, geom =>
+            Parallel.ForEach<KeyValuePair<RepresentationItemGeometricHashKey, GeometryReferenceCounter>>(geomHash, pOpts, geom =>
             {
 
                 if (geom.Value.ReferenceCount > 0)
@@ -338,7 +368,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        int WritePolygonalGeometryToDB(XbimModel model, IfcRepresentationItem geom, ref GeometryReferenceCounter refCounter,  int refCount = 1)
+        int WritePolygonalGeometryToDB(XbimModel model, IfcRepresentationItem geom, int hash, ref GeometryReferenceCounter refCounter,  int refCount = 1)
         {
             try
             {
@@ -357,8 +387,8 @@ namespace Xbim.ModelGeometry.Converter
                     typeId, 
                     System.Text.Encoding.ASCII.GetBytes(bb.ToString()), 
                     System.Text.Encoding.ASCII.GetBytes(shapeData),
-                    (short)shapeData.Length, 
-                    surfaceStyleLabel);
+                    0, 
+                    surfaceStyleLabel, hash);
                 transaction.Commit();
                 model.FreeTable(geomTable);
                 refCounter.GeometryId = geomId;

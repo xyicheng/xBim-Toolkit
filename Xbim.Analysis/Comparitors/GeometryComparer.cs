@@ -28,9 +28,10 @@ namespace Xbim.Analysis.Comparitors
             //check intersections of boounding boxes
             //below code is mock and will be replaced by octree
 
-            foreach (var shape in revisedShapes)
+            foreach (var shape in baseShapes)
             {
-                IEnumerable<XbimProductShape> hits = baseShapes.Where(s => s.BoundingBox.IsSimilar(shape.BoundingBox, oneMillimetre*10));
+                XbimShapeGroup grp = shape.Shapes;
+                IEnumerable<XbimProductShape> hits = revisedShapes.Where(s => s.BoundingBox.IsSimilar(shape.BoundingBox, oneMillimetre * 10));
                 int hitCount = hits.Count();
                 //Martin the code below is random just to see what is happening and to show you how Lloyds frameowrk works
                 //I am working through this and I am finding complexities
@@ -41,8 +42,25 @@ namespace Xbim.Analysis.Comparitors
                     changes.Add(shape.Product, ChangeType.Matched);
                     map.Add(Math.Abs(shape.Product.EntityLabel), Math.Abs(hits.First().Product.EntityLabel));
                 }
-                if(hitCount > 1)
-                    changes.Add(shape.Product, ChangeType.Unknown);
+                if (hitCount > 1) //check the shapes of this product to try and match
+                {
+                    XbimShapeGroup baseShapeGroup = shape.Shapes; //get the basic geometries that make up this one
+                    IEnumerable<int> baseShapeHashes = baseShapeGroup.ShapeHashCodes();
+                    int baseCount = baseShapeHashes.Count();
+                    foreach (var productShape in hits)
+                    {
+                        XbimShapeGroup shapeGroup = productShape.Shapes;
+                        IEnumerable<int> revShapeHashes = productShape.Shapes.ShapeHashCodes();
+                        if (baseCount == revShapeHashes.Count() && baseShapeHashes.Union(revShapeHashes).Count() == baseCount) //we have a match
+                        {
+                            changes.Add(productShape.Product, ChangeType.Matched);
+                            map.Add(Math.Abs(shape.Product.EntityLabel), Math.Abs(productShape.Product.EntityLabel));
+                        }
+                        else
+                            changes.Add(productShape.Product, ChangeType.Unknown);
+                    }
+                    
+                }
             }
             return changes;
         }

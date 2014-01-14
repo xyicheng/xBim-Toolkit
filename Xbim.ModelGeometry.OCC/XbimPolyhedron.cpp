@@ -155,38 +155,52 @@ namespace Xbim
 			XbimPolyhedron::XbimPolyhedron(String^ plyData)
 			{	
 				StringReader^ sr = gcnew StringReader(plyData);
-				String^ ply = sr->ReadLine(); 
-				if(	String::Compare(ply,"PLY",true) == 0) // correct format
-				{	
-					String^ elementVertex = sr->ReadLine();
-					String^ elementFace = sr->ReadLine();
-					array<String^>^ toks = elementVertex->Split(' ');
-					int numVertices = Int32::Parse(elementVertex); 
-					int numFaces = Int32::Parse(elementFace); 
-					carve::input::PolyhedronData polyData;
-					polyData.reserveVertices(numVertices);
-					for (int i = 0; i < numVertices; i++)
+				String^ l = sr->ReadLine(); 
+				array<Char>^ space = gcnew array<Char>{' '};
+				array<Char>^ comma = gcnew array<Char>{','};
+				array<Char>^ slash = gcnew array<Char>{'/'};
+				XbimVector3D normal; //the current Normal
+				List<XbimVector3D>^ normals; //al ormals defined in this string
+				carve::input::PolyhedronData polyData;
+				while( l!=nullptr)
+				{
+					array<String^>^ toks = l->Split(space,StringSplitOptions::RemoveEmptyEntries);
+					if(toks->Length<2) //skip if invalid line
+						continue;
+					String^ cmd = toks[0]->ToUpperInvariant();
+					if(cmd=="V")
 					{
-						String^ ptText = sr->ReadLine(); 
-						toks = ptText->Split(' ');
-						polyData.addVertex(carve::geom::VECTOR(Double::Parse(toks[0]),Double::Parse(toks[1]),Double::Parse(toks[2])));
-					}
-					for (int i = 0; i < numFaces; i++)
-					{
-						String^ ptText = sr->ReadLine(); 
-						toks = ptText->Split(' ');
-						int numPointsInFace = Convert::ToInt32(toks[0]); 
-						std::vector<int> vidx;
-						for (int p = 1; p < numPointsInFace+1; p++)
+						polyData.reserveVertices(toks->Length-1);
+						for (int i = 1; i < toks->Length; i++)
 						{
-							vidx.push_back(Int32::Parse(toks[p]));
+							array<String^>^ coords = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
+							polyData.addVertex(carve::geom::VECTOR(Double::Parse(coords[0]),Double::Parse(coords[1]),Double::Parse(coords[2])));
 						}
-						polyData.addFace(vidx.begin(),vidx.end());
 					}
-					carve::csg::CSG::meshset_t* mesh = polyData.createMesh(carve::input::Options());
-					_meshSet=mesh;
+					else if(cmd == "T")
+					{
+						
+						for (int i = 1; i < toks->Length; i++)
+						{
+							array<String^>^ indices = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
+							std::vector<int> triangle;
+							for (int t = 0; t < 3; t++)
+							{
+								array<String^>^ indiceTokens = indices[t]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
+								if(indiceTokens->Length>1) //we have a normal
+								{
+								}
+								triangle.push_back(Int32::Parse(indiceTokens[0]));
+							}
+							polyData.addFace(triangle.begin(),triangle.end());
+						}
+					}
+					else
+						Logger->WarnFormat("Illegal Polygon command format '{0}' has been ignored");
+					l = sr->ReadLine(); //get the next line
 				}
-
+				carve::csg::CSG::meshset_t* mesh = polyData.createMesh(carve::input::Options());
+				_meshSet=mesh;
 			}
 
 			XbimPolyhedron::XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel)

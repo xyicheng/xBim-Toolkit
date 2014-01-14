@@ -144,12 +144,11 @@ namespace Xbim.ModelGeometry.Converter
                         XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer = new XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial>(model, colour) { Name = elementTypeName };
                         //add all content initially into the hidden field
                         foreach (var geomData in geomColl)
-                        {
-                            geomData.TransformBy(composed);
+                        {           
                             if (geomData.IfcTypeId == spaceId)
-                                layer.AddToHidden(geomData);
+                                layer.AddToHidden(geomData.TransformBy(composed));
                             else
-                                layer.AddToHidden(geomData, model);
+                                layer.AddToHidden(geomData.TransformBy(composed), model);
                         }
 
                         if (modelBounds.IsEmpty)

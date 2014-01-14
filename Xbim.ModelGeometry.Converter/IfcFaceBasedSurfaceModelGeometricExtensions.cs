@@ -20,6 +20,7 @@ namespace Xbim.ModelGeometry.Converter
         public static int GetGeometryHashCode(this  IfcFaceBasedSurfaceModel fbsm)
         {
             int hash = fbsm.FbsmFaces.Count;
+            if (hash > 30) return hash ^ fbsm.GetType().Name.GetHashCode(); //probably enough for a uniquish hash
             foreach (var cfs in fbsm.FbsmFaces)
             {
                 hash ^= cfs.GetGeometryHashCode();

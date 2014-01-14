@@ -17,7 +17,7 @@ namespace Xbim.ModelGeometry.Converter
         public static int GetGeometryHashCode(this IfcConnectedFaceSet cfs)
         {
             int hash = cfs.CfsFaces.Count;
-            if (hash > 20) return hash; //probably enought for a uniquish hash
+            if (hash > 30) return hash ^ cfs.GetType().Name.GetHashCode(); //probably enough for a uniquish hash
             foreach (var face in cfs.CfsFaces)
                 hash ^= face.GetGeometryHashCode();
             return hash;

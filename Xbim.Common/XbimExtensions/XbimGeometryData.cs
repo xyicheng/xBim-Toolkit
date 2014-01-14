@@ -32,9 +32,10 @@ namespace Xbim.XbimExtensions
         readonly public int GeometryHash;
         readonly public short IfcTypeId;
         readonly public int StyleLabel;
-        private XbimMatrix3D transform;
-
-        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel)
+        readonly public int Counter;
+       
+     
+        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel, int counter = 0)
         {
             GeometryLabel = geometrylabel;
             GeometryType = geomType;
@@ -44,18 +45,22 @@ namespace Xbim.XbimExtensions
             GeometryHash = geometryHash;
             StyleLabel = styleLabel;
             DataArray2 = dataArray2;
+            Counter = counter;
         }
 
-       
+
 
         /// <summary>
         /// Transforms the shape data of the geometry by the matrix
+        /// NB This is a deprecated method and will be removed for the latest geometry support and is only used in first geometry implementation
         /// </summary>
         /// <param name="matrix"></param>
-        public void TransformBy(XbimMatrix3D matrix)
+        public XbimGeometryData TransformBy(XbimMatrix3D matrix)
         {
-            transform = XbimMatrix3D.Multiply(transform, matrix);
-           
+            XbimMatrix3D t =  XbimMatrix3D.FromArray(DataArray2);
+            t = XbimMatrix3D.Multiply(t, matrix);
+            return new XbimGeometryData(GeometryLabel, IfcProductLabel, GeometryType, IfcTypeId, ShapeData, t.ToArray(), GeometryHash, StyleLabel, Counter);
+            
         }
 
        
@@ -75,7 +80,7 @@ namespace Xbim.XbimExtensions
             GeometryType = geomType;
             IfcTypeId = ifcTypeId;
             ShapeData = shape;
-            this.transform = XbimMatrix3D.FromArray(transform);
+            DataArray2  = transform;
             IfcProductLabel = productLabel;
             GeometryHash = GenerateGeometryHash(ShapeData);
             StyleLabel = styleLabel;

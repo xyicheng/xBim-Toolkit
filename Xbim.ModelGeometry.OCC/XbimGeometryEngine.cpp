@@ -68,10 +68,10 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType)
 		{
-			if(data->Compare(data,0,XbimGeometryModel::PolyhedronFormat,0,XbimGeometryModel::PolyhedronFormat->Length,true)==0)
+			if(xbimGeometryType==XbimGeometryType::Polyhedron)
 				return gcnew XbimPolyhedron(data);
 			else //unsupported format
-				return nullptr;
+				throw gcnew XbimGeometryException("Unsupported Geometry Type in XbimGeometryEngine::GetGeometry3D - Ignored");
 		}
 
 		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcSolidModel^ solid, XbimGeometryType xbimGeometryType)

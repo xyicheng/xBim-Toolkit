@@ -25,7 +25,7 @@ namespace Xbim.ModelGeometry.Converter
 
         private XbimModel _model;
         private int[] _shapeGeomLabels;
-
+        private XbimShapeGroup _shapeGroup;
         /// <summary>
         /// Retrieves the product for this Shape from the model
         /// </summary>
@@ -53,38 +53,15 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// Returns the shapes that define this product, must be one or more shapes
         /// </summary>
-        //public XbimShapeGroup Shapes
-        //{
-        //    get 
-        //    {
-        //        XbimGeometryCursor geomTable = _model.GetGeometryTable();
-        //        try
-        //        {
-        //            using (var transaction = geomTable.BeginReadOnlyTransaction())
-        //            {
-
-        //                foreach (var geomId in _shapeGeomLabels)
-        //                {
-        //                    XbimGeometryData data = geomTable.GetGeometryData(geomId);
-        //                    if (data.GeometryType == XbimGeometryType.PolyhedronMap)
-        //                    {
-        //                    }
-        //                    else if (data.GeometryType == XbimGeometryType.Polyhedron)
-        //                    {
-        //                    }
-        //                    else
-        //                        throw new XbimGeometryException("Unexpected geometry type " + Enum.GetName(typeof(XbimGeometryType), data.GeometryType));
-                            
-        //                }
-        //            }
-        //        }
-        //        finally
-        //        {
-        //            _model.FreeTable(geomTable);
-        //        }
-        //        return Shapes; 
-        //    }
-        //}
+        public XbimShapeGroup Shapes
+        {
+            get
+            {
+                if (_shapeGroup == null)
+                    _shapeGroup = new XbimShapeGroup(_model, _shapeGeomLabels);
+                return _shapeGroup;              
+            }
+        }
 
         /// <summary>
         /// True if the product shape has a material definition

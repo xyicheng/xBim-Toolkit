@@ -616,8 +616,7 @@ namespace Xbim.Presentation
                         var geomDataSet = fromModel.GetGeometryData(item.EntityLabel, XbimGeometryType.TriangulatedMesh);
                         foreach (var geomData in geomDataSet)
                         {
-                            geomData.TransformBy(wcsTransform);
-                            m.Add(geomData);
+                            m.Add(geomData.TransformBy(wcsTransform));
                         }
                     }
                 }
@@ -630,8 +629,7 @@ namespace Xbim.Presentation
                     var geomDataSet = fromModel.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
                     foreach (var geomData in geomDataSet)
                     {
-                        geomData.TransformBy(wcsTransform);
-                        m.Add(geomData);
+                        m.Add(geomData.TransformBy(wcsTransform));
                     }
                 }
             }
@@ -1136,8 +1134,7 @@ namespace Xbim.Presentation
             //add all content initially into the hidden field
             foreach (var geomData in model.GetGeometryData(handles))
             {
-                geomData.TransformBy(wcsTransform);
-                layer.AddToHidden(geomData);
+                layer.AddToHidden(geomData.TransformBy(wcsTransform));
                 processed++;
                 int progress = Convert.ToInt32(100.0 * processed / total);
             }
@@ -1188,8 +1185,7 @@ namespace Xbim.Presentation
                 //add all content initially into the hidden field
                 foreach (var geomData in geomColl)
                 {
-                    geomData.TransformBy(wcsTransform);
-                    layer.AddToHidden(geomData, model);
+                    layer.AddToHidden(geomData.TransformBy(wcsTransform), model);
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
