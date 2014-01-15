@@ -43,6 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparing\ComparisonManager.cs" />
+    <Compile Include="Comparing\GeometryComparerII.cs" />
+    <Compile Include="Comparing\GuidComparer.cs" />
+    <Compile Include="Comparing\IModelComparerII.cs" />
+    <Compile Include="Comparing\NameComparer.cs" />
     <Compile Include="Comparitors\GeometryComparer.cs" />
     <Compile Include="Comparitors\GuidComparison.cs" />
     <Compile Include="Comparitors\NameComparison.cs" />
@@ -86,9 +91,7 @@
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Comparing\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

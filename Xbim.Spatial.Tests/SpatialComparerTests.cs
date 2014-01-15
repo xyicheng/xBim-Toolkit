@@ -5,6 +5,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
 using Xbim.Analysis.Spatial;
+using Xbim.Analysis.Comparing;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.Spatial.Tests
 {
@@ -81,6 +83,31 @@ namespace Xbim.Spatial.Tests
             Assert.AreEqual(1, cmp.Comparison.OnlyInOld.Count());
             //there sould be no conflict
             Assert.AreEqual(0, cmp.Comparison.HasMoreNewVersions.Count());
+        }
+
+        [TestMethod]
+        public void ComparerManagerTest()
+        {
+            //create models
+            var original = new XbimModel();
+            original.CreateFrom("OneRoom.ifc", null, null, true, false);
+            var chAdded = new XbimModel();
+            chAdded.CreateFrom("OneRoom_added_window.ifc", null, null, true, false);
+
+            //create comparers
+            var cmpGeometry = new GeometryComparerII(original, chAdded);
+            var cmpName = new NameComparer();
+            var cmpGuid = new GuidComparer();
+
+            var manager = new ComparisonManager(original, chAdded);
+            manager.AddComparer(cmpGeometry);
+            manager.AddComparer(cmpName);
+            manager.AddComparer(cmpGuid);
+
+            manager.Compare<IfcProduct>();
+
+            var results = manager.Results;
+            manager.SaveResultToCSV(@"..\..\output.csv");
         }
 
         //[TestMethod]
