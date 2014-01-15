@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -27,11 +27,16 @@ namespace Xbim.COBie.Data
 
         #region Methods
 
+        public override COBieSheet<COBieSystemRow> Fill()
+        {
+            return Fill(new Dictionary<string, HashSet<string>>()); //no component name check
+        }
+
         /// <summary>
         /// Fill sheet rows for System sheet
         /// </summary>
         /// <returns>COBieSheet<COBieSystemRow></returns>
-        public override COBieSheet<COBieSystemRow> Fill()
+        public  COBieSheet<COBieSystemRow> Fill(Dictionary<string, HashSet<string>> compIndices)
         {
             ProgressIndicator.ReportMessage("Starting Systems...");
 
@@ -39,16 +44,16 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
 
             // get all IfcSystem, IfcGroup and IfcElectricalCircuit objects from IFC file
-            IEnumerable<IfcGroup> ifcGroups = Model.InstancesOfType<IfcGroup>().Where(ifcg => ifcg is IfcSystem); //get anything that is IfcSystem or derived from it eg IfcElectricalCircuit
-            //IEnumerable<IfcSystem> ifcSystems = Model.InstancesOfType<IfcSystem>();
-            //IEnumerable<IfcElectricalCircuit> ifcElectricalCircuits = Model.InstancesOfType<IfcElectricalCircuit>();
+            IEnumerable<IfcGroup> ifcGroups = Model.Instances.OfType<IfcGroup>().Where(ifcg => ifcg is IfcSystem); //get anything that is IfcSystem or derived from it eg IfcElectricalCircuit
+            //IEnumerable<IfcSystem> ifcSystems = Model.Instances.OfType<IfcSystem>();
+            //IEnumerable<IfcElectricalCircuit> ifcElectricalCircuits = Model.Instances.OfType<IfcElectricalCircuit>();
             //ifcGroups = ifcGroups.Union(ifcSystems);
             //ifcGroups = ifcGroups.Union(ifcElectricalCircuits);
 
             //Alternative method of extraction
             List<string> PropertyNames = new List<string> { "Circuit Number", "System Name" };
 
-            IEnumerable<IfcPropertySet> ifcPropertySets = from ps in Model.InstancesOfType<IfcPropertySet>()
+            IEnumerable<IfcPropertySet> ifcPropertySets = from ps in Model.Instances.OfType<IfcPropertySet>()
                                                           from psv in ps.HasProperties.OfType<IfcPropertySingleValue>()
                                                           where PropertyNames.Contains(psv.Name)
                                                           select ps;
@@ -71,10 +76,21 @@ namespace Xbim.COBie.Data
                     sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
 
                     sys.Category = GetCategory(ifcGroup);
+                    string name = product.Name;
                     if (string.IsNullOrEmpty(product.Name) || (product.Name == Constants.DEFAULT_STRING))
                     {
-                        product.Name = product.GetType().Name + " Name Unknown SYS-IN" + UnknownCount.ToString();
+                        name = product.GetType().Name + " Name Unknown " + UnknownCount.ToString();
                         UnknownCount++;
+                    }
+                    else
+                    {
+                        if (compIndices.Count > 0) //check we have values
+                        {
+                            //check for name in components , if missing exclude from system, unknown names are listed see above
+                            if (!compIndices["Name"].Contains(name, StringComparer.OrdinalIgnoreCase))
+                                continue;
+                        }
+                        
                     }
                     sys.ComponentNames = product.Name;
                     sys.ExtSystem = GetExternalSystem(ifcGroup);
@@ -140,7 +156,8 @@ namespace Xbim.COBie.Data
                             {
                                 //OK last chance, lets take the property name that is not in the filter list of strings, ie. != "Circuit Number", "System Name" or "System Classification" from above 
                                 IfcPropertySingleValue propname = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => !PropertyNames.Contains(psv.Name)).FirstOrDefault();
-                                name = propname.Name.ToString();
+                                if (propname != null)
+                                    name = propname.Name.ToString();
                             }
                             
                         }
@@ -150,6 +167,13 @@ namespace Xbim.COBie.Data
                         sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcObject.OwnerHistory);
                         
                         sys.Category = (ifcPropertySingleValue.Name == "Circuit Number") ? "circuit" : GetCategory(ifcObject); //per matrix v9
+                        //check that the element is in the component list
+                        if (compIndices.Count > 0) //check we have values
+                        {
+                            //check for name in components , if missing exclude from system, unknown names are listed see above
+                            if (!compIndices["Name"].Contains(ifcObject.Name.ToString(), StringComparer.OrdinalIgnoreCase))
+                                continue;
+                        }
                         sys.ComponentNames = ifcObject.Name;
                         sys.ExtSystem = GetExternalSystem(ifcPropertySet);
                         sys.ExtObject = ifcPropertySingleValue.GetType().Name;
@@ -174,5 +198,7 @@ namespace Xbim.COBie.Data
             return Constants.DEFAULT_STRING;
         }
         #endregion
+
+        
     }
 }

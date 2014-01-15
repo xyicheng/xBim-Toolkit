@@ -278,7 +278,7 @@ namespace Xbim.DOM
         {
             XbimSlabType type = GetType<XbimSlabType>(floorType);
             XbimSlab slab = Create.Slab(type);
-            (slab.AsRoot as Ifc.SharedBldgElements.IfcSlab).PredefinedType = Ifc.SharedBldgElements.IfcSlabTypeEnum.FLOOR;
+            (slab.AsRoot as Ifc2x3.SharedBldgElements.IfcSlab).PredefinedType = Ifc2x3.SharedBldgElements.IfcSlabTypeEnum.FLOOR;
             return slab;
         }
 
@@ -286,7 +286,7 @@ namespace Xbim.DOM
         {
             XbimSlabType type = GetType<XbimSlabType>(floorType);
             XbimSlab slab = Create.Slab(type, MaterialLayersDirection, MaterialLayersDirectionSense, MaterialLayersOffsett);
-            (slab.AsRoot as Ifc.SharedBldgElements.IfcSlab).PredefinedType = Ifc.SharedBldgElements.IfcSlabTypeEnum.FLOOR;
+            (slab.AsRoot as Ifc2x3.SharedBldgElements.IfcSlab).PredefinedType = Ifc2x3.SharedBldgElements.IfcSlabTypeEnum.FLOOR;
             return slab;
         }
 
@@ -338,7 +338,7 @@ namespace Xbim.DOM
         {
             XbimSlabType slabType = GetType<XbimSlabType>(roofType);
             XbimSlab slab = Create.Slab(slabType, MaterialLayersDirection, MaterialLayersDirectionSense, MaterialLayersOffsett);
-            (slab.AsRoot as Ifc.SharedBldgElements.IfcSlab).PredefinedType = Ifc.SharedBldgElements.IfcSlabTypeEnum.ROOF;
+            (slab.AsRoot as Ifc2x3.SharedBldgElements.IfcSlab).PredefinedType = Ifc2x3.SharedBldgElements.IfcSlabTypeEnum.ROOF;
             return slab;
         }
 
@@ -346,7 +346,7 @@ namespace Xbim.DOM
         {
             XbimSlabType slabType = GetType<XbimSlabType>(roofType);
             XbimSlab slab = Create.Slab(slabType);
-            (slab.AsRoot as Ifc.SharedBldgElements.IfcSlab).PredefinedType = Ifc.SharedBldgElements.IfcSlabTypeEnum.ROOF;
+            (slab.AsRoot as Ifc2x3.SharedBldgElements.IfcSlab).PredefinedType = Ifc2x3.SharedBldgElements.IfcSlabTypeEnum.ROOF;
             return slab;
         }
 
@@ -416,13 +416,13 @@ namespace Xbim.DOM
         #region Getting objects functions
         public IBimBuildingElement GetBuildingElement(Guid guid)
         {
-            Ifc.UtilityResource.IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            Ifc2x3.UtilityResource.IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             return _document.AllBuildingElements.Where(e => e.GlobalId == id).FirstOrDefault();
         }
 
         public IBimBuildingElementType GetBuildingElementType(Guid guid)
         {
-            Ifc.UtilityResource.IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            Ifc2x3.UtilityResource.IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             return _document.AllBuildingElementTypes.Where(e => e.GlobalId == id).FirstOrDefault();
         }
 
@@ -445,7 +445,7 @@ namespace Xbim.DOM
 
         public IBimSpatialStructureElement GetSpatialStructureElement(Guid guid)
         {
-            Ifc.UtilityResource.IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            Ifc2x3.UtilityResource.IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             return _document.AllSpatialStructureElements.Where(e => e.GlobalId == id).FirstOrDefault();
         }
 

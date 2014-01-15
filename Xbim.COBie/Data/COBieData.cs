@@ -2,29 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.ActorResource;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.HVACDomain;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.SharedComponentElements;
-using Xbim.Ifc.StructuralElementsDomain;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.HVACDomain;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
 using System.Globalization;
 using Xbim.COBie.Resources;
-using Xbim.Ifc.ApprovalResource;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ApprovalResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
 using System.Reflection;
-using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
 
 
 namespace Xbim.COBie.Data
@@ -42,6 +44,7 @@ namespace Xbim.COBie.Data
         private COBieProgress _progressStatus;
         protected int UnknownCount { get; set; } //use for unnamed items as an index
 
+        
         //private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
 
         protected COBieData()
@@ -55,7 +58,7 @@ namespace Xbim.COBie.Data
             UnknownCount = 1;
         }
 
-        protected IModel Model
+        protected XbimModel Model
         {
             get
             {
@@ -143,22 +146,32 @@ namespace Xbim.COBie.Data
             return GetExternalSystem(item.OwnerHistory);
         }
 
+        //fields for GetMaterialOwnerHistory function
+        List<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = null;
+        List<IfcMaterialLayerSetUsage> ifcMaterialLayerSetUsages = null;
+
         /// <summary>
-        /// Get the IfcRelAssociatesMaterial object from the passed IfcMaterialLayerSet
+        /// Get the IfcRelAssociatesMaterial object from the passed IfcMaterialLayerSet 
         /// </summary>
         /// <param name="ifcMaterialLayerSet">IfcMaterialLayerSet object</param>
         /// <returns>IfcOwnerHistory object or null if none found</returns>
         protected IfcOwnerHistory GetMaterialOwnerHistory(IfcMaterialLayerSet ifcMaterialLayerSet)
         {
-            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.InstancesOfType<IfcRelAssociatesMaterial>();
-            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = Model.InstancesWhere<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
 
+            if (ifcRelAssociatesMaterials == null)
+            {
+                ifcRelAssociatesMaterials = Model.Instances.OfType<IfcRelAssociatesMaterial>().ToList();
+                ifcMaterialLayerSetUsages = Model.Instances.OfType<IfcMaterialLayerSetUsage>().ToList();
+            }
+
+            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = ifcMaterialLayerSetUsages.Where<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
+            
             IfcRelAssociatesMaterial ifcRelAssociatesMaterial = null;
             if (ifcMaterialLayerSetUsage != null)
-                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ram.RelatingMaterial == ifcMaterialLayerSetUsage).FirstOrDefault();
-
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSetUsage) && ((ram.RelatingMaterial as IfcMaterialLayerSetUsage) == ifcMaterialLayerSetUsage)).FirstOrDefault();
+                
             if (ifcRelAssociatesMaterial == null)
-                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ram.RelatingMaterial == ifcMaterialLayerSet).FirstOrDefault();
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSet) && ((ram.RelatingMaterial as IfcMaterialLayerSet) == ifcMaterialLayerSet)).FirstOrDefault();
 
             if (ifcRelAssociatesMaterial == null)
                 ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ifcMaterialLayerSet.MaterialLayers.Contains(ram.RelatingMaterial)).FirstOrDefault();
@@ -217,12 +230,15 @@ namespace Xbim.COBie.Data
         /// <returns>string of comma delimited addresses</returns>
         protected string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
         {
-            if (ifcOwnerHistory != null)
+            if ((ifcOwnerHistory != null) &&
+                (ifcOwnerHistory.OwningUser != null) &&
+                (ifcOwnerHistory.OwningUser.ThePerson != null)
+                )
             {
                 IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
-                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
+                if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
                 {
-                    return Context.EMails[ifcPerson.EntityLabel];
+                    return Context.EMails[Math.Abs(ifcPerson.EntityLabel)];
                 }
                 else
                 {
@@ -248,9 +264,9 @@ namespace Xbim.COBie.Data
             if (ifcPersonAndOrganization != null)
             {
                 IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
+                if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
                 {
-                    return Context.EMails[ifcPerson.EntityLabel];
+                    return Context.EMails[Math.Abs(ifcPerson.EntityLabel)];
                 }
                 else
                 {
@@ -347,7 +363,6 @@ namespace Xbim.COBie.Data
                 email += (string.IsNullOrEmpty(domType)) ? ".com" : domType;
                 email = email.Replace(" ", ""); //remove any spaces
             }
-            
 
             return email;
         }
@@ -381,52 +396,61 @@ namespace Xbim.COBie.Data
         {
             //Try by relationship first
             IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-
+            IfcClassificationReference ifcCR = null;
             if (ifcRAC != null)
-            {
-                string conCatChar;
-                if (Context.TemplateCulture == "en-GB")
-                    conCatChar = " : ";
-                else
-                    conCatChar = ": ";
+                ifcCR = ifcRAC.RelatingClassification as IfcClassificationReference;
 
-                //need to use split as sometime the whole category is stored in both ItemReference and Name
-                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+            if (ifcCR != null)
+            {
+                string conCatChar = " : ";
+                if ((Context.TemplateFileName != null) && (Context.TemplateFileName.Contains("COBie-US"))) //change for US format
+                    conCatChar = ": "; 
                 //holders for first and last part of category
                 string itemReference = ifcCR.ItemReference;
+                if (!string.IsNullOrEmpty(itemReference))
+                    itemReference = itemReference.Trim();
+                
                 string name = ifcCR.Name;
-                //lets hope the user does not use ":" more than once, We split here as sometimes the whole category(13-15 11 34 11: Office) is place in itemReference and Name
-                if (!string.IsNullOrEmpty(itemReference)) itemReference = itemReference.Split(':').First().Trim();
-                string[] nameSplit = name.Split(':');
-                //just in case we have more than one ":"
-                if (itemReference.ToLower().Trim() == nameSplit.First().ToLower().Trim())
+                if (!string.IsNullOrEmpty(name))
+                    name = name.Trim();
+
+                //need to use split as sometime the whole category is stored in both ItemReference and Name
+                //We split here as sometimes the whole category(13-15 11 34 11: Office) is place in itemReference and Name
+                if ((!string.IsNullOrEmpty(name)) &&
+                    (!string.IsNullOrEmpty(itemReference))
+                    ) 
                 {
-                    for (int i = 0; i < nameSplit.Count(); i++)
+                    itemReference = itemReference.Split(':').First().Trim();
+                    string[] nameSplit = name.Split(':');
+                    //just in case we have more than one ":"in name
+                    if (nameSplit.First().Trim().Equals(itemReference, StringComparison.OrdinalIgnoreCase))
                     {
-                        //skip first item
-                        if (i == 1) name = nameSplit[i].Trim();
-                        if (i > 1) name += conCatChar + nameSplit[i].Trim(); //add back the second, third... ": "
+                        for (int i = 0; i < nameSplit.Count(); i++)
+                        {
+                            //skip first item
+                            if (i == 1) name = nameSplit[i].Trim();
+                            if (i > 1) name += conCatChar + nameSplit[i].Trim(); //add back the second, third... ": "
+                        }
                     }
-                    
-                }
-                else //no match on first split item so just go with the whole string for both, if same filtered below
-                {
-                    itemReference = ifcCR.ItemReference;
-                    name = ifcCR.Name;
+                    else
+                        name = nameSplit.Last().Trim();
                 }
 
-                if ((!string.IsNullOrEmpty(itemReference))
-                    && (!string.IsNullOrEmpty(name))
-                    && (itemReference.ToLower() != name.ToLower())
+                //Return the Category
+                if ((!string.IsNullOrEmpty(itemReference)) &&
+                    (!string.IsNullOrEmpty(name)) &&
+                    (!itemReference.Equals(name, StringComparison.OrdinalIgnoreCase))
                     )
-                    return itemReference.Trim() + conCatChar + name.Trim();
+                    return itemReference + conCatChar + name;
                 else if (!string.IsNullOrEmpty(itemReference))
                     return itemReference;
                 else if (!string.IsNullOrEmpty(name))
                     return name;
                 else if (!string.IsNullOrEmpty(ifcCR.Location))
                     return ifcCR.Location;
-                else if ((ifcCR.ReferencedSource != null) && (!string.IsNullOrEmpty(ifcCR.ReferencedSource.Name)))
+                else if ((ifcCR.ReferencedSource != null) && 
+                         (!string.IsNullOrEmpty(ifcCR.ReferencedSource.Name))
+                        )
                     return ifcCR.ReferencedSource.Name;
             }
             return null;
@@ -671,7 +695,7 @@ namespace Xbim.COBie.Data
             string areaUnit = "";
             string volumeUnit = "";
             string moneyUnit = "";
-            foreach (IfcUnitAssignment ifcUnitAssignment in model.InstancesOfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
+            foreach (IfcUnitAssignment ifcUnitAssignment in model.Instances.OfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
             {
                 foreach (IfcUnit ifcUnit in ifcUnitAssignment.Units) //loop the UnitSet
                 {
@@ -797,6 +821,18 @@ namespace Xbim.COBie.Data
             }
             return result;
         }
+
+        /// <summary>
+        /// Check for empty, null of DEFAULT_STRING
+        /// </summary>
+        /// <param name="value">string to validate</param>
+        /// <returns></returns>
+        protected bool ValidateString(string value)
+        {
+            return (!((value == Constants.DEFAULT_STRING) || (string.IsNullOrEmpty(value)) || (value == "n\\a") || (value == "n\a"))); //"n\a" cover miss types
+            //return ((!string.IsNullOrEmpty(value)) && (value != Constants.DEFAULT_STRING) && (value != "n\\a") && (value != "n\a")); //"n\a" cover miss types
+        }
+
 
         #endregion
 

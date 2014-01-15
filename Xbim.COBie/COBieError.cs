@@ -24,7 +24,7 @@ namespace Xbim.COBie
             ErrorDescription = errorDescription;
         }
 
-        public COBieError(string sheetName, string fieldName, string errorDescription, ErrorTypes errorType, string initialRowHash, int column = 0, int row = 0)
+        public COBieError(string sheetName, string fieldName, string errorDescription, ErrorTypes errorType, ErrorLevels errorLevel, string initialRowHash, int column = 0, int row = 0)
         {
             SheetName = sheetName;
             FieldName = fieldName;
@@ -33,6 +33,7 @@ namespace Xbim.COBie
             Column = column;
             Row = row;
             InitialRowHash = initialRowHash;
+            ErrorLevel = errorLevel;
         }
 
         public COBieError(string fieldName, string errorDescription)
@@ -45,6 +46,7 @@ namespace Xbim.COBie
         public string FieldName { get; private set; }
         public string ErrorDescription { get; set; }
         public ErrorTypes ErrorType { get; set; }
+        public ErrorLevels ErrorLevel { get; set; }
 
         public string FieldValue { get; set; }
         public int Column { get; set;}
@@ -66,5 +68,16 @@ namespace Xbim.COBie
             PickList_Violation,
             None
         }
+
+        /// <summary>
+        /// Level of error
+        /// </summary>
+        public enum ErrorLevels
+        {
+            Error,
+            Warning,
+            None
+        }
+        
     }
 }

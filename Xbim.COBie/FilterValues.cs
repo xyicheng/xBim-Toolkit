@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.HVACDomain;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.SharedBldgServiceElements;
-using Xbim.Ifc.SharedComponentElements;
-using Xbim.Ifc.StructuralElementsDomain;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.HVACDomain;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.StructuralAnalysisDomain;
 
 namespace Xbim.COBie
 {
@@ -125,16 +126,19 @@ namespace Xbim.COBie
                                         typeof(IfcSite),
                                         typeof(IfcSpace),
                                         typeof(IfcProject),
-                                        typeof(IfcTendon),
-                                        typeof(IfcTendonAnchor),
+                                        //typeof(IfcTendon),
+                                        //typeof(IfcTendonAnchor),
                                         typeof(IfcFooting),
-                                        typeof(IfcCovering)
-                                        //typeof(IfcColumnStandardCase), //IFC2x Edition 4.
+                                        typeof(IfcStructuralActivity),
+                                        typeof(IfcStructuralItem)
+                                        //typeof(ifcCovering),
+                                        ///typeof(IfcColumnStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcPlateStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
                                         //typeof(IfcSlabStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcWallElementedCase), //IFC2x Edition 4.
+                                        //typeof(IfcSpatialElement),//IFC2x Edition 4.
                                         //typeof(IfcCableCarrierSegment), //IFC2x Edition 4.
                                         //typeof(IfcCableSegment), //IFC2x Edition 4.
                                         //typeof(IfcCableCarrierFitting),
@@ -167,7 +171,10 @@ namespace Xbim.COBie
                                                             typeof(IfcPipeSegmentType),
                                                             typeof(IfcFastenerType),
                                                             typeof(IfcSpaceType),
-                                                            typeof(IfcBuildingElementProxyType)
+                                                            typeof(IfcBuildingElementProxyType),
+                                                            typeof(IfcFlowFittingType),
+                                                            typeof(IfcFlowSegmentType)
+                                                            //typeof(IfcTypeProcess), //IFC2x Edition 4.
                                                             //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
                                                             //typeof(IfcStairType), //IFC2x Edition 4.
                                                              };
@@ -177,18 +184,7 @@ namespace Xbim.COBie
                                                 typeof(IfcBuilding),
                                                 typeof(IfcBuildingStorey)
                                                 };
-            //Assemblies should only be shown from the components and type sheets so add there exclusions 
-            Assembly.AddRange(Types);
-            Assembly.AddRange(Component);
-            
-
         }
-
-      
-               
-        
-
-        
     }
 
     /// <summary>
@@ -233,8 +229,8 @@ namespace Xbim.COBie
                                     "Finish",   "Color",    "Size",     "Shape",    "ModelReference",   "NominalHeight",    "NominalWidth", "NominalLength",    "WarrantyName",
                                     "WarrantyDescription",  "DurationUnit",         "ServiceLifeType",  "ServiceLifeDuration",  "ExpectedLife",     "LifeCyclePhase",   "Cost",
                                     "ReplacementCost",  "WarrantyDurationUnit", "WarrantyDurationLabor",    "WarrantyGuarantorLabor",   "WarrantyDurationParts",    
-                                    "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance"
-        
+                                    "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance",
+                                    "PointOfContact", "Colour", "Regulation", "Environmental"
                                 };
 
             AttributesContain = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area" }; //"Tag",
@@ -264,9 +260,9 @@ namespace Xbim.COBie
         
         public SpaceValues()
         {
-            AttributesEqualTo = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag" }; 
+            AttributesEqualTo = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag", "Tag", "Room_Tag", "FinishCeilingHeight" }; 
 
-            AttributesContain = new List<string> { "ZoneName", "Category", "Length", "Width" };
+            AttributesContain = new List<string> { "ZoneName", "Category", "Length", "Width", "GrossFloorArea", "GSA", "NetFloorArea" };
 
             PropertySetsEqualTo = new List<string>() { "BaseQuantities" }; 
         }
@@ -397,18 +393,22 @@ namespace Xbim.COBie
             {   "MethodOfMeasurement",  "Omniclass Number",     "Assembly Code",                "Assembly Description",     "Uniclass Description",     "Uniclass Code", 
                 "Category Code",    "Category Description",     "Classification Description",   "Classification Code",      "Name",                     "Description", 
                 "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles",              "Mark",     "Workset",  "Keynote",  "VisibleOnPlan",
-                "Edited by", "Elevation Base"
+                "Edited by", "Elevation Base", "Phase", "Phase Created", "Window Inset", "Symbol" , "Line Pattern",
+                "Roomtag", "Upper Limit", "Base Offset"
+
                 //"Zone Base Offset", "Upper Limit",   "Line Pattern", "Symbol","Window Inset", "Radius", "Phase Created","Phase", //old ones might need to put back in
             };
 
             //List of field names that are to be excluded from Attributes sheet with start with compare
             AttributesStartWith = new List<string>()
-            {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius", "Moves With"
+            {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius", 
+                "Moves With", "Width"
             };
 
             // List of property names that are to be excluded from Attributes sheet with contains with compare
             AttributesContain = new List<string>()
-            {   "AssetAccountingType",  "GSA BIM Area",     "Height",   "Length",   "Size",     "Lighting Calculation Workplan",    "Offset",   "Omniclass"
+            {   "AssetAccountingType",  "GSA BIM Area",     "Height",   "Length",   "Size",     "Lighting Calculation Workplan",    
+                "Offset",   "Omniclass", "Radius", "Zone"
             };
             
         }

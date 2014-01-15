@@ -9,7 +9,7 @@ var pauseDownload = false; //setting this to true will pause teh geometry stream
 
 //enums for the different command codes
 CommandCode = {
-    ModelView: 0,
+    ModelBasicProperties: 0,
     SharedMaterials: 1,
     Types: 2,
     GeometryHeaders: 3,
@@ -21,7 +21,7 @@ CommandCode = {
 //////////////////////////////////////////////////////////
 function StartLoadingDynamicModel(Scene, StartAtNode, Model) {
     ModelID = Model;
-
+    
     //reset progress bar
     $("#loadedbar").progressbar({ value: 0 });
 
@@ -36,12 +36,12 @@ function StartLoadingDynamicModel(Scene, StartAtNode, Model) {
 
     //send command to request camera info
     $("#debuginfo").append('<p>Requesting Camera Info</p>');
-    connection.send(JSON.stringify({ "command": CommandCode.ModelView, "ModelID": ModelID }));
+    connection.send(JSON.stringify({ "command": CommandCode.ModelBasicProperties, "ModelID": ModelID }));
 }
 function ModelDataReceived(command, view) {
     //select the right function based on the incoming command type
     switch (command) {
-        case CommandCode.ModelView:
+        case CommandCode.ModelBasicProperties:
             SetupModelView(view);
             if (!Loaded) {
                 Loaded = true;
@@ -102,7 +102,7 @@ function GrabNextGeoPiece() {
         if (failedpieces > 0) {
             //alert("Model finished loading. " + failedpieces + " products have no geometry to display");
         }
-        addClassification(ModelID);
+        //addClassification(ModelID);
     } else {
         if (!pauseDownload) { //if we haven't paused the download
             //Get the lesser of batch size or how many are remaining
@@ -175,6 +175,9 @@ function ResetModelView() {
     //set up plane
     newInput = true;
 }
+
+// gets the model boundaries then zooms to it.
+//
 function SetupModelView(view) {
 
     /////////////////////////////
@@ -194,9 +197,15 @@ function SetupSharedMaterials(view) {
     $("#debuginfo").append('<p>Received ' + count + ' shared materials</p>');
     for (var i = 0; i < count; i++) {
         var length = view.getUint16();
-        //                                 name                    R                  G                  B                  Alpha             Emit
-        var material = CreateMaterial(view.getString(length), view.getFloat64(), view.getFloat64(), view.getFloat64(), view.getFloat64(), view.getFloat64());
-        AddItemToLibrary(streamScene, material);
+        var material = CreateMaterial(  // in modelbuilder.js
+            view.getString(length), // name
+            view.getFloat64(), // R
+            view.getFloat64(), // G
+            view.getFloat64(), // B
+            view.getFloat64(), // Alpha
+            view.getFloat64()  // Emit
+            );
+        AddItemToSceneLibrary(streamScene, material);  // in modelbuilder.js
     }
 
     $("#debuginfo").append('<p>Requesting Type Info</p>');
@@ -204,51 +213,51 @@ function SetupSharedMaterials(view) {
 }
 function SetupTypes(view) {
     var count = view.getUint16();
-    var type = new Array(count);
+    var typesArray = new Array(count);
 
     for (var i = 0; i < count; i++) {
         var length = view.getUint16();
-        type[i] = view.getString(length);
+        typesArray[i] = view.getString(length);
     }
-    $("#debuginfo").append('<p>Received ' + count + ' types: ' + type.toString() + '</p>');
+    $("#debuginfo").append('<p>Received ' + count + ' types: ' + typesArray.toString() + '</p>');
 
-    AddTypes(streamScene, streamNodeAt, type);
-
+    // streamNodeAt is the starting point for a model.
+    //
+    AddTypes(streamScene, streamNodeAt, typesArray); // in ModelBuilder.js
     $("#debuginfo").append('<p>Requesting Geometry Headers</p>');
     connection.send(JSON.stringify({ "command": CommandCode.GeometryHeaders, "ModelID": ModelID}));
 }
 function SetupGeometryHeaders(view) {
     var d1 = new Date();
 
-    var count = view.getUint16(); //total geometry types
+    var countStyles = view.getUint16(); //total geometry types
     var totalcount = view.getUint16(); //total geometry
 
-    $("#debuginfo").append('<p>Received headers for ' + count + ' geometry types, with a total of ' + totalcount + ' pieces of geometry</p>');
+    $("#debuginfo").append('<p>Received headers for ' + countStyles + ' geometry styles, with a total of ' + totalcount + ' pieces of geometry</p>');
 
     var addedCount = 0;
     ToLoad = new Array(totalcount);
-    for (var i = 0; i < count; i++) {
+    for (var iCurStyle = 0; iCurStyle < countStyles; iCurStyle++) {
         //type
         var typeLen = view.getUint16();
-        var type = view.getString(typeLen);
+        var typeName = view.getString(typeLen);
         //material
         var matLen = view.getUint16();
-        var mat = view.getString(matLen);
+        var matName = view.getString(matLen);
 
-        var layer = view.getInt16();
-
-        UpdateLayers(streamScene, type, layer);
+        var layer = view.getInt16(); // has to do with transparency
+        UpdateLayers(streamScene, typeName, layer);
 
         //geometry details
         var geomcount = view.getUint16();
-        var geometry = new Array(geomcount);
+        var geometryLabels = new Array(geomcount);
         for (var j = 0; j < geomcount; j++) {
             var id = view.getInt32();
-            geometry[j] = id;
+            geometryLabels[j] = id;
             ToLoad[addedCount] = id;
             addedCount++;
         }
-        LoadGeometryHeaders(streamScene, type, mat, geometry);
+        LoadGeometryHeaders(streamScene, typeName, matName, geometryLabels, iCurStyle);
     }
 
     //Setup total number to load and fire off the first load
@@ -264,116 +273,70 @@ function updateProgressBar() {
     }
 }
 function SetupGeometryData(view) {
-
+    // bonghi updated version
     var loaded = LoadCount;
+    var count = view.getUint16(); //how is the system trying to send 
+    // failedpieces++; // when needed
+    // LoadCount += brokenitems;
+    // currentBatchAmount += count + brokenitems;
 
-    var count = view.getUint16(); //how many we have downloaded successfully
-    var brokenitems = view.getUint16(); //how many failed server side - normally because there is no geometry available (error processing, or no representation)
-    failedpieces += brokenitems;
-    LoadCount += brokenitems;
-    currentBatchAmount += count + brokenitems;
+    // $("#debuginfo").append('<p>Received geometry for ' + count + ' items, with ' + brokenitems + ' items lacking geometry data (either serverside/processing failure, or no geometry available)</p>');
 
-    $("#debuginfo").append('<p>Received geometry for ' + count + ' items, with ' + brokenitems + ' items lacking geometry data (either serverside/processing failure, or no geometry available)</p>');
-
-    updateProgressBar();
-
-    if ((count + brokenitems) < batchamount && ToLoad.length > 0) {
-        alert("wrong number of items returned");
-    }
+    // updateProgressBar();
 
     for (var c = 0; c < count; c++) {
         LoadCount++;
-        updateProgressBar();
+        // updateProgressBar();
 
-        var ID = view.getInt32();
+        var ID = view.getUint32();
         $("#debuginfo").append('<p>Processing Geometry for ID: ' + ID + '</p>');
         if (ID == 0) {
             alert("debug-me-plz");
-            view._offset += ((16 * 8) + 7);
             continue;
         }
 
-        var matrix = new Array(16);
-
-        //get transform matrix
-        var matrixSum = 0;
-        for (var l = 0; l < 16; l++) {
-            var item = view.getFloat64();
-            matrix[l] = item;
-            matrixSum += item; //total up the sum of the matrix so we can check if its all zeros
-        }
-
-        //get the mesh data as a new jDataView
-        var dataLength = view.getInt32();
-
-        var NumChildren = view.getInt16();
         var HasData = view.getInt8();
-        //setup arrays for data
-        var mesh = new ViewerMesh();
+        if (HasData == 0) {
+            failedpieces++;
+        } else {
+            // this is where the data comes from GetPNIGeometryData
 
-        var positions = new Array();
-        var normals = new Array();
-        var indices = new Int32Array();
-        var isEmptyShape = true;
-
-        if (dataLength > 0) {
-            var data = new jDataView(view.buffer, view._offset, dataLength)
-            if (HasData) {
-                mesh.AddOneMesh(data);
+            //get transform matrix
+            var matrix = new Array(16);
+            for (var l = 0; l < 16; l++) {
+                var item = view.getFloat64();
+                matrix[l] = item;
             }
-            for (var i = 0; i < NumChildren; i++) {
-                mesh.AddOneMesh(data);
+
+            // get initial metrics
+            var NumPosNormals = view.getUint32();
+            var NumTriangles = view.getUint32();
+
+            // initialise local arrays
+            var positions = new Float64Array(NumPosNormals * 3);
+            var normals = new Float64Array(NumPosNormals * 3);
+            var indices = new Int32Array(NumTriangles * 3);
+
+            for (var i = 0; i < NumPosNormals; i++) {
+                positions[i * 3 + 0] = view.getFloat32();
+                positions[i * 3 + 1] = view.getFloat32();
+                positions[i * 3 + 2] = view.getFloat32();
+
+                normals[i * 3 + 0] = view.getFloat32();
+                normals[i * 3 + 1] = view.getFloat32();
+                normals[i * 3 + 2] = view.getFloat32();
             }
-            view._offset += dataLength; //ensure offset is correct
-
-            //clean up memory
-            delete data;
-
-            positions = new Float64Array(mesh.uniquePoints.length * 3);
-            normals = new Float64Array(mesh.uniquePoints.length * 3);
-            vertices += mesh.uniquePoints.length / 3;
-            for (var i = 0; i < mesh.uniquePoints.length; i++) {
-
-                var pindex = mesh.uniquePoints[i][0]; // index of point in pts
-                positions[i * 3 + 0] = mesh.points[pindex].X;
-                positions[i * 3 + 1] = mesh.points[pindex].Y;
-                positions[i * 3 + 2] = mesh.points[pindex].Z;
-
-
-                var nindex = mesh.uniquePoints[i][1];
-                normals[i * 3 + 0] = mesh.normals[nindex].X;
-                normals[i * 3 + 1] = mesh.normals[nindex].Y;
-                normals[i * 3 + 2] = mesh.normals[nindex].Z;
-
-
-                isEmptyShape = false;
+            for (var i = 0; i < NumTriangles; i++) {
+                indices[i * 3 + 0] = view.getUint32();
+                indices[i * 3 + 1] = view.getUint32();
+                indices[i * 3 + 2] = view.getUint32();
             }
-            delete mesh.points;
-            delete mesh.normals;
-
-            indices = new Int32Array(mesh.indices.length);
-            isEmptyShape = mesh.indices.length == 0;
-            for (var i = 0; i < mesh.indices.length; i++) {
-                indices[i] = mesh.indices[i];
-                delete mesh.indices[i];
-            }
+            CreateGeometryData(streamScene, ID, 4, positions, normals, indices, matrix);
+            //cleanup
+            delete positions;
+            delete normals;
+            delete indices;
         }
-
-        //cleanup the mesh now we are done with it
-        delete mesh;
-
-        if (!isEmptyShape) {
-            //create geometry
-            if (matrixSum == 0) {
-                CreateGeometryData(streamScene, ID, 4, positions, normals, indices);
-            } else {
-                CreateGeometryData(streamScene, ID, 4, positions, normals, indices, matrix);
-            }
-        }
-        //cleanup
-        delete positions;
-        delete normals;
-        delete indices;
     }
     //clean up
     delete view;

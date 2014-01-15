@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.GeometryResource;
 using System.Diagnostics;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.QuantityResource;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -68,7 +68,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimWallType xbimWallType)
         {
             _document.Walls.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcWallStandardCase>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcWallStandardCase>();
             _ifcBuildingElement.SetDefiningType(xbimWallType.IfcTypeProduct, _document.Model);
         }
         #endregion

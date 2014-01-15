@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -38,7 +38,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimSlabType xbimSlabType)
         {
             _document.Slabs.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcSlab>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcSlab>();
             _ifcBuildingElement.SetDefiningType(xbimSlabType.IfcTypeProduct, _document.Model);
         }
         #endregion

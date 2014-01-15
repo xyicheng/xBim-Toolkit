@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.DOM
 {
@@ -13,7 +13,7 @@ namespace Xbim.DOM
 
         public XbimAxis2Placement3D(XbimDocument document)
         {
-            _ifcAxis2Placement = document.Model.New<IfcAxis2Placement3D>();
+            _ifcAxis2Placement = document.Model.Instances.New<IfcAxis2Placement3D>();
         }
 
         public void SetLocation(double X, double Y, double Z)

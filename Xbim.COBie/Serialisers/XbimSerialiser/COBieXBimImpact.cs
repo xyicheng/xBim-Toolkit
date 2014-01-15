@@ -4,10 +4,14 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
+using Xbim.Ifc2x3.Extensions;
+
 
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
@@ -32,14 +36,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieImpactRow to read data from</param>
         public void SerialiseImpact(COBieSheet<COBieImpactRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Impact"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Impact"))
             {
                 try
                 {
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Impacts...");
                     ProgressIndicator.Initialise("Creating Impacts", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieImpactRow row = cOBieSheet[i];
                         AddImpact(row);
@@ -51,7 +58,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -64,6 +70,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieImpactRow holding the data</param>
         private void AddImpact(COBieImpactRow row)
         {
+            string pSetName = "Pset_EnvironmentalImpactValues";
             string description = Constants.DEFAULT_STRING;
             if (ValidateString(row.Description))
                 description = row.Description;
@@ -72,27 +79,54 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             if (row.SheetName.ToLower().Trim() == "type")
             {
                 if (IfcTypeObjects == null)
-                            IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
+                            IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
                 IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                 if (ifcTypeObject != null)
-                    ifcPropertySet = AddPropertySet(ifcTypeObject, "Pset_EnvironmentalImpactValues", description);
+                {
+                    if (XBimContext.IsMerge)
+                    {
+                        ifcPropertySet = ifcTypeObject.GetPropertySet(pSetName);
+                        if (ifcPropertySet != null) //Property set Pset_EnvironmentalImpactValues already set so assume exists so skip
+                        {
+#if DEBUG
+                            Console.WriteLine("{0} Pset_EnvironmentalImpactValues Property set so skip on merge", ifcTypeObject.GetType().Name);
+#endif
+                            return;
+                        }
+                    }
+                    
+                    ifcPropertySet = AddPropertySet(ifcTypeObject, pSetName, description);
+                }
             }
             else
             {
                 if (IfcProducts == null)
-                    IfcProducts = Model.InstancesOfType<IfcProduct>();
+                    IfcProducts = Model.Instances.OfType<IfcProduct>();
                 IfcProduct ifcProduct = IfcProducts.Where(to => to.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                 if (ifcProduct != null)
-                    ifcPropertySet = AddPropertySet(ifcProduct, "Pset_EnvironmentalImpactValues", description);
+                {
+                    if (XBimContext.IsMerge)
+                    {
+                        ifcPropertySet = ifcProduct.GetPropertySet(pSetName);
+                        if (ifcPropertySet != null)//Property set Pset_EnvironmentalImpactValues already set so assume exists so skip
+                        {
+#if DEBUG
+                            Console.WriteLine("{0} Pset_EnvironmentalImpactValues Property set so skip on merge", ifcProduct.GetType().Name);
+#endif
+                            return;
+                        }
+                           
+                    }
+                    
+                    ifcPropertySet = AddPropertySet(ifcProduct, pSetName, description);
+                }
             }
 
             //check we have a property set from the found SheetName/RowName object
             if (ifcPropertySet != null)
             {
-                if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                    SetNewOwnerHistory(ifcPropertySet, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                        else
-                    SetNewOwnerHistory(ifcPropertySet, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                //Add Created By, Created On and ExtSystem to Owner History. 
+                SetUserHistory(ifcPropertySet, row.ExtSystem, row.CreatedBy, row.CreatedOn);
                 //using statement will set the Model.OwnerHistoryAddObject to ifcPropertySet.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                 //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                 using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcPropertySet.OwnerHistory))

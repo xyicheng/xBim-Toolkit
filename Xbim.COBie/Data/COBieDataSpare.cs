@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ConstructionMgmtDomain;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
@@ -38,9 +38,9 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
                         // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = Model.InstancesOfType<IfcConstructionProductResource>();
+            IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = Model.Instances.OfType<IfcConstructionProductResource>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcConstructionProductResources); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             attributeBuilder.RowParameters["Sheet"] = "Spare";
@@ -49,7 +49,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Spare.AttributesContain);
             
 
-            //IfcTypeObject typeObject = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
+            //IfcTypeObject typeObject = Model.Instances.OfType<IfcTypeObject>().FirstOrDefault();
 
             ProgressIndicator.Initialise("Creating Spares", ifcConstructionProductResources.Count());
 
@@ -58,20 +58,29 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieSpareRow spare = new COBieSpareRow(spares);
-
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertyValues(ifcConstructionProductResource); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
                 spare.Name = (string.IsNullOrEmpty(ifcConstructionProductResource.Name)) ? "" : ifcConstructionProductResource.Name.ToString();
 
-                spare.CreatedBy = GetTelecomEmailAddress(ifcConstructionProductResource.OwnerHistory);
-                spare.CreatedOn = GetCreatedOnDateAsFmtString(ifcConstructionProductResource.OwnerHistory);
+                string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                spare.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(ifcConstructionProductResource.OwnerHistory);
+                string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                spare.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(ifcConstructionProductResource.OwnerHistory);
 
                 spare.Category = GetCategory(ifcConstructionProductResource);
 
                 spare.TypeName = GetObjectType(ifcConstructionProductResource);
 
-                spare.ExtSystem = GetExternalSystem(ifcConstructionProductResource);
+                string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                spare.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(ifcConstructionProductResource);
                 spare.ExtObject = ifcConstructionProductResource.GetType().Name;
                 spare.ExtIdentifier = ifcConstructionProductResource.GlobalId;
-                spare.Description = (ifcConstructionProductResource == null) ? "" : ifcConstructionProductResource.Description.ToString();
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                if (ValidateString(description))
+                    spare.Description = description;
+                else
+                    spare.Description = (ifcConstructionProductResource == null) ? "" : ifcConstructionProductResource.Description.ToString();
 
                 //get information from Pset_Spare_COBie property set 
                 IfcPropertySingleValue ifcPropertySingleValue = null;

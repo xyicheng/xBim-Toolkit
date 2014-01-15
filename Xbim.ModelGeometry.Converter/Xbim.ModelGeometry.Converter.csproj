@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DOPARALLEL</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;DOPARALLEL</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{97DFF14E-ADD7-4ED3-B8C3-0D3D3E6CDEE8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xbim.ModelGeometry.Converter</RootNamespace>
+    <AssemblyName>Xbim.ModelGeometry.Converter</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccProvider>SAK</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SccAuxPath>SAK</SccAuxPath>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="AssemblyResolver.cs" />
+    <Compile Include="XbimMesher.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XbimSceneBuilder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745f5ac-af3c-4372-81aa-a75e7b1fa03b}</Project>
+      <Name>Xbim.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
+      <Project>{09870f18-1796-4a3e-a66d-68db3da60b24}</Project>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
+      <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
+      <Name>Xbim.Ifc2x3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
+      <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
+      <Name>Xbim.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
+      <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
+      <Name>Xbim.ModelGeometry.Scene</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.exp">
+      <Link>x64\Xbim.ModelGeometry.OCC.exp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.lib">
+      <Link>x64\Xbim.ModelGeometry.OCC.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.exp">
+      <Link>x86\Xbim.ModelGeometry.OCC.exp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.lib">
+      <Link>x86\Xbim.ModelGeometry.OCC.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.dll">
+      <Link>x64\Xbim.ModelGeometry.OCC.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.pdb">
+      <Link>x64\Xbim.ModelGeometry.OCC.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.dll">
+      <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.pdb">
+      <Link>x86\Xbim.ModelGeometry.OCC.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.xml">
+      <Link>x86\Xbim.ModelGeometry.OCC.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.xml">
+      <Link>x64\Xbim.ModelGeometry.OCC.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.exp">
+      <Link>x64\Xbim.ModelGeometry.OCCd.exp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.lib">
+      <Link>x64\Xbim.ModelGeometry.OCCd.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.exp">
+      <Link>x86\Xbim.ModelGeometry.OCCd.exp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.lib">
+      <Link>x86\Xbim.ModelGeometry.OCCd.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.dll">
+      <Link>x64\Xbim.ModelGeometry.OCCd.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.pdb">
+      <Link>x64\Xbim.ModelGeometry.OCCd.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.dll">
+      <Link>x86\Xbim.ModelGeometry.OCCd.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.pdb">
+      <Link>x86\Xbim.ModelGeometry.OCCd.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.xml">
+      <Link>x86\Xbim.ModelGeometry.OCCd.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.xml">
+      <Link>x64\Xbim.ModelGeometry.OCCd.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBO.dll">
+      <Link>x64\TKBO.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBool.dll">
+      <Link>x64\TKBool.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBRep.dll">
+      <Link>x64\TKBRep.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKernel.dll">
+      <Link>x64\TKernel.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKG2d.dll">
+      <Link>x64\TKG2d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKG3d.dll">
+      <Link>x64\TKG3d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKGeomAlgo.dll">
+      <Link>x64\TKGeomAlgo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKGeomBase.dll">
+      <Link>x64\TKGeomBase.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKMath.dll">
+      <Link>x64\TKMath.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKMesh.dll">
+      <Link>x64\TKMesh.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKOffset.dll">
+      <Link>x64\TKOffset.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKPrim.dll">
+      <Link>x64\TKPrim.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKShHealing.dll">
+      <Link>x64\TKShHealing.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKTopAlgo.dll">
+      <Link>x64\TKTopAlgo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKBO.dll">
+      <Link>x86\TKBO.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKBool.dll">
+      <Link>x86\TKBool.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKBRep.dll">
+      <Link>x86\TKBRep.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKernel.dll">
+      <Link>x86\TKernel.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKG2d.dll">
+      <Link>x86\TKG2d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKG3d.dll">
+      <Link>x86\TKG3d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKGeomAlgo.dll">
+      <Link>x86\TKGeomAlgo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKGeomBase.dll">
+      <Link>x86\TKGeomBase.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKMath.dll">
+      <Link>x86\TKMath.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKMesh.dll">
+      <Link>x86\TKMesh.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKOffset.dll">
+      <Link>x86\TKOffset.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKPrim.dll">
+      <Link>x86\TKPrim.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKShHealing.dll">
+      <Link>x86\TKShHealing.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKTopAlgo.dll">
+      <Link>x86\TKTopAlgo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

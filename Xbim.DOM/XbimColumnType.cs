@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -34,7 +34,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcColumnType = _document.Model.New<IfcColumnType>();
+            IfcColumnType = _document.Model.Instances.New<IfcColumnType>();
             IfcColumnType.Name = name;
             _document.ColumnTypes.Add(this);
         }

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
@@ -38,8 +38,10 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
             // get ifcRelAggregates objects from IFC file what are not in the excludedTypes type list
-            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelNests> ifcRelNests = Model.InstancesOfType<IfcRelNests>(); 
+            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.Instances.OfType<IfcRelAggregates>();
+            IEnumerable<IfcRelNests> ifcRelNests = Model.Instances.OfType<IfcRelNests>(); 
+            
+
             IEnumerable<IfcRelDecomposes> relAll = (from ra in ifcRelAggregates
                                                     where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !Context.Exclude.ObjectType.Assembly.Contains(ra.RelatingObject.GetType())
                                                       select ra as IfcRelDecomposes).Union
@@ -79,16 +81,14 @@ namespace Xbim.COBie.Data
 
                 //get the assembly child names of objects that make up assembly
                 ChildNamesList childNamesUnique = ExtractChildNames(ra);
-                if (childColumnLength == 0)  childColumnLength = assembly["ChildNames"].CobieCol.ColumnLength;
+                if (childColumnLength == 0)  childColumnLength = assembly["ChildNames"].COBieColumn.ColumnLength;
                 ChildNamesList childNames = ConCatChildNamesList(childNamesUnique, childColumnLength);
                 if (childNames.Count > 0)
                     AddChildRows(assemblies, assembly, childNames);
-                else
-                    assemblies.AddRow(assembly);
             }
 
             //--------------Loop all IfcMaterialLayerSet-----------------------------
-            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.InstancesOfType<IfcMaterialLayerSet>();
+            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.Instances.OfType<IfcMaterialLayerSet>();
             char setNamePostFix = 'A';       
             foreach (IfcMaterialLayerSet ifcMaterialLayerSet in ifcMaterialLayerSets)
             {
@@ -129,8 +129,6 @@ namespace Xbim.COBie.Data
                 ChildNamesList childNames = ConCatChildNamesList(childNamesUnique, childColumnLength); //childColumnLength is max number of chars for the ChildNames cell
                 if (childNames.Count > 0)
                     AddChildRows(assemblies, assembly, childNames);
-                else
-                    assemblies.AddRow(assembly);
             }
             ProgressIndicator.Finalise();
             return assemblies;
@@ -265,6 +263,12 @@ namespace Xbim.COBie.Data
             ChildNamesList childNamesFilter = new ChildNamesList();
             foreach (IfcObjectDefinition obj in ra.RelatedObjects)
             {
+                //filter on type filters used for component and type sheet
+                if (Context.Exclude.ObjectType.Component.Contains(obj.GetType()))
+                    break;
+                if (Context.Exclude.ObjectType.Types.Contains(obj.GetType()))
+                    break;
+
                 if (!string.IsNullOrEmpty(obj.Name))
                 {
                     //if (!childNamesFilter.Contains(obj.Name))//removed the filter as we should recode all elements of the assembly

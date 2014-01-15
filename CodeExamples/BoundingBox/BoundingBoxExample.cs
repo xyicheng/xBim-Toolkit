@@ -1,66 +1,102 @@
 ﻿using System;
-using System.Windows.Media.Media3D;
 using Xbim.IO;
-using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Common.Geometry;
+using Xbim.ModelGeometry.Converter;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace CodeExamples.BoundingBox
 {
     public class BoundingBoxExample : ISample
     {
-
         public void Run()
         {
-            string filesName = @"Clinic_Example.ifc";
-
-            using (IModel model = new XbimFileModelServer())
+            //to start we need an ifc file, here it is Clinic_Example.ifc
+            string ifcFile = @"IfcFiles/Clinic_Example.ifc";
+            string xbimFile = Path.ChangeExtension(ifcFile, "xBIM");  //will generate if not existing
+            
+            if (File.Exists(ifcFile))
             {
-                //Create the XBim file
-                model.Open(filesName, delegate(int percentProgress, object userState)
+                using (XbimModel model = new XbimModel())
                 {
-                    Console.Write("\rReading File {0}", percentProgress);
+                    if (File.Exists(xbimFile))
+                    {
+                        //assume the xbim file has the geometry already generated from ifc file, as below
+                        model.Open(xbimFile, XbimDBAccess.Read);
+                    }
+                    else
+                    {
+                        //create the xbim file from the ifc file
+                        model.CreateFrom(ifcFile, xbimFile, delegate(int percentProgress, object userState)
+                        {
+                            Console.Write("\rReading File {0}", percentProgress);
+                        });
+
+                        model.Open(xbimFile, XbimDBAccess.ReadWrite); //readwrite as we need to add the geometry
+                        //add the the geometry information to the model
+                        int total = (int)model.Instances.CountOf<IfcProduct>();
+                        ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
+                        {
+                            Console.Write("\rGeometry {0} / {1}", total, (total * percentProgress / 100));
+                        };
+                        XbimMesher.GenerateGeometry(model, null, progDelegate);
+                    }
+                    
+                     //get all the IfcDoors in the model
+                     IEnumerable<IfcDoor> ifcDoors = model.IfcProducts.OfType<IfcDoor>(); //get all the ifcdoors for this model
+                     if (ifcDoors.Any()) 
+                     {
+                         IfcDoor ifcDoor = ifcDoors.First(); //we use the first door to get the bounding box from
+                         XbimGeometryData geoData = model.GetGeometryData(ifcDoor, XbimGeometryType.BoundingBox).FirstOrDefault();
+                         if (geoData != null)
+                         {
+                             XbimRect3D boundBox = XbimRect3D.FromArray(geoData.ShapeData);//size information for the IfcDoor, but the information is for the bounding box which encloses the door 
+
+                             //if want want in World space 
+                             XbimMatrix3D worldMatrix = geoData.Transform;
+                             //if we want to convert to World space we can use the geoData.Transform property and create the world matrix
+                             XbimPoint3D MinPtOCS = new XbimPoint3D(boundBox.X, boundBox.Y, boundBox.Z);
+                             XbimPoint3D MaxPtOCS = new XbimPoint3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
+                             //transformed values, may no longer a valid bounding box in the new space if any Pitch or Yaw, i.e. stairs ceiling supports
+                             XbimPoint3D MinPtWCS = worldMatrix.Transform(MinPtOCS);
+                             XbimPoint3D MaxPtWCS = worldMatrix.Transform(MaxPtOCS);
+                             //if you product is at any angle to the World space then the bounding box can be recalculated, 
+                            //a example of this can be found here https://sbpweb.svn.codeplex.com/svn/SBPweb.Workbench/Workbench%20Framework%202.0.0.x/Presentation/Windows.WPF/Utils/Maths.cs 
+                            //in the TransformBounds function
+                            Console.WriteLine("\n-------------Bounding Box Information-------------");
+                            Console.WriteLine("Entity Type = {0}", IfcMetaData.GetType(geoData.IfcTypeId).Name);
+                            Console.WriteLine("Entity Label = {0}", Math.Abs(ifcDoor.EntityLabel).ToString());
+                            Console.WriteLine("Size X = {0:F2}", boundBox.SizeX.ToString());
+                            Console.WriteLine("Size Y = {0:F2}", boundBox.SizeY.ToString());
+                            Console.WriteLine("Size Z = {0:F2}", boundBox.SizeZ.ToString());
+                            Console.WriteLine("Object space minimum point {0}", MinPtOCS);
+                            Console.WriteLine("Object space maximum point {0}", MaxPtOCS);
+                            Console.WriteLine("World space minimum point {0}", MinPtWCS);
+                            Console.WriteLine("World space maximum point {0}", MaxPtWCS);
+                            Console.WriteLine("---------------------------------------------");
+                         }
+                     }
+                     else
+                     {
+                         Console.WriteLine(string.Format("Failed to find any IfcDoor's in {0}", ifcFile));
+                         return; //exit
+                     }
                 }
-                );
-
-                //create the Geometry 
-                GeometryWorker geoBoxs = new GeometryWorker(model, filesName);
-                //get the Transform Graph which holds bounding boxes and Triangulated Geometry
-                TransformGraph transGraph = geoBoxs.GetTransformGraph();
-                //say we want the bounding box of a IfcProduct, using its Entity label we can extract it from the TransformGraph ProductNodes property
-                long productEntityLable = 175644; //some IfcProduct in this case, from ifc file #175644=IFCWALL('0ayGa9swL6Jvmb9DQx3xNk',#33,'Basic Wall:Exterior - Insul Panel on Mtl. Stud:307047',$,'Basic Wall:Exterior - Insul Panel on Mtl. Stud:130954',#175368,#175643,'307047');
-                //if ait exists in the graph ProductNodes keys
-                if (transGraph.ProductNodes.ContainsKey(productEntityLable))
-                {
-                    //get the TransformNode
-                    TransformNode transformNode = transGraph.ProductNodes[productEntityLable];
-                    //from the TransformNode we can get the products bounding box in object space as a Rect3D
-                    Rect3D boundBox = transformNode.BoundingBox;
-                    //Object space max and min point values of the box
-                    Point3D MinPtOCS = new Point3D(boundBox.X, boundBox.Y, boundBox.Z);
-                    Point3D MaxPtOCS = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
-
-                    //if we want to convert to World space we can use the WorldMatrix method from the TransformNode
-                    Matrix3D worldMatrix = transformNode.WorldMatrix();
-                    //transformed values, may no longer a valid bounding box in the new space if any Pitch or Yaw, i.e. stairs ceiling supports
-                    Point3D MinPtWCS = worldMatrix.Transform(MinPtOCS);
-                    Point3D MaxPtWCS = worldMatrix.Transform(MaxPtOCS);
-                    //if you product is at any angle to the World space then the bounding box can be recalculated, 
-                    //a example of this can be found here https://sbpweb.svn.codeplex.com/svn/SBPweb.Workbench/Workbench%20Framework%202.0.0.x/Presentation/Windows.WPF/Utils/Maths.cs 
-                    //in the TransformBounds function
-                    Console.WriteLine("\n---------------------------------------------");
-                    Console.WriteLine("Entity Label = {0}", productEntityLable);
-                    Console.WriteLine("Object space minimum point {0}", MinPtOCS);
-                    Console.WriteLine("Object space maximum point {0}", MaxPtOCS);
-                    Console.WriteLine("World space minimum point {0}", MinPtWCS);
-                    Console.WriteLine("World space maximum point {0}", MaxPtWCS);
-                    Console.WriteLine("---------------------------------------------");
-
-                }
-
-
-                Console.WriteLine("\nFinished");
             }
-            Console.ReadKey();
+            else
+            {
+                Console.WriteLine(string.Format("Failed to find {0} in executable directory", ifcFile));
+            }
+            Console.WriteLine("\nFinished");
+          
         }
+
+        
+         
     }
 }

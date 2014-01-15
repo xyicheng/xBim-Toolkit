@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace Xbim.DOM
 {
@@ -51,7 +51,7 @@ namespace Xbim.DOM
 
         public static IfcLayerSetDirectionEnum IfcLayerSetDirectionEnum(this XbimLayerSetDirectionEnum en)
         {
-            EnumConvertor<IfcLayerSetDirectionEnum, XbimLayerSetDirectionEnum> convertor = new EnumConvertor<Ifc.MaterialResource.IfcLayerSetDirectionEnum, XbimLayerSetDirectionEnum>();
+            EnumConvertor<IfcLayerSetDirectionEnum, XbimLayerSetDirectionEnum> convertor = new EnumConvertor<Ifc2x3.MaterialResource.IfcLayerSetDirectionEnum, XbimLayerSetDirectionEnum>();
             return convertor.Conversion(en);
         }
 

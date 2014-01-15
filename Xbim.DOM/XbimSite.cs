@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.DOM.PropertiesQuantities;
-using Xbim.Ifc.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.DOM
 {
@@ -45,17 +46,17 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimSite(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcSite>())
+            : base(document, document.Model.Instances.New<IfcSite>())
         {
             Site.Name = name;
             Site.CompositionType = GeIfcElementCompositionEnum(compositionEnum);
             if (parentElement != null) parentElement.AddToSpatialDecomposition(this);
 
             //add the site to the structure of the project if there is not different parrent object
-            if (parentElement == null) _document.Model.IfcProject.AddSite(Site);
+            if (parentElement == null) ((IfcProject)_document.Model.IfcProject).AddSite(Site);
             if (Document.ModelView == XbimModelView.CoordinationView)
             {
-                IfcLocalPlacement lp = Document.Model.New<IfcLocalPlacement>();
+                IfcLocalPlacement lp = Document.Model.Instances.New<IfcLocalPlacement>();
                 lp.RelativePlacement = Document.WCS;
                 if (parentElement != null)  lp.PlacementRelTo = parentElement.GetObjectPlacement();
                 Site.ObjectPlacement = lp;

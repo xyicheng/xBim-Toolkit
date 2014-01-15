@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ActorResource;
 using System.Reflection;
 
 
@@ -26,7 +26,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required_Information, "CreatedOn", 19, COBieAllowedType.ISODateTime)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, "PickLists.Category-Role", COBieAttributeState.Required_Reference_PickList, "Category", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.Category-Role", COBieAttributeState.Required_Reference_PickList, "Category", 255, COBieAllowedType.AlphaNumeric)]
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required_Information, "Company", 255, COBieAllowedType.AlphaNumeric)]

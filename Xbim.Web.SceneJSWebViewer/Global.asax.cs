@@ -47,6 +47,7 @@ namespace Xbim.SceneJSWebViewer
             // or SQLServer, the event is not raised.
 
         }
+        
 
     }
 }

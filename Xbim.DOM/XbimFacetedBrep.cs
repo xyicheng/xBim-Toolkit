@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometricModelResource;
+using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.TopologyResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.TopologyResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.DOM
 {
@@ -27,9 +27,9 @@ namespace Xbim.DOM
         internal XbimFacetedBrep(XbimDocument document) 
         {
             _document = document;
-            _ifcFacetedBrep = _document.Model.New<IfcFacetedBrep>();
+            _ifcFacetedBrep = _document.Model.Instances.New<IfcFacetedBrep>();
 
-            IfcClosedShell outer = _document.Model.New<IfcClosedShell>();
+            IfcClosedShell outer = _document.Model.Instances.New<IfcClosedShell>();
             _ifcFacetedBrep.Outer = outer;
 
             //if (outer.CfsFaces == null) outer.CfsFaces = new XbimSet<IfcFace>();
@@ -55,11 +55,11 @@ namespace Xbim.DOM
 
             //if (_face.Bounds == null) _face.Bounds = new XbimSet<IfcFaceBound>();
 
-            IfcFaceBound faceBound = _document.Model.New<IfcFaceBound>();
+            IfcFaceBound faceBound = _document.Model.Instances.New<IfcFaceBound>();
             _face.Bounds.Add_Reversible(faceBound);
 
             faceBound.Orientation = orientation;
-            IfcPolyLoop polyLoop = _document.Model.New<IfcPolyLoop>();
+            IfcPolyLoop polyLoop = _document.Model.Instances.New<IfcPolyLoop>();
             faceBound.Bound = polyLoop;
 
             //if (polyLoop.Polygon == null) polyLoop.Polygon = new XbimListUnique<IfcCartesianPoint>();
@@ -82,7 +82,7 @@ namespace Xbim.DOM
             //if (_actualFaceType != FaceType.POLYLOOP_BOUNDED)
             //    throw new Exception("AddPolyLoopPoint can be used only for PolyloopBoundedFace.");
 
-            IfcCartesianPoint point = _document.Model.New<IfcCartesianPoint>();
+            IfcCartesianPoint point = _document.Model.Instances.New<IfcCartesianPoint>();
             point.Add(X);
             point.Add(Y);
             point.Add(Z);
@@ -95,10 +95,10 @@ namespace Xbim.DOM
             IfcFaceSurface face = AddFace(true, XbimFaceTypeEnum.PLANE_SURFACE) as IfcFaceSurface;
             if (face == null) throw new Exception("Wrong initialization of the object.");
 
-            face.Surface = _document.Model.New<IfcPlane>();
+            face.Surface = _document.Model.Instances.New<IfcPlane>();
             IfcPlane plane = face.Surface as IfcPlane;
 
-            plane.Position = _document.Model.New<IfcAxis2Placement3D>();
+            plane.Position = _document.Model.Instances.New<IfcAxis2Placement3D>();
             plane.Position.SetNewLocation(position_X, position_Y, position_Z);
             plane.Position.SetNewDirectionOf_XZ(planeVector_X, planeVector_Y, planeVector_Z, normal_X, normal_Y, normal_Z);
 
@@ -109,21 +109,21 @@ namespace Xbim.DOM
             IfcFaceSurface face = AddFace(orientation, XbimFaceTypeEnum.PLANE_SURFACE) as IfcFaceSurface;
             if (face == null) throw new Exception("Wrong initialization of the object.");
 
-            face.Surface = _document.Model.New<IfcPlane>();
+            face.Surface = _document.Model.Instances.New<IfcPlane>();
             IfcPlane plane = face.Surface as IfcPlane;
 
-            plane.Position = _document.Model.New<IfcAxis2Placement3D>();
+            plane.Position = _document.Model.Instances.New<IfcAxis2Placement3D>();
             plane.Position.SetNewLocation(position_X, position_Y, position_Z);
             plane.Position.SetNewDirectionOf_XZ(planeVector_X, planeVector_Y, planeVector_Z, normal_X, normal_Y, normal_Z);
         }
 
         public void AddInnerLoop(bool orientation)
         {
-            IfcFaceBound faceBound = _document.Model.New<IfcFaceBound>();
+            IfcFaceBound faceBound = _document.Model.Instances.New<IfcFaceBound>();
             _face.Bounds.Add_Reversible(faceBound);
 
             faceBound.Orientation = orientation;
-            IfcPolyLoop polyLoop = _document.Model.New<IfcPolyLoop>();
+            IfcPolyLoop polyLoop = _document.Model.Instances.New<IfcPolyLoop>();
             faceBound.Bound = polyLoop;
 
             //if (polyLoop.Polygon == null) polyLoop.Polygon = new XbimListUnique<IfcCartesianPoint>();
@@ -140,11 +140,11 @@ namespace Xbim.DOM
         {
             switch (type)
             {
-                case XbimFaceTypeEnum.POLYLOOP_BOUNDED: return _document.Model.New<IfcFace>();
-                case XbimFaceTypeEnum.PLANE_SURFACE: return _document.Model.New<IfcFaceSurface>();
-                case XbimFaceTypeEnum.TRIANGLE: return _document.Model.New<IfcFace>();
+                case XbimFaceTypeEnum.POLYLOOP_BOUNDED: return _document.Model.Instances.New<IfcFace>();
+                case XbimFaceTypeEnum.PLANE_SURFACE: return _document.Model.Instances.New<IfcFaceSurface>();
+                case XbimFaceTypeEnum.TRIANGLE: return _document.Model.Instances.New<IfcFace>();
                 default:
-                    return _document.Model.New<IfcFace>();
+                    return _document.Model.Instances.New<IfcFace>();
             }
         }
 

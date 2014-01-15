@@ -16,13 +16,12 @@
     <AssemblyOriginatorKeyFile>XbimIfcKey.pfx</AssemblyOriginatorKeyFile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -38,15 +37,19 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SccAuxPath>SAK</SccAuxPath>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -55,55 +58,30 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\x86\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>..\bin\x86\Debug\Xbim.Presentation.XML</DocumentationFile>
-    <NoWarn>1591,1573</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>..\bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>
-    </DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>..\bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HelixToolkit.Wpf, Version=2013.1.10.1, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
+      <HintPath>..\packages\HelixToolkit.2013.1.10.1\lib\NET40\HelixToolkit.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="PresentationFramework">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="PropertyTools, Version=0.0.0.0, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
+      <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.dll</HintPath>
+    </Reference>
+    <Reference Include="PropertyTools.Wpf, Version=2013.1.1.1, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
+      <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -121,35 +99,51 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CoPlanarComparer.cs" />
+    <Compile Include="DynamicProductSelectionControl.xaml.cs">
+      <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LayerStyling\LayerStylerPerEntity.cs" />
+    <Compile Include="LayerStyling\ILayerStyler.cs" />
+    <Compile Include="LayerStyling\LayerStylerEvenOdd.cs" />
+    <Compile Include="LayerStyling\LayerStylerTypeAndIFCStyle.cs" />
+    <Compile Include="SynchronizedView.xaml.cs">
+      <DependentUpon>SynchronizedView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DrawincControl3DLayers.cs" />
+    <Compile Include="EntitySelection.cs" />
+    <Compile Include="ModelGeomInfo\PolylineGeomInfo.cs" />
+    <Compile Include="ModelGeomInfo\PointGeomInfo.cs" />
+    <Compile Include="ColourRgbExtensions.cs" />
+    <Compile Include="XbimCuttingPlaneGroup.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
-    <Compile Include="DrawingItem3D.cs" />
-    <Compile Include="DrawingView3D.cs" />
-    <Compile Include="DrawingViewport3D.cs" />
+    <Compile Include="FederatedModelItem.cs" />
+    <Compile Include="FederatedModelProperties.xaml.cs">
+      <DependentUpon>FederatedModelProperties.xaml</DependentUpon>
+    </Compile>
     <Compile Include="IfcMetaDataControl.xaml.cs">
       <DependentUpon>IfcMetaDataControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IGroupable.cs" />
-    <Compile Include="ISelectable.cs" />
-    <Compile Include="ListRange.cs" />
-    <Compile Include="ModelDataProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SceneGraph.cs" />
-    <Compile Include="SelectionService3D.cs" />
-    <Compile Include="ShapeNode.cs" />
-    <Compile Include="SkyBox.cs" />
-    <Compile Include="SkySphere.cs" />
-    <Compile Include="SpatialStructureControl.xaml.cs">
-      <DependentUpon>SpatialStructureControl.xaml</DependentUpon>
+    <Compile Include="ScriptingControl.xaml.cs">
+      <DependentUpon>ScriptingControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ModelDataProvider.cs" />
+    <Compile Include="ModelVisual3DExtensions.cs" />
+    <Compile Include="Observable.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SurfaceStyleExtensions.cs" />
     <Compile Include="SurfaceStyleRenderingExtensions.cs" />
     <Compile Include="SurfaceStyleShadingExtensions.cs" />
     <Compile Include="ToolTipController.cs" />
-    <Compile Include="Utils\MathUtils.cs" />
-    <Compile Include="Utils\TrackballDecorator.cs" />
-    <Compile Include="Utils\Viewport3DDecorator.cs" />
+    <Compile Include="WpfMaterial.cs" />
+    <Compile Include="WpfMeshGeometry3D.cs" />
+    <Compile Include="WpfPoint3DCollection.cs" />
+    <Compile Include="WpfVector3DCollection.cs" />
+    <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
+    <Compile Include="XbimMeshHelper.cs" />
+    <Compile Include="XbimModelPresentationExtensions.cs" />
+    <Compile Include="XbimTreeview.cs" />
+    <Compile Include="XbimViewType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="DrawingControl3D.xaml">
@@ -158,76 +152,62 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="DynamicProductSelectionControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FederatedModelProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScriptingControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="IfcMetaDataControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SpatialStructureControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="SynchronizedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
-      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
-      <Name>Xbim.Ifc.Extensions</Name>
-      <Private>False</Private>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
+      <Name>Xbim.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
+      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
-      <Name>Xbim.Ifc</Name>
-      <Private>False</Private>
+      <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
       <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
       <Name>Xbim.IO</Name>
-      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3D9D37DE-A254-4433-B172-7590CBD84C69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xbim.Script\Xbim.Script.csproj">
+      <Project>{BAE9A827-0620-4F68-A384-336A491EDD91}</Project>
+      <Name>Xbim.Script</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\north.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\east.jpg" />
-    <Resource Include="SkyBoxImages\south.jpg" />
-    <Resource Include="SkyBoxImages\up.jpg" />
-    <Resource Include="SkyBoxImages\west.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\down.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\SphericalOvercast.jpg" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

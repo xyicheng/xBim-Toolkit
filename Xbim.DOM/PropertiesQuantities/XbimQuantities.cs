@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -61,12 +62,12 @@ namespace Xbim.DOM.PropertiesQuantities
         /// </summary>
         public static void SetMetersAndMilimetersAsBaseUnit(IfcObjectDefinition ifcObject)
         {
-            IModel model = ModelManager.ModelOf(ifcObject);
+            IModel model = ifcObject.ModelOf;
 
             if (_lengthUnit == null || !(_lengthUnit is IfcSIUnit)) 
             {
                 //length unit
-                IfcSIUnit lengthUnit = model.New<IfcSIUnit>();
+                IfcSIUnit lengthUnit = model.Instances.New<IfcSIUnit>();
                 lengthUnit.Name = IfcSIUnitName.METRE;
                 lengthUnit.Prefix = IfcSIPrefix.MILLI;
                 lengthUnit.UnitType = IfcUnitEnum.LENGTHUNIT;
@@ -76,7 +77,7 @@ namespace Xbim.DOM.PropertiesQuantities
             if (_areaUnit == null ||!(_areaUnit is IfcSIUnit))
             {
                 //area unit
-                IfcSIUnit areaUnit = model.New<IfcSIUnit>();
+                IfcSIUnit areaUnit = model.Instances.New<IfcSIUnit>();
                 areaUnit.Name = IfcSIUnitName.SQUARE_METRE;
                 areaUnit.UnitType = IfcUnitEnum.AREAUNIT;
                 _areaUnit = areaUnit;
@@ -85,7 +86,7 @@ namespace Xbim.DOM.PropertiesQuantities
             if (_volumeUnit == null || !(_volumeUnit is IfcSIUnit))
             {
                 //volume init
-                IfcSIUnit volumeUnit = model.New<IfcSIUnit>();
+                IfcSIUnit volumeUnit = model.Instances.New<IfcSIUnit>();
                 volumeUnit.Name = IfcSIUnitName.CUBIC_METRE;
                 volumeUnit.UnitType = IfcUnitEnum.VOLUMEUNIT;
                 _volumeUnit = volumeUnit;

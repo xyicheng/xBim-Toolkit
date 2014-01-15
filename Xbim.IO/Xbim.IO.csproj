@@ -14,7 +14,6 @@
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>
@@ -24,7 +23,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -40,112 +39,132 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SccAuxPath>SAK</SccAuxPath>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE;SupportActivation</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\x86\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>..\bin\x86\Debug\Xbim.IO.XML</DocumentationFile>
-    <NoWarn>1591,1573</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>..\bin\x86\Release\</OutputPath>
-    <DefineConstants>SupportActivation</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>
-    </DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\x64\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>..\bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE;SupportActivation</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Esent.Interop, Version=1.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ManagedEsent.1.8.3.2\lib\net40\Esent.Interop.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="PresentationFramework">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="GeometryCache\GeometryCacheFile.cs" />
-    <Compile Include="GeometryCache\MeshGeometry.cs" />
-    <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
-    <Compile Include="IfcInputStream.cs" />
-    <Compile Include="IfcOutputStream.cs" />
-    <Compile Include="IfcZipInputStream.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DynamicGrouping\GroupingByXml.cs" />
+    <Compile Include="DynamicGrouping\GroupsFromXml.cs" />
+    <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
+    <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
+    <Compile Include="FileReferenceResolver.cs" />
+    <Compile Include="GroupingAndStyling\EntityLabel.cs" />
+    <Compile Include="GroupingAndStyling\IGeomHandlesGrouping.cs" />
+    <Compile Include="GroupingAndStyling\TypeAndStyle.cs" />
+    <Compile Include="IfcFileHeader.cs" />
+    <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="Parser\IfcForwardReference.cs" />
+    <Compile Include="Parser\XbimP21StringDecoder.cs" />
     <Compile Include="Tree\TreeBuilder.cs" />
+    <Compile Include="Tree\TreeComponentStrategy.cs" />
     <Compile Include="Tree\TreeContainmentStrategy.cs" />
     <Compile Include="Tree\TreeNode.cs" />
     <Compile Include="Tree\TreeNodes.cs" />
     <Compile Include="Tree\TreeQueryStrategy.cs" />
-    <Compile Include="Tree\TreeComponentStrategy.cs" />
-    <Compile Include="XbimFileModelServer.cs" />
-    <Compile Include="XbimMemoryModel.cs" />
-    <Compile Include="XbimModelServer.cs" />
+    <Compile Include="ViewModels\ClassificationViewModel.cs" />
+    <Compile Include="ViewModels\ContainedElementsViewModel.cs" />
+    <Compile Include="ViewModels\GroupViewModel.cs" />
+    <Compile Include="ViewModels\IfcProductModelView.cs" />
+    <Compile Include="ViewModels\IXbimViewModel.cs" />
+    <Compile Include="ViewModels\SpatialViewModel.cs" />
+    <Compile Include="ViewModels\TreeViewBuilder.cs" />
+    <Compile Include="ViewModels\TypeViewModel.cs" />
+    <Compile Include="ViewModels\XbimModelViewModel.cs" />
+    <Compile Include="ViewModels\XbimRefModelViewModel.cs" />
+    <Compile Include="XbimFederatedModelInstances.cs" />
+    <Compile Include="XbimGeometryHandle.cs" />
+    <Compile Include="XbimGeometryHandleCollection.cs" />
+    <Compile Include="XbimGeometrySort.cs" />
+    <Compile Include="XbimInstanceCollection.cs" />
+    <Compile Include="XbimInstanceHandle.cs" />
+    <Compile Include="IfcMetaData.cs" />
+    <Compile Include="IfcPersistedInstanceCache.cs" />
+    <Compile Include="IfcProductExtensions.cs" />
+    <Compile Include="IfcType.cs" />
+    <Compile Include="IfcTypeDictionary.cs" />
+    <Compile Include="IfcXmlReader.cs" />
+    <Compile Include="IfcXmlWriter.cs" />
+    <Compile Include="IPersistIfcEntityExtensions.cs" />
+    <Compile Include="Parser\IndexPropertyValue.cs" />
+    <Compile Include="Parser\IStepP21Parser.cs" />
+    <Compile Include="Parser\PropertyValue.cs" />
+    <Compile Include="Parser\XbimP21Indexer.cs" />
+    <Compile Include="Parser\XbimP21Parser.cs" />
+    <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\ShiftReduceParserCode.cs" />
+    <Compile Include="Parser\StepP21Entity.cs" />
+    <Compile Include="Parser\StepP21Lex.cs" />
+    <Compile Include="Parser\StepP21Parser.cs" />
+    <Compile Include="Part21FileWriter.cs" />
+    <Compile Include="Part21Formatter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="XbimCursor.cs" />
+    <Compile Include="XbimEntityCursor.cs" />
+    <Compile Include="XbimGeometryCursor.cs" />
+    <Compile Include="XbimInstanceHandleMap.cs" />
+    <Compile Include="XbimLazyDBTransaction.cs" />
+    <Compile Include="XbimModel.cs" />
     <Compile Include="XbimInputStream.cs" />
     <Compile Include="XbimOutputStream.cs" />
     <Compile Include="XbimPackage.cs" />
+    <Compile Include="XbimParserState.cs" />
+    <Compile Include="XbimReadOnlyDBTransaction.cs" />
+    <Compile Include="XbimReadTransaction.cs" />
+    <Compile Include="XbimReadWriteTransaction.cs" />
+    <Compile Include="XbimReferencedModel.cs" />
+    <Compile Include="XbimReferencedModelCollection.cs" />
+    <Compile Include="XbimSqliteDB.cs" />
+    <Compile Include="XbimSurfaceStyle.cs" />
+    <Compile Include="XbimSurfaceStyleMap.cs" />
+    <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -169,25 +188,57 @@
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
-      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
-      <Name>Xbim.Ifc.Extensions</Name>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
+      <Project>{6DF47D23-8F4D-4069-A44B-BBDACD3F9AEA}</Project>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
-      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
-      <Name>Xbim.Ifc</Name>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
+      <Project>{0255E9D0-1087-49D4-B886-C882CA27DD10}</Project>
+      <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Models.cd" />
     <None Include="packages.config" />
+    <None Include="Parser\MAKEPARSER.BAT" />
+    <None Include="Parser\StepP21IndexerLex.lex" />
+    <None Include="Parser\StepP21Lex.lex" />
+    <None Include="Parser\StepP21Parser.y" />
+    <None Include="Parser\XbimViewerKey.pfx" />
     <None Include="XbimIfcKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\gplex.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\gppg.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Query\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DynamicGrouping\NRM clssification.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DynamicGrouping\NRM2IFC.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

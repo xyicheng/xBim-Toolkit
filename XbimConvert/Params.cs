@@ -2,12 +2,14 @@
 using System.IO;
 using System.Linq;
 using Xbim.XbimExtensions;
+using Xbim.IO;
+using System.Globalization;
+using Xbim.ModelGeometry.Converter;
 
 namespace XbimConvert
 {
     public class Params
     {
-
         public static Params ParseParams(string[] args)
         {
             Params result = new Params(args);
@@ -17,32 +19,41 @@ namespace XbimConvert
 
         private Params(string[] args)
         {
-            
+
 
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs[:options]] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.Write("-generatescene options are: ");
+                foreach (var i in Enum.GetValues(typeof(GenerateSceneOption)))
+                    Console.Write(" " + i.ToString());
                 return;
             }
+            specdir = Path.GetDirectoryName(args[0]);
+            if (specdir == "")
+                specdir = Directory.GetCurrentDirectory();
+            specpart = Path.GetFileName(args[0]);
 
-            IfcFileName = args[0];
-            if (!File.Exists(IfcFileName))
-            {
-                Console.WriteLine("Invalid ifc filename {0}", IfcFileName);
-                return;
-            }
+            GenerateSceneOptions = 
+                        GenerateSceneOption.IncludeRegions |
+                        GenerateSceneOption.IncludeStoreys |
+                        GenerateSceneOption.IncludeSpaces;
 
             CompoundParameter paramType = CompoundParameter.None;
-
-            foreach(string arg in args.Skip(1))
+            foreach (string arg in args.Skip(1))
             {
+
                 switch (paramType)
                 {
                     case CompoundParameter.None:
-
-                        switch (arg.ToLowerInvariant())
+                        string[] argNames = arg.ToLowerInvariant().Split(new string[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+                        switch (argNames[0])
                         {
+                            case "-caching":
+                            case "-c":
+                                Caching = true;
+                                break;
                             case "-quiet":
                             case "-q":
                                 IsQuiet = true;
@@ -52,7 +63,25 @@ namespace XbimConvert
                             case "-ke":
                                 KeepFileExtension = true;
                                 break;
+                            case "-generatescene":
+                            case "-gs":
+                                GenerateScene = true;
 
+                                if (argNames.Length > 1)
+                                {
+                                    foreach (var i in Enum.GetValues(typeof(GenerateSceneOption)))
+                                    {
+                                        if (CultureInfo.CurrentCulture.CompareInfo.IndexOf((string)argNames[1], i.ToString(), CompareOptions.IgnoreCase) >= 0)
+                                        {
+                                            GenerateSceneOptions = GenerateSceneOptions | (GenerateSceneOption)i;
+                                        }
+                                    }
+                                }
+                                break;
+                            case "-nogeometry":
+                            case "-ng":
+                                NoGeometry = true;
+                                break;
                             case "-filter":
                             case "-f":
                                 paramType = CompoundParameter.Filter;
@@ -75,7 +104,7 @@ namespace XbimConvert
                         // next arg will be either ID or Type
 
                         IfcType t;
-                        if (IfcInstances.IfcTypeLookup.TryGetValue(arg.ToUpperInvariant(), out t) == true)
+                        if (IfcMetaData.TryGetIfcType(arg.ToUpperInvariant(), out t) == true)
                         {
                             ElementTypeFilter = t;
                             FilterType = FilterType.ElementType;
@@ -83,8 +112,8 @@ namespace XbimConvert
                         else
                         {
                             // try looking for an instance by ID.
-                            long elementId;
-                            if (long.TryParse(arg, out elementId) == true)
+                            int elementId;
+                            if (int.TryParse(arg, out elementId) == true)
                             {
                                 ElementIdFilter = elementId;
                                 FilterType = FilterType.ElementID;
@@ -100,18 +129,21 @@ namespace XbimConvert
                 }
 
             }
-
             // Parameters are valid
             IsValid = true;
-
         }
 
-        public String IfcFileName { get; set; }
+        public string specdir { get; set; }
+        public string specpart { get; set; }
         public bool IsQuiet { get; set; }
         public bool KeepFileExtension { get; set; }
+        public bool GenerateScene { get; set; }
+        public GenerateSceneOption GenerateSceneOptions { get; set; }
+        
+        public bool NoGeometry { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
-        public long ElementIdFilter {get;set;}
+        public int ElementIdFilter {get;set;}
         public IfcType ElementTypeFilter { get; set; }
         public bool OCC { get; set; }
         /// <summary>
@@ -125,7 +157,7 @@ namespace XbimConvert
             Filter
         };
 
-        
+        public bool Caching { get; set; }
     }
 
     public enum FilterType

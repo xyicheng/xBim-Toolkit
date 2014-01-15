@@ -1,0 +1,68 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:BQLConsole"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="BQLConsole.MainWindow"
+        Title="BQL Console - Unnamed" Height="485" Width="807" Icon="Images/script_16xLG.png">
+    <Window.Resources>
+        <local:GetFileNameConverter x:Key="converter" />
+    </Window.Resources>
+    <Grid RenderTransformOrigin="0.495,0.519" Margin="0,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" x:Name="ButtonBar" Orientation="Horizontal" Background="LightGray" RenderTransformOrigin="0.505,-3.667" Height="30" VerticalAlignment="Bottom">
+            <ToolBar>
+                <Button x:Name="NewScript"   Margin="2" ToolTip="New script file" Click="OnClick_NewScript">
+                    <StackPanel Orientation="Horizontal" Height="16" >
+                        <Image Source="Images/document_16xLG.png"  Height="16" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="LoadScript"   Margin="2" ToolTip="Load script from file" Click="OnClick_LoadScript">
+                    <StackPanel Orientation="Horizontal" Height="16" >
+                        <Image Source="Images/folder_Open_16xLG.png"  Height="16" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="SaveScript" Click="OnClick_SaveScript"  Margin="2" ToolTip="Save script to file">
+                    <StackPanel Orientation="Horizontal" Height="16" >
+                        <Image Source="Images/save_16xLG.png"  Height="16" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="Execute"   Margin="2" Click="OnClick_Execute">
+                    <StackPanel Orientation="Horizontal" Height="16" ToolTip="Execute script">
+                        <Image Source="Images/StatusAnnotations_Play_16xLG_color.png"  Height="16" />
+                    </StackPanel>
+                </Button>
+                <ToggleButton x:Name="KeyWordColour" Click="OnClick_KeyWordColour">
+                    <StackPanel Orientation="Horizontal" Height="16" ToolTip="Keyword colour">
+                        <Image Source="Images/key_16xLG.png"  Height="16" />
+
+                    </StackPanel>
+                </ToggleButton>
+                <Button x:Name="LoadModel"   Margin="2" Click="OnClick_LoadModel">
+                    <StackPanel Orientation="Horizontal" Height="16" ToolTip="Load a xbim model">
+                        <Image Source="Images/house_16xLG.png"  Height="16" />
+                    </StackPanel>
+                </Button>
+            </ToolBar>
+            <TextBlock x:Name="txtDBName" TextWrapping="Wrap" Text="{Binding Model.DatabaseName, Converter={StaticResource converter}}" VerticalAlignment="Center" Margin="2,7"/>
+            <!--<ProgressBar Width="100" Name="progressBar" Maximum="100" Minimum="0"/>-->
+
+        </StackPanel>
+        <Grid Grid.Row="1" >
+            <local:RichTextBoxIntellisence  x:Name="ScriptText"  />
+        </Grid>
+        <GridSplitter Grid.Row="2"  ResizeDirection="Rows"  HorizontalAlignment="Stretch"  VerticalAlignment="Center" Width="Auto" ShowsPreview="True" Height="4"  />
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <TextBlock  Grid.Row="3" x:Name="ResultsWindow" VerticalAlignment="Top" TextWrapping="Wrap" />
+        </ScrollViewer>
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+            <TextBlock  Grid.Row="4" x:Name="ErrorsWindow"  TextWrapping="Wrap" Visibility="Collapsed" Foreground="Red" Background="Black" VerticalAlignment="Bottom"/>
+        </ScrollViewer>
+
+    </Grid>
+</Window>

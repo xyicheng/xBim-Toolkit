@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ApprovalResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.ApprovalResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ControlExtension;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.ProcessExtensions;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ControlExtension;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.ProcessExtensions;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -39,18 +39,21 @@ namespace Xbim.COBie.Data
             //create new sheet
             COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
             
-            //IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_Risk");
+            //IEnumerable<IfcPropertySet> ifcProperties = Model.Instances.OfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_Risk");
             
 
             // get all IfcApproval objects from IFC file
-            IEnumerable<IfcApproval> ifcApprovals = Model.InstancesOfType<IfcApproval>();
+            IEnumerable<IfcApproval> ifcApprovals = Model.Instances.OfType<IfcApproval>();
             ProgressIndicator.Initialise("Creating Issues", ifcApprovals.Count());
+
+            List<IfcRelAssociatesApproval> ifcRelAssociatesApprovals = Model.Instances.OfType<IfcRelAssociatesApproval>().ToList();
+
             foreach (IfcApproval ifcApproval in ifcApprovals)
             {
                 ProgressIndicator.IncrementAndUpdate();
                 COBieIssueRow issue = new COBieIssueRow(issues);
                 //get the associated property setIfcPropertySet
-                var ifcPropertySet = Model.InstancesOfType<IfcRelAssociatesApproval>()
+                var ifcPropertySet = ifcRelAssociatesApprovals
                                    .Where(ral => ral.RelatingApproval == ifcApproval)
                                    .SelectMany(ral => ral.RelatedObjects.OfType<IfcPropertySet>())
                                    .Where(ps => ps.Name == "Pset_Risk")
@@ -123,6 +126,10 @@ namespace Xbim.COBie.Data
             ProgressIndicator.Finalise();
             return issues;
         }
+
+        //Fields for GetIfcObjects function
+        List<IfcRelAssociatesApproval> ifcRelAssociatesApprovals = null;
+
         /// <summary>
         /// get all the IfcRoot objects attached to the ifcApproval
         /// </summary>
@@ -131,7 +138,11 @@ namespace Xbim.COBie.Data
         private List<IfcRoot> GetIfcObjects(IfcApproval ifcApproval)
         {
             List<IfcRoot> ifcRootObjs = new List<IfcRoot>();
-            IEnumerable<IfcRoot> IfcRoots = Model.InstancesWhere<IfcRelAssociatesApproval>(ral => ral.RelatingApproval.EntityLabel == ifcApproval.EntityLabel)
+            if (ifcRelAssociatesApprovals == null)
+            {
+                ifcRelAssociatesApprovals = Model.Instances.OfType<IfcRelAssociatesApproval>().ToList();
+            }
+            IEnumerable<IfcRoot> IfcRoots = ifcRelAssociatesApprovals.Where(ral => ral.RelatingApproval.EntityLabel == ifcApproval.EntityLabel)
                                             .SelectMany(ral => ral.RelatedObjects).OfType<IfcRoot>();
             foreach (IfcRoot item in IfcRoots)
             {
@@ -144,13 +155,17 @@ namespace Xbim.COBie.Data
             return ifcRootObjs;
         }
 
-        
+        //Fields for GetContact function
+        List<IfcApprovalActorRelationship> ifcApprovalActorRelationships = null;
 
         private string GetContact(IfcApproval ifcApproval)
         {
             string eMail = DEFAULT_STRING;
-
-            IfcPersonAndOrganization IfcPersonAndOrganization = Model.InstancesOfType<IfcApprovalActorRelationship>()
+            if (ifcApprovalActorRelationships == null)
+            {
+                ifcApprovalActorRelationships = Model.Instances.OfType<IfcApprovalActorRelationship>().ToList();
+            }
+            IfcPersonAndOrganization IfcPersonAndOrganization = ifcApprovalActorRelationships
                                                        .Where(aar => aar.Approval.EntityLabel == ifcApproval.EntityLabel)
                                                        .Select(aar => aar.Actor).OfType<IfcPersonAndOrganization>().FirstOrDefault();
         

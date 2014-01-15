@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.IO.Tree
 {
@@ -12,21 +13,6 @@ namespace Xbim.IO.Tree
     {
         protected IModel _model;
         protected Dictionary<IfcObjectDefinition, CompositionNode> _nodeMap;
-        protected Type[] FamilyTypes = new Type[] 
-        {
-            typeof(Xbim.Ifc.SharedBldgElements.IfcWall),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcSlab),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcRoof),
-            typeof(Xbim.Ifc.ProductExtension.IfcSpace),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcStair),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcDoor),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcWindow),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcBeam),
-            typeof(Xbim.Ifc.SharedBldgElements.IfcColumn),
-            typeof(Xbim.Ifc.ProductExtension.IfcElectricalElement),
-            typeof(Xbim.Ifc.ProductExtension.IfcFurnishingElement),
-            typeof(Xbim.Ifc.ProductExtension.IfcDistributionElement)
-        };
 
         public Dictionary<IfcObjectDefinition, CompositionNode> NodeMap
         {
@@ -52,14 +38,14 @@ namespace Xbim.IO.Tree
         protected void Initialise()
         {
             _nodeMap = new Dictionary<IfcObjectDefinition, CompositionNode>
-                    (_model.InstancesOfType<IfcRelDecomposes>().Count());
+                    (_model.Instances.OfType<IfcRelDecomposes>().Count());
         }
 
         protected CompositionNode LocateProjectNode()
         {
             CompositionNode root = null;
 
-            IfcProject project = _model.InstancesOfType<IfcProject>().FirstOrDefault();
+            IfcProject project = _model.Instances.OfType<IfcProject>().FirstOrDefault();
             if (project != null)
             {
                 CompositionNode projectNode;
@@ -76,9 +62,18 @@ namespace Xbim.IO.Tree
             return root;
         }
 
-        protected void LoadFamilyElements(Type type, FamilyNode family)
+        protected Type[] GetFamilyElements()
         {
-            var products = from prod in _model.InstancesWhere<IfcProduct>(p => type.IsAssignableFrom(p.GetType()))
+            var spaces = typeof(Xbim.Ifc2x3.ProductExtension.IfcSpace).FullName;
+            return _model.Instances.OfType<IfcProduct>().Where(itm => itm.GetType().IsSubclassOf(typeof(IfcElement)) || itm.GetType().FullName == spaces)
+                                           .Select(itm => itm.GetType())
+                                           .Distinct()
+                                           .ToArray();
+        }
+
+        protected void LoadFamilyElements(Type familyType, FamilyNode family)
+        {
+            var products = from prod in _model.Instances.Where<IfcProduct>(p => p.GetType().IsAssignableFrom(familyType))
                            //orderby prod.Name
                            select prod;
 
@@ -91,7 +86,7 @@ namespace Xbim.IO.Tree
 
         protected void AddRelComposes()
         {
-            foreach (IfcRelDecomposes rel in _model.InstancesOfType<IfcRelDecomposes>())
+            foreach (IfcRelDecomposes rel in _model.Instances.OfType<IfcRelDecomposes>())
             {
                 if (rel.RelatingObject != null)
                 {
@@ -116,6 +111,7 @@ namespace Xbim.IO.Tree
         {
             foreach (IfcObjectDefinition child in rel.RelatedObjects)
             {
+                if (child.EntityLabel == treeItem.EntityId) { continue; }//prevent any infinite looping
                 CompositionNode childItem;
                 if (!NodeMap.TryGetValue(child, out childItem)) //already written
                 {
@@ -132,7 +128,7 @@ namespace Xbim.IO.Tree
         {
 
             foreach (IfcRelContainedInSpatialStructure scRel in
-                _model.InstancesOfType<IfcRelContainedInSpatialStructure>())
+                _model.Instances.OfType<IfcRelContainedInSpatialStructure>())
             {
                 if (scRel.RelatingStructure != null)
                 {

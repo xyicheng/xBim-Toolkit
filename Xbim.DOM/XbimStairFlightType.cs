@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -35,7 +35,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcStairFlightType = _document.Model.New<IfcStairFlightType>();
+            IfcStairFlightType = _document.Model.Instances.New<IfcStairFlightType>();
             IfcStairFlightType.Name = name;
             _document.StairFlightTypes.Add(this);
 

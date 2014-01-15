@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
 
 namespace Xbim.DOM
 {
@@ -17,7 +17,7 @@ namespace Xbim.DOM
             BaseInit<IfcRevolvedAreaSolid>();
 
             IfcRevolvedAreaSolid.Angle = angle;
-            IfcRevolvedAreaSolid.Axis = Document.Model.New<IfcAxis1Placement>
+            IfcRevolvedAreaSolid.Axis = Document.Model.Instances.New<IfcAxis1Placement>
                 (ax => {
                     ax.Axis = spindleDirection.CreateIfcDirection(Document);
                     ax.Location = spindleLocation.CreateIfcCartesianPoint(Document);

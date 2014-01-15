@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 using System.Reflection;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.IO;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -29,14 +31,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieTypeRow to read data from</param>
         public void SerialiseType(COBieSheet<COBieTypeRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Type"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Type"))
             {
                 try
                 {
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Types...");
                     ProgressIndicator.Initialise("Creating Types", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieTypeRow row = cOBieSheet[i];
                         if ((ValidateString(row.ExtObject)) &&
@@ -52,7 +57,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -76,19 +80,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     )
                 {
                     string name = GetMaterialName(row.Name);
-                    ifcMaterial = Model.InstancesWhere<IfcMaterial>(m => m.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
+                    ifcMaterial = Model.Instances.Where<IfcMaterial>(m => m.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
                     if (ifcMaterial == null)
-                        ifcMaterial = Model.New<IfcMaterial>(m => { m.Name = name; });
+                        ifcMaterial = Model.Instances.New<IfcMaterial>(m => { m.Name = name; });
                 }
                 if ((ifcMaterial != null) && (row.ExtObject.ToLower() == "ifcmateriallayer"))
                 {
+                    IfcMaterialLayer ifcMaterialLayer = null;
                     double matThick = 0.0;
                     if ((ValidateString(row.NominalWidth)) &&
                         (!double.TryParse(row.NominalWidth, out matThick))
                         )
                         matThick = 0.0;
-
-                    IfcMaterialLayer ifcMaterialLayer = Model.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
+                    ifcMaterialLayer = Model.Instances.Where<IfcMaterialLayer>(ml => ml.Material == ifcMaterial && ml.LayerThickness == matThick).FirstOrDefault();
+                    if (ifcMaterialLayer == null) 
+                        ifcMaterialLayer = Model.Instances.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
                 } 
             }
         }
@@ -99,17 +105,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieTypeRow holding the data</param>
         private void AddType(COBieTypeRow row)
         {
-            //IfcTypeObject ifcTypeObject = Model.New<IfcTypeObject>();
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcTypeObject>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+
             IfcTypeObject ifcTypeObject = GetTypeInstance(row.ExtObject, Model);
 
             if (ifcTypeObject != null)
             {
-                //Add Created By, Created On and ExtSystem to Owner History
-                if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                    SetNewOwnerHistory(ifcTypeObject, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                else
-                    SetNewOwnerHistory(ifcTypeObject, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+                //Add Created By, Created On and ExtSystem to Owner History. 
+                SetUserHistory(ifcTypeObject, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
                 //using statement will set the Model.OwnerHistoryAddObject to ifcTypeObject.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                 //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                 using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcTypeObject.OwnerHistory))
@@ -133,18 +141,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         AddPropertySingleValue(ifcTypeObject, "Pset_ManufacturersTypeInformation", "Manufacturers Properties From COBie", "Manufacturer", "Manufacturer Contact for " + name, new IfcLabel(row.Manufacturer));
                     if (ValidateString(row.ModelNumber))
                         AddPropertySingleValue(ifcTypeObject, "Pset_ManufacturersTypeInformation", null, "ModelLabel", "Model Number for " + name, new IfcLabel(row.ModelNumber));
+                    //reset property set name from "Pset_Warranty" via v16 matrix sheet to to "COBie_Warranty"
                     if (ValidateString(row.WarrantyGuarantorParts))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Warranty", "Warranty Information", "WarrantyGuarantorParts", "Warranty Contact for " + name, new IfcLabel(row.WarrantyGuarantorParts));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Warranty", "Warranty Information", "WarrantyGuarantorParts", "Warranty Contact for " + name, new IfcLabel(row.WarrantyGuarantorParts));
                     if (ValidateString(row.WarrantyDurationParts))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Warranty", null, "WarrantyDurationParts", "Warranty length for " + name, new IfcLabel(row.WarrantyDurationParts));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Warranty", null, "WarrantyDurationParts", "Warranty length for " + name, new IfcLabel(row.WarrantyDurationParts));
                     if (ValidateString(row.WarrantyGuarantorLabor))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Warranty", null, "WarrantyGuarantorLabor", "Warranty Labour Contact for " + name, new IfcLabel(row.WarrantyGuarantorLabor));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Warranty", null, "WarrantyGuarantorLabor", "Warranty Labour Contact for " + name, new IfcLabel(row.WarrantyGuarantorLabor));
                     if (ValidateString(row.WarrantyDescription))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Warranty", null, "WarrantyDescription", "Warranty Description for" + name, new IfcLabel(row.WarrantyDescription));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Warranty", null, "WarrantyDescription", "Warranty Description for" + name, new IfcLabel(row.WarrantyDescription));
 
                     if (ValidateString(row.WarrantyDurationLabor))
                     {
-                        IfcPropertySingleValue ifcPropertySingleValue = AddPropertySingleValue(ifcTypeObject, "Pset_Warranty", null, "WarrantyDurationLabor", "Labour Warranty length for " + name, new IfcLabel(row.WarrantyDurationLabor));
+                        IfcPropertySingleValue ifcPropertySingleValue = AddPropertySingleValue(ifcTypeObject, "COBie_Warranty", null, "WarrantyDurationLabor", "Labour Warranty length for " + name, new IfcLabel(row.WarrantyDurationLabor));
                         //WarrantyDurationUnit
                         if (ValidateString(row.WarrantyDurationUnit))
                             ifcPropertySingleValue.Unit = GetDurationUnit(row.WarrantyDurationUnit);
@@ -162,61 +171,61 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         if (ValidateString(row.DurationUnit))
                             ifcPropertySingleValue.Unit = GetDurationUnit(row.DurationUnit);
                     }
-
+                    //changed from "Pset_Specification" via v16 matrix sheet to "COBie_Specification"
                     if (ValidateString(row.NominalLength))
                     {
                         double? value = GetDoubleFromString(row.NominalLength);
                         if (value != null)
-                            AddPropertySingleValue(ifcTypeObject, "Pset_Specification", "Specification Properties", "NominalLength", "Nominal Length Value for " + name, new IfcReal((double)value));
+                            AddPropertySingleValue(ifcTypeObject, "COBie_Specification", "Specification Properties", "NominalLength", "Nominal Length Value for " + name, new IfcReal((double)value));
                     }
                     if (ValidateString(row.NominalWidth))
                     {
                         double? value = GetDoubleFromString(row.NominalWidth);
                         if (value != null)
-                            AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "NominalWidth", "Nominal Width Value for " + name, new IfcReal((double)value));
+                            AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "NominalWidth", "Nominal Width Value for " + name, new IfcReal((double)value));
                     }
                     if (ValidateString(row.NominalHeight))
                     {
                         double? value = GetDoubleFromString(row.NominalHeight);
                         if (value != null)
-                            AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "NominalHeight", "Nominal Height Value for " + name, new IfcReal((double)value));
+                            AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "NominalHeight", "Nominal Height Value for " + name, new IfcReal((double)value));
                     }
 
                     if (ValidateString(row.ModelReference))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "ModelReference", "Model Reference Value for " + name, new IfcLabel(row.ModelReference));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "ModelReference", "Model Reference Value for " + name, new IfcLabel(row.ModelReference));
 
                     if (ValidateString(row.Shape))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Shape", "Shape Value for " + name, new IfcLabel(row.Shape));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Shape", "Shape Value for " + name, new IfcLabel(row.Shape));
 
                     if (ValidateString(row.Size))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Size", "Size Value for " + name, new IfcLabel(row.Size));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Size", "Size Value for " + name, new IfcLabel(row.Size));
 
                     if (ValidateString(row.Color))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Color", "Color Value for " + name, new IfcLabel(row.Color));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Color", "Color Value for " + name, new IfcLabel(row.Color));
 
                     if (ValidateString(row.Finish))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Finish", "Finish Value for " + name, new IfcLabel(row.Finish));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Finish", "Finish Value for " + name, new IfcLabel(row.Finish));
 
                     if (ValidateString(row.Grade))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Grade", "Grade Value for " + name, new IfcLabel(row.Grade));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Grade", "Grade Value for " + name, new IfcLabel(row.Grade));
 
                     if (ValidateString(row.Material))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Material", "Material Value for " + name, new IfcLabel(row.Material));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Material", "Material Value for " + name, new IfcLabel(row.Material));
 
                     if (ValidateString(row.Constituents))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Constituents", "Constituents Value for " + name, new IfcLabel(row.Constituents));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Constituents", "Constituents Value for " + name, new IfcLabel(row.Constituents));
 
                     if (ValidateString(row.Features))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "Features", "Features Value for " + name, new IfcLabel(row.Features));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "Features", "Features Value for " + name, new IfcLabel(row.Features));
 
                     if (ValidateString(row.AccessibilityPerformance))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "AccessibilityPerformance", "Accessibility Performance Value for " + name, new IfcLabel(row.AccessibilityPerformance));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "AccessibilityPerformance", "Accessibility Performance Value for " + name, new IfcLabel(row.AccessibilityPerformance));
 
                     if (ValidateString(row.CodePerformance))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "CodePerformance", "Code Performance Value for " + name, new IfcLabel(row.CodePerformance));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "CodePerformance", "Code Performance Value for " + name, new IfcLabel(row.CodePerformance));
 
                     if (ValidateString(row.SustainabilityPerformance))
-                        AddPropertySingleValue(ifcTypeObject, "Pset_Specification", null, "SustainabilityPerformance", "Sustainability Performance Value for " + name, new IfcLabel(row.SustainabilityPerformance));
+                        AddPropertySingleValue(ifcTypeObject, "COBie_Specification", null, "SustainabilityPerformance", "Sustainability Performance Value for " + name, new IfcLabel(row.SustainabilityPerformance));
 
 
                 }
@@ -243,16 +252,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             
             IfcType ifcType;
             IfcTypeObject ifcTypeObject = null;
-            if (IfcInstances.IfcTypeLookup.TryGetValue(typeName, out ifcType))
+            if (IfcMetaData.TryGetIfcType(typeName, out ifcType))
             {
-                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                MethodInfo method = typeof(IXbimInstanceCollection).GetMethod("New", Type.EmptyTypes);
                 MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                var newObj = generic.Invoke(model, null);
+                var newObj = generic.Invoke(model.Instances, null);
                 if (newObj is IfcTypeObject)
                     ifcTypeObject = (IfcTypeObject)newObj;
             }
             if (ifcTypeObject == null) //if we cannot make a object assume base IfcTypeObject
-                ifcTypeObject = model.New<IfcTypeObject>();
+                ifcTypeObject = model.Instances.New<IfcTypeObject>();
             return ifcTypeObject;
         }
 

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.DOM.PropertiesQuantities;
 namespace Xbim.DOM
 {
@@ -45,7 +45,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcWallType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcWallType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

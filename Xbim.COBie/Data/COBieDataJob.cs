@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ConstructionMgmtDomain;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProcessExtensions;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProcessExtensions;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
@@ -41,12 +41,12 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieJobRow> jobs = new COBieSheet<COBieJobRow>(Constants.WORKSHEET_JOB);
 
             // get all IfcTask objects from IFC file
-            IEnumerable<IfcTask> ifcTasks = Model.InstancesOfType<IfcTask>();
+            IEnumerable<IfcTask> ifcTasks = Model.Instances.OfType<IfcTask>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             
-            //IfcTypeObject typObj = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
-            IfcConstructionEquipmentResource cer = Model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();
+            //IfcTypeObject typObj = Model.Instances.OfType<IfcTypeObject>().FirstOrDefault();
+            IfcConstructionEquipmentResource cer = Model.Instances.OfType<IfcConstructionEquipmentResource>().FirstOrDefault();
 
             ProgressIndicator.Initialise("Creating Jobs", ifcTasks.Count());
 
@@ -67,7 +67,7 @@ namespace Xbim.COBie.Data
                 job.TypeName = GetObjectType(ifcTask);
                 job.Description = (string.IsNullOrEmpty(ifcTask.Description.ToString())) ? DEFAULT_STRING : ifcTask.Description.ToString();
 
-                allPropertyValues.SetAllPropertySingleValues(ifcTask); //set properties values to this task
+                allPropertyValues.SetAllPropertyValues(ifcTask); //set properties values to this task
                 IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskDuration");
                 job.Duration = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
                 string unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null; 
@@ -136,7 +136,7 @@ namespace Xbim.COBie.Data
             if (relatingTasks.Count > 0)
                 return string.Join(":", relatingTasks);
             else
-                return ifcTask.TaskId.ToString().Trim(); //if no priors, refrence itself
+                return ifcTask.TaskId.ToString().Trim(); //if no priors, reference itself
            
         }
 
@@ -157,7 +157,7 @@ namespace Xbim.COBie.Data
                         strList.Add(ifcConstructionEquipmentResource.Name.ToString());
                 }
             }
-            return (strList.Count > 0) ? string.Join(", ", strList) : DEFAULT_STRING;
+            return (strList.Count > 0) ? (string.Join(", ", strList) + "." ) : DEFAULT_STRING;
         }
         /// <summary>
         /// Get the object IfcTypeObject name from the IfcTask object

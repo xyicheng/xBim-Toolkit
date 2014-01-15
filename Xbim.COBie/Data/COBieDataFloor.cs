@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.QuantityResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.PropertyResource;
 
 namespace Xbim.COBie.Data
 {
@@ -42,14 +42,14 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcBuildingStorey> buildingStories = Model.InstancesOfType<IfcBuildingStorey>();
+            IEnumerable<IfcBuildingStorey> buildingStories = Model.Instances.OfType<IfcBuildingStorey>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
             
-            //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
+            //IfcClassification ifcClassification = Model.Instances.OfType<IfcClassification>().FirstOrDefault();
             //list of attributes to exclude form attribute sheet
             
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
@@ -66,23 +66,32 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieFloorRow floor = new COBieFloorRow(floors);
+                string name = ifcBuildingStorey.Name;
                 if (string.IsNullOrEmpty(ifcBuildingStorey.Name))
                 {
                     ifcBuildingStorey.Name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
 
-                floor.Name = ifcBuildingStorey.Name.ToString();
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertyValues(ifcBuildingStorey); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
 
-                floor.CreatedBy = GetTelecomEmailAddress(ifcBuildingStorey.OwnerHistory);
-                floor.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuildingStorey.OwnerHistory);
+                floor.Name = name;
+
+                string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                floor.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(ifcBuildingStorey.OwnerHistory);
+                string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                floor.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(ifcBuildingStorey.OwnerHistory);
 
                 floor.Category = GetCategory(ifcBuildingStorey);
 
-                floor.ExtSystem = GetExternalSystem(ifcBuildingStorey);
+                string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                floor.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(ifcBuildingStorey);
                 floor.ExtObject = ifcBuildingStorey.GetType().Name;
                 floor.ExtIdentifier = ifcBuildingStorey.GlobalId;
-                floor.Description = GetFloorDescription(ifcBuildingStorey);
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                floor.Description = ValidateString(description) ? description : GetFloorDescription(ifcBuildingStorey);
                 floor.Elevation = (string.IsNullOrEmpty(ifcBuildingStorey.Elevation.ToString())) ? DEFAULT_NUMERIC : string.Format("{0:F4}", (double)ifcBuildingStorey.Elevation);
 
                 floor.Height = GetFloorHeight(ifcBuildingStorey, allPropertyValues);
@@ -116,7 +125,10 @@ namespace Xbim.COBie.Data
             
             //Fall back properties
             //get the property single values for this building story
-            allPropertyValues.SetAllPropertySingleValues(ifcBuildingStorey);
+            if (ifcBuildingStorey != allPropertyValues.CurrentObject)
+            {
+                allPropertyValues.SetAllPropertyValues(ifcBuildingStorey);
+            }
 
             //try and find it in the attached properties of the building story
             string value = allPropertyValues.GetPropertySingleValueValue("StoreyHeight", true);

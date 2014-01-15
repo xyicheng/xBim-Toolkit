@@ -7,7 +7,15 @@ using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using System.Reflection;
 using Xbim.XbimExtensions;
-
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.ModelGeometry.Converter;
+using System.Collections.Generic;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.UtilityResource;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace XbimRegression
 {
@@ -18,13 +26,13 @@ namespace XbimRegression
     {
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
         private const string XbimConvert = @"XbimConvert.exe";
-
+        private static Object thisLock = new Object();
         Params _params;
 
         public BatchProcessor(Params arguments)
         {
             _params = arguments;
-            
+
         }
 
         public Params Params
@@ -39,178 +47,133 @@ namespace XbimRegression
         {
             DirectoryInfo di = new DirectoryInfo(Params.TestFileRoot);
 
-            String resultsFile = Path.Combine(Params.TestFileRoot,  String.Format("XbimRegression_{0:yyyyMMdd-hhmmss}.csv", DateTime.Now));
-
+            String resultsFile = Path.Combine(Params.TestFileRoot, String.Format("XbimRegression_{0:yyyyMMdd-hhmmss}.csv", DateTime.Now));
+            // We need to use the logger early to initialise before we use EventTrace
+            Logger.Debug("Conversion starting...");
             using (StreamWriter writer = new StreamWriter(resultsFile))
             {
                 writer.WriteLine(ProcessResult.CsvHeader);
-
-                foreach (FileInfo file in di.GetFiles("*.IFC", SearchOption.AllDirectories))
+               // ParallelOptions opts = new ParallelOptions() { MaxDegreeOfParallelism = 12 };
+                FileInfo[] toProcess = di.GetFiles("*.IFC", SearchOption.AllDirectories);
+               // Parallel.ForEach<FileInfo>(toProcess, opts, file =>
+                foreach (var file in toProcess)
+	
                 {
                     Console.WriteLine("Processing {0}", file);
-                    ProcessResult result = ProcessFile(file.FullName);
-                    writer.WriteLine(result.ToCsv());
-                    writer.Flush();
-
-                    if (result.ExitCode >= 0)
+                    ProcessResult result = ProcessFile(file.FullName, writer);
+                    if (!result.Failed)
                     {
-                        Console.WriteLine("Processed {0} : {1} errors in {2}ms. {3} IFC Elements & {4} Geometry Nodes.",
-                            file, result.ExitCode, result.Duration, result.Entities, result.GeometryEntries);
+                        Console.WriteLine("Processed {0} : {1} errors, {2} Warnings in {3}ms. {4} IFC Elements & {5} Geometry Nodes.",
+                            file, result.Errors, result.Warnings, result.TotalTime, result.Entities, result.GeometryEntries);
                     }
                     else
                     {
                         Console.WriteLine("Processing failed for {0} after {1}ms.",
-                            file, result.Duration);
+                            file, result.TotalTime);
                     }
                 }
+                //);
                 writer.Close();
             }
             Console.WriteLine("Finished. Press Enter to continue...");
             Console.ReadLine();
         }
 
-        private ProcessResult ProcessFile(string ifcFile)
+        private ProcessResult ProcessFile(string ifcFile, StreamWriter writer)
         {
-            Process proc = null;
-            int exitcode = int.MinValue;
-            bool timedOut = false;
-            try
+            RemoveFiles(ifcFile);
+            long geomTime = -1; long sceneTime = -1; long parseTime = -1;
+            using (EventTrace eventTrace = LoggerFactory.CreateEventTrace())
             {
-                RemoveFiles(ifcFile);
-                ProcessStartInfo startInfo = BuildCommand(ifcFile);
-
-                Stopwatch watch = new Stopwatch();
-
-                watch.Start();
-                using (proc = Process.Start(startInfo))
-                {
-                    if (proc.WaitForExit(Params.Timeout) == false)
-                    {
-                        // timed out.
-                        KillProcess(proc);
-                        Logger.WarnFormat("Timed out processing {0} - hit {1} second limit.", ifcFile, Params.Timeout / 1000);
-                        timedOut = true;
-                    }
-                    watch.Stop();
-                    if (timedOut)
-                    {
-                        exitcode = -2;
-                    }
-                    else
-                    {
-                        exitcode = proc.ExitCode; 
-                        proc.Close();
-                    }
-                    
-                }
-                return CaptureResults(ifcFile, exitcode, watch.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(String.Format("Problem converting file: {0}", ifcFile), ex);
-                KillProcess(proc);
-                
-                return CaptureResults(ifcFile, -1, 0);
-            }
-
-        }
-
-        private static ProcessStartInfo BuildCommand(string ifcFile)
-        {
-            String executionFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            String processorPath = Path.Combine(executionFolder, XbimConvert);
-            // Run quietly (-q) and keeping existing (-ke) extensions.
-            ProcessStartInfo startInfo = new ProcessStartInfo(processorPath, String.Format("\"{0}\" -q -ke", ifcFile));
-            startInfo.WorkingDirectory = Path.GetDirectoryName(ifcFile);
-            startInfo.WindowStyle = ProcessWindowStyle.Minimized;
-            startInfo.UseShellExecute = true;
-            return startInfo;
-        }
-
-        private static ProcessResult CaptureResults(string ifcFile, int exitCode, long elapsedMilliseconds)
-        {
-
-            ProcessResult result = new ProcessResult()
-            {
-                Duration = elapsedMilliseconds,
-                FileName = ifcFile,
-                ExitCode = exitCode
-            };
-
-            try
-            {
-                GetXbimData(ifcFile, result);
-            }
-            catch (Exception e)
-            {
-                Logger.Warn(String.Format("Failed to capture results for {0}", ifcFile), e);
-            }
-
-            return result;
-        }
-
-        private static void GetXbimData(string ifcFile, ProcessResult result)
-        {
-            // We're appending the xbim extension to avoid clashes between ifc, ifcxml and ifczips with the same leafname
-            String xbimFile = BuildFileName(ifcFile, ".xbim");
-            String xbimGCFile = BuildFileName(ifcFile, ".xbimgc");
-            if (!File.Exists(xbimFile))
-                return;
-            XbimFileModelServer model=null;
-            IXbimScene scene=null;
-            try
-            {
-                result.IfcLength = ReadFileLength(ifcFile);
-                result.XbimLength = ReadFileLength(xbimFile);
-                result.XbimGCLength = ReadFileLength(xbimGCFile);
-
+                ProcessResult result = new ProcessResult() { Errors = -1 };
                 try
                 {
-                    model = new XbimFileModelServer(xbimFile, FileAccess.Read);
-                    result.Entities = model.InstancesCount;
 
-                    IfcFileHeader header = model.Header;
-                    result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();
-                    result.IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel);
-                    // TODO: Ifc Name
-                }
-                catch (IOException)
-                {
-                    Logger.Debug("XBim file was corrupt");
-                    // XBIM corrupt - usually due to timeout before completion
-                }
-
-                if (!File.Exists(xbimGCFile))
-                    return;
-
-                try
-                {
-                    scene = new XbimSceneStream(model, xbimGCFile);
-                    // TODO: verify if there is a better metric
-                    result.GeometryEntries = scene.Graph.ProductNodes.Count();
-                }
-                catch (IOException)
-                {
-                    Logger.Debug("XBimGC file was corrupt");
-                    // XBIMGC corrupt - usually due to timeout before completion
-                }
-            }
-            finally
-            {
-                if (scene != null)
-                {
-                    scene.Close();
-                    scene = null;
-                }
-                if (model != null)
-                {
-                    model.Close();
-                    model.Dispose();
-                    model = null;
+                    Stopwatch watch = new Stopwatch();
+                    watch.Start();
+                    using (XbimModel model = ParseModelFile(ifcFile,Params.Caching))
+                    {
+                        parseTime = watch.ElapsedMilliseconds;
+                        string xbimFilename = BuildFileName(ifcFile, ".xbim");
+                        //model.Open(xbimFilename, XbimDBAccess.ReadWrite);
+                        XbimMesher.GenerateGeometry(model, Logger, null);
+                        geomTime = watch.ElapsedMilliseconds - parseTime;
+                        XbimSceneBuilder sb = new XbimSceneBuilder();
+                        string xbimSceneName = BuildFileName(ifcFile, ".xbimScene");
+                        sb.BuildGlobalScene(model, xbimSceneName);
+                        sceneTime = watch.ElapsedMilliseconds - geomTime;
+                        IIfcFileHeader header = model.Header;
+                        watch.Stop();
+                        IfcOwnerHistory ohs = model.Instances.OfType<IfcOwnerHistory>().FirstOrDefault();
+                        result = new ProcessResult()
+                        {
+                            ParseDuration = parseTime,
+                            GeometryDuration = geomTime,
+                            SceneDuration = sceneTime,
+                            FileName = ifcFile,
+                            Entities = model.Instances.Count,
+                            IfcSchema = header.FileSchema.Schemas.FirstOrDefault(),
+                            IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel),
+                            GeometryEntries = model.GeometriesCount,
+                            IfcLength = ReadFileLength(ifcFile),
+                            XbimLength = ReadFileLength(xbimFilename),
+                            SceneLength = ReadFileLength(xbimSceneName),
+                            IfcProductEntries = model.Instances.CountOf<IfcProduct>(),
+                            IfcSolidGeometries = model.Instances.CountOf<IfcSolidModel>(),
+                            IfcMappedGeometries = model.Instances.CountOf<IfcMappedItem>(),
+                            BooleanGeometries = model.Instances.CountOf<IfcBooleanResult>(),
+                            Application = ohs == null ? "Unknown" : ohs.OwningApplication.ToString(),
+                        };
+                        model.Close();                       
+                    }
                 }
 
+                catch (Exception ex)
+                {
+                    Logger.Error(String.Format("Problem converting file: {0}", ifcFile), ex);
+                    result.Failed = true;
+                }
+                finally
+                {
+                    result.Errors = (from e in eventTrace.Events
+                                     where (e.EventLevel == EventLevel.ERROR)
+                                     select e).Count();
+                    result.Warnings = (from e in eventTrace.Events
+                                       where (e.EventLevel == EventLevel.WARN)
+                                       select e).Count();
+                    result.FileName = ifcFile;
+                    if (eventTrace.Events.Count > 0)
+                    {
+                        CreateLogFile(ifcFile, eventTrace.Events);
+                    }
+
+                    lock (thisLock)
+                    {
+                        writer.WriteLine(result.ToCsv());
+                        writer.Flush();
+                    }
+                }
+                return result;
             }
         }
+
+        private static XbimModel ParseModelFile(string ifcFileName,bool caching)
+        {
+            XbimModel model = new XbimModel();
+            //create a callback for progress
+            switch (Path.GetExtension(ifcFileName).ToLowerInvariant())
+            {
+                case ".ifc":
+                case ".ifczip":
+                case ".ifcxml":
+                    model.CreateFrom(ifcFileName, BuildFileName(ifcFileName, ".xBIM"), null, true, caching);
+                    break;
+                default:
+                    throw new NotImplementedException(String.Format("XbimConvert does not support converting {0} file formats currently", Path.GetExtension(ifcFileName)));
+            }
+            return model;
+        }
+
 
         private static String BuildFileName(string ifcFile, string extension)
         {
@@ -220,7 +183,8 @@ namespace XbimRegression
         private void RemoveFiles(string ifcFile)
         {
             DeleteFile(BuildFileName(ifcFile, ".xbim"));
-            DeleteFile(BuildFileName(ifcFile, ".xbimgc"));
+            DeleteFile(BuildFileName(ifcFile, ".xbimScene"));
+            DeleteFile(BuildFileName(ifcFile, ".log"));
         }
 
         private void DeleteFile(string file)
@@ -236,15 +200,6 @@ namespace XbimRegression
             }
         }
 
-        private static void KillProcess(Process proc)
-        {
-            if (proc != null && !proc.HasExited)
-            {
-                proc.Kill();
-                // Give the process time to die, as we'll likely be reading files it has open next.
-                System.Threading.Thread.Sleep(500);
-            }
-        }
 
         private static long ReadFileLength(string file)
         {
@@ -256,6 +211,43 @@ namespace XbimRegression
             }
             return length;
         }
+        private static void CreateLogFile(string ifcFile, IList<Event> events)
+        {
+            try
+            {
+                string logfile = String.Concat(ifcFile, ".log");
+                using (StreamWriter writer = new StreamWriter(logfile, false))
+                {
+                    foreach (Event logEvent in events)
+                    {
+                        string message = SanitiseMessage(logEvent.Message, ifcFile);
+                        writer.WriteLine("{0:yyyy-MM-dd HH:mm:ss} : {1:-5} {2}.{3} - {4}",
+                            logEvent.EventTime,
+                            logEvent.EventLevel.ToString(),
+                            logEvent.Logger,
+                            logEvent.Method,
+                            message
+                            );
+                    }
+                    writer.Flush();
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(String.Format("Failed to create Log File for {0}", ifcFile), e);
+            }
+        }
 
+        private static string SanitiseMessage(string message, string ifcFileName)
+        {
+            string modelPath = Path.GetDirectoryName(ifcFileName);
+            string currentPath = Environment.CurrentDirectory;
+
+            return message
+                .Replace(modelPath, String.Empty)
+                .Replace(currentPath, String.Empty);
+        }
     }
+
 }

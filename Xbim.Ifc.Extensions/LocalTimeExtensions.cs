@@ -14,12 +14,12 @@
 
 using System;
 using System.Globalization;
-using Xbim.Ifc.DateTimeResource;
+using Xbim.Ifc2x3.DateTimeResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class LocalTimeExtensions
     {
@@ -29,7 +29,15 @@ namespace Xbim.Ifc.Extensions
             lt.HourComponent = localTime.Hour;
             lt.SecondComponent = localTime.Second;
             lt.MinuteComponent = localTime.Minute;
-            lt.Zone = ModelManager.ModelOf(lt).CoordinatedUniversalTimeOffset;
+
+            IfcCoordinatedUniversalTimeOffset coordinatedUniversalTimeOffset = lt.ModelOf.Instances.New<IfcCoordinatedUniversalTimeOffset>();
+            coordinatedUniversalTimeOffset.HourOffset = new IfcHourInDay(localTime.Offset.Hours);
+            coordinatedUniversalTimeOffset.MinuteOffset = new IfcMinuteInHour(localTime.Offset.Minutes);
+            if (localTime.Offset.Hours < 0 || (localTime.Offset.Hours == 0 && localTime.Offset.Minutes < 0))
+                coordinatedUniversalTimeOffset.Sense = IfcAheadOrBehind.BEHIND;
+            else
+                coordinatedUniversalTimeOffset.Sense = IfcAheadOrBehind.AHEAD;
+            lt.Zone = coordinatedUniversalTimeOffset;
             TimeZone tz = TimeZone.CurrentTimeZone;
             DaylightTime dt = tz.GetDaylightChanges(localTime.Year);
             lt.DaylightSavingOffset = dt.Delta.Hours;

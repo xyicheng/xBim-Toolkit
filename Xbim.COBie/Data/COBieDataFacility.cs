@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.QuantityResource;
 
 
 namespace Xbim.COBie.Data
@@ -40,12 +41,12 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
 
-            IfcProject ifcProject = Model.IfcProject;
-            IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
-            IfcBuilding ifcBuilding = Model.InstancesOfType<IfcBuilding>().FirstOrDefault();
+            IfcProject ifcProject = Model.IfcProject as IfcProject;
+            IfcSite ifcSite = Model.Instances.OfType<IfcSite>().FirstOrDefault();
+            IfcBuilding ifcBuilding = Model.Instances.OfType<IfcBuilding>().FirstOrDefault();
 
             //get Element Quantity holding area values as used for AreaMeasurement below
-            IfcElementQuantity ifcElementQuantityAreas = Model.InstancesOfType<IfcElementQuantity>().Where(eq => eq.Quantities.OfType<IfcQuantityArea>().Count() > 0).FirstOrDefault();
+            IfcElementQuantity ifcElementQuantityAreas = Model.Instances.OfType<IfcElementQuantity>().Where(eq => eq.Quantities.OfType<IfcQuantityArea>().Count() > 0).FirstOrDefault();
            
             List<IfcObject> ifcObjectList = new List<IfcObject>();
             if (ifcProject != null) ifcObjectList.Add(ifcProject);
@@ -55,7 +56,7 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcObject> ifcObjects = ifcObjectList.AsEnumerable();
             if (ifcObjects.Any())
             {
-                COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
+                COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
                 COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
                 attributeBuilder.InitialiseAttributes(ref _attributes);
 
@@ -79,8 +80,10 @@ namespace Xbim.COBie.Data
 
                 facility.Name = (string.IsNullOrEmpty(name)) ? "The Facility Name Here" : name;
 
-                facility.CreatedBy = GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
-                facility.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
+                IfcValue createBy = ifcBuilding.GetPropertySingleNominalValue("Other", "COBieCreatedBy");//support for COBie Toolkit for Autodesk Revit
+                facility.CreatedBy = ((createBy != null) && ValidateString(createBy.ToString())) ? createBy.ToString() : GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
+                IfcValue createdOn = ifcBuilding.GetPropertySingleNominalValue("Other", "COBieCreatedOn");//support for COBie Toolkit for Autodesk Revit
+                facility.CreatedOn = ((createdOn != null) && ValidateString(createdOn.ToString())) ? createdOn.ToString() : GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
 
                 facility.Category = GetCategory(ifcBuilding);
 

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.ProcessExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ProcessExtensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.IO;
 
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
@@ -35,29 +36,34 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseJob(COBieSheet<COBieJobRow> cOBieSheet)
         {
 
-            using (Transaction trans = Model.BeginTransaction("Add Job"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Job"))
             {
                 try
                 {
-                    IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                    IfcConstructionEquipmentResources = Model.InstancesOfType<IfcConstructionEquipmentResource>();
+                    int count = 1;
+                    IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
+                    IfcConstructionEquipmentResources = Model.Instances.OfType<IfcConstructionEquipmentResource>();
 
                     ProgressIndicator.ReportMessage("Starting Jobs...");
                     ProgressIndicator.Initialise("Creating Jobs", (cOBieSheet.RowCount * 2));
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         AddJob(row);
+                        
                     }
-
                     //we need to assign IfcRelSequence relationships, but we need all tasks implemented, so loop rows again
-                    IfcTasks = Model.InstancesOfType<IfcTask>(); //get new tasks
+                    IfcTasks = Model.Instances.OfType<IfcTask>(); //get new tasks
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
                         ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         SetPriors(row);
+                        count++;
                     }
                     ProgressIndicator.Finalise();
                     
@@ -65,11 +71,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     throw;
                 }
             }
         }
+
+        
 
         
 
@@ -79,13 +86,41 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieJobRow holding the data</param>
         private void AddJob(COBieJobRow row)
         {
-            IfcTask ifcTask = Model.New<IfcTask>();
-            //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcTask, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcTask, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+            IEnumerable<IfcTypeObject> ifcTypeObjects = Enumerable.Empty<IfcTypeObject>();
+            IfcTask ifcTask = null;
+            
+            //get the objects in the typeName cell
+            if (ValidateString(row.TypeName))
+            {
+                List<string> typeNames = SplitString(row.TypeName, ':');
+                ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()));
+            }
 
+            //if merging check for existing task
+            if (XBimContext.IsMerge)
+            {
+                string taskNo = string.Empty;
+                //get the task ID
+                if (ValidateString(row.TaskNumber)) 
+                    taskNo = row.TaskNumber;
+                //see if task matches name and task number
+                ifcTask = CheckIfObjExistOnMerge<IfcTask>(row.Name).Where(task => task.TaskId == taskNo).FirstOrDefault();
+                if (ifcTask != null)
+                {
+                    IfcRelAssignsToProcess processRel = Model.Instances.Where<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == ifcTask).FirstOrDefault();
+                    int matchCount = ifcTypeObjects.Count(to => processRel.RelatedObjects.Contains(to));
+                    if (matchCount == ifcTypeObjects.Count()) //task IfcRelAssignsToProcess object hold the correct number of ifcTypeObjects objects so consider a match
+                        return; //consider a match so return
+                    
+                }
+            }
+
+            //no match on task    
+            ifcTask = Model.Instances.New<IfcTask>();
+            
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcTask, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcConstructionEquipmentResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcTask.OwnerHistory))
@@ -100,10 +135,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Status)) ifcTask.Status = row.Status;
 
                 //Add Type Relationship
-                if (ValidateString(row.TypeName))
+                if (ifcTypeObjects.Any())
                 {
-                    List<string> typeNames = SplitString(row.TypeName, ':');
-                    IEnumerable<IfcTypeObject> ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()) );
                     SetRelAssignsToProcess(ifcTask, ifcTypeObjects);
                 }
                 //Add GlobalId
@@ -172,18 +205,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SetRelAssignsToProcess(IfcProcess processObj, IEnumerable<IfcObjectDefinition> typeObjs)
         {
             //find any existing relationships to this type
-            IfcRelAssignsToProcess processRel = Model.InstancesWhere<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == processObj).FirstOrDefault();
+            IfcRelAssignsToProcess processRel = Model.Instances.Where<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == processObj).FirstOrDefault();
             if (processRel == null) //none defined create the relationship
             {
-                processRel = Model.New<IfcRelAssignsToProcess>();
+                processRel = Model.Instances.New<IfcRelAssignsToProcess>();
                 processRel.RelatingProcess = processObj;
-
-
             }
             //add the type objects
             foreach (IfcObjectDefinition type in typeObjs)
             {
-                processRel.RelatedObjects.Add_Reversible(type);
+                if (!processRel.RelatedObjects.Contains(type))
+                {
+                    processRel.RelatedObjects.Add_Reversible(type);
+                }
             }
         }
 
@@ -206,19 +240,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         string name = row.Name.ToLower().Trim();
                         string testName = prior.ToLower().Trim();
-                        ifcTaskFound = IfcTasks.Where(task => (task.TaskId.ToString().ToLower().Trim() == testName) && (task.Name.ToString().ToLower().Trim() == name));
-                        foreach (IfcTask ifcTaskitem in ifcTaskFound)
+                        IEnumerable<IfcTask> ifcTaskRelating = IfcTasks.Where(task => (ifcTask.EntityLabel != task.EntityLabel) && (task.TaskId.ToString().ToLower().Trim() == testName) && (task.Name.ToString().ToLower().Trim() == name));
+                        List<IfcTask> ifcTaskRelatingTasks = ifcTaskRelating.ToList(); //avoids crash of foreach loop, Steve to fix then this can be removed
+                        foreach (IfcTask ifcTaskitem in ifcTaskRelatingTasks)
                         {
-                            //check the relationship does not exist
-                            //IfcRelSequence relSequence = Model.InstancesWhere<IfcRelSequence>(rs => rs.RelatedProcess == ifcTask && rs.RelatingProcess == ifcTaskitem).FirstOrDefault();
-                            //if (relSequence == null) //none defined, create the relationship
-                            //{
-                                IfcRelSequence relSequence = Model.New<IfcRelSequence>();
-                                relSequence.RelatedProcess = ifcTask;
-                                relSequence.RelatingProcess = ifcTaskitem;
-                            //}
+                            IfcRelSequence relSequence = Model.Instances.New<IfcRelSequence>();
+                            relSequence.RelatedProcess = ifcTask;
+                            relSequence.RelatingProcess = ifcTaskitem;
                         }
-                        
                     }
                 }
             }

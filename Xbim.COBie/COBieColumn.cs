@@ -11,16 +11,15 @@ namespace Xbim.COBie
     public class COBieColumn
     {
         #region Properties
-        public bool IsPrimaryKey { get; set; }
-        public bool IsForeignKey { get; set; }
-        public string ColumnName { get; set; }
-        public int ColumnLength { get; set; }
-        public int ColumnOrder { get; set; }
-        public COBieAllowedType AllowedType { get; set; }
-        public COBieAttributeState AttributeState { get; set; }
-        public COBieKeyType KeyType { get; set; }
+        public string ColumnName { get; private set; }
+        public int ColumnLength { get; private set; }
+        public int ColumnOrder { get; private set; }
+        public COBieAllowedType AllowedType { get; private set; }
+        public COBieAttributeState AttributeState { get; private set; }
+        public COBieKeyType KeyType { get; private set; }
         public string ReferenceColumnName { get; private set; }
-        public List<string> Aliases { get; set; }
+        public bool AllowsMultipleValues { get; private set; }
+        public List<string> Aliases { get; private set; }
         public PropertyInfo PropertyInfo { get; private set;}
         #endregion
         /// <summary>
@@ -40,6 +39,7 @@ namespace Xbim.COBie
             KeyType = attr.KeyType;
             Aliases = aliases;
             ReferenceColumnName = attr.ReferenceColumnName;
+            AllowsMultipleValues = attr.AllowedMultipleValues;
         }
 
         #region Methods

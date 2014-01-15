@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.COBie.Data;
 using System.Security.Cryptography;
 using System.Runtime.Serialization;
 
 namespace Xbim.COBie
 {
-	/// <summary>
-	/// Abstract base class for Rows
-	/// </summary>
+    /// <summary>
+    /// Abstract base class for Rows
+    /// </summary>
     [Serializable()]
     public abstract class COBieRow
     {
@@ -63,10 +63,9 @@ namespace Xbim.COBie
                 if (cobieColumn != null)
                 {
                     object pVal = cobieColumn.PropertyInfo.GetValue(this, null);
-                    COBieCell thiscell = new COBieCell();
-                    thiscell.CellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
-                    thiscell.COBieState = cobieColumn.AttributeState;
-                    thiscell.CobieCol = cobieColumn;
+
+                    string cellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
+                    COBieCell thiscell = new COBieCell(cellValue, cobieColumn);
                     return thiscell;
                 }
                 
@@ -93,10 +92,8 @@ namespace Xbim.COBie
                 if (cobieColumn != null)
                 {
                     object pVal = cobieColumn.PropertyInfo.GetValue(this, null);
-                    COBieCell thiscell = new COBieCell();
-                    thiscell.CellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING ;
-                    thiscell.COBieState = cobieColumn.AttributeState;
-                    thiscell.CobieCol = cobieColumn;
+                    string cellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
+                    COBieCell thiscell = new COBieCell(cellValue, cobieColumn);
                     return thiscell;
                 }
                 return null;
@@ -120,6 +117,14 @@ namespace Xbim.COBie
         public string RowHashValue
         {
             get { return GenerateRowHash(); }
+        }
+
+        /// <summary>
+        /// Row hash value
+        /// </summary>
+        public string RowMergeHashValue
+        {
+            get { return GenerateMergeKeyHash(); }
         } 
 
         /// <summary>
@@ -158,10 +163,66 @@ namespace Xbim.COBie
         private string GenerateRowHash()
         {
             string value = "";
-            string rowvalues = ConcatRowValues();
+            string rowValue = ConcatRowValues(); //get the row cell values concatenated together
             using (MD5 md5hash = MD5.Create())
             {
-                value = GetRowHash(md5hash);
+                value = GetRowHash(md5hash, rowValue);
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Return the concatenation of the row values
+        /// </summary>
+        /// <returns>string value of all rows added together</returns>
+        private string ConcatMergeRowValues()
+        {
+            //columns to miss out of the hash 
+            List<string> ExcludeColumns = new List<string>() { "CreatedBy", "CreatedOn", "ExtSystem", "ExternalSystem", "ExtIdentifier", "ExternalSiteIdentifier", "ExternalFacilityIdentifier", "ExternalProjectIdentifier" };
+            string value = "";
+            StringBuilder stringBld = new StringBuilder();
+            for (int i = 0; i < RowCount; i++)
+            {
+                string colname = this[i].COBieColumn.ColumnName;
+                if (!ExcludeColumns.Contains(colname))
+                {
+                    value = this[i].CellValue;
+
+                    //optimize the category match to front end code, should we do this?
+                    //if (colname == "Category")
+                    //    value = GetCategoryCode(value);
+                    
+                    if (string.IsNullOrEmpty(value)) value = "";
+                    stringBld.Append(value);
+                }
+            }
+            return stringBld.ToString().ToLower();
+        }
+
+        /// <summary>
+        /// Get the Uniclass Code from the category name
+        /// </summary>
+        /// <param name="category">String holding category</param>
+        /// <returns>Front end of category code</returns>
+        private string GetCategoryCode(string category)
+        {
+            string[] split = category.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+            if (split.Count() > 0)
+                return split[0].Trim();
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Generate the Hash code for the row values used in a merge
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateMergeKeyHash()
+        {
+            string value = "";
+            string rowValue = ConcatMergeRowValues(); //get the row cell values concatenated together which we want for merge
+            using (MD5 md5hash = MD5.Create())
+            {
+                value = GetRowHash(md5hash, rowValue);
             }
             return value;
         }
@@ -170,10 +231,11 @@ namespace Xbim.COBie
         /// Get the MD5 Hash value
         /// </summary>
         /// <param name="md5"></param>
+        /// <param name="rowValue">string to hash</param>
         /// <returns> hexadecimal string</returns>
-        private string GetRowHash(MD5 md5)
+        public string GetRowHash(MD5 md5, string rowValue)
         {
-            string rowValue = ConcatRowValues(); //get the row cell values concatenated together
+            //string rowValue = ConcatRowValues(); //get the row cell values concatenated together
             byte[] rowData = md5.ComputeHash(Encoding.UTF8.GetBytes(rowValue));
             StringBuilder stringBld = new StringBuilder();
             // Loop through each byte of the hashed rowData  

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 
 namespace Xbim.COBie.Data
@@ -39,9 +39,9 @@ namespace Xbim.COBie.Data
 
            
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
+            IEnumerable<IfcZone> ifcZones = Model.Instances.OfType<IfcZone>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
@@ -50,7 +50,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.RowParameters["Sheet"] = "Zone";
             
             //Also check to see if we have any zones within the spaces
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            IEnumerable<IfcSpace> ifcSpaces = Model.Instances.OfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
 
             ProgressIndicator.Initialise("Creating Zones", ifcZones.Count() + ifcSpaces.Count());
 
@@ -65,19 +65,29 @@ namespace Xbim.COBie.Data
 
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
+                    //set allPropertyValues to this element
+                    allPropertyValues.SetAllPropertyValues(zn); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
                     zone.Name = zn.Name.ToString();
 
-                    zone.CreatedBy = GetTelecomEmailAddress(zn.OwnerHistory);
-                    zone.CreatedOn = GetCreatedOnDateAsFmtString(zn.OwnerHistory);
+                    string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                    zone.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(zn.OwnerHistory);
+                    string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                    zone.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(zn.OwnerHistory);
 
                     zone.Category = GetCategory(zn);
 
                     zone.SpaceNames = sp.Name;
 
-                    zone.ExtSystem = GetExternalSystem(sp);
+                    string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                    zone.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(zn);
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
-                    zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
+                    string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                    if (ValidateString(extSystem))
+                        zone.Description = extSystem;
+                    else
+                        zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
                     zones.AddRow(zone);
                     
                     //fill in the attribute information
@@ -91,14 +101,14 @@ namespace Xbim.COBie.Data
 
             }
 
-            COBieDataPropertySetValues allSpacePropertyValues = new COBieDataPropertySetValues(ifcSpaces); //get all property sets and associated properties in one go
+            COBieDataPropertySetValues allSpacePropertyValues = new COBieDataPropertySetValues(); //get all property sets and associated properties in one go
             foreach (IfcSpace sp in ifcSpaces)
             {
-                Dictionary<IfcPropertySet, List<IfcSimpleProperty>> thisSpaceProperties = allSpacePropertyValues[sp];
                 ProgressIndicator.IncrementAndUpdate();
-
+                allSpacePropertyValues.SetAllPropertyValues(sp); //set the space as the current object for the properties get glass
+                
                 IEnumerable<IfcPropertySingleValue> spProperties = Enumerable.Empty<IfcPropertySingleValue>();
-                foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> item in thisSpaceProperties)
+                foreach (KeyValuePair<IfcPropertySet, IEnumerable<IfcSimpleProperty>> item in allSpacePropertyValues.MapPsetToProps)
                 {
                     IfcPropertySet pset = item.Key;
                     spProperties = item.Value.Where(p => p.Name.ToString().Contains("ZoneName")).OfType<IfcPropertySingleValue>();

@@ -10,18 +10,23 @@ using Xbim.COBie.Serialisers;
 using System.IO;
 using System.Diagnostics;
 using Xbim.COBie.Contracts;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.ModelGeometry.Scene;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.ModelGeometry;
 using Xbim.COBie.Serialisers.XbimSerialiser;
+using System.Collections.Concurrent;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3.ProductExtension;
+using System.Threading.Tasks;
+using System.Threading;
+using Xbim.Common.Exceptions;
+using Xbim.ModelGeometry.Converter;
+using Xbim.Common.Geometry;
 
 namespace Xbim.Tests.COBie
 {
-    [DeploymentItem(SourceFile, Root)]
-    [DeploymentItem(PickListFile, Root)]
     [DeploymentItem(ExcelTemplateFile, Root)]
-    [DeploymentItem(BinaryFile, Root)]
     [DeploymentItem(DuplexFile, Root)]
     [DeploymentItem(DuplexBinaryFile, Root)]
     [DeploymentItem(DLLFiles)]
@@ -29,127 +34,122 @@ namespace Xbim.Tests.COBie
     public class COBieXbimSerialisationTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic-Handover.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
-        private const string PickListLeaf = "PickLists.xml";
-        private const string SourceBinaryFile = "COBieToXbim.xCOBie";
+
         private const string ExcelTemplateLeaf = "COBie-US-2_4-template.xls";
-
-        private const string DuplexModelLeaf = "Duplex_A_Co-ord.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
-        private const string DuplexFile = Root + @"\" + DuplexModelLeaf;
+        private const string DuplexModelLeaf = "Duplex_A_Co-ord.xbim"; 
         private const string DuplexBinaryLeaf = "DuplexCOBieToXbim.xCOBie";
-        private const string DuplexBinaryFile = Root + @"\" + DuplexBinaryLeaf;
-        private const string GeoFilexBim = Root + @"\" + "XBim-Duplex_A_Co-ord.xbimGC";
-
-        private const string SourceFile = Root + @"\" + SourceModelLeaf;
-        private const string PickListFile = Root + @"\" + PickListLeaf;
+        
         private const string ExcelTemplateFile = Root + @"\" + ExcelTemplateLeaf;
-        private const string BinaryFile = Root + @"\" + SourceBinaryFile;
-
+        private const string DuplexFile = Root + @"\" + DuplexModelLeaf;
+        private const string DuplexBinaryFile = Root + @"\" + DuplexBinaryLeaf;
+        
         private const string DLLFiles = @"C:\Xbim\XbimFramework\Dev\COBie\Xbim.ModelGeometry\OpenCascade\Win32\Bin";
 
+        /// <summary>
+        /// Test to Create Binary file from workbook 
+        /// </summary>
         [TestMethod]
-        public void Contacts_XBimSerialise()
+        public void Should_BinarySerialiser()
         {
             COBieWorkbook workBook;
             COBieContext context;
-            IModel model;
             COBieBuilder builder;
 
-            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(BinaryFile);
-            workBook = deserialiser.Deserialise();
 
-            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
-            xBimSerialiser.Serialise(workBook);
-
-            
             context = new COBieContext(null);
-            model = xBimSerialiser.Model;
-            
-            context.Model = model;
             context.TemplateFileName = ExcelTemplateFile;
 
-            builder = new COBieBuilder(context);
-
-            COBieWorkbook book = builder.Workbook;
-            
-            
-            //create excel file
-            string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
-            ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
-            builder.Export(formatter);
-            Process.Start(excelFile);
-
-            // Assert
-            //Assert.AreEqual(19, newBook.Count);
-
-            // 19 workbooks. # rows in a selection.
-        }
-
-        [TestMethod]
-        public void Contacts_XBimSerialise_Duplex()
-        {
-            COBieWorkbook workBook;
-            COBieContext context;
-            IModel model;
-            COBieBuilder builder;
-            
-            string cacheFile = Path.ChangeExtension(DuplexFile, ".xbimGC");
-
-            if (true)//(!File.Exists(DuplexBinaryFile))
+            using (XbimModel model = new XbimModel())
             {
-                context = new COBieContext(null);
-                model = new XbimFileModelServer();
-                model.Open(DuplexFile, delegate(int percentProgress, object userState)
+                model.Open(DuplexFile, XbimDBAccess.ReadWrite, delegate(int percentProgress, object userState)
                 {
                     Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
                 });
                 context.Model = model;
-                context.TemplateFileName = ExcelTemplateFile;
-
-                //Create Scene, required for Coordinates sheet
-                GenerateGeometry(model, cacheFile, context); //we want to generate each run
-                context.Scene = new XbimSceneStream(model, cacheFile);
                 
                 builder = new COBieBuilder(context);
                 workBook = builder.Workbook;
                 COBieBinarySerialiser serialiser = new COBieBinarySerialiser(DuplexBinaryFile);
                 serialiser.Serialise(workBook);
-                
             }
-            //else
-            //{
-            //    COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(DuplexBinaryFile);
-            //    workBook = deserialiser.Deserialise();
-            //}
+            double bytes = 0;
+            if (File.Exists(DuplexBinaryFile))
+            {
+                FileInfo fileInfo = new FileInfo(DuplexBinaryFile);
+                bytes = fileInfo.Length;
+            }
 
-            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
-            xBimSerialiser.Serialise(workBook);
+            Assert.IsTrue(File.Exists(DuplexBinaryFile));
+
+        }
+
+        [TestMethod]
+        public void Should_BinarySerialiser_with_roles()
+        {
+            COBieWorkbook workBook, workBook2;
+            COBieContext context;
+            COBieBuilder builder;
 
 
             context = new COBieContext(null);
-            model = xBimSerialiser.Model;
-
-            GenerateGeometry(model, GeoFilexBim, context); //we want to generate each run
-            context.Scene = new XbimSceneStream(model, GeoFilexBim);
-            context.Model = model;
             context.TemplateFileName = ExcelTemplateFile;
 
-            builder = new COBieBuilder(context);
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(DuplexFile, XbimDBAccess.ReadWrite, delegate(int percentProgress, object userState)
+                {
+                    Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
+                });
+                context.Model = model;
+                context.MapMergeRoles[model] = COBieMergeRoles.Mechanical;
 
-            COBieWorkbook book = builder.Workbook;
+                builder = new COBieBuilder(context);
+                workBook = builder.Workbook;
+                COBieBinarySerialiser serialiser = new COBieBinarySerialiser(DuplexBinaryFile);
+                serialiser.Serialise(workBook);
 
+                COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(DuplexBinaryFile);
+                workBook2 = deserialiser.Deserialise();
 
-            //create excel file
-            string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
-            ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
-            builder.Export(formatter);
-            Process.Start(excelFile);
+            }
+
+            Assert.IsTrue(workBook2[Constants.WORKSHEET_COMPONENT].RemovedRows.Count() > 0);
+
+        }
+        /// <summary>
+        /// Test to create Ifc File from Workbook
+        /// </summary>
+        [TestMethod]
+        public void Should_XBimSerialise()
+        {
+            COBieWorkbook workBook;
+            COBieContext context;
+            COBieBuilder builder;
+            COBieWorkbook book;
+
+            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(DuplexBinaryFile);
+            workBook = deserialiser.Deserialise();
+
+            using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(Path.ChangeExtension(DuplexBinaryFile, ".Ifc")))//Path.ChangeExtension(Path.GetFullPath(BinaryFile), ".Ifc")
+            {
+                xBimSerialiser.Serialise(workBook);
+
+                context = new COBieContext(null);
+                context.TemplateFileName = ExcelTemplateFile;
+                context.Model = xBimSerialiser.Model;
+
+                builder = new COBieBuilder(context);
+                book = builder.Workbook;
+            }
 
             // Assert
-            //Assert.AreEqual(19, newBook.Count);
-
-            // 19 workbooks. # rows in a selection.
+            Assert.AreEqual(19, book.Count);
+            
         }
+
+        /// <summary>
+        /// Test on Delimited Strings
+        /// </summary>
         [TestMethod]
         public void Delimited_Strings()
         {
@@ -178,28 +178,15 @@ namespace Xbim.Tests.COBie
         /// Create the xbimGC file
         /// </summary>
         /// <param name="model">IModel object</param>
-        /// <param name="cacheFile">file path to write file too</param>
         /// <param name="context">Context object</param>
-        private static void GenerateGeometry(IModel model, string cacheFile, COBieContext context)
+        private static void GenerateGeometry(COBieContext context)
         {
             //now convert the geometry
-            IEnumerable<IfcProduct> toDraw = model.IfcProducts.Items; //get all products for this model to place in return graph
-
-            XbimScene scene = new XbimScene(model, toDraw);
-            int total = scene.Graph.ProductNodes.Count();
-            //create the geometry file
-
-            using (FileStream sceneStream = new FileStream(cacheFile, FileMode.Create, FileAccess.ReadWrite))
+            int total = (int)context.Model.Instances.CountOf<IfcProduct>(); //get all products for this model to place in return graph
+            XbimMesher.GenerateGeometry(context.Model, null, delegate(int percentProgress, object userState)
             {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                //show current status to user
-                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
-                {
-                    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-                });
-                bw.Flush();
-            }
-
+                context.UpdateStatus("Creating Geometry", total, (total * percentProgress / 100));
+            });
         }
     }
 }
