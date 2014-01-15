@@ -90,9 +90,9 @@ namespace Xbim.Spatial.Tests
         {
             //create models
             var original = new XbimModel();
-            original.CreateFrom("OneRoom.ifc", null, null, true, false);
+            original.CreateFrom("OneRoom.ifc", "CmpMngTest", null, true, false);
             var chAdded = new XbimModel();
-            chAdded.CreateFrom("OneRoom_added_window.ifc", null, null, true, false);
+            chAdded.CreateFrom("OneRoom_added_window.ifc", "CmpMngTest_AddedWindow", null, true, false);
 
             //create comparers
             var cmpGeometry = new GeometryComparerII(original, chAdded);
