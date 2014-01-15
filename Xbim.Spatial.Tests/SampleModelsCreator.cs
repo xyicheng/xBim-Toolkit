@@ -118,6 +118,9 @@ namespace Xbim.Spatial.Tests
                 var storey = model.Instances.New<IfcBuildingStorey>(s => s.Name = "Default storey");
                 var space = model.Instances.New<IfcSpace>(s => s.Name = "Default space");
                 space.Representation = GetShape(model, context, width + (colNumber - 1) * colSpace, height + (layerNumber -1) * layerSpace, depth + (rowNumber -1) * rowSpace, null, origin3D);
+                space.ObjectPlacement = model.Instances.New<IfcLocalPlacement>(lp => lp.RelativePlacement =
+                                    model.Instances.New<IfcAxis2Placement3D>(rp => rp.Location = origin3D)
+                                    );
                 
                 site.AddToSpatialDecomposition(building);
                 building.AddToSpatialDecomposition(storey);

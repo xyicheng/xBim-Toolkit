@@ -364,6 +364,8 @@ namespace Xbim.Common.Geometry
         public static XbimMatrix3D FromString(string val)
         {
             string[] itms = val.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            if (itms.Length == 1 && itms[0] == "I")
+                return XbimMatrix3D.Identity;
             Debug.Assert(itms.Length == 16);
             return new XbimMatrix3D(
                 Convert.ToSingle(itms[0], System.Globalization.CultureInfo.InvariantCulture),

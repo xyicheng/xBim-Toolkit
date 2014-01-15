@@ -10,6 +10,7 @@ using Xbim.XbimExtensions;
 using Xbim.Common.Geometry;
 using System.IO;
 using Xbim.ModelGeometry.Scene;
+using System.Diagnostics;
 
 namespace Xbim.Analysis.Spatial
 {
@@ -50,32 +51,43 @@ namespace Xbim.Analysis.Spatial
             
             //initialize octree with all the objects
             var prods = model.Instances.OfType<IfcProduct>();
+            //Stopwatch sw = new Stopwatch();
+            //var report = new StringWriter();
+            //report.WriteLine("{0,-15}, {1,-40}, {2,5}, {3,5}", "Type", "Product name", "Geometry", "BBox");
             
             //we need to preprocess all the products first to get world size. Will keep results to avoid repetition.
             XbimRect3D worldBB = XbimRect3D.Empty;
             foreach (var prod in prods)
             {
+
                 //bounding boxes are lightweight and are produced when geometry is created at first place
+                //sw.Start();
                 var geom = prod.Geometry3D();
                 var trans = prod.Transform();
+                //sw.Stop();
+                //var geomGeneration = sw.ElapsedMilliseconds;
 
                 if (geom != null && geom.FirstOrDefault() != null)
                 {
                     //get or cast to BBox
+                    //sw.Restart();
                     var bb = geom.GetAxisAlignedBoundingBox();
                     bb = new XbimRect3D(trans.Transform(bb.Min), trans.Transform(bb.Max));
+                    //sw.Stop();
+                    //var gettingBbox = sw.ElapsedMilliseconds;
+                    //report.WriteLine("{0,-15}, {1,-40}, {2,5}, {3,5}", prod.GetType().Name, prod.Name, geomGeneration, gettingBbox);
 
                     //add every BBox to the world to get the size and position of the world
                     _prodBBs.Add(prod, bb);
                     if (!float.IsNaN(bb.SizeX))
                         worldBB.Union(bb);
 
-                    System.Diagnostics.Debug.WriteLine("{0,-45} {1,10:F5} {2,10:F5} {3,10:F5} {4,10:F5} {5,10:F5} {6,10:F5}", 
-                        prod.Name, bb.X, bb.Y, bb.Z, bb.SizeX, bb.SizeY, bb.SizeZ);
+                    //Debug.WriteLine("{0,-45} {1,10:F5} {2,10:F5} {3,10:F5} {4,10:F5} {5,10:F5} {6,10:F5}", 
+                    //    prod.Name, bb.X, bb.Y, bb.Z, bb.SizeX, bb.SizeY, bb.SizeZ);
                 }
             }
-            System.Diagnostics.Debug.WriteLine("{0,-45} {1,10:F5} {2,10:F5} {3,10:F5} {4,10:F5} {5,10:F5} {6,10:F5}",
-                       "World", worldBB.X, worldBB.Y, worldBB.Z, worldBB.SizeX, worldBB.SizeY, worldBB.SizeZ);
+            //Debug.WriteLine("{0,-45} {1,10:F5} {2,10:F5} {3,10:F5} {4,10:F5} {5,10:F5} {6,10:F5}",
+            //           "World", worldBB.X, worldBB.Y, worldBB.Z, worldBB.SizeX, worldBB.SizeY, worldBB.SizeZ);
 
             //create octree
             //target size must depend on the units of the model
@@ -85,11 +97,13 @@ namespace Xbim.Analysis.Spatial
             var position = worldBB.Location + new XbimVector3D() {X = size/2f-shift, Y = size/2f-shift, Z = size/2f-shift };
             _tree = new XbimOctree<IfcProduct>(size, meter, 1f, position);
 
+            //sw.Restart();
             //add every product to the world
             foreach (var item in _prodBBs)
                 _tree.Add(item.Key, item.Value);
 
-            //octree should be ready by now
+            //sw.Stop();
+            //report.WriteLine("Generation of octree containing {0} products {1}", prods.Count(), sw.ElapsedMilliseconds);
         }
 
         #region Directions

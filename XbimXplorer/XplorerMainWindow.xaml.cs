@@ -416,6 +416,9 @@ namespace XbimXplorer
 
                                                       ProgressBar.Value = 0;
                                                       StatusMsg.Text = "Ready";
+
+                                                      //var a = new Xbim.Analysis.Spatial.XbimSpatialAnalyser(args.Result as XbimModel);
+                                                      //DrawingControl.ShowOctree(a.Octree);
                                                   }
                                                   else //we have a problem
                                                   {

@@ -245,6 +245,10 @@
     <Resource Include="xBimQueryLogo.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xbim.Analysis\Xbim.Analysis.csproj">
+      <Project>{25056c5d-d281-436e-b281-95f339861c5d}</Project>
+      <Name>Xbim.Analysis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
       <Project>{7da8c61a-acca-45cb-b688-93a4982fa44c}</Project>
       <Name>Xbim.COBie</Name>

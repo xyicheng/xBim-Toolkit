@@ -37,26 +37,24 @@ namespace Xbim.Analysis.Spatial
                 AssemblyResolver.GetModelGeometryAssembly(basePath);
 
                 //create geometry
-                XbimMesher.GenerateGeometry(model);
+                //XbimMesher.GenerateGeometry(model);
             }
 
             //initialize octree with all the objects
-            var prods = model.Instances.OfType<IfcProduct>();
+            Xbim3DModelContext context = new Xbim3DModelContext(model);
+            context.CreateContext();
+            var prodShapes = context.ProductShapes;
 
             //create cached BBoxes
-            foreach (var prod in prods)
+            foreach (var shp in prodShapes)
             {
                 //bounding boxes are lightweight and are produced when geometry is created at first place
-                var geom = prod.Geometry3D();
 
-                if (geom != null && geom.FirstOrDefault() != null)
-                {
                     //get or cast to BBox
-                    var bb = geom.GetAxisAlignedBoundingBox();
+                    var bb = shp.BoundingBox;
 
                     //add every BBox to the world to get the size and position of the world
-                    _prodBBs.Add(prod, bb);
-                }
+                    _prodBBs.Add(shp.Product, bb);
             }
         }
 

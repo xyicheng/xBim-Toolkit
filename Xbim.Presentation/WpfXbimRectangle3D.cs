@@ -19,8 +19,11 @@ namespace Xbim.Presentation
             geometry.Geometry = new MeshGeometry3D();
             SolidColorBrush brush = new SolidColorBrush(Colors.LightBlue);
             brush.Opacity = 0.3;
-            geometry.BackMaterial = new DiffuseMaterial(brush);
-            geometry.Material = new DiffuseMaterial(brush);
+            var material = new DiffuseMaterial(brush);
+            material.AmbientColor = Colors.LightBlue;
+
+            geometry.BackMaterial = material;
+            geometry.Material = material;
 
             var mesh = geometry.Geometry as MeshGeometry3D;
             

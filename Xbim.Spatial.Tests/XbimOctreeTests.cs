@@ -77,6 +77,8 @@ namespace Xbim.Spatial.Tests
         public void OctreeCreation()
         {
             var model = SampleModelsCreator.Disjoint4x4x4cubes;
+            //var model = new XbimModel();
+            //model.CreateFrom(@"c:\Users\cerny.m\Desktop\sample_project.ifc", null, null, true, false);
             var analyser = new XbimSpatialAnalyser(model);
         }
     }

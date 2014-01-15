@@ -486,12 +486,6 @@ namespace Xbim.Presentation
                 XbimModel model = e.NewValue as XbimModel;
                 d3d.LoadGeometry(model);
                 d3d.SetValue(LayerSetProperty, d3d.LayerSetRefresh());
-
-                //if (model != null)
-                //{
-                //    var analyser = new Xbim.ModelGeometry.Spatial.XbimSpatialAnalyser(model);
-                //    d3d.ShowOctree(analyser.Octree, -1, true);
-                //}
             }
         }
 

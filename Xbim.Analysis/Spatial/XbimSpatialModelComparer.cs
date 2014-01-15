@@ -49,7 +49,8 @@ namespace Xbim.Analysis.Spatial
 
             //get axis aligned BBoxes and overall world size
             XbimRect3D worldBB = XbimRect3D.Empty;
-            Parallel.ForEach<XbimModel>(new[] { modelA, modelB }, model =>
+            foreach (var model in new[] { modelA, modelB })
+            //Parallel.ForEach<XbimModel>(new[] { modelA, modelB }, model =>
             {
                 //generate geometry if there is no in the model
                 if (model.GeometriesCount == 0)
@@ -59,16 +60,17 @@ namespace Xbim.Analysis.Spatial
                     AssemblyResolver.GetModelGeometryAssembly(basePath);
 
                     //create geometry
-                    XbimMesher.GenerateGeometry(model);
+                    //XbimMesher.GenerateGeometry(model);
                 }
 
                 //initialize octree with all the objects
                // var prods = model.Instances.OfType<IfcProduct>();
                 //var prods = model.Instances.OfType<IfcWall>();
                 Xbim3DModelContext context = new Xbim3DModelContext(model);
-                var prods = context.ProductShapes;
+                context.CreateContext();
+                var prodShapes = context.ProductShapes;
                 //we need to preprocess all the products first to get the world size. Will keep results to avoid repetition.
-                foreach (var prod in prods)
+                foreach (var shp in prodShapes)
                 {
                     //bounding boxes are lightweight and are produced when geometry is created at first place
                     //var geom = prod.Geometry3D();
@@ -80,7 +82,7 @@ namespace Xbim.Analysis.Spatial
                         //var bb = mesh.Bounds;
 
                         //Axis aligned BBox
-                        var bb = prod.BoundingBox;//.GetAxisAlignedBoundingBox();
+                        var bb = shp.BoundingBox;//.GetAxisAlignedBoundingBox();
                         //bb = bb.Transform(trans);
                        // bb = new XbimRect3D(trans.Transform(bb.Min), trans.Transform(bb.Max));
 
@@ -90,10 +92,10 @@ namespace Xbim.Analysis.Spatial
                         //                                    prod.Name, bb.X, bb.Y, bb.Z, bb.SizeX, bb.SizeY, bb.SizeZ);
 #endif
 
-                        if (prod.Product.ModelOf == modelA)
-                            _prodBBsA.Add(prod.Product, bb);
+                        if (shp.Product.ModelOf == modelA)
+                            _prodBBsA.Add(shp.Product, bb);
                         else
-                            _prodBBsB.Add(prod.Product, bb);
+                            _prodBBsB.Add(shp.Product, bb);
 
                         //add every BBox to the world to get the size and position of the world
                         //if it contains valid BBox
@@ -101,7 +103,8 @@ namespace Xbim.Analysis.Spatial
                             worldBB.Union(bb);
                    // }
                 }
-            });
+            }
+            //);
 
             //create octree
             //target size must depend on the units of the model
@@ -163,7 +166,7 @@ namespace Xbim.Analysis.Spatial
             if (original != null && node != null)
             {
                 //content which if from other models
-                var nodeContent = node.Content().Where(nc => (nc.ModelOf != original.ModelOf) && (nc.GetType() == original.GetType())); ;
+                var nodeContent = node.Content().Where(nc => (nc.ModelOf != original.ModelOf) && (nc.GetType() == original.GetType()));
                 var prodBBox = XbimRect3D.Empty;
 
                 foreach (var candidate in nodeContent)
