@@ -78,20 +78,16 @@ namespace Xbim.Analysis.Comparing
             _comparer = comparer;
         }
 
-        public bool IsOneToOne { get { return _baseline != null && _candidates.Count == 1; } }
-        public bool IsOnlyBaseLine { get { return _baseline != null && _candidates.Count == 0; } }
-        public bool IsOnlyInRevision { get { return _baseline == null && _candidates.Count > 0; } }
-        public bool IsAmbiguous { get { return _baseline != null && _candidates.Count > 1; } }
         public ResultType ResultType
         {
-        get
-        {
-            if (IsOneToOne) return Comparing.ResultType.MATCH;
-            if (IsOnlyBaseLine) return Comparing.ResultType.ONLY_BASELINE;
-            if (IsOnlyInRevision) return Comparing.ResultType.ONLY_REVISION;
-            if (IsAmbiguous) return Comparing.ResultType.AMBIGUOUS;
-            return Comparing.ResultType.AMBIGUOUS;
-        }
+            get
+            {
+                if (_baseline != null && _candidates.Count == 1) return Comparing.ResultType.MATCH;
+                if (_baseline != null && _candidates.Count == 0) return Comparing.ResultType.ONLY_BASELINE;
+                if (_baseline == null && _candidates.Count > 0) return Comparing.ResultType.ONLY_REVISION;
+                if (_baseline != null && _candidates.Count > 1) return Comparing.ResultType.AMBIGUOUS;
+                return Comparing.ResultType.AMBIGUOUS;
+            }
         }
     }
 
@@ -108,6 +104,7 @@ namespace Xbim.Analysis.Comparing
         MATERIAL,
         TYPE,
         ELEMENT_TYPE,
+        PROPERTIES,
         CUSTOM
     }
 

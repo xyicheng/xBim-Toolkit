@@ -7,6 +7,7 @@ using Xbim.IO;
 using Xbim.Analysis.Spatial;
 using Xbim.Analysis.Comparing;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.Spatial.Tests
 {
@@ -98,16 +99,27 @@ namespace Xbim.Spatial.Tests
             var cmpGeometry = new GeometryComparerII(original, chAdded);
             var cmpName = new NameComparer();
             var cmpGuid = new GuidComparer();
+            var cmpProperties = new PropertyComparer();
 
             var manager = new ComparisonManager(original, chAdded);
             manager.AddComparer(cmpGeometry);
             manager.AddComparer(cmpName);
             manager.AddComparer(cmpGuid);
+            manager.AddComparer(cmpProperties);
 
             manager.Compare<IfcProduct>();
 
             var results = manager.Results;
             manager.SaveResultToCSV(@"..\..\output.csv");
+        }
+
+        [TestMethod]
+        public void LabelTest()
+        {
+            var a = new IfcLabel("<NONE>");
+            var b = new IfcLabel("<NONE>");
+
+            Assert.IsTrue(a == b);
         }
 
         //[TestMethod]

@@ -159,17 +159,14 @@ namespace Xbim.Analysis.Comparing
             foreach (var candidate in candidates)
             {
                 //compare hash of the geometry
-                if (CompareHashes(product, candidate))
-                {
+                //if (CompareHashes(product, candidate))
+                //{
                     //precise geometry check should go here
 
                     result.Candidates.Add(candidate);
                     _processedFromB.Add(candidate);
-                }
-                
-   
+                //}
             }
-
             return result;
         }
 
@@ -197,7 +194,7 @@ namespace Xbim.Analysis.Comparing
             if (original != null && node != null)
             {
                 //content which if from other models
-                var nodeContent = node.Content().Where(nc => (nc.ModelOf != original.ModelOf) && (nc.GetType() == original.GetType()));
+                var nodeContent = node.Content().Where(nc => (nc.ModelOf != original.ModelOf));
                 var prodBBox = XbimRect3D.Empty;
 
                 foreach (var candidate in nodeContent)
@@ -267,8 +264,6 @@ namespace Xbim.Analysis.Comparing
                 {
                     return true;
                 }
-                else
-                    return false;
             }
             return false;
         }

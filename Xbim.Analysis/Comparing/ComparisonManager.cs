@@ -49,12 +49,18 @@ namespace Xbim.Analysis.Comparing
                     //result can be null if there is no sense in comparison
                     //like comparison of geometry when there is no geometry at all
                     if (result != null)
-                        _results.Add(result);   
+                        lock (_results)
+                        {
+                            _results.Add(result);   
+                        }
                 }
 
                 //get objects which are supposed to be new
                 var residuum = comparer.GetResidualsFromRevision<T>(_revisedModel);
-                _results.Add(residuum);
+                lock (_results)
+                {
+                    _results.Add(residuum);
+                }
             }
             );
         }
@@ -64,26 +70,46 @@ namespace Xbim.Analysis.Comparing
             var file = File.CreateText(path);
 
             //create header
-            file.Write("{0},{1},{2}","Type", "Label", "Name");
+            file.Write("{0},{1}","Baseline", "Revision");
             foreach (var cmp in _comparers)
             {
                 file.Write(",{0} (Weight: {1})", cmp.ComparisonType, cmp.Weight);
             }
-            file.Write(",Overall weight\n");
+            file.Write(",Match\n");
 
             //write content
             foreach (var item in _results)
             {
-                var label = item.Root != null ? Math.Abs(item.Root.EntityLabel).ToString() : "-";
-                var type = item.Root != null ? item.Root.GetType().Name : "-";
-                var name = item.Root != null ? item.Root.Name.ToString() : "";
-                file.Write("{0},#{1},{2}", type, label, name);
-                foreach (var cmp in _comparers)
+                var baseLabel = item.Root != null ? "#" + Math.Abs(item.Root.EntityLabel).ToString() : "-";
+                var bestMatch = item.BestMatch;
+
+                if (bestMatch.Count == 0)
                 {
-                    var result = item.Results.Where(r => r.Comparer == cmp).FirstOrDefault();
-                    file.Write("," + (result!= null ? result.ResultType.ToString() : "-"));
+                    file.Write("{0},{1}", baseLabel, "-");
+                    foreach (var cmp in _comparers)
+                        file.Write("," + ResultType.ONLY_BASELINE);
+                    file.Write(",100%\n");
+                    continue;
                 }
-                file.Write("," + item.Weight + "\n");
+
+                foreach (var match in item.BestMatch)
+                {
+                    var matchLabel = "#" + Math.Abs(match.Root.EntityLabel).ToString();
+                    file.Write("{0},{1}", baseLabel, matchLabel);
+                    foreach (var cmp in _comparers)
+                    {
+                        var results = item.Results.Where(r => r.Comparer == cmp);
+                        if (results.Count() == 0)
+                            file.Write(",-");
+                        else
+                        {
+                            var result = results.Where(r => r.Candidates.Contains(match.Root)).FirstOrDefault();
+                            file.Write("," + (result != null ? "true" : "false"));
+                        }
+                    }
+                    var relWeight = (float)(match.Weight) / (float)(item.MaximalWeight) * 100f;
+                    file.WriteLine(",{0,-1:f2}%", relWeight);
+                }
             }
             file.Close();
         }
@@ -91,7 +117,7 @@ namespace Xbim.Analysis.Comparing
     }
 
     /// <summary>
-    /// Keyed collection of comparison results. ModelComparers are used as a key of the collection.
+    /// Collection of comparison results.
     /// </summary>
     public class ComparisonResultsCollection : List<ComparisonResults>
     {
@@ -146,20 +172,88 @@ namespace Xbim.Analysis.Comparing
                 throw new ArgumentException("Result must have the same baseline object");
         }
 
-        public bool IsOneToOne { get { return _results.TrueForAll(r => r.IsOneToOne); } }
-        public bool IsOnlyBaseLine { get { return _results.TrueForAll(r => r.IsOnlyBaseLine); } }
-        public bool IsOnlyInRevision { get { return _results.TrueForAll(r => r.IsOnlyInRevision); } }
-        public bool IsAmbiguous { get { return _results.Any(r => r.IsAmbiguous); } }
+        public ResultType ResultType
+        {
+            get
+            {
+                var best = BestMatch;
+                var weightedResults = WeightedResults;
+                if (best.Count == 1 && Root != null) return ResultType.MATCH;
+                if (Root != null && best.Count == 0) return ResultType.ONLY_BASELINE;
+                if (Root == null && weightedResults.Count > 0) return ResultType.ONLY_REVISION;
+                if (Root != null && best.Count > 1) return ResultType.AMBIGUOUS;
+                return ResultType.AMBIGUOUS;
+            }
+        }
 
-        public int Weight 
-        { 
+        public List<WeightedRoot> WeightedResults 
+        {
             get 
             {
-                var result = 0;
-                foreach (var item in _results)
-                    if (item.IsOneToOne)
-                        result += item.Comparer.Weight;
-                return result;
+                var weightedResults = new List<WeightedRoot>();
+                foreach (var result in _results)
+                {
+                    foreach (var item in result.Candidates)
+                    {
+                        var existing = weightedResults.Where(wr => wr.Root == item).FirstOrDefault();
+                        if (existing != null)
+                            existing.Weight += result.Comparer.Weight;
+                        else
+                            weightedResults.Add(new WeightedRoot() { Root = item, Weight = result.Comparer.Weight });
+                    }
+                }
+                //sort result
+                weightedResults.Sort();
+
+                return weightedResults;
+            }
+        }
+
+        public List<WeightedRoot> BestMatch
+        {
+            get 
+            {
+                var weightedResults = WeightedResults;
+                if (weightedResults.Count == 0)
+                    return new List<WeightedRoot>();
+                var weight = weightedResults.Last().Weight;
+                return weightedResults.Where(wr => wr.Weight == weight).ToList();
+            }
+        }
+
+        public int MaximalWeight
+        {
+            get 
+            {
+                var w = 0;
+                foreach (var result in _results)
+                    w += result.Comparer.Weight;
+                return w;
+            }
+        }
+
+        public int BestMatchWeight
+        {
+            get
+            {
+                var wr = WeightedResults;
+                if (wr.Count == 0)
+                    return 0;
+                return wr.Last().Weight;
+            }
+        }
+
+        public class WeightedRoot : IComparable
+        {
+            public int Weight;
+            public IfcRoot Root;
+
+            public int CompareTo(object obj)
+            {
+                var second = obj as WeightedRoot;
+                if (second == null)
+                    throw new NotImplementedException();
+                return Weight.CompareTo(second.Weight);
             }
         }
     }

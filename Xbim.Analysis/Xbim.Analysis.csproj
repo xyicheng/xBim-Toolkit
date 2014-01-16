@@ -48,6 +48,7 @@
     <Compile Include="Comparing\GuidComparer.cs" />
     <Compile Include="Comparing\IModelComparerII.cs" />
     <Compile Include="Comparing\NameComparer.cs" />
+    <Compile Include="Comparing\PropertyComparer.cs" />
     <Compile Include="Comparitors\GeometryComparer.cs" />
     <Compile Include="Comparitors\GuidComparison.cs" />
     <Compile Include="Comparitors\NameComparison.cs" />
