@@ -55,14 +55,45 @@ namespace Xbim.Analysis.Comparing
         /// <returns></returns>
         IEnumerable<ComparisonResult> Compare<T>(XbimModel baseline, XbimModel revised) where T : IfcRoot;
 
+        /// <summary>
+        /// Gets difference between two objects. This is to be used to explore the difference in detail. This 
+        /// function is not to be used for comparison of two models item by item as it will be more resource
+        /// consuming than Compare() method which can take advantege from caching and other techniques.
+        /// </summary>
+        /// <param name="baseline">Baseline object</param>
+        /// <param name="revision">Revised object which is supposed to be the match of the baseline</param>
+        /// <returns>Enumeration of the differences like list of changed attributes or properties.</returns>
+        IEnumerable<Difference> GetDifferences(IfcRoot baseline, IfcRoot revision);
     }
 
+    /// <summary>
+    /// This object holds two version of the object like attribute, property or similar. 
+    /// It is to be used for detailed comparison of two objects.
+    /// </summary>
+    public class Difference
+    {
+        public object OriginalValue;
+        public object RevisedValue;
+        public string Message;
+    }
+
+    /// <summary>
+    /// Result of the comparison. It contains Baseline which represents original value, candidates for the match based on the
+    /// criterum applied by the comparer and the comparer itself which can tell what kind of comparison was done to get 
+    /// this result.
+    /// </summary>
     public class ComparisonResult
     {
         private IfcRoot _baseline;
+        /// <summary>
+        /// Baseline of the comparison
+        /// </summary>
         public IfcRoot Baseline { get { return _baseline; } }
 
         private ComparisonCandidates _candidates = new ComparisonCandidates();
+        /// <summary>
+        /// Candodates for the match
+        /// </summary>
         public ComparisonCandidates Candidates { get { return _candidates; } }
 
         //this is to identify origin of the comparison

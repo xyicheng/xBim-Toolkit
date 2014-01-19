@@ -186,6 +186,11 @@ namespace Xbim.Analysis.Comparing
             }
             yield return GetResidualsFromRevision<T>(revised);
         }
+
+        public IEnumerable<Difference> GetDifferences(Ifc2x3.Kernel.IfcRoot baseline, Ifc2x3.Kernel.IfcRoot revision)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         #region Helpers

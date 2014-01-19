@@ -43,15 +43,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparing\AttributeComparer.cs" />
     <Compile Include="Comparing\ComparisonManager.cs" />
     <Compile Include="Comparing\GeometryComparerII.cs" />
     <Compile Include="Comparing\GuidComparer.cs" />
     <Compile Include="Comparing\IModelComparerII.cs" />
+    <Compile Include="Comparing\MaterialComparer.cs" />
     <Compile Include="Comparing\NameComparer.cs" />
     <Compile Include="Comparing\PropertyComparer.cs" />
     <Compile Include="Comparitors\GeometryComparer.cs" />
     <Compile Include="Comparitors\GuidComparison.cs" />
     <Compile Include="Comparitors\NameComparison.cs" />
+    <Compile Include="Extensions\IfcMaterialSelectExtensions.cs" />
+    <Compile Include="Extensions\IfcSimpleValueExtensions.cs" />
     <Compile Include="IfcElementSignature.cs" />
     <Compile Include="IfcElementSignatureSummary.cs" />
     <Compile Include="IModelComparer.cs" />

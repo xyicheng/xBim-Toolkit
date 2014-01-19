@@ -219,6 +219,11 @@ namespace Xbim.Analysis.Comparing
             return true;
         }
 
+        public IEnumerable<Difference> GetDifferences(Ifc2x3.Kernel.IfcRoot baseline, Ifc2x3.Kernel.IfcRoot revision)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }
