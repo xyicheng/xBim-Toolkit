@@ -36,16 +36,17 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
             {
                 type: "cameras/orbit",
                 yaw: 30,
-                pitch: 50,
+                pitch: 35,
                 zoomSensitivity: 3.0,
                 zoom: 50,
                 id: "camera",
                 nodes: [
-                    { type: "flags", id: "flags", flags: { transparent: true } }
+                    { type: "flags", id: "flags", flags: { transparent: true, picking: true } }
                 ]
             }
         ]
     });
+    var canvas = scene.getCanvas();
     eventmanager.RegisterCallback("ModelBounds", function (ModelBounds) {
         console.log(ModelBounds);
 
@@ -99,5 +100,40 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
         } catch (exception) { }
     });
 
+    //register mouse handlers for picking
+    canvas.addEventListener('mousedown', mouseDown, true);
+    canvas.addEventListener('mouseup', mouseUp, true);
+    canvas.addEventListener('touchstart', touchStart, true);
+    canvas.addEventListener('touchend', touchEnd, true);
+    function mouseDown(event) {
+        lastX = event.clientX;
+        lastY = event.clientY;
+        dragging = true;
+    }
+
+    function touchStart(event) {
+        lastX = event.targetTouches[0].clientX;
+        lastY = event.targetTouches[0].clientY;
+        dragging = true;
+    }
+
+    function mouseUp(event) {
+        if (dragging) {
+            scene.pick(event.clientX, event.clientY);
+        }
+        dragging = false;
+    }
+
+    function touchEnd() {
+        if (dragging) {
+            scene.pick(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+        }
+        dragging = false;
+    }
+    scene.on("pick",
+            function (hit) {
+                var geometryid = hit.nodeId.replace("_name","");
+                alert("picked geometry id: " + geometryid);
+            });
     ModelLoader.StartLoading();
 });
