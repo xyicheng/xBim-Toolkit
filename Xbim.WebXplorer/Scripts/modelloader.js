@@ -59,10 +59,17 @@
     ModelLoader.prototype.GeomLoad = function () {
         var self = this;
         if (self.GeoQueue.length > 0) {
-            var geomid = self.GeoQueue.pop();
+
+            var geomid = [];
+            for (var i = 0; i < 20 && self.GeoQueue.length > 0; i++) {
+                geomid.push(self.GeoQueue.pop());
+            }
+
             $.ajax({
-                url: "/XbimModel/Geometry/" + ModelID + "/" + geomid
+                url: "/XbimModel/Geometry/" + ModelID + "/" + geomid.toString()
             }).done(function (data) {
+                self.GeomLoad();
+
                 data = JSON.parse(data);
                 for (var i = 0; i < data.length; i++) {
                     var geoid = data[i].id;
@@ -83,7 +90,6 @@
 
                     eventmanager.FireEvent("Geometry", { id: geoid, layerid: layerid, data: data[i], geometry: obj });
                 }
-                self.GeomLoad();
             });
         } else {
             eventmanager.FireEvent("FinishedLoading");

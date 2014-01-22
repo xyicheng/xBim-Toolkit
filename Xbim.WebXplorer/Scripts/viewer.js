@@ -18,7 +18,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
 
     // Point SceneJS to the bundled plugins
     SceneJS.setConfigs({
-        pluginPath: "http://scenejs.org/api/latest/plugins"
+        pluginPath: "/Scripts/plugins"
     });
 
     // Create scene
@@ -36,11 +36,13 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
             {
                 type: "cameras/orbit",
                 yaw: 30,
-                pitch: -30,
-                zoom: 10,
-                zoomSensitivity: 10.0,
+                pitch: 50,
+                zoomSensitivity: 3.0,
+                zoom: 50,
                 id: "camera",
-                nodes: []
+                nodes: [
+                    { type: "flags", id: "flags", flags: { transparent: true } }
+                ]
             }
         ]
     });
@@ -48,8 +50,8 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
         console.log(ModelBounds);
 
         var transform = new Float32Array(ModelBounds.transforms[0].transform);
-        scene.getNode("camera", function (camera) {
-            camera.addNode({
+        scene.getNode("flags", function (flags) {
+            flags.addNode({
                 type: "matrix",
                 id: "modeltransform",
                 elements: transform,
@@ -68,6 +70,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
                     type: "material",
                     id: mat.MaterialID,
                     color: { r: mat.Red, g: mat.Green, b: mat.Blue },
+                    alpha: mat.Alpha,
                     nodes:[]
                 });
             }

@@ -101,7 +101,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\ModelManager.cs" />
     <Compile Include="Models\XbimSceneModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="xbim\ColourMap.cs" />
@@ -145,6 +144,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\modelloader.js" />
+    <Content Include="Scripts\Plugins\node\cameras\orbit.js" />
+    <Content Include="Scripts\Plugins\node\prims\teapot.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\scenejs.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
