@@ -17,7 +17,7 @@ namespace Xbim.WebXplorer.Controllers
             XbimSceneModel model = null;
             try
             {
-                model = Session["XbimModel"] as XbimSceneModel;
+                model = Session["XbimModel"+Model] as XbimSceneModel;
             } catch (Exception){}
 
             if (model == null)
@@ -26,7 +26,7 @@ namespace Xbim.WebXplorer.Controllers
                 xbim.Init();
                 model = new XbimSceneModel(xbim);
 
-                Session["XbimModel"] = model;
+                Session["XbimModel"+Model] = model;
             }
             return model;
         }
