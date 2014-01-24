@@ -55,6 +55,7 @@
     <Compile Include="Comparitors\GuidComparison.cs" />
     <Compile Include="Comparitors\NameComparison.cs" />
     <Compile Include="Extensions\IfcMaterialSelectExtensions.cs" />
+    <Compile Include="Extensions\IfcPropertySetExtensions.cs" />
     <Compile Include="Extensions\IfcSimpleValueExtensions.cs" />
     <Compile Include="IfcElementSignature.cs" />
     <Compile Include="IfcElementSignatureSummary.cs" />

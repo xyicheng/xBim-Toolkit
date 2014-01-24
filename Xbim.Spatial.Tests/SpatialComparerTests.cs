@@ -99,7 +99,7 @@ namespace Xbim.Spatial.Tests
             var cmpGeometry = new GeometryComparerII(original, chAdded);
             var cmpName = new NameComparer();
             var cmpGuid = new GuidComparer();
-            var cmpProperties = new PropertyComparer();
+            var cmpProperties = new PropertyComparer(original, chAdded);
 
             var manager = new ComparisonManager(original, chAdded);
             manager.AddComparer(cmpGeometry);
