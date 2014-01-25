@@ -63,6 +63,7 @@
     <Compile Include="COBie\COBieXbimSerialisationTests.cs" />
     <Compile Include="COBie\MergePrecedenceRulesTests.cs" />
     <Compile Include="Comparisons\AttributeComparisonTests.cs" />
+    <Compile Include="Comparisons\ComparisonManagerTests.cs" />
     <Compile Include="Comparisons\GeometryComparisonTests.cs" />
     <Compile Include="Comparisons\GuidComparisonTests.cs" />
     <Compile Include="Comparisons\MaterialComparisonTests.cs" />
