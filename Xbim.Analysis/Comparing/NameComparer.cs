@@ -67,7 +67,7 @@ namespace Xbim.Analysis.Comparing
         public ComparisonResult GetResidualsFromRevision<T>(IO.XbimModel revisedModel) where T : Ifc2x3.Kernel.IfcRoot
         {
             var result = new ComparisonResult(null, this);
-            result.Candidates.AddRange(revisedModel.Instances.Where<T>(r => !_processed.Contains(r)));
+            result.Candidates.AddRange(revisedModel.Instances.Where<T>(r => !_processed.Contains(r) && r.Name != null));
             return result;
         }
 

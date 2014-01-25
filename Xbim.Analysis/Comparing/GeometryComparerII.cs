@@ -173,7 +173,7 @@ namespace Xbim.Analysis.Comparing
         public ComparisonResult GetResidualsFromRevision<T>(IO.XbimModel revisedModel) where T : Ifc2x3.Kernel.IfcRoot
         {
             var result = new ComparisonResult(null, this);
-            var prods = _prodBBsB.Keys.Where(p => !_processedFromB.Contains(p) && typeof(T).IsAssignableFrom(p.GetType()));
+            var prods = _prodBBsB.Keys.Where(p => !_processedFromB.Contains(p));
             result.Candidates.AddRange(prods);
             return result;
         }

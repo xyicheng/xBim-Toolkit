@@ -25,7 +25,6 @@ namespace Xbim.Analysis.Comparing
             _revisedModel = revisedModel;
         }
 
-
         public void AddComparer(IModelComparerII comparer)
         {
             if (comparer == null) throw new ArgumentNullException();
@@ -41,7 +40,8 @@ namespace Xbim.Analysis.Comparing
 
             //perform all the comparisons in parallel
             //foreach (var comparer in _comparers)
-            Parallel.ForEach<IModelComparerII>(_comparers, comparer =>
+            var opts = new ParallelOptions() {MaxDegreeOfParallelism = 8 };
+            Parallel.ForEach<IModelComparerII>(_comparers, opts, comparer =>
             {
                 foreach (var root in baselineRoots)
                 {
@@ -78,7 +78,7 @@ namespace Xbim.Analysis.Comparing
             file.Write(",Match\n");
 
             //write content
-            foreach (var item in _results)
+            foreach (var item in _results.Results)
             {
                 var baseLabel = item.Root != null ? "#" + Math.Abs(item.Root.EntityLabel).ToString() : "-";
                 var bestMatch = item.BestMatch;
@@ -117,23 +117,108 @@ namespace Xbim.Analysis.Comparing
     }
 
     /// <summary>
-    /// Collection of comparison results.
+    /// Collection of comparison results. This class keeps detail results where
+    /// there are baseline objects and lists of candidates for every comparison 
+    /// criterium. You can either perform your own interpretation of the results
+    /// or use predefined properties to get new, deleted, matched and ambiquous 
+    /// objects from the baseline and revised models.
     /// </summary>
-    public class ComparisonResultsCollection : List<ComparisonResults>
+    public class ComparisonResultsCollection
     {
+        private List<ComparisonResults> _results = new List<ComparisonResults>();
+        public IEnumerable<ComparisonResults> Results { get { return _results; } }
+
+        /// <summary>
+        /// Add new comparison result to the collection
+        /// </summary>
+        /// <param name="result"></param>
         public void Add(ComparisonResult result)
         {
             var baseline = result.Baseline;
-            var item = this.Where(i => i.Root == baseline).FirstOrDefault();
+            var item = _results.Where(i => i.Root == baseline).FirstOrDefault();
             if (item != null)
                 item.Add(result);
             else
             {
                 var cr = new ComparisonResults();
                 cr.Add(result);
-                this.Add(cr);
+                _results.Add(cr);
             }
         }
+
+        /// <summary>
+        /// Objects from baseline model which are not present in revision
+        /// </summary>
+        public IEnumerable<IfcRoot> Deleted
+        {
+            get 
+            {
+                foreach (var result in this._results)
+                {
+                    if (result.BestMatch.Count == 0 && result.Root != null)
+                        yield return result.Root;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Objects from revision which are not present in baseline model
+        /// </summary>
+        public IEnumerable<IfcRoot> Added
+        {
+            get
+            {
+                foreach (var result in this._results)
+                {
+                    if (result.Root == null)
+                        foreach (var item in result.BestMatch)
+                        {
+                            yield return item.Root;
+                        }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dictionary of matching objects where key is 
+        /// from baseline model and value is from revision
+        /// </summary>
+        public IDictionary<IfcRoot, IfcRoot> MatchOneToOne
+        {
+            get 
+            {
+                var res = new Dictionary<IfcRoot, IfcRoot>();
+                foreach (var result in this._results)
+                {
+                    var bestMatch = result.BestMatch;
+                    if (result.Root != null && bestMatch.Count == 1)
+                        res.Add(result.Root, bestMatch[0].Root);
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Dictionary of baseline objects and weighted objects 
+        /// from revision where there are more than one best match
+        /// in the revision model. Weights are based on the weights
+        /// of comparers.
+        /// </summary>
+        public IDictionary<IfcRoot, List<WeightedRoot>> Ambiquity
+        {
+            get
+            {
+                var res = new Dictionary<IfcRoot, List<WeightedRoot>>();
+                foreach (var result in this._results)
+                {
+                    var bestMatch = result.BestMatch;
+                    if (result.Root != null && bestMatch.Count > 1)
+                        res.Add(result.Root, bestMatch);
+                }
+                return res;
+            }
+        }
+
     }
 
     public class ComparisonResults
@@ -243,18 +328,20 @@ namespace Xbim.Analysis.Comparing
             }
         }
 
-        public class WeightedRoot : IComparable
-        {
-            public int Weight;
-            public IfcRoot Root;
+        
+    }
 
-            public int CompareTo(object obj)
-            {
-                var second = obj as WeightedRoot;
-                if (second == null)
-                    throw new NotImplementedException();
-                return Weight.CompareTo(second.Weight);
-            }
+    public class WeightedRoot : IComparable
+    {
+        public int Weight;
+        public IfcRoot Root;
+
+        public int CompareTo(object obj)
+        {
+            var second = obj as WeightedRoot;
+            if (second == null)
+                throw new NotImplementedException();
+            return Weight.CompareTo(second.Weight);
         }
     }
 }

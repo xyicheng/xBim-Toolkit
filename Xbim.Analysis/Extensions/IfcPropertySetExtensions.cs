@@ -9,7 +9,7 @@ namespace Xbim.Analysis.Extensions
 {
     public static class IfcPropertySetExtensions
     {
-        public static int GetPropertyHash(IfcProperty property)
+        public static int GetPropertyHash(this IfcProperty property)
         {
             if (property == null) return 0;
 
@@ -38,7 +38,7 @@ namespace Xbim.Analysis.Extensions
                     {
                         tableHash +=
                             baseTable.DefiningValues[i].ToString().GetHashCode() +
-                            baseTable.DefinedValues.ToString().GetHashCode();
+                            baseTable.DefinedValues[i].ToString().GetHashCode();
                     }
                     return tableHash;
                 case "IfcPropertyReferenceValue":

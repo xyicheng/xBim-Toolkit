@@ -72,8 +72,15 @@ namespace Xbim.Analysis.Comparing
     /// </summary>
     public class Difference
     {
+        //original object
         public object OriginalValue;
+        //changed object
         public object RevisedValue;
+
+        //field of the object might be specified. It can be used in reflection to show differences
+        public string FieldName;
+
+        //General message about the difference
         public string Message;
     }
 

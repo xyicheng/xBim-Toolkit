@@ -15,10 +15,10 @@ namespace Xbim.Analysis.Comparing
         private XbimModel _model;
         private List<MaterialHash> _cache = new List<MaterialHash>();
 
-        public MaterialComparer(XbimModel model)
+        public MaterialComparer(XbimModel revisedModel)
         {
-            _model = model;
-            var roots = model.Instances.OfType<IfcRoot>();
+            _model = revisedModel;
+            var roots = revisedModel.Instances.OfType<IfcRoot>();
             foreach (var root in roots)
             {
                 var material = root.GetMaterial();
@@ -65,7 +65,8 @@ namespace Xbim.Analysis.Comparing
                 return null;
 
             var result = new ComparisonResult(baseline, this);
-            var hashes = _cache.Where(m => m.GetHashCode() == matSel.GetHashCode());
+            var matHashed = new MaterialHash(baseline, matSel);
+            var hashes = _cache.Where(m => m.GetHashCode() == matHashed.GetHashCode());
             foreach (var h in hashes)
             {
                 result.Candidates.Add(h.Root);
@@ -77,7 +78,9 @@ namespace Xbim.Analysis.Comparing
         public ComparisonResult GetResidualsFromRevision<T>(IO.XbimModel revisedModel) where T : Ifc2x3.Kernel.IfcRoot
         {
             var result = new ComparisonResult(null, this);
-            result.Candidates.AddRange(revisedModel.Instances.Where<T>(r => !_processed.Contains(r)));
+            var isInCache = new Func<IfcRoot, bool>(r => { return _cache.Where(c => c.Root == r).FirstOrDefault() != null; });
+            var isNotProcessed = new Func<IfcRoot, bool>(r => { return !_processed.Contains(r); });
+            result.Candidates.AddRange(revisedModel.Instances.Where<T>(r => isNotProcessed(r) && isInCache(r)));
             return result;
         }
 

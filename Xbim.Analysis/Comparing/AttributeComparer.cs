@@ -13,7 +13,7 @@ namespace Xbim.Analysis.Comparing
         private string _attrName;
         private XbimModel _revModel;
         private IEnumerable<Type> _possibleTypes;
-        private HashSet<AttributeHasedRoot> _cache;
+        private HashSet<AttributeHasedRoot> _cache = new HashSet<AttributeHasedRoot>();
 
         public AttributeComparer(string attributeName, XbimModel revisedModel)
         {
@@ -41,7 +41,23 @@ namespace Xbim.Analysis.Comparing
             var propInf = type.GetProperty(attrName);
             if (propInf == null) return false;
             var propType = propInf.PropertyType;
-            return typeof(IfcSimpleValue).IsAssignableFrom(propType);
+
+            var simple = typeof(IfcSimpleValue);
+            var nonNulType = Nullable.GetUnderlyingType(propType);
+            if (nonNulType != null)
+                return simple.IsAssignableFrom(nonNulType);
+            else
+                return simple.IsAssignableFrom(propType);
+        }
+
+        Type GetNullableType(Type type)
+        {
+            // Use Nullable.GetUnderlyingType() to remove the Nullable<T> wrapper if type is already nullable.
+            //type = Nullable.GetUnderlyingType(type);
+            //if (type.IsValueType)
+                return typeof(Nullable<>).MakeGenericType(type);
+            //else
+            //    return type;
         }
 
         #region Model comparer implementation
@@ -95,7 +111,9 @@ namespace Xbim.Analysis.Comparing
         public ComparisonResult GetResidualsFromRevision<T>(IO.XbimModel revisedModel) where T : Ifc2x3.Kernel.IfcRoot
         {
             var result = new ComparisonResult(null, this);
-            result.Candidates.AddRange(revisedModel.Instances.Where<T>(r => !_processed.Contains(r)));
+            var isNotProcessed = new Func<IfcRoot, bool>(r => { return !_processed.Contains(r); });
+            var isInCache = new Func<IfcRoot, bool>(r => { return _cache.Where(c => c.Root == r).FirstOrDefault() != null; });
+            result.Candidates.AddRange(revisedModel.Instances.Where<T>(r => isNotProcessed(r) && isInCache(r)));
             return result;
         }
 

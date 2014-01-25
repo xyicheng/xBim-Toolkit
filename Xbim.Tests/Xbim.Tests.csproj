@@ -62,6 +62,13 @@
     <Compile Include="COBie\COBieTimeTests.cs" />
     <Compile Include="COBie\COBieXbimSerialisationTests.cs" />
     <Compile Include="COBie\MergePrecedenceRulesTests.cs" />
+    <Compile Include="Comparisons\AttributeComparisonTests.cs" />
+    <Compile Include="Comparisons\GeometryComparisonTests.cs" />
+    <Compile Include="Comparisons\GuidComparisonTests.cs" />
+    <Compile Include="Comparisons\MaterialComparisonTests.cs" />
+    <Compile Include="Comparisons\NameComparisonTests.cs" />
+    <Compile Include="Comparisons\PropertyComparisonTests.cs" />
+    <Compile Include="Comparisons\SampleModelsCreator.cs" />
     <Compile Include="Federation Tests.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="XmlDynamicGroupingTests.cs" />
@@ -134,6 +141,21 @@
     <Content Include="TestSourceFiles\Duplex-Handover.xbim">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Comparisons\TestFiles\OneRoom.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Comparisons\TestFiles\OneRoom_added_window.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Comparisons\TestFiles\OneRoom_deleted_window.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Comparisons\TestFiles\OneRoom_moved_window.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Comparisons\TestFiles\OneRoom_replaced_with_the_same_window.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="TestSourceFiles\BIM Logo - Coordination View 2 - No M.xBIM">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -158,6 +180,10 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xbim.Analysis\Xbim.Analysis.csproj">
+      <Project>{25056C5D-D281-436E-B281-95F339861C5D}</Project>
+      <Name>Xbim.Analysis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
       <Project>{7da8c61a-acca-45cb-b688-93a4982fa44c}</Project>
       <Name>Xbim.COBie</Name>

@@ -123,10 +123,10 @@ namespace XbimQueryTest
                 {"Clear $wallType;",true},
 
                 //model manipulation syntax
-                {"Save model to file 'output.ifc';", true},
-                {"Close model;", true},
-                {"Open model from file 'output.ifc';", true},
-                {"Validate model;", true},
+                {"Save revision to file 'output.ifc';", true},
+                {"Close revision;", true},
+                {"Open revision from file 'output.ifc';", true},
+                {"Validate revision;", true},
 
                 //setting of attributes and properties
                 {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
@@ -628,13 +628,13 @@ namespace XbimQueryTest
             parser.Parse(dataCreation);
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Save model to file 'output2.ifc';");
+            parser.Parse("Save revision to file 'output2.ifc';");
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Close model;");
+            parser.Parse("Close revision;");
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Open model from file 'output2.ifc';");
+            parser.Parse("Open revision from file 'output2.ifc';");
             Assert.AreEqual(0, parser.Errors.Count());
 
             parser.Parse("Select every wall;");
@@ -810,44 +810,44 @@ namespace XbimQueryTest
         {
             XbimQueryParser parser = new XbimQueryParser();
             parser.Parse(@"
-                Create new wall 'Wall 1, model 1';
-                Create new wall 'Wall 2, model 1';
-                Create new wall 'Wall 3, model 1';
-                Create new wall 'Wall 4, model 1';
-                Create new wall 'Wall 5, model 1';
+                Create new wall 'Wall 1, revision 1';
+                Create new wall 'Wall 2, revision 1';
+                Create new wall 'Wall 3, revision 1';
+                Create new wall 'Wall 4, revision 1';
+                Create new wall 'Wall 5, revision 1';
                 
-                Save model to file 'TestModel1.xBIM';
-                Close model;
+                Save revision to file 'TestModel1.xBIM';
+                Close revision;
                 
-                Create new wall 'Wall 1, model 2';
-                Create new wall 'Wall 2, model 2';
-                Create new wall 'Wall 3, model 2';
-                Create new wall 'Wall 4, model 2';
-                Create new wall 'Wall 5, model 2';
+                Create new wall 'Wall 1, revision 2';
+                Create new wall 'Wall 2, revision 2';
+                Create new wall 'Wall 3, revision 2';
+                Create new wall 'Wall 4, revision 2';
+                Create new wall 'Wall 5, revision 2';
                 
-                Save model to file 'TestModel2.xBIM';
-                Close model;
+                Save revision to file 'TestModel2.xBIM';
+                Close revision;
                 
-                Create new wall 'Wall 1, model 3';
-                Create new wall 'Wall 2, model 3';
-                Create new wall 'Wall 3, model 3';
-                Create new wall 'Wall 4, model 3';
-                Create new wall 'Wall 5, model 3';
+                Create new wall 'Wall 1, revision 3';
+                Create new wall 'Wall 2, revision 3';
+                Create new wall 'Wall 3, revision 3';
+                Create new wall 'Wall 4, revision 3';
+                Create new wall 'Wall 5, revision 3';
                 
-                Save model to file 'TestModel3.xBIM';
-                Close model;
+                Save revision to file 'TestModel3.xBIM';
+                Close revision;
                 
-                Add reference model 'TestModel1.xBIM' where organization is 'Organization A' and owner is 'Antoineta';
-                Add reference model 'TestModel2.xBIM' where organization is 'Organization B' and owner is 'Bugatti';
-                Add reference model 'TestModel3.xBIM' where organization is 'Organization C' and owner is 'Cecilia';
+                Add reference revision 'TestModel1.xBIM' where organization is 'Organization A' and owner is 'Antoineta';
+                Add reference revision 'TestModel2.xBIM' where organization is 'Organization B' and owner is 'Bugatti';
+                Add reference revision 'TestModel3.xBIM' where organization is 'Organization C' and owner is 'Cecilia';
 
                 $walls is every wall;
 
-                $test1 is every wall where model is 'TestModel1';
-                $test2 is every wall where model is 'TestModel1.xBIM';
-                $test3 is every wall where model is 'testmodel1';
-                $test4 is every wall where model owner is 'Cecilia';
-                $test5 is every wall where model organization is 'Organization B';
+                $test1 is every wall where revision is 'TestModel1';
+                $test2 is every wall where revision is 'TestModel1.xBIM';
+                $test3 is every wall where revision is 'testmodel1';
+                $test4 is every wall where revision owner is 'Cecilia';
+                $test5 is every wall where revision organization is 'Organization B';
             ");
 
             //test if everything was all right
@@ -869,9 +869,9 @@ namespace XbimQueryTest
 
             //test opening from IFC file
             parser.Parse(@"
-                Save model to file 'Federation.ifc';
-                Close model;
-                Open model from file 'Federation.ifc';
+                Save revision to file 'Federation.ifc';
+                Close revision;
+                Open revision from file 'Federation.ifc';
                 $walls is every wall;
             ");
             Assert.AreEqual(15, parser.Results["$walls"].Count());
@@ -911,7 +911,7 @@ namespace XbimQueryTest
                 Create new slab 'My slab No.1';
                 Create new slab 'My slab No.2';
                 
-                Save model to file 'EmbededScript.ifc';
+                Save revision to file 'EmbededScript.ifc';
             ");
             Assert.AreEqual(0, parser.Errors.Count());
             var g2 = parser.Model.Instances.Where<IfcGroup>(g => g.Name == "Group B").FirstOrDefault();
