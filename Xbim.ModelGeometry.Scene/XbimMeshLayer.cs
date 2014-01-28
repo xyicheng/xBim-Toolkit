@@ -394,5 +394,24 @@ namespace Xbim.ModelGeometry.Scene
                 layer.Balance();
             }
         }
+
+        /// <summary>
+        /// Useful for analysis and debugging purposes (invoked by Querying interface)
+        /// </summary>
+        /// <param name="Indentation">the number of indentation spaces at this tree level</param>
+        /// <returns>Enumerable strings of indented elements</returns>
+        public IEnumerable<string> LayersTree(int Indentation)
+        {
+            string s = new string(' ', Indentation);
+            yield return s + this.name;
+            foreach (var layer in SubLayers)
+            {
+                foreach (var item in layer.LayersTree(Indentation + 1))
+                {
+                    yield return item;
+                } 
+                // yield return layer.LayersTree(p + 1); 
+            }
+        }
     }
 }

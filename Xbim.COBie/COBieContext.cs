@@ -68,7 +68,7 @@ namespace Xbim.COBie
         /// <summary>
         /// filter values for attribute extraction in sheets
         /// </summary>
-        public FilterValues Exclude { get; private set; } 
+        public FilterValues Exclude { get;  set; } 
 
         /// <summary>
         /// set the error reporting to be either one (first row is labelled one) or 
@@ -103,7 +103,7 @@ namespace Xbim.COBie
             Dictionary<IfcRole, COBieMergeRoles> mapMergeRoles = MapRolesForMerge();//assign merge role to a IfcRoleEnum value
             Dictionary<XbimModel, COBieMergeRoles> mapModelToMergeRoles = new Dictionary<XbimModel, COBieMergeRoles>();
             
-            mapModelToMergeRoles.Add(Model, COBieMergeRoles.Unknown); //assume that it is just the holder model(xBIMf) (as xbim is creating holding file .xbimf) for and all the models are in the Model.RefencedModels property
+            //mapModelToMergeRoles.Add(Model, COBieMergeRoles.Unknown); //assume that it is just the holder model(xBIMf) (as xbim is creating holding file .xbimf) for and all the models are in the Model.RefencedModels property
             
             //now get the referenced models
             foreach (var refModel in Model.RefencedModels)

@@ -12,7 +12,6 @@ using Xbim.Ifc2x3.SharedBldgServiceElements;
 
 namespace Xbim.ModelGeometry.Scene
 {
-
     public enum StandardColourMaps
     {
         /// <summary>
@@ -24,8 +23,8 @@ namespace Xbim.ModelGeometry.Scene
         /// Creates an empty colour map
         /// </summary>
         Empty
-        
     }
+
     /// <summary>
     /// Provides a map for obtaining a colour for a keyed type, the colour is an ARGB value
     /// </summary>
@@ -45,7 +44,6 @@ namespace Xbim.ModelGeometry.Scene
                 return this.Any(c => c.IsTransparent);
             }
         }
-
 
         public XbimColourMap(StandardColourMaps initMap= StandardColourMaps.IfcProductTypeMap)
         {
@@ -89,9 +87,7 @@ namespace Xbim.ModelGeometry.Scene
             Add(new XbimColour(IfcRole.Subcontractor.ToString(), 1.0, 0, 0, 1));
             Add(new XbimColour(IfcRole.Supplier.ToString(), 1.0, 0, 0, 1));
             Add(new XbimColour(IfcRole.UserDefined.ToString(), 1.0, 0, 0, 1));
-            
         }
-
        
         new public XbimColour this[string key]
         {
@@ -103,11 +99,8 @@ namespace Xbim.ModelGeometry.Scene
                     return base["Default"];
                 else
                     return XbimColour.Default;
-
-                
             }
         }
-
        
         private void BuildIfcProductTypeMap()
         {
@@ -136,13 +129,6 @@ namespace Xbim.ModelGeometry.Scene
             Add(new XbimColour(typeof(IfcDistributionFlowElement).Name, 0.95, 0.94, 0.74, 1));
             Add(new XbimColour(typeof(IfcFlowFitting).Name, 0.95, 0.94, 0.74, 1));
             Add(new XbimColour(typeof(IfcRailing).Name, 0.95, 0.94, 0.74, 1));
-            //foreach (var col in this)
-            //    col.SpecularFactor = 1;
         }
-
-        
-            
-
-
     }
 }

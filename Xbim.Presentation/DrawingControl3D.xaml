@@ -20,7 +20,7 @@
                                    >
 
         <HelixToolkit:HelixViewport3D.DefaultCamera>
-            <PerspectiveCamera Position="10000,-10000,3000" LookDirection="-10000,10000,-3000" UpDirection="0,0,1" FieldOfView="61" NearPlaneDistance="125"/>
+            <PerspectiveCamera Position="100,-100,30" LookDirection="-100,100,-30" UpDirection="0,0,1" FieldOfView="61" NearPlaneDistance="125"/>
         </HelixToolkit:HelixViewport3D.DefaultCamera>
         <local:XbimCuttingPlaneGroup x:Name="cuttingGroup" IsEnabled="False">
             <local:XbimCuttingPlaneGroup.CuttingPlanes>
@@ -36,17 +36,13 @@
             </ModelVisual3D>
         </local:XbimCuttingPlaneGroup>
 
-        <!-- 
-            <HelixToolkit:RotateManipulator Color="Green" Axis="0,1,0" Transform="{Binding Transform, ElementName=planeManipulator}" TargetTransform="{Binding Transform, ElementName=planeManipulator}" Diameter="1"/>
-            <HelixToolkit:RotateManipulator Color="Blue" Axis="0,0,1" Transform="{Binding Transform, ElementName=planeManipulator}" TargetTransform="{Binding Transform, ElementName=planeManipulator}" Diameter="1"/>
-            <HelixToolkit:TranslateManipulator x:Name="planeManipulator" Color="Red" Transform="{Binding Transform, ElementName=planeManipulator}" TargetTransform="{Binding Transform, ElementName=planeManipulator}" Direction="1,0,0"/>
-        -->
-        
+        <ModelVisual3D x:Name="Extras"></ModelVisual3D>
+
         <HelixToolkit:DefaultLights ShowLights="False" />
         <!-- You can also add elements here in the xaml -->
-        <HelixToolkit:GridLinesVisual3D x:Name="GridLines" Width="10000" Length="10000" MinorDistance="1000" MajorDistance="10000" Thickness="25"/>
+        <HelixToolkit:GridLinesVisual3D x:Name="GridLines" Width="100" Length="100" MinorDistance="10" MajorDistance="25" Thickness="0.25"/>
         <HelixToolkit:MeshVisual3D x:Name="Highlighted" EdgeDiameter="0"  VertexRadius="0"></HelixToolkit:MeshVisual3D>
-        <HelixToolkit:MeshVisual3D x:Name="Extras" EdgeDiameter="0"  VertexRadius="0"></HelixToolkit:MeshVisual3D>
+        
     </HelixToolkit:HelixViewport3D>
    
 </UserControl>

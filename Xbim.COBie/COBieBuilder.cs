@@ -92,7 +92,9 @@ namespace Xbim.COBie
                 SetExcludeComponentTypes(CobiePickLists);
                 SetExcludeObjTypeTypes(CobiePickLists);
             }
-
+            //start the Cache
+            Context.Model.CacheStart();
+                
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
             Workbook.Add(cq.GetCOBieFacilitySheet()); 
@@ -233,8 +235,8 @@ namespace Xbim.COBie
                 (Context.MapMergeRoles.ContainsKey(Context.Model))
                 )
             {
-                progress.ReportMessage("Starting Merge Validation...");
-                Workbook.ValidateMerge(Context.Model, Context.MapMergeRoles[Context.Model]);
+                progress.ReportMessage(string.Format("Starting Merge Validation for {0}...", Context.MapMergeRoles[Context.Model]));
+                Workbook.ValidateRoles(Context.Model, Context.MapMergeRoles[Context.Model]);
                 progress.ReportMessage("Finished Merge Validation...");
             }
         }

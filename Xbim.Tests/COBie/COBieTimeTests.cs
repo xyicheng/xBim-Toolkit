@@ -17,7 +17,7 @@ namespace Xbim.Tests.COBie
     public class COBieTimeTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic-CutDown.xbim";
+        private const string SourceModelLeaf = "Clinic_Handover.xbim"; //"Clinic-CutDown.xbim";
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
         
         private static COBieContext _cobieContext = null;
@@ -77,7 +77,7 @@ namespace Xbim.Tests.COBie
         public void Time_On_Contacts()
         {
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(ContactTime() < new TimeSpan(0, 0, 1));
+            Assert.IsTrue(ContactTime() < new TimeSpan(0, 0, 5));
 
         }
 
@@ -85,7 +85,7 @@ namespace Xbim.Tests.COBie
         public void Time_On_Facility()
         {
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 1));
+            Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 2));
         }
 
 
@@ -93,7 +93,7 @@ namespace Xbim.Tests.COBie
         public void Time_On_Floor()
         {
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 1));
+            Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
@@ -114,7 +114,7 @@ namespace Xbim.Tests.COBie
         public void Time_On_Type()
         {
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 3));
+            Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 10));
         }
 
         [TestMethod]
@@ -122,14 +122,14 @@ namespace Xbim.Tests.COBie
         {
 
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 5));
+            Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 25));
         }
 
         [TestMethod]
         public void Time_On_System()
         {
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 1));
+            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 3));
         }
 
         [TestMethod]
@@ -171,7 +171,7 @@ namespace Xbim.Tests.COBie
         public void Time_On_Impact()
         {
             _cobieEngine = new COBieQueries(_cobieContext);
-            Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 1));
+            Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]

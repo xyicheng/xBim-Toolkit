@@ -21,11 +21,10 @@ namespace Xbim.Script
         public List<string> Errors { get { return _scanner.Errors; } }
 
         /// <summary>
-        /// Locations of the errors. Use index of the error to get according location.
-        /// It is already part of the error message but information contained in this property
-        /// can be used to show the position interactively for example.
+        /// Locations of the errors. ErrorLocation contains error message and
+        /// location in a structure usable for text selection and other reporting.
         /// </summary>
-        public List<Location> ErrorLocations { get { return _scanner.ErrorLocations; } }
+        public List<ErrorLocation> ErrorLocations { get { return _scanner.ErrorLocations; } }
 
         /// <summary>
         /// Messages go to the Console command line normally but 
@@ -54,6 +53,9 @@ namespace Xbim.Script
         {
             _scanner = new Scanner();
             _parser = new Parser(_scanner, model);
+            _parser.OnModelChanged += delegate(object sender, ModelChangedEventArgs e) {
+                ModelChanged(e.NewModel);
+            };
         }
 
         /// <summary>
@@ -67,6 +69,10 @@ namespace Xbim.Script
             var model = XbimModel.CreateTemporaryModel();
             _scanner = new Scanner();
             _parser = new Parser(_scanner, model);
+            _parser.OnModelChanged += delegate(object sender, ModelChangedEventArgs e)
+            {
+                ModelChanged(e.NewModel);
+            };
         }
 
         /// <summary>
@@ -120,7 +126,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -128,13 +134,14 @@ namespace Xbim.Script
         public bool Parse()
         {
             ResetSource();
-            //_parser = new Parser(_scanner, _model);
-            return _parser.Parse();
+            var res = _parser.Parse();
+            ScriptParsed();
+            return res;
         }
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -147,7 +154,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -160,7 +167,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -200,7 +207,28 @@ namespace Xbim.Script
             //_scanner = new Scanner();
         }
 
+        /// <summary>
+        /// Event to be used in the event driven environment. Fired when model changes (closed or open)
+        /// </summary>
+        public event ModelChangedHandler OnModelChanged;
+        private void ModelChanged(XbimModel newModel)
+        {
+            if (OnModelChanged != null)
+                OnModelChanged(this, new ModelChangedEventArgs(newModel));
+        }
 
+        public event ScriptParsedHandler OnScriptParsed;
+        private void ScriptParsed()
+        {
+            if (OnScriptParsed != null)
+                OnScriptParsed(this, new ScriptParsedEventArgs());
+        }
 
+    }
+
+    public delegate void ScriptParsedHandler(object sender, ScriptParsedEventArgs e);
+
+    public class ScriptParsedEventArgs : EventArgs
+    {
     }
 }

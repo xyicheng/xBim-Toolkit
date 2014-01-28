@@ -18,11 +18,11 @@ namespace Xbim.COBie
         
 
         #region Private Fields
-		private Dictionary<int, COBieColumn> _columns;
+        private Dictionary<int, COBieColumn> _columns;
         private COBieErrorCollection _errors = new COBieErrorCollection();
         private Dictionary<string, HashSet<string>> _indices;
         private ErrorRowIndexBase _errorRowIdx; //report error row based with row stating at one(excel), or two (data table)
-	    #endregion
+        #endregion
 
 
         #region Properties
@@ -83,7 +83,7 @@ namespace Xbim.COBie
             Rows = new List<T>();
             RowsRemoved = new List<T>();
             _indices = new Dictionary<string, HashSet<string>>();
-			SheetName = sheetName;
+            SheetName = sheetName;
             PropertyInfo[]  properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
             _columns = new Dictionary<int, COBieColumn>();
             // add column info 
@@ -119,6 +119,30 @@ namespace Xbim.COBie
             Rows.Add(cOBieRow);
         }
 
+        public void AddRow(COBieRow cOBieRow)
+        {
+            cOBieRow.RowNumber = Rows.Count() + 1;
+            Rows.Add((T)cOBieRow);
+        }
+
+        /// <summary>
+        /// Add COBieRow to the the Removed Rows list
+        /// </summary>
+        /// <param name="cOBieRow"></param>
+        public void AddRemovedRow(T cOBieRow)
+        {
+            cOBieRow.RowNumber = RowsRemoved.Count() + 1;
+            RowsRemoved.Add(cOBieRow);
+        }
+
+        public void AddRemovedRow(COBieRow cOBieRow)
+        {
+            cOBieRow.RowNumber = RowsRemoved.Count() + 1;
+            RowsRemoved.Add((T)cOBieRow);
+        }
+        
+        
+
         /// <summary>
         /// Get the alias attribute name values and add to a list of strings
         /// </summary>
@@ -143,6 +167,33 @@ namespace Xbim.COBie
             {
                 //SetThe initial has vale for each row
                 row.SetInitialRowHash();
+            }
+        }
+
+        private HashSet<string> RowHashs = new HashSet<string>();
+        /// <summary>
+        /// See if passed in hash code exists in the sheet
+        /// </summary>
+        /// <param name="hash">string, hash code to test</param>
+        /// <param name="addHash">add passed in hash to RowHash, i.e if you are going to add th row to the sheet if result of function is false</param>
+        /// <returns>bool</returns>
+        public bool HasMergeHashCode(string hash, bool addHash)
+        {
+            if (RowHashs.Count == 0)
+            {
+                foreach (COBieRow row in Rows)
+                {
+                    RowHashs.Add(row.RowMergeHashValue);
+                }
+            }
+            if (RowHashs.Contains(hash))
+            {
+                return true;
+            }
+            else
+            {
+                if (addHash) RowHashs.Add(hash);
+                return false;
             }
         }
 
@@ -265,12 +316,52 @@ namespace Xbim.COBie
         /// </summary>
         ///<param name="GlobalIds">List of GlobalId's</param>
         ///<returns>Number of rows removed</returns>
+        //public int ValidateTypeMerge(List<string> GlobalIds)
+        //{
+        //    COBieColumn colExtId = Columns.Where(c => c.Value.ColumnName == "ExtIdentifier").Select(c => c.Value).FirstOrDefault();
+        //    RowsRemoved = Rows.FindAll(r => GlobalIds.Contains(r[colExtId.ColumnOrder].CellValue));
+        //    return Rows.RemoveAll(r => GlobalIds.Contains(r[colExtId.ColumnOrder].CellValue));
+        //}
+
+        /// <summary>
+        /// Validate type sheet for merge types depending on the role of the model this worksheet was built from
+        /// </summary>
+        ///<param name="GlobalIds">List of GlobalId's</param>
+        ///<returns>Number of rows removed</returns>
         public int ValidateTypeMerge(List<string> GlobalIds)
         {
             COBieColumn colExtId = Columns.Where(c => c.Value.ColumnName == "ExtIdentifier").Select(c => c.Value).FirstOrDefault();
-            RowsRemoved = Rows.FindAll(r => GlobalIds.Contains(r[colExtId.ColumnOrder].CellValue));
-            return Rows.RemoveAll(r => GlobalIds.Contains(r[colExtId.ColumnOrder].CellValue));
+            List<T> RemainRows = new List<T>();
+            if (colExtId != null)
+            {
+                for (int i = 0; i < Rows.Count; i++)
+                {
+                    COBieRow row = Rows[i];
+                    COBieCell cell = row[colExtId.ColumnOrder];
+                    string extId = cell.CellValue;
+                    if (GlobalIds.Contains(extId))
+                        RowsRemoved.Add((T)row);
+                    else
+                        RemainRows.Add((T)row);
+                }
+                Rows = RemainRows;
+            }
+            return RowsRemoved.Count;
         }
+
+        /// <summary>
+        ///  Validate attribute sheet for merge types depending on the role of the model this worksheet was built from
+        /// </summary>
+        /// <param name="keys">string list holding the sheetname and name property concatenated together</param>
+        /// <returns>Number removed</returns>
+        //public int ValidateAttributeMerge(List<string> keys)
+        //{
+        //    COBieColumn colSheet = Columns.Where(c => c.Value.ColumnName == "SheetName").Select(c => c.Value).FirstOrDefault();
+        //    COBieColumn colName = Columns.Where(c => c.Value.ColumnName == "RowName").Select(c => c.Value).FirstOrDefault();
+
+        //    RowsRemoved = Rows.FindAll(r => keys.Contains(r[colSheet.ColumnOrder].CellValue + r[colName.ColumnOrder].CellValue));
+        //    return Rows.RemoveAll(r => keys.Contains(r[colSheet.ColumnOrder].CellValue + r[colName.ColumnOrder].CellValue));
+        //}
 
         /// <summary>
         ///  Validate attribute sheet for merge types depending on the role of the model this worksheet was built from
@@ -281,11 +372,39 @@ namespace Xbim.COBie
         {
             COBieColumn colSheet = Columns.Where(c => c.Value.ColumnName == "SheetName").Select(c => c.Value).FirstOrDefault();
             COBieColumn colName = Columns.Where(c => c.Value.ColumnName == "RowName").Select(c => c.Value).FirstOrDefault();
-
-            RowsRemoved = Rows.FindAll(r => keys.Contains(r[colSheet.ColumnOrder].CellValue + r[colName.ColumnOrder].CellValue));
-            return Rows.RemoveAll(r => keys.Contains(r[colSheet.ColumnOrder].CellValue + r[colName.ColumnOrder].CellValue));
-
+            List<T> RemainRows = new List<T>();
+            if ((colSheet != null) && (colName != null))
+            {
+                for (int i = 0; i < Rows.Count; i++)
+                {
+                    COBieRow row = Rows[i];
+                    COBieCell cellSheet = row[colSheet.ColumnOrder];
+                    string sheetName = cellSheet.CellValue;
+                    COBieCell cellName = row[colName.ColumnOrder];
+                    string rowName = cellName.CellValue;
+                    if (keys.Contains(sheetName + rowName))
+                        RowsRemoved.Add((T)row);
+                    else
+                        RemainRows.Add((T)row);
+                }
+                Rows = RemainRows;
+            }
+            return RowsRemoved.Count;
         }
+
+        /// <summary>
+        ///  Validate system sheet for merge types in ComponentName, depending on the role of the model this worksheet was built from
+        /// </summary>
+        /// <param name="names">string list holding the name properties removed from the component sheet</param>
+        /// <returns>Number removed</returns>
+        //public int ValidateSystemMerge(List<string> names)
+        //{
+        //    COBieColumn compName = Columns.Where(c => c.Value.ColumnName == "ComponentNames").Select(c => c.Value).FirstOrDefault();
+
+        //    RowsRemoved = Rows.FindAll(r => names.Contains(r[compName.ColumnOrder].CellValue));
+        //    return Rows.RemoveAll(r => names.Contains(r[compName.ColumnOrder].CellValue));
+
+        //}
 
         /// <summary>
         ///  Validate system sheet for merge types in ComponentName, depending on the role of the model this worksheet was built from
@@ -295,10 +414,22 @@ namespace Xbim.COBie
         public int ValidateSystemMerge(List<string> names)
         {
             COBieColumn compName = Columns.Where(c => c.Value.ColumnName == "ComponentNames").Select(c => c.Value).FirstOrDefault();
-
-            RowsRemoved = Rows.FindAll(r => names.Contains(r[compName.ColumnOrder].CellValue));
-            return Rows.RemoveAll(r => names.Contains(r[compName.ColumnOrder].CellValue));
-
+            List<T> RemainRows = new List<T>();
+            if (compName != null)
+            {
+                for (int i = 0; i < Rows.Count; i++)
+                {
+                    COBieRow row = Rows[i];
+                    COBieCell cell = row[compName.ColumnOrder];
+                    string componentName = cell.CellValue;
+                    if (names.Contains(componentName))
+                        RowsRemoved.Add((T)row);
+                    else
+                        RemainRows.Add((T)row);
+                }
+                Rows = RemainRows;
+            }
+            return RowsRemoved.Count;
         }
 
         /// <summary>

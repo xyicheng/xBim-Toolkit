@@ -85,7 +85,6 @@ namespace CodeExamples.Geometry
                                 } 
                             }
                         }
-
                     }
                 }
             }
@@ -106,7 +105,7 @@ namespace CodeExamples.Geometry
             XbimScene<XbimMeshGeometry3D, WpfMaterial> scene = new XbimScene<XbimMeshGeometry3D, WpfMaterial>(model);
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
                                                        .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
-            foreach (var layerContent in handles.FilterByBuildingElementTypes())
+            foreach (var layerContent in handles.GroupByBuildingElementTypes())
             {
                 string elementTypeName = layerContent.Key;
                 XbimGeometryHandleCollection layerHandles = layerContent.Value;

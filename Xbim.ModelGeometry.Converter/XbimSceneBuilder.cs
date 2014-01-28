@@ -135,7 +135,7 @@ namespace Xbim.ModelGeometry.Converter
 
                     if (Logger != null)
                         Logger.DebugFormat("XbimScene: Exporting layers.\r\n", mScalingReference);
-                    foreach (var layerContent in handles.FilterByBuildingElementTypes())
+                    foreach (var layerContent in handles.GroupByBuildingElementTypes())
                     {
                         string elementTypeName = layerContent.Key;
                         XbimGeometryHandleCollection layerHandles = layerContent.Value;

@@ -90,6 +90,10 @@
     <Reference Include="Gat.Controls.About">
       <HintPath>..\packages\AboutBox.1.4.3.1\lib\net40\Gat.Controls.About.dll</HintPath>
     </Reference>
+    <Reference Include="HelixToolkit.Wpf, Version=2013.1.10.1, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\HelixToolkit.2013.1.10.1\lib\NET40\HelixToolkit.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="PropertyTools, Version=0.0.0.0, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
       <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.dll</HintPath>
     </Reference>
@@ -138,6 +142,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialogs\COBieClassFilter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\CreateFederationWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -151,6 +159,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Querying\wdwQuery.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Scripting\ScriptingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -174,6 +186,10 @@
     <Compile Include="Dialogs\AddFederatedModel.xaml.cs">
       <DependentUpon>AddFederatedModel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\CheckedListItem.cs" />
+    <Compile Include="Dialogs\COBieClassFilter.xaml.cs">
+      <DependentUpon>COBieClassFilter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
       <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
     </Compile>
@@ -189,6 +205,9 @@
     <Compile Include="Querying\TreeQuery.cs" />
     <Compile Include="Querying\wdwQuery.xaml.cs">
       <DependentUpon>wdwQuery.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Scripting\ScriptingWindow.xaml.cs">
+      <DependentUpon>ScriptingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Simplify\FileTextParser.cs" />
     <Compile Include="Simplify\IfcSimplify.xaml.cs">
@@ -280,6 +299,10 @@
     <ProjectReference Include="..\Xbim.Presentation\Xbim.Presentation.csproj">
       <Project>{89f98e53-de4e-4427-8244-d5934ad08849}</Project>
       <Name>Xbim.Presentation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Script\Xbim.Script.csproj">
+      <Project>{BAE9A827-0620-4F68-A384-336A491EDD91}</Project>
+      <Name>Xbim.Script</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
