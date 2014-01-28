@@ -176,7 +176,7 @@ namespace XbimXplorer
             if (mw != null && e.NewValue is IPersistIfcEntity)
             {
                 IPersistIfcEntity label = (IPersistIfcEntity)e.NewValue;
-                mw.EntityLabel.Text = label !=null ? "#" + label.EntityLabel.ToString() : "";
+                mw.EntityLabel.Text = label != null ? "#" + label.EntityLabel.ToString() : "";
             }
             else
                 mw.EntityLabel.Text = "";
@@ -209,11 +209,16 @@ namespace XbimXplorer
             {
                 _temporaryXbimFileName = Path.GetTempFileName();
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
-                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress,true,false);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress, true, false);
               //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                if (model.GeometryVersion.Major == 1)
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
-
-               // model.Close();
+                else
+                {
+                    Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
+                    context.CreateContext(worker.ReportProgress);
+                }
+                //model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
                 {
                     try
@@ -264,7 +269,13 @@ namespace XbimXplorer
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                if (model.GeometryVersion.Major == 1)
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+                else
+                {
+                    Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
+                    context.CreateContext(worker.ReportProgress);
+                }
                 model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
                 {
@@ -363,7 +374,7 @@ namespace XbimXplorer
                         break;
                     case ".xbimf":
                     case ".xbim": //it is an xbim File, just open it in the main thread
-                        Model.AddModelReference(dlg.FileName,"Organisation X",IfcRole.BuildingOperator);
+                        Model.AddModelReference(dlg.FileName, "Organisation X", IfcRole.BuildingOperator);
                         break;
                     default:
                         break;
@@ -412,7 +423,7 @@ namespace XbimXplorer
             _worker.ProgressChanged += delegate(object s, ProgressChangedEventArgs args)
                                            {
                                                ProgressBar.Value = args.ProgressPercentage;
-                                               StatusMsg.Text = (string) args.UserState;
+                                               StatusMsg.Text = (string)args.UserState;
                                            };
 
             _worker.RunWorkerCompleted += delegate(object s, RunWorkerCompletedEventArgs args)
@@ -486,7 +497,7 @@ namespace XbimXplorer
         {
             _camChanged = true;
         }
-
+       
         private void dlg_FileSaveAs(object sender, CancelEventArgs e)
         {
             SaveFileDialog dlg = sender as SaveFileDialog;
@@ -501,7 +512,7 @@ namespace XbimXplorer
                     {
                         Model.SaveAs(dlg.FileName);
                        
-                        if (string.Compare(Path.GetExtension(dlg.FileName),"XBIM",true)==0 && 
+                        if (string.Compare(Path.GetExtension(dlg.FileName), "XBIM", true) == 0 &&
                             !string.IsNullOrWhiteSpace(_temporaryXbimFileName)) //we have a temp file open, it is now redundant as we have upgraded to another xbim file
                         {
                             File.Delete(_temporaryXbimFileName);
@@ -542,7 +553,7 @@ namespace XbimXplorer
         private void CommandBinding_New(object sender, ExecutedRoutedEventArgs e)
         {
             CloseAndDeleteTemporaryFiles();
-            XbimModel model=   XbimModel.CreateTemporaryModel();
+            XbimModel model = XbimModel.CreateTemporaryModel();
             model.Initialise();
             ModelProvider.ObjectInstance = model;
             ModelProvider.Refresh();
@@ -651,7 +662,7 @@ namespace XbimXplorer
         private void ExportCOBieCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             XbimModel model = ModelProvider.ObjectInstance as XbimModel;
-            bool canEdit = (model!=null && model.CanEdit && model.Instances.OfType<IfcBuilding>().FirstOrDefault()!=null);       
+            bool canEdit = (model != null && model.CanEdit && model.Instances.OfType<IfcBuilding>().FirstOrDefault() != null);
             e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
         }
 
@@ -682,7 +693,7 @@ namespace XbimXplorer
         private void InsertCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             XbimModel model = ModelProvider.ObjectInstance as XbimModel;
-            bool canEdit = (model!=null && model.CanEdit);       
+            bool canEdit = (model != null && model.CanEdit);
             e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
         }
 
@@ -699,7 +710,7 @@ namespace XbimXplorer
         private void EditFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             
-            e.CanExecute = Model!=null &&  Model.IsFederation;
+            e.CanExecute = Model != null && Model.IsFederation;
         }
 
         private void OpenFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -711,7 +722,7 @@ namespace XbimXplorer
             if (done.HasValue && done.Value == true)
             {
                 XbimModel fedModel = new XbimModel();
-                fedModel.Open(dlg.FileName,XbimDBAccess.ReadWrite);
+                fedModel.Open(dlg.FileName, XbimDBAccess.ReadWrite);
                 CloseAndDeleteTemporaryFiles();
                 ModelProvider.ObjectInstance = fedModel;
                 ModelProvider.Refresh();
@@ -865,7 +876,7 @@ namespace XbimXplorer
             win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg) {
                 ScriptResults.Visibility = Visibility.Collapsed; 
             });
-            
+
             win.Show();
         }
     }

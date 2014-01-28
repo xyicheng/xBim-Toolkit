@@ -8,94 +8,41 @@ using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.ModelGeometry.Converter
 {
-    public class XbimShapeMap : IXbimGeometryModel
+    public class XbimShapeMap : XbimShape
     {
-        public XbimMatrix3D Placement;
-        private int _shapeMapLabel;
-        private int _shapeLabel;
-    
-        public XbimShapeMap(int map, int shape)
+        
+       
+        private XbimShapeGeometry shapeGeometry;
+        
+
+        public XbimShapeMap(int geometryLabel, XbimShapeGeometry shape, XbimMatrix3D transform, int stylelabel = 0)
+            : base(shape.GeometryHash^transform.GetHashCode())
         {
-            this._shapeMapLabel = map;
-            this._shapeLabel = shape;
+            
+            this.shapeGeometry = shape;
+            if (shape.Transform.HasValue) 
+                transform = shape.Transform.Value * transform;
+            else
+                this.transform = transform;
+            this.geometryLabel = geometryLabel;
+            this.styleLabel = stylelabel;
         }
 
-        public int ShapeMapLabel
+        public override String Mesh
         {
             get
             {
-                return _shapeMapLabel;
+                return shapeGeometry.Mesh;
             }
         }
-
-        int IXbimGeometryModel.RepresentationLabel
+        public override bool HasStyle
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return shapeGeometry.HasStyle || this.styleLabel > 0; }
         }
 
-        int IXbimGeometryModel.SurfaceStyleLabel
+        public override int StyleLabel
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        XbimMatrix3D IXbimGeometryModel.Transform
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        XbimRect3D IXbimGeometryModel.GetBoundingBox()
-        {
-            throw new NotImplementedException();
-        }
-
-        XbimRect3D IXbimGeometryModel.GetAxisAlignedBoundingBox()
-        {
-            throw new NotImplementedException();
-        }
-
-        bool IXbimGeometryModel.IsMap
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        XbimTriangulatedModelCollection IXbimGeometryModel.Mesh(double deflection)
-        {
-            throw new NotImplementedException();
-        }
-
-        XbimMeshFragment IXbimGeometryModel.MeshTo(IXbimMeshGeometry3D mesh3D, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double deflection)
-        {
-            throw new NotImplementedException();
-        }
-
-        string IXbimGeometryModel.WriteAsString(XbimModelFactors modelFactors)
-        {
-            throw new NotImplementedException();
-        }
-
-        double IXbimGeometryModel.Volume
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-
-        public XbimPoint3D CentreOfMass
-        {
-            get { throw new NotImplementedException(); }
+            get { if (shapeGeometry.HasStyle) return shapeGeometry.StyleLabel; else return this.styleLabel; }
         }
     }
 }

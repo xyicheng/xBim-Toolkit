@@ -29,5 +29,6 @@ namespace Xbim.ModelGeometry.Scene
         IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag);
         XbimRect3D GetBounds();
 
+        void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null);
     }
 }

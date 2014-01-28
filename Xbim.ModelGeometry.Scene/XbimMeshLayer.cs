@@ -166,6 +166,11 @@ namespace Xbim.ModelGeometry.Scene
             Style = xbimTexture;
         }
 
+        public XbimMeshLayer(XbimColour colour)
+        {
+            Style = new XbimTexture().CreateTexture(colour);
+        }
+
         public static implicit operator TVISIBLE(XbimMeshLayer<TVISIBLE, TMATERIAL> layer)
         {
             return (TVISIBLE)layer.Visible;
@@ -412,6 +417,11 @@ namespace Xbim.ModelGeometry.Scene
                 } 
                 // yield return layer.LayersTree(p + 1); 
             }
+        }
+
+        public void Add(String mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null)
+        {
+            Hidden.Add(mesh, productType, productLabel, geometryLabel, transform);
         }
     }
 }

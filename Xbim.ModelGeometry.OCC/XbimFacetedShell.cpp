@@ -710,7 +710,7 @@ namespace Xbim
 					This->_previousToLastIndex = 0;
 					This->_lastIndex = 0;
 					This->_fanStartIndex = 0;
-					This->Indices.clear();
+					
 
 				};
 				static void __stdcall EndTessellate(void *pStreamer)
@@ -765,8 +765,8 @@ namespace Xbim
 				double deflection = modelFactors->DeflectionTolerance;
 				double precision = modelFactors->Precision;
 				int rounding =  modelFactors->Rounding;
-				TriangleIndicesStream tms;
-				size_t normalsOffset=0;
+				
+				size_t normalsOffset=-1;
 				StringBuilder^ sb = gcnew StringBuilder();
 				double xmin = 0; double ymin = 0; double zmin = 0; double xmax = 0; double ymax = 0; double zmax = 0;
 				bool first = true;
@@ -791,7 +791,7 @@ namespace Xbim
 					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
 					if(n.IsInvalid()) 
 						continue;
-
+					TriangleIndicesStream tms;
 					gluTessBeginPolygon(ActiveTss, &tms);
 					// go over each boundary
 					for each (IfcFaceBound^ bound in fc->Bounds)
@@ -896,7 +896,7 @@ namespace Xbim
 							firstTime=false;
 						}
 						else
-							sb->AppendFormat(" {0},{1},{2}", x, y, z, f);
+							sb->AppendFormat(" {0},{1},{2}", x, y, z);
 					}	
 					sb->AppendLine();
 				}

@@ -12,11 +12,11 @@ namespace Xbim.ModelGeometry.Scene.Clustering
     /// </summary>
     public static class XbimDBSCAN
     {
-        public static List<XbimBBoxClusterElement> GetClusters(List<XbimBBoxClusterElement> ItemsToCluster, double eps)
+        public static List<XbimBBoxClusterElement> GetClusters(IEnumerable<XbimBBoxClusterElement> ItemsToCluster, double eps)
         {
             if (ItemsToCluster == null) 
                 return null;
-            List<XbimBBoxClusterElement> clusters = ItemsToCluster;
+            List<XbimBBoxClusterElement> clusters = ItemsToCluster.ToList();
             // eps *= eps; // square eps
 
             int LastCount = 0;

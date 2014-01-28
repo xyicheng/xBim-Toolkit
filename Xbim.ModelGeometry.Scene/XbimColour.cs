@@ -14,6 +14,30 @@ namespace Xbim.ModelGeometry.Scene
     public class XbimColour
     {
         public static XbimColour LightGrey = new XbimColour("LightGrey", 0.47, 0.53, 0.60, 1);
+
+
+        public override bool Equals(object obj)
+        {
+            return true;
+            XbimColour col = obj as XbimColour;
+            if (col == null) return false;
+            return  col.Red == Red && 
+                    col.Green == Green && 
+                    col.Blue == Blue && 
+                    col.Alpha == Alpha && 
+                    col.DiffuseFactor == DiffuseFactor && 
+                    col.TransmissionFactor == TransmissionFactor &&
+                    col.DiffuseTransmissionFactor == DiffuseTransmissionFactor && 
+                    col.ReflectionFactor == ReflectionFactor && 
+                    col.SpecularFactor == SpecularFactor;    
+        }
+
+        public override int GetHashCode()
+        {
+            return Red.GetHashCode() ^ Green.GetHashCode() ^ Blue.GetHashCode() ^ Alpha.GetHashCode() ^ DiffuseFactor.GetHashCode() ^
+                TransmissionFactor.GetHashCode() ^ DiffuseTransmissionFactor.GetHashCode() ^ ReflectionFactor.GetHashCode() ^ SpecularFactor.GetHashCode();
+        }
+
         /// <summary>
         /// True if the cuolour is not opaque
         /// </summary>
@@ -89,7 +113,7 @@ namespace Xbim.ModelGeometry.Scene
             get;
             set;
         }
-
+        private String _name;
         public float DiffuseFactor;
         public float TransmissionFactor;
         public float DiffuseTransmissionFactor;
@@ -97,12 +121,12 @@ namespace Xbim.ModelGeometry.Scene
         public float SpecularFactor;
 
         /// <summary>
-        /// Gets or sets Material Name
+        /// Gets or sets Colour Name, defaults to its parts
         /// </summary>
         public String Name
         {
-            get;
-            set;
+            get { if(string.IsNullOrWhiteSpace(_name)) return this.ToString(); else  return _name; }
+            set { _name = value; }
         }
 
         /// <summary>
@@ -113,7 +137,8 @@ namespace Xbim.ModelGeometry.Scene
         /// </returns>
         public override string ToString()
         {
-            return String.Format("R:{0} G:{1} B:{2} A:{3}", Red, Green, Blue, Alpha);
+            return String.Format("R:{0} G:{1} B:{2} A:{3} DF:{4} TF:{5} DTF:{6} RF:{7} SF:{8}", Red, Green, Blue, Alpha,
+                DiffuseFactor, TransmissionFactor, DiffuseTransmissionFactor, ReflectionFactor, SpecularFactor);
         }
 
         static XbimColour _default;

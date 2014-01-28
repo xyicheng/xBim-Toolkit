@@ -67,6 +67,7 @@ namespace Xbim.IO
 
         //Object that manages geometry conversion etc
         IGeometryManager geometryManager;
+        private Version _geometryVersion = new Version(1,0,0);
 
       
         #endregion
@@ -884,72 +885,7 @@ namespace Xbim.IO
             return "";
         }
 
-        #region Part21 File Writer support
-
-        /// <summary>
-        /// Writes a Part 21 Header
-        /// </summary>
-        /// <param name="tw"></param>
-        private void WriteHeader(TextWriter tw)
-        {
-            //FileDescription fileDescriptor = new FileDescription("2;1");
-            IIfcFileDescription fileDescriptor = Header.FileDescription;
-            IIfcFileName fileName = Header.FileName;
-
-            IIfcFileSchema fileSchema = new FileSchema("IFC2X3");
-            StringBuilder header = new StringBuilder();
-            header.AppendLine("ISO-10303-21;");
-            header.AppendLine("HEADER;");
-            //FILE_DESCRIPTION
-            header.Append("FILE_DESCRIPTION((");
-            int i = 0;
-            foreach (string item in fileDescriptor.Description)
-            {
-                header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
-                i++;
-            }
-            header.AppendFormat(@"),'{0}');", fileDescriptor.ImplementationLevel);
-            header.AppendLine();
-            //FileName
-            header.Append("FILE_NAME(");
-            header.AppendFormat(@"'{0}'", fileName.Name);
-            header.AppendFormat(@",'{0}'", fileName.TimeStamp);
-            header.Append(",(");
-            i = 0;
-            foreach (string item in fileName.AuthorName)
-            {
-                header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
-                i++;
-            }
-            header.Append("),(");
-            i = 0;
-            foreach (string item in fileName.Organization)
-            {
-                header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
-                i++;
-            }
-            header.AppendFormat(@"),'{0}','{1}','{2}');", fileName.PreprocessorVersion, fileName.OriginatingSystem,
-                                fileName.AuthorizationName);
-            header.AppendLine();
-            //FileSchema
-            header.AppendFormat("FILE_SCHEMA(('{0}'));", fileSchema.Schemas.FirstOrDefault());
-            header.AppendLine();
-            header.AppendLine("ENDSEC;");
-            header.AppendLine("DATA;");
-            tw.Write(header.ToString());
-        }
-
-        /// <summary>
-        /// Writes the Part 21 Footer
-        /// </summary>
-        /// <param name="tw"></param>
-        private void WriteFooter(TextWriter tw)
-        {
-            tw.WriteLine("ENDSEC;");
-            tw.WriteLine("END-ISO-10303-21;");
-        }
-
-        #endregion
+        
 
         #region Helpers
 
@@ -1412,5 +1348,13 @@ namespace Xbim.IO
 
         public object Tag { get; set; }
 
+
+        public Version GeometryVersion
+        {
+            get
+            {
+                return _geometryVersion;
+            }
+        }
     }
 }

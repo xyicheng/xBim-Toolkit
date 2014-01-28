@@ -710,7 +710,7 @@ TryIntersectSolid:
 						if(facing.IsNull()) continue;
 
 						Standard_Integer nbNodes = facing->NbNodes();
-						Standard_Integer nbNormals; //set when we know if it planar or not
+						Standard_Integer nbNormals=0; //set when we know if it planar or not
 						Standard_Integer nbTriangles = facing->NbTriangles();
 						
 						const TColgp_Array1OfPnt& points = facing->Nodes();

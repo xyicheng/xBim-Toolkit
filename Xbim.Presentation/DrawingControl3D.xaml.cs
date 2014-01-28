@@ -46,6 +46,8 @@ using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Text;
 using Xbim.Presentation.ModelGeomInfo;
+using Xbim.ModelGeometry.Converter;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 #endregion
 
@@ -138,6 +140,7 @@ namespace Xbim.Presentation
 
         // elements associated with vector polygons drafted interactively on the model by the user
         //
+        private int geometryVersion = 1;
         private LinesVisual3D _UserModeledDimLines;
         private PointsVisual3D _UserModeledDimPoints;
         public PolylineGeomInfo UserModeledDimension = new PolylineGeomInfo();
@@ -1089,8 +1092,12 @@ namespace Xbim.Presentation
             
             if (model == null) 
                 return; //nothing to show
-
-            XbimRegion largest = GetLargestRegion(model);
+            Xbim3DModelContext context = new Xbim3DModelContext(model);
+           XbimRegion largest;
+           if (Model.GeometryVersion.Major == 1)
+               largest = GetLargestRegion(model);
+           else
+               largest = context.GetLargestRegion();
             XbimPoint3D c = new XbimPoint3D(0,0,0);
             XbimRect3D bb = XbimRect3D.Empty;
             if(largest!=null)
@@ -1099,6 +1106,7 @@ namespace Xbim.Presentation
             foreach (var refModel in model.RefencedModels)
             {
                 XbimRegion r = GetLargestRegion(refModel.Model);
+                
                 if (r != null)
                 {
                     if(bb.IsEmpty)
@@ -1108,10 +1116,14 @@ namespace Xbim.Presentation
                 }
             }
             XbimPoint3D p = bb.Centroid();
-            _modelTranslation = new XbimVector3D(-p.X,-p.Y,-p.Z);
+            _modelTranslation = new XbimVector3D(-p.X, -p.Y, -p.Z);
             model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
             //build the geometric scene and render as we go
-            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model, EntityLabels);
+            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene;
+            if (Model.GeometryVersion.Major == 1)
+                scene = BuildScene(model, EntityLabels);
+            else
+                scene = BuildScene2(model, context);
             if(scene.Layers.Count() > 0)
                 scenes.Add(scene);
             foreach (var refModel in model.RefencedModels)
@@ -1137,6 +1149,8 @@ namespace Xbim.Presentation
             else
                 return null;
         }
+
+        
 
         private void RecalculateView(XbimModel model)
         {
@@ -1240,6 +1254,88 @@ namespace Xbim.Presentation
         /// </summary>
         public LayerStyling.ILayerStyler LayerStyler = null;
 
+        /// <summary>
+        /// This version uses the new Geometry representation
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="LoadLabels"></param>
+        /// <returns></returns>
+        private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene2(XbimModel model, Xbim3DModelContext context)
+        {
+            //get the world coordinate transform and scale
+            double metre = model.ModelFactors.OneMetre;
+            wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
+            //set up a scene and a 3D context
+            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
+            
+            //set a colour map, using the standard one
+            XbimColourMap colourMap = new XbimColourMap(StandardColourMaps.IfcProductTypeMap);
+            if (context.IsGenerated) //if we have generated the context then use, else nothing to draw
+            {
+                Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> typeLayers =
+                            new Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
+                //get each product and draw its shapes
+                foreach (var productShape in context.ProductShapes)
+                {
+                    if (productShape.ProductType == typeof( IfcOpeningElement)) continue;
+                    Type productType = productShape.ProductType;
+                    XbimTexture texture = new XbimTexture().CreateTexture(colourMap[productType.Name]); //get the colour to use
+                    XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> typeLayer;
+                    if(!typeLayers.TryGetValue(texture,out typeLayer))
+                    {
+                        typeLayer = new XbimMeshLayer<WpfMeshGeometry3D,WpfMaterial>(model, texture);
+                        typeLayers.Add(texture, typeLayer);
+                    }
+                    XbimMatrix3D prodTransform = productShape.Placement*wcsTransform;
+
+                    if (productShape.Shapes.Count() == 0)
+                    {
+                        Console.WriteLine("ww");
+                    }
+                    foreach (var shape in productShape.Shapes)
+                    {
+                        XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> shapeLayer;
+                        //get the style of the shape if it has one and create or find a layer to use
+                        if (shape.HasStyle)
+                        {
+                            IfcSurfaceStyle ifcStyle = model.Instances[shape.StyleLabel] as IfcSurfaceStyle;
+                            XbimTexture shapeTexture = new XbimTexture().CreateTexture(ifcStyle);
+                            if (!typeLayers.TryGetValue(shapeTexture, out shapeLayer))
+                            {
+                                shapeLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, shapeTexture);
+                                typeLayers.Add(shapeTexture, shapeLayer);
+                            }
+                        }
+                        else
+                            shapeLayer = typeLayer; //use the type layer as default
+                        //work out all transformations required
+                        XbimMatrix3D? shapeTransform = shape.Transform;
+                        if (shapeTransform.HasValue)
+                            //add the shape to the right layer
+                            shapeLayer.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, shapeTransform.Value * prodTransform);
+                        else
+                            //add the shape to the right layer
+                            shapeLayer.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform);
+                         int r = 8;if (shapeLayer.Hidden.PositionCount == 0)
+                        {
+                          r++;
+                        }
+                    }
+                }
+                foreach (var layer in typeLayers.Values)
+                {
+                   
+                    scene.Add(layer);
+                    if (modelBounds.IsEmpty) modelBounds = layer.BoundingBoxHidden();
+                    else modelBounds.Union(layer.BoundingBoxHidden()); 
+                    AddLayerToDrawingControl(layer);
+                }
+                
+            }
+          
+            return scene;
+        }
+
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
 
@@ -1277,12 +1373,12 @@ namespace Xbim.Presentation
                 // it will later be moved to the visible WPF implementation
                 foreach (var geomData in geomColl)
                 {
-                    geomData.TransformBy(wcsTransform);
+                    XbimGeometryData gd  = geomData.TransformBy(wcsTransform);
 
                     if (LayerStyler.UseIfcSubStyles)
-                        layer.AddToHidden(geomData, model);
+                        layer.AddToHidden(gd, model);
                     else
-                        layer.AddToHidden(geomData, null);
+                        layer.AddToHidden(gd, null);
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
@@ -1305,7 +1401,7 @@ namespace Xbim.Presentation
         /// <summary>
         /// function that actually populates the geometry from the layer into the viewer meshes.
         /// </summary>
-        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerely called DrawLayer
+        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerly called DrawLayer
         {
             // move it to the visual element
             // 
@@ -1540,6 +1636,7 @@ namespace Xbim.Presentation
         }
 
         ModelVisual3D OctreeVisualization = new ModelVisual3D();
+
 
         private void ShowOctree<T>(XbimOctree<T> octree, int specificLevel = -1, bool onlyWithContent = false)
         {

@@ -87,14 +87,20 @@ namespace XbimConvert
                             try
                             {
                                 m3d.CreateContext(progDelegate);
-                                foreach (var product in m3d.ProductShapes)
-                                {
-                                    Console.Write(product.Placement);
-                                    if(product.HasMaterial) 
-                                        Console.WriteLine(product.Material.Name);
-                                    else
-                                        Console.WriteLine("Undefined");
-                                }
+                                //foreach (var product in m3d.ProductShapes)
+                                //{
+                                //    Console.Write(product.Placement);
+                                //    if(product.HasMaterial) 
+                                //        Console.WriteLine(product.Material.Name);
+                                //    else
+                                //        Console.WriteLine("Undefined");
+                                //    XbimShapeGroup shapeGroup = product.Shapes;
+                                //    foreach (var shape in shapeGroup.Shapes())
+                                //    {
+                                //        int hash =  shape.GeometryHash;
+                                //        Console.WriteLine(hash);
+                                //    }
+                                //}
                             }
                             catch (Exception ce)
                             {

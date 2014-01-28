@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Script.Serialization;
+using Xbim.Common.Geometry;
 using Xbim.WebXplorer.xbim;
 
 namespace Xbim.WebXplorer.Models
@@ -67,7 +68,7 @@ namespace Xbim.WebXplorer.Models
                     id = i.GeometryLabel,
                     prod = i.IfcProductLabel,
                     geo = i.ShapeData,
-                    matrix = i.Transform.ToArray(false)
+                    matrix = XbimMatrix3D.FromArray(i.DataArray2)
                 });
             }
 

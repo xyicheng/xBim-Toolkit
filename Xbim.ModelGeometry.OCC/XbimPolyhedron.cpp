@@ -195,6 +195,10 @@ namespace Xbim
 							polyData.addFace(triangle.begin(),triangle.end());
 						}
 					}
+					else if(cmd == "N")
+					{
+						//do nothing just now
+					}
 					else
 						Logger->WarnFormat("Illegal Polygon command format '{0}' has been ignored");
 					l = sr->ReadLine(); //get the next line
@@ -372,7 +376,7 @@ namespace Xbim
 				double precision = modelFactors->Precision;
 				int rounding =  modelFactors->Rounding;
 				StringBuilder^ sw = gcnew StringBuilder();
-				size_t normalsOffset=0;
+				size_t normalsOffset=-1;
 				double rounding10P = Math::Pow(10, rounding);
 					
 				if(_meshSet==nullptr || _meshSet->vertex_storage.size() ==0) return "";
@@ -416,24 +420,28 @@ namespace Xbim
 
 						std::vector<carve::geom::vector<2> > projectedVerts;
 						face->getProjectedVertices(projectedVerts);
+						std::vector<carve::mesh::MeshSet<3>::vertex_t *> verts;
+						face->getVertices(verts);
 						std::vector<carve::triangulate::tri_idx> result;
-						carve::triangulate::triangulate(projectedVerts,result,0.00001);
+						carve::triangulate::triangulate(projectedVerts,result,precision);
 
 						bool firstTime=true;
 						sw->Append("T");
 						for (size_t i = 0; i < result.size(); i++)
 						{
-
+							ptrdiff_t a = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].a]);
+							ptrdiff_t b = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].b]);
+							ptrdiff_t c = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].c]);
 							if(firstTime)
 							{
 								if(f=="$") //face name is undefined
-									sw->AppendFormat(" {0}/{3},{1},{2}", result[i].a,result[i].b,result[i].c, normalsOffset);
+									sw->AppendFormat(" {0}/{3},{1},{2}", a,b,c, normalsOffset);
 								else
-									sw->AppendFormat(" {0}/{3},{1},{2}", result[i].a,result[i].b,result[i].c, f);
+									sw->AppendFormat(" {0}/{3},{1},{2}", a,b,c, f);
 								firstTime=false;
 							}
 							else
-								sw->AppendFormat(" {0},{1},{2}", result[i].a,result[i].b,result[i].c, f);
+								sw->AppendFormat(" {0},{1},{2}", a,b,c, f);
 						}	
 
 						sw->AppendLine();

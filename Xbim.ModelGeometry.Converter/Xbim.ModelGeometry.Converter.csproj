@@ -91,14 +91,15 @@
     <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
     <Compile Include="IfcSolidModelGeometryExtensions.cs" />
     <Compile Include="IModelGeometryExtensions.cs" />
+    <Compile Include="Xbim3DModelContext.cs" />
     <Compile Include="XbimMesher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XbimModelGeometryExtensions.cs" />
     <Compile Include="XbimProductShape.cs" />
-    <Compile Include="Xbim3DModelContext.cs" />
     <Compile Include="XbimRepresentationItem.cs" />
     <Compile Include="XbimSceneBuilder.cs" />
     <Compile Include="XbimShape.cs" />
+    <Compile Include="XbimShapeGeometry.cs" />
     <Compile Include="XbimShapeGroup.cs" />
     <Compile Include="XbimShapeMap.cs" />
   </ItemGroup>

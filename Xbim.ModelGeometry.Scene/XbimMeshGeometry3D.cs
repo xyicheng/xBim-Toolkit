@@ -73,7 +73,7 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public bool Read(String data)
+        public bool Read(String data, XbimMatrix3D? trans = null)
         {
             using (StringReader sr = new StringReader(data))
             {
@@ -95,18 +95,24 @@ namespace Xbim.ModelGeometry.Scene
                                 for (int i = 1; i < tokens.Length; i++)
                                 {
                                    string[] xyz = tokens[i].Split(',');
-                                   vertexList.Add(new XbimPoint3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
-                                                                      Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
-                                                                      Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture)));
+                                   XbimPoint3D p = new XbimPoint3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                                                     Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
+                                                                     Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
+                                   if (trans.HasValue)
+                                       p = trans.Value.Transform(p);
+                                   vertexList.Add(p);
                                 }
                                 break;
                             case "N": //processes normals
                                 for (int i = 1; i < tokens.Length; i++)
                                 {
                                     string[] xyz = tokens[i].Split(',');
-                                    normalList.Add(new  XbimVector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                    XbimVector3D v = new  XbimVector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
-                                                                       Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture)));
+                                                                       Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
+                                    if (trans.HasValue)
+                                        v = trans.Value.Transform(v);
+                                    normalList.Add(v);
                                 }
                                 break;
                             case "T": //process triangulated meshes
@@ -129,21 +135,27 @@ namespace Xbim.ModelGeometry.Scene
                                             {
                                                 case "F": //Front
                                                     currentNormal = new XbimVector3D(0, -1, 0);
+                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "B": //Back
                                                     currentNormal = new XbimVector3D(0, 1, 0);
+                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "L": //Left
                                                     currentNormal = new XbimVector3D(-1, 0, 0);
+                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "R": //Right
                                                     currentNormal = new XbimVector3D(1, 0, 0);
+                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "U": //Up
                                                     currentNormal = new XbimVector3D(0, 0, 1);
+                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "D": //Down
                                                     currentNormal = new XbimVector3D(0, 0, -1);
+                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 default: //it is an index number
                                                     int normalIndex = int.Parse(indexNormalPair[1]);
@@ -691,6 +703,18 @@ namespace Xbim.ModelGeometry.Scene
         public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null)
         {
             return geometryModel.MeshTo(this,product,transform,deflection??product.ModelOf.ModelFactors.DeflectionTolerance);
+        }
+
+
+
+        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform)
+        {
+            XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel);
+            Read(mesh, transform);
+            frag.EndPosition = PositionCount - 1;
+            frag.EndTriangleIndex = TriangleIndexCount - 1;
+            meshes.Add(frag);
+
         }
     }
 }

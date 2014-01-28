@@ -31,7 +31,30 @@ namespace Xbim.ModelGeometry.Scene
     public class XbimColourMap : KeyedCollection<string, XbimColour>
     {
 
-        
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            foreach (var colour in this)
+            {
+                hash ^= colour.GetHashCode();
+            }
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            XbimColourMap map = obj as XbimColourMap;
+            if (map == null) return false;
+            if(map.Count!=Count) return false;
+            foreach (var colour in map)
+            {
+                if (!this.Contains(colour)) return false;
+                if (!colour.Equals( this[colour.Name])) return false;
+            }
+            return true;
+        }
+
+
         protected override string GetKeyForItem(XbimColour item)
         {
             return item.Name;
@@ -113,7 +136,7 @@ namespace Xbim.ModelGeometry.Scene
             Add(new XbimColour(typeof(IfcBuildingElementProxy).Name, 0.95, 0.94, 0.74, 1));
             Add(new XbimColour(typeof(IfcColumn).Name, 0.0, 0.0, 0.55, 1));
             Add(new XbimColour(typeof(IfcSlab).Name, 0.47, 0.53, 0.60, 1));
-            Add(new XbimColour(typeof(IfcWindow).Name, 0.68, 0.85, 0.90, 0.2));
+            Add(new XbimColour(typeof(IfcWindow).Name, 0.68, 0.85, 0.90, 0.5));
             Add(new XbimColour(typeof(IfcCurtainWall).Name, 0.68, 0.85, 0.90, 0.4));
             Add(new XbimColour(typeof(IfcPlate).Name, 0.68, 0.85, 0.90, 0.4));
             Add(new XbimColour(typeof(IfcDoor).Name, 0.97, 0.19, 0, 1));

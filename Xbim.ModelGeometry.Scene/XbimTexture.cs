@@ -40,6 +40,28 @@ namespace Xbim.ModelGeometry.Scene
             return this;
         }
 
+        public override int GetHashCode()
+        {
+
+            int hash = ColourMap.GetHashCode() ^ (renderBothFaces ? 1 : 0) ^ (switchFrontAndRearFaces ? 1 : 0);
+            if(DiffuseTransmissionColour!=null) hash^=DiffuseTransmissionColour.GetHashCode();
+            if(TransmissionColour!=null) hash^=TransmissionColour.GetHashCode();
+            if (DiffuseReflectionColour != null) hash ^= DiffuseReflectionColour.GetHashCode();
+            if (ReflectanceColour != null) hash ^= ReflectanceColour.GetHashCode();
+            return hash;    
+        }
+
+        public override bool Equals(object obj)
+        {
+           
+            XbimTexture t = obj as XbimTexture;
+            if (t == null) return false;
+            bool isSame = t.ColourMap.Equals(ColourMap) && t.RenderBothFaces == RenderBothFaces && t.SwitchFrontAndRearFaces == SwitchFrontAndRearFaces &&
+                         t.DiffuseTransmissionColour == DiffuseTransmissionColour && t.TransmissionColour == TransmissionColour &&
+                         t.DiffuseReflectionColour == DiffuseReflectionColour && t.ReflectanceColour == ReflectanceColour;
+            return isSame;
+        }
+
         private void AddColour(IfcSurfaceStyleShading shading)
         {
             ColourMap.Add(new XbimColour(shading.SurfaceColour));

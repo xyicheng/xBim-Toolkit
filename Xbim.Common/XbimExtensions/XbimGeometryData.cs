@@ -35,7 +35,7 @@ namespace Xbim.XbimExtensions
         readonly public int Counter;
        
      
-        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel, int counter = 0)
+        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel, int counter)
         {
             GeometryLabel = geometrylabel;
             GeometryType = geomType;

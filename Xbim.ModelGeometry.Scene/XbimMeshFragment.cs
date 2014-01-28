@@ -27,6 +27,7 @@ namespace Xbim.ModelGeometry.Scene
         public Type EntityType;
         public int StartTriangleIndex;
         public int EndTriangleIndex;
+        public int GeometryId;
 
         public XbimMeshFragment(int pStart, int tStart)
         {
@@ -34,6 +35,17 @@ namespace Xbim.ModelGeometry.Scene
             StartTriangleIndex = EndTriangleIndex = tStart;
             EntityLabel = 0;
             EntityType = null;
+            GeometryId = 0;
+        }
+
+        public XbimMeshFragment(int pStart, int tStart, Type productType, int productLabel, int geometryLabel)
+        {
+
+            this.StartPosition = EndPosition = pStart;
+            this.StartTriangleIndex = EndTriangleIndex = tStart;
+            this.EntityType = productType;
+            this.EntityLabel = productLabel;
+            this.GeometryId = geometryLabel;
         }
 
         public bool IsEmpty

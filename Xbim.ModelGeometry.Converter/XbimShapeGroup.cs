@@ -13,9 +13,15 @@ namespace Xbim.ModelGeometry.Converter
     /// <summary>
     /// A collection of one or more shapes that define a product shape
     /// </summary>
-    public class XbimShapeGroup 
+    public class XbimShapeGroup : IEnumerable<XbimShape>
     {
-        private XbimModel _model;
+        private Xbim3DModelContext _context;
+
+        public Xbim3DModelContext Context
+        {
+            get { return _context; } 
+        }
+
         private int[] _shapeGeomLabels;
         private List<XbimShape> _shapes;
         private List<int> _geometryHashCodes;
@@ -29,10 +35,18 @@ namespace Xbim.ModelGeometry.Converter
 
 
 
-        public XbimShapeGroup(XbimModel model, int[] shapeGeomLabels)
+        public XbimShapeGroup(Xbim3DModelContext context, int[] shapeGeomLabels)
         {
             _shapeGeomLabels = shapeGeomLabels;
-            _model = model;
+            _context = context;
+        }
+
+        public XbimModel Model
+        {
+            get
+            {
+                return _context.Model;
+            }
         }
 
         /// <summary>
@@ -49,8 +63,8 @@ namespace Xbim.ModelGeometry.Converter
             if (_geometryHashCodes == null)
             {
                _geometryHashCodes = new List<int>();
-                XbimGeometryCursor geomTable = _model.GetGeometryTable();
-                IXbimGeometryEngine engine = _model.GeometryEngine();
+                XbimGeometryCursor geomTable = Model.GetGeometryTable();
+                IXbimGeometryEngine engine = Model.GeometryEngine();
                 try
                 {
                     using (var transaction = geomTable.BeginReadOnlyTransaction())
@@ -67,7 +81,10 @@ namespace Xbim.ModelGeometry.Converter
                             else if (data.GeometryType == XbimGeometryType.PolyhedronMap)
                             {
                                 //ADD EACH SHAPE IN THE MAP
-                                
+                                string shapeString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
+                                string[] itms = shapeString.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                                XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
+                                _geometryHashCodes.Add(data.GeometryHash);
                             }
                             else
                                 throw new XbimGeometryException("Unexpected geometry type " + Enum.GetName(typeof(XbimGeometryType), data.GeometryType));
@@ -77,7 +94,7 @@ namespace Xbim.ModelGeometry.Converter
                 }
                 finally
                 {
-                    _model.FreeTable(geomTable);
+                    Model.FreeTable(geomTable);
                 }
             }
             
@@ -90,45 +107,24 @@ namespace Xbim.ModelGeometry.Converter
             {
                 _shapes = new List<XbimShape>();
                _geometryHashCodes = new List<int>(); //reset the hash codes as we go
-                XbimGeometryCursor geomTable = _model.GetGeometryTable();
-                IXbimGeometryEngine engine = _model.GeometryEngine();
-                try
-                {
-                    using (var transaction = geomTable.BeginReadOnlyTransaction())
-                    {
-
-                        foreach (var geomId in _shapeGeomLabels)
-                        {
-                            XbimGeometryData data = geomTable.GetGeometryData(geomId);
-                            if (data.GeometryType == XbimGeometryType.Polyhedron)
-                            {
-                                int l = data.IfcProductLabel;
-                                Type type = IfcMetaData.GetType(data.IfcTypeId);
-                                string boundsString = System.Text.Encoding.ASCII.GetString(data.DataArray2);
-                                int hash = data.GeometryHash;
-                                _geometryHashCodes.Add(hash);
-                                XbimRect3D boundingBox = XbimRect3D.Parse(boundsString);
-                                string geometryString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
-                                IXbimGeometryModel geometry = engine.GetGeometry3D(geometryString, data.GeometryType);
-                                int stylelabel = data.StyleLabel;
-                                _shapes.Add(new XbimShape(l, type, boundingBox, geometry, stylelabel, hash, data.Counter));
-
-                            }
-                            else if (data.GeometryType == XbimGeometryType.PolyhedronMap)
-                            {
-                                //ADD EACH SHAPE IN THE MAP
-                            }
-                            else
-                                throw new XbimGeometryException("Unexpected geometry type " + Enum.GetName(typeof(XbimGeometryType), data.GeometryType));
-
-                        }
-                    }
-                }
-                finally
-                {
-                    _model.FreeTable(geomTable);
-                }
+               foreach (var shape in _context.Shapes(_shapeGeomLabels))
+               {
+                   _geometryHashCodes.Add(shape.GeometryHash);
+                   _shapes.Add(shape);
+               }                
             }
+        }
+
+        public IEnumerator<XbimShape> GetEnumerator()
+        {
+            LoadShapes();
+            return _shapes.GetEnumerator();    
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            LoadShapes();
+            return _shapes.GetEnumerator();    
         }
     }
 }

@@ -23,9 +23,9 @@ namespace Xbim.ModelGeometry.Converter
        
         public int MaterialLabel;
 
-        private XbimModel _model;
         private int[] _shapeGeomLabels;
         private XbimShapeGroup _shapeGroup;
+        private Xbim3DModelContext _context;
         /// <summary>
         /// Retrieves the product for this Shape from the model
         /// </summary>
@@ -33,7 +33,7 @@ namespace Xbim.ModelGeometry.Converter
         {
             get
             {
-                return (IfcProduct) _model.Instances[ProductLabel];
+                return (IfcProduct) Model.Instances[ProductLabel];
             }
         }
 
@@ -45,7 +45,7 @@ namespace Xbim.ModelGeometry.Converter
             get
             {
                 if (HasMaterial)
-                    return (IfcMaterialSelect)_model.Instances[MaterialLabel];
+                    return (IfcMaterialSelect)Model.Instances[MaterialLabel];
                 else
                     return null;
             }
@@ -58,7 +58,7 @@ namespace Xbim.ModelGeometry.Converter
             get
             {
                 if (_shapeGroup == null)
-                    _shapeGroup = new XbimShapeGroup(_model, _shapeGeomLabels);
+                    _shapeGroup = new XbimShapeGroup(_context, _shapeGeomLabels);
                 return _shapeGroup;              
             }
         }
@@ -74,9 +74,23 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        public XbimProductShape(XbimModel model, XbimGeometryData data)
+        public XbimModel Model
         {
-            _model = model;
+            get
+            {
+                return _context.Model;
+            }
+        }
+
+        public Xbim3DModelContext Context
+        {
+            get { return _context; }
+        }
+
+        public XbimProductShape(Xbim3DModelContext context, XbimGeometryData data)
+        {
+            _context = context;
+            
             ProductLabel = data.IfcProductLabel;
             ProductType = IfcMetaData.GetType(data.IfcTypeId);
             
