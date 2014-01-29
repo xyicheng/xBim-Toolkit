@@ -41,7 +41,7 @@ namespace Xbim.Presentation
             XbimModel model = DataContext as XbimModel;
             if (model != null)
             {
-                propertyGrid.ItemsSource = model.RefencedModels;
+                propertyGrid.ItemsSource = model.ReferencedModels;
             }
         }
     }

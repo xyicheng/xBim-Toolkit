@@ -83,31 +83,21 @@ namespace XbimConvert
                 if (!arguments.NoGeometry)
                         {
 
-                            Xbim3DModelContext m3d = new Xbim3DModelContext(model);
-                            try
+                            if (model.GeometryVersion.Major == 1)
+                                XbimMesher.GenerateGeometry(model, Logger, progDelegate);
+                            else
                             {
-                                m3d.CreateContext(progDelegate);
-                                //foreach (var product in m3d.ProductShapes)
-                                //{
-                                //    Console.Write(product.Placement);
-                                //    if(product.HasMaterial) 
-                                //        Console.WriteLine(product.Material.Name);
-                                //    else
-                                //        Console.WriteLine("Undefined");
-                                //    XbimShapeGroup shapeGroup = product.Shapes;
-                                //    foreach (var shape in shapeGroup.Shapes())
-                                //    {
-                                //        int hash =  shape.GeometryHash;
-                                //        Console.WriteLine(hash);
-                                //    }
-                                //}
+                                Xbim3DModelContext m3d = new Xbim3DModelContext(model);
+                                try
+                                {
+                                    m3d.CreateContext(progDelegate);
+                                }
+                                catch (Exception ce)
+                                {
+                                    Console.WriteLine("Error compiling geometry\n" + ce.Message);
+                                }
                             }
-                            catch (Exception ce)
-                            {
-                                Console.WriteLine("Error compiling geometry\n" + ce.Message);
-                            }
-                           
-                           // XbimMesher.GenerateGeometry(model, Logger, progDelegate);
+                           // 
                             geomTime = watch.ElapsedMilliseconds - parseTime;  
                             if (arguments.GenerateScene)
                             {

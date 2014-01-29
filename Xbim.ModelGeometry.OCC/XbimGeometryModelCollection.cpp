@@ -19,6 +19,7 @@
 #include <BRepCheck_Analyzer.hxx>
 #include <ShapeFix_ShapeTolerance.hxx>
 using namespace System::Linq;
+using namespace System::Text;
 using namespace Xbim::Common::Exceptions;
 
 namespace Xbim
@@ -89,7 +90,17 @@ namespace Xbim
 				return tm;
 			}
 
-
+			String^ XbimGeometryModelCollection::WriteAsString(XbimModelFactors^ modelFactors)
+			{
+				StringBuilder^ result = gcnew StringBuilder();
+				for each(XbimGeometryModel^ shape in shapes)
+				{
+					if(result->Length>0)
+						result->AppendLine("P");
+					result->Append( shape->WriteAsString(modelFactors));
+				}
+				return result->ToString();
+			}
 
 			void XbimGeometryModelCollection::Move(TopLoc_Location location)
 			{	

@@ -68,6 +68,7 @@ namespace Xbim.IO
         //Object that manages geometry conversion etc
         IGeometryManager geometryManager;
         private Version _geometryVersion = new Version(2,0,0);
+        private string _importFilePath;
 
       
         #endregion
@@ -376,11 +377,11 @@ namespace Xbim.IO
         public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false, bool cacheEntities = false)
         {
             Close();
-            string fullPath = Path.GetFullPath(importFrom);
-            if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
+            _importFilePath = Path.GetFullPath(importFrom);
+            if (!Directory.Exists(Path.GetDirectoryName(_importFilePath)))
                 throw new DirectoryNotFoundException(Path.GetDirectoryName(importFrom) + " directory was not found");
-            if (!File.Exists(fullPath))
-                throw new FileNotFoundException(fullPath + " file was not found");
+            if (!File.Exists(_importFilePath))
+                throw new FileNotFoundException(_importFilePath + " file was not found");
             if (string.IsNullOrWhiteSpace(xbimDbName))
                 xbimDbName = Path.ChangeExtension(importFrom, "xBIM");
             
@@ -1212,18 +1213,26 @@ namespace Xbim.IO
         private void LoadReferenceModels(bool ThrowExceptionOnNotFound = false)
         {
             var docInfos = this.Instances.OfType<IfcDocumentInformation>().Where(d => d.IntendedUse == refDocument);
+            FileInfo thisFile ;
+            if(string.IsNullOrWhiteSpace(_importFilePath))
+                thisFile = new FileInfo(DatabaseName);
+            else
+                thisFile= new FileInfo(_importFilePath);
             foreach (var docInfo in docInfos)
             {
-                if (!File.Exists(docInfo.Name))
+               
+                string path = Path.Combine(thisFile.DirectoryName, docInfo.Name);
+               
+                if (!File.Exists(path))
                 {
                     if (ThrowExceptionOnNotFound)
                         throw new XbimException("Reference model not found:" + docInfo.Name);
                     continue;
                 }
                 XbimModel model = new XbimModel();
-                if (!model.Open(docInfo.Name, XbimDBAccess.Read))
+                if (!model.Open(path, XbimDBAccess.Read))
                 {
-                    throw new XbimException("Unable to open reference model: " + docInfo.Name);
+                    throw new XbimException("Unable to open reference model: " + path);
                 }
                 else
                     _referencedModels.Add(new XbimReferencedModel(docInfo, model));
@@ -1233,7 +1242,7 @@ namespace Xbim.IO
         #endregion
 
 
-        public XbimReferencedModelCollection RefencedModels
+        public XbimReferencedModelCollection ReferencedModels
         {
             get
             {
@@ -1307,7 +1316,7 @@ namespace Xbim.IO
             {
                 foreach (var h in cache.InstanceHandles)
                     yield return h;
-                foreach (var refModel in RefencedModels)
+                foreach (var refModel in ReferencedModels)
                     foreach (var h in refModel.Model.InstanceHandles)
                         yield return h;
             }
@@ -1340,7 +1349,7 @@ namespace Xbim.IO
             get
             {
                 yield return this;
-                foreach (var refModel in RefencedModels)
+                foreach (var refModel in ReferencedModels)
                     foreach (var m in refModel.Model.AllModels)
                         yield return m;
             }

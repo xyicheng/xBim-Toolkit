@@ -657,7 +657,7 @@ namespace Xbim.Script
             IModel model = input.ModelOf;
             IModel testModel = null;
 
-            foreach (var refMod in _model.RefencedModels)
+            foreach (var refMod in _model.ReferencedModels)
             {
                 switch (type)
                 {

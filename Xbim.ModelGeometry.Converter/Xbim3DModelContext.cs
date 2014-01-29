@@ -180,6 +180,7 @@ namespace Xbim.ModelGeometry.Converter
             //Do the elements with openings and projectsion first, cache any geometry shapes created 
              ConcurrentDictionary<int, GeometryReferenceCounter> shapeLookup = new ConcurrentDictionary<int, GeometryReferenceCounter>();
              Parallel.ForEach<IfcElement>(elements, pOpts, element =>
+           //foreach (var element in elements)
             {
                 //select representations that are in the required context
                 //only want solid representations for this context, but rep type is optional so just filter identified 2d elements
@@ -196,11 +197,11 @@ namespace Xbim.ModelGeometry.Converter
                     {
                         XbimMatrix3D placementTransform = element.ObjectPlacement.ToMatrix3D();
                         XbimRect3D productBounds = XbimRect3D.Empty;
-                        int geomId = (WriteElementGeometryToDB(_model, _context, element, XbimMatrix3D.Identity, ref productBounds));
+                        IEnumerable<int> geomIds = (WriteElementGeometryToDB(_model, _context, element, XbimMatrix3D.Identity, ref productBounds));
                         //transform the bounds to WCS
                         productBounds = productBounds.Transform(placementTransform);
                         //Write a geometry record to map this geometry to the product
-                        WriteProductMapToDB(_model, new int[] { geomId }, _context, element, placementTransform, productBounds, true);
+                        WriteProductMapToDB(_model, geomIds, _context, element, placementTransform, productBounds, true);
                         shapeLookup.TryAdd(element.EntityLabel,new GeometryReferenceCounter(0));
                         
                     }
@@ -458,29 +459,40 @@ namespace Xbim.ModelGeometry.Converter
             return cost;
         }
 
-        private int WriteElementGeometryToDB(XbimModel model, IfcGeometricRepresentationContext ctxt, IfcElement element, XbimMatrix3D placementTransform, ref XbimRect3D productBounds)
+        private IEnumerable<int> WriteElementGeometryToDB(XbimModel model, IfcGeometricRepresentationContext ctxt, IfcElement element, XbimMatrix3D placementTransform, ref XbimRect3D productBounds)
         {
             XbimGeometryCursor geomTable = model.GetGeometryTable();
+            List<int> result = new List<int>();
             try
             {
 
                 XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
                 short typeId = IfcMetaData.IfcTypeId(element);
-                IXbimGeometryModelGroup geomModel = element.Geometry3D();
-                string shapeData = geomModel.WriteAsString(model.ModelFactors); //gets the polygonal geometry as a string
-                int surfaceStyleLabel = geomModel.SurfaceStyleLabel;
-                productBounds = geomModel.GetBoundingBox();
-                productBounds.Round(_roundingPrecision);
-                int geomId = geomTable.AddGeometry(element.EntityLabel, XbimExtensions.XbimGeometryType.Polyhedron,
+                if (element.EntityLabel == 254336)
+                {
+                    Logger.ErrorFormat("Failed to add element geometry for entity #{0}, no geometry generated", element.EntityLabel);
+                }
+                IXbimGeometryModelGroup geomModelGrp = element.Geometry3D();
+                foreach (var geomModel in geomModelGrp)
+                {
+                  
+                    string shapeData = geomModel.WriteAsString(model.ModelFactors); //gets the polygonal geometry as a string
+                    int surfaceStyleLabel = geomModel.SurfaceStyleLabel;
+                    if (productBounds.IsEmpty) productBounds = geomModel.GetBoundingBox();
+                    else productBounds.Union(geomModel.GetBoundingBox());
+                    int geomId = geomTable.AddGeometry(element.EntityLabel, XbimExtensions.XbimGeometryType.Polyhedron,
                                                    typeId, System.Text.Encoding.ASCII.GetBytes(productBounds.ToString()), System.Text.Encoding.ASCII.GetBytes(shapeData), (short)0, surfaceStyleLabel, productBounds.GetHashCode());
+                    result.Add(geomId);
+                }
                 transaction.Commit();
+                productBounds.Round(_roundingPrecision);
 
-                return geomId;
+                return result;
             }
             catch (Exception e)
             {
                 Logger.ErrorFormat("Failed to add element geometry for entity #{0}, reason {1}", element.EntityLabel, e.Message);
-                return -1;
+                return Enumerable.Empty<int>();
             }
             finally
             {
@@ -698,9 +710,12 @@ namespace Xbim.ModelGeometry.Converter
 
         public XbimRegion GetLargestRegion()
         {
-            XbimGeometryData regionData = _model.GetGeometryData(Math.Abs(_context.EntityLabel), XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
-            if (regionData != null)
+            if (_context == null) return null; //nothing to do
+            IEnumerable<XbimGeometryData> regionDataColl = _model.GetGeometryData(Math.Abs(_context.EntityLabel), XbimGeometryType.Region); 
+            //get the region data should only be one
+            if (regionDataColl != null && regionDataColl.Any())
             {
+                XbimGeometryData regionData = regionDataColl.FirstOrDefault();
                 XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
                 return regions.MostPopulated();
             }

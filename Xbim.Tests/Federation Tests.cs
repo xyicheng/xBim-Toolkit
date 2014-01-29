@@ -51,7 +51,7 @@ namespace Xbim.Tests
                 long localInstances = fed.InstancesLocal.Count;
                 long totalInstances = fed.Instances.Count;
                 long refInstancesCount = 0;
-                foreach (var refModel in fed.RefencedModels)
+                foreach (var refModel in fed.ReferencedModels)
                 {
                     refInstancesCount += refModel.Model.Instances.Count;
                 }

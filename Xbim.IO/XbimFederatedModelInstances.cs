@@ -85,7 +85,7 @@ namespace Xbim.IO
             
             foreach (var instance in _model.InstancesLocal.OfType(StringType, activate))
                 yield return instance;
-            foreach (var refModel in _model.RefencedModels)
+            foreach (var refModel in _model.ReferencedModels)
                 foreach (var instance in refModel.Model.Instances.OfType(StringType, activate))
                     yield return instance;
             
@@ -104,7 +104,7 @@ namespace Xbim.IO
         {
             foreach (var instance in _model.InstancesLocal.Where<T>(expr))
                 yield return instance;
-            foreach (var refModel in _model.RefencedModels)
+            foreach (var refModel in _model.ReferencedModels)
                 foreach (var instance in refModel.Model.Instances.Where<T>(expr))
                     yield return instance;
         }
@@ -113,7 +113,7 @@ namespace Xbim.IO
         {
             foreach (var instance in _model.InstancesLocal.OfType<T>())
                 yield return instance;
-            foreach (var refModel in _model.RefencedModels)
+            foreach (var refModel in _model.ReferencedModels)
                 foreach (var instance in refModel.Model.Instances.OfType<T>())
                     yield return instance;
         }
@@ -122,7 +122,7 @@ namespace Xbim.IO
         {
             foreach (var instance in _model.InstancesLocal.OfType<T>(activate))
                 yield return instance;
-            foreach (var refModel in _model.RefencedModels)
+            foreach (var refModel in _model.ReferencedModels)
                 foreach (var instance in refModel.Model.Instances.OfType<T>(activate))
                     yield return instance;
         }
@@ -167,7 +167,7 @@ namespace Xbim.IO
             get
             {
                 long total = _model.InstancesLocal.Count;
-                foreach (var refModel in _model.RefencedModels)
+                foreach (var refModel in _model.ReferencedModels)
                     total += refModel.Model.Instances.Count;
                 return total;
             }
@@ -176,7 +176,7 @@ namespace Xbim.IO
         public long CountOf<T>() where T : IPersistIfcEntity
         {
             long total = _model.InstancesLocal.CountOf<T>();
-            foreach (var refModel in _model.RefencedModels)
+            foreach (var refModel in _model.ReferencedModels)
                 total += refModel.Model.Instances.CountOf<T>();
             return total;
         }

@@ -214,7 +214,7 @@ namespace Xbim.Tests
                 {
                     referencing.Open("ReferenceTestModel.xBIM");
                     referencingCount = referencing.InstancesLocal.Count;
-                    foreach (var refModel in referencing.RefencedModels)
+                    foreach (var refModel in referencing.ReferencedModels)
                     {
                         referencingCount += refModel.Model.Instances.Count;
                     }

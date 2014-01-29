@@ -1005,7 +1005,7 @@ namespace XbimQueryTest
             Assert.AreEqual(15, parser.Results["$walls"].Count());
 
             //test number of federated models
-            Assert.AreEqual(3, parser.Model.RefencedModels.Count);
+            Assert.AreEqual(3, parser.Model.ReferencedModels.Count);
 
             //test opening from IFC file
             parser.Parse(@"
@@ -1017,7 +1017,7 @@ namespace XbimQueryTest
             Assert.AreEqual(15, parser.Results["$walls"].Count());
 
             //test number of federated models
-            Assert.AreEqual(3, parser.Model.RefencedModels.Count);
+            Assert.AreEqual(3, parser.Model.ReferencedModels.Count);
 
             //test opening from xBIM file
 //            parser.Parse(@"

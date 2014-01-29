@@ -193,7 +193,7 @@ namespace Xbim
 					XbimGeometryModel^ get() {return (XbimGeometryModel^)Enumerable::FirstOrDefault<IXbimGeometryModel^>(shapes);};
 				}
 
-				
+				virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
 				void Remove(XbimGeometryModel^ shape)
 				{
 					shapes->Remove(shape);

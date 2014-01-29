@@ -58,7 +58,7 @@ namespace Xbim.IO.ViewModels
                     {
                         children.Add(new SpatialViewModel(item, this));
                     }
-                    foreach (var refModel in xbimModel.RefencedModels)
+                    foreach (var refModel in xbimModel.ReferencedModels)
                     {
                         children.Add(new XbimRefModelViewModel(refModel, this));
                     }

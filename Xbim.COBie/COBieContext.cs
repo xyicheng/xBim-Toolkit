@@ -106,7 +106,7 @@ namespace Xbim.COBie
             //mapModelToMergeRoles.Add(Model, COBieMergeRoles.Unknown); //assume that it is just the holder model(xBIMf) (as xbim is creating holding file .xbimf) for and all the models are in the Model.RefencedModels property
             
             //now get the referenced models
-            foreach (var refModel in Model.RefencedModels)
+            foreach (var refModel in Model.ReferencedModels)
             {
                 IfcDocumentInformation doc = refModel.DocumentInformation;
                 IfcOrganization owner = doc.DocumentOwner as IfcOrganization;

@@ -1103,10 +1103,17 @@ namespace Xbim.Presentation
             if(largest!=null)
                 bb = new XbimRect3D(largest.Centre, largest.Centre);
             
-            foreach (var refModel in model.RefencedModels)
+            foreach (var refModel in model.ReferencedModels)
             {
-                XbimRegion r = GetLargestRegion(refModel.Model);
                 
+                XbimRegion r ;
+                if (Model.GeometryVersion.Major == 1)
+                    r = GetLargestRegion(refModel.Model);
+                else
+                {
+                    Xbim3DModelContext refContext = new Xbim3DModelContext(refModel.Model);
+                    r = refContext.GetLargestRegion();
+                }
                 if (r != null)
                 {
                     if(bb.IsEmpty)
@@ -1117,7 +1124,7 @@ namespace Xbim.Presentation
             }
             XbimPoint3D p = bb.Centroid();
             _modelTranslation = new XbimVector3D(-p.X, -p.Y, -p.Z);
-            model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
+            model.ReferencedModels.CollectionChanged += RefencedModels_CollectionChanged;
             //build the geometric scene and render as we go
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene;
             if (Model.GeometryVersion.Major == 1)
@@ -1126,9 +1133,15 @@ namespace Xbim.Presentation
                 scene = BuildScene2(model, context);
             if(scene.Layers.Count() > 0)
                 scenes.Add(scene);
-            foreach (var refModel in model.RefencedModels)
+            foreach (var refModel in model.ReferencedModels)
             {
-                scenes.Add(BuildRefModelScene(refModel.Model, refModel.DocumentInformation));
+                if (Model.GeometryVersion.Major == 1)
+                    scenes.Add(BuildRefModelScene(refModel.Model, refModel.DocumentInformation));
+                else
+                {
+                    Xbim3DModelContext refContext = new Xbim3DModelContext(refModel.Model);
+                    scenes.Add(BuildScene2(refModel.Model, refContext));
+                }
             }
             ShowSpaces = false;
             RecalculateView(model);
@@ -1214,6 +1227,9 @@ namespace Xbim.Presentation
             }
         }
 
+       
+
+
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildRefModelScene(XbimModel model, IfcDocumentInformation docInfo)
         {
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
@@ -1275,23 +1291,21 @@ namespace Xbim.Presentation
                 Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> typeLayers =
                             new Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
                 //get each product and draw its shapes
+                ParallelOptions pOpts = new ParallelOptions();
+                //Parallel.ForEach<XbimProductShape>(context.ProductShapes.Where(p=>p.ProductType != typeof(IfcOpeningElement)), pOpts, productShape =>
                 foreach (var productShape in context.ProductShapes)
                 {
-                    if (productShape.ProductType == typeof( IfcOpeningElement)) continue;
+                    
                     Type productType = productShape.ProductType;
                     XbimTexture texture = new XbimTexture().CreateTexture(colourMap[productType.Name]); //get the colour to use
                     XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> typeLayer;
-                    if(!typeLayers.TryGetValue(texture,out typeLayer))
+                    if (!typeLayers.TryGetValue(texture, out typeLayer))
                     {
-                        typeLayer = new XbimMeshLayer<WpfMeshGeometry3D,WpfMaterial>(model, texture);
+                        typeLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, texture);
                         typeLayers.Add(texture, typeLayer);
                     }
-                    XbimMatrix3D prodTransform = productShape.Placement*wcsTransform;
+                    XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
 
-                    if (productShape.Shapes.Count() == 0)
-                    {
-                        Console.WriteLine("ww");
-                    }
                     foreach (var shape in productShape.Shapes)
                     {
                         XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> shapeLayer;
@@ -1316,9 +1330,10 @@ namespace Xbim.Presentation
                         else
                             //add the shape to the right layer
                             shapeLayer.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform);
-                        
+
                     }
                 }
+               // );
                 foreach (var layer in typeLayers.Values)
                 {
                    

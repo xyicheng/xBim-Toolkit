@@ -94,6 +94,10 @@ namespace Xbim.ModelGeometry.Scene
                         string command = tokens[0].Trim().ToUpper();
                         switch (command)
                         {
+                            case "P":
+                                vertexList = new List<XbimPoint3D>();
+                                normalList = new List<XbimVector3D>();
+                                break;
                             case "V": //process vertices
                                 for (int i = 1; i < tokens.Length; i++)
                                 {

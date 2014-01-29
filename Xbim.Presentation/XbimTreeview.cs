@@ -248,7 +248,7 @@ namespace Xbim.Presentation
             
             if (tv != null && model != null)
             {
-                model.RefencedModels.CollectionChanged += tv.RefencedModels_CollectionChanged;
+                model.ReferencedModels.CollectionChanged += tv.RefencedModels_CollectionChanged;
                 switch (tv.ViewDefinition)
                 {
                     case XbimViewType.SpatialStructure:
@@ -393,7 +393,7 @@ namespace Xbim.Presentation
         {
             if (Model != null )
             {
-                Model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
+                Model.ReferencedModels.CollectionChanged += RefencedModels_CollectionChanged;
                 switch (ViewDefinition)
                 {
                     case XbimViewType.SpatialStructure:
