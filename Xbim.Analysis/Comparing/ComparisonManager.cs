@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.IO;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.HSSF.Util;
 
 namespace Xbim.Analysis.Comparing
 {
@@ -63,10 +66,34 @@ namespace Xbim.Analysis.Comparing
                 }
             }
             );
+
+            //clean up candidaes which are supposed to be new but they are already somewhere else
+            var candidates = _results.Added;
+            foreach (var candidate in candidates)
+            {
+                foreach (var item in _results.MatchOneToOne)
+                {
+                    if (item.Value == candidate)
+                    {
+                        //remove from results
+                        foreach (var result in _results.Results)
+                            foreach (var res in result.Results)
+                                if (res.Candidates.Contains(candidate) && res.Baseline == null)
+                                    res.Candidates.Remove(candidate);
+                    }
+                }
+            }
         }
 
         public void SaveResultToCSV(string path)
         {
+            if (path == null)
+                throw new ArgumentNullException();
+
+            var ext = Path.GetExtension(path).ToLower();
+            if (ext != ".csv")
+                path = path + ".csv";
+
             var file = File.CreateText(path);
 
             //create header
@@ -114,7 +141,178 @@ namespace Xbim.Analysis.Comparing
             file.Close();
         }
 
+        public void SaveResultToXLS(string outputPath)
+        {
+            if (String.IsNullOrEmpty(outputPath))
+                throw new ArgumentNullException();
 
+            var ext = Path.GetExtension(outputPath).ToLower();
+            if (ext != ".xls")
+                outputPath = outputPath + ".xls";
+
+            HSSFWorkbook workbook = null;
+            try
+            {
+                workbook = new HSSFWorkbook();
+                var index = 0;
+                var rowNum = 0;
+
+                // Getting the worksheet by its name... 
+                ISheet sheet = workbook.CreateSheet("Comparison_results");
+
+                //create header
+                var headerStyle = GetCellStyle(workbook, "", GetColor(workbook, 192, 192, 192));
+                IRow dataRow = sheet.CreateRow(rowNum);
+                var cellType = dataRow.CreateCell(index, CellType.STRING);
+                cellType.SetCellValue("Baseline label");
+                cellType.CellStyle = headerStyle;
+                var cellLabel = dataRow.CreateCell(++index, CellType.STRING);
+                cellLabel.SetCellValue("Revision label");
+                cellLabel.CellStyle = headerStyle;
+
+                foreach (var cmp in _comparers)
+                {
+                    var cell = dataRow.CreateCell(++index, CellType.STRING);
+                    cell.SetCellValue(String.Format("{0} (Weight: {1})", cmp.ComparisonType, cmp.Weight));
+                    cell.CellStyle = headerStyle;
+                }
+                var cellMatch = dataRow.CreateCell(++index, CellType.STRING);
+                cellMatch.SetCellValue("Match rate");
+                cellMatch.CellStyle = headerStyle;
+
+                //write content
+                foreach (var item in _results.Results)
+                {
+
+                    var baseLabel = item.Root != null ? "#" + Math.Abs(item.Root.EntityLabel).ToString() : "";
+                    var bestMatch = item.BestMatch;
+
+                    HSSFColor color = GetColor(workbook, 255, 255, 255);
+                    if (bestMatch.Count == 0 && item.Root != null) //deleted
+                        color = GetColor(workbook, 255, 0, 0);
+                    if (item.Root == null)                          //added
+                        color = GetColor(workbook, 0, 255, 0);
+                    if (item.Root != null && bestMatch.Count > 1) //ambiquity
+                        color = GetColor(workbook, 0, 0, 255);
+
+                    var style = GetCellStyle(workbook, "", color);
+                    var percentStyle = GetCellStyle(workbook, "0.00%", color);
+
+                    if (bestMatch.Count == 0)
+                    {
+                        dataRow = sheet.CreateRow(++rowNum);
+                        index = 0;
+
+                        var c1 = dataRow.CreateCell(index, CellType.STRING);
+                        c1.SetCellValue(baseLabel);
+                        c1.CellStyle = style;
+
+                        var c2 = dataRow.CreateCell(++index, CellType.STRING);
+                        c2.CellStyle = style;
+
+                        foreach (var cmp in _comparers)
+                        {
+                            var c = dataRow.CreateCell(++index, CellType.STRING);
+                            c.SetCellValue("false");
+                            c.CellStyle = style;
+                        }
+
+                        var c3 = dataRow.CreateCell(++index, CellType.NUMERIC);
+                        c3.SetCellValue(0);
+                        c3.CellStyle = percentStyle;
+                    }
+                    else
+                    {
+                        var collection = item.Root == null ? item.WeightedResults : bestMatch;
+                        foreach (var match in collection)
+                        {
+                            dataRow = sheet.CreateRow(++rowNum);
+                            index = 0;
+
+                            var c1 = dataRow.CreateCell(index, CellType.STRING);
+                            c1.SetCellValue(baseLabel);
+                            c1.CellStyle = style;
+
+                            var matchLabel = match.Root != null ? "#" + Math.Abs(match.Root.EntityLabel).ToString() : "";
+                            var c2 = dataRow.CreateCell(++index, CellType.STRING);
+                            c2.SetCellValue(matchLabel);
+                            c2.CellStyle = style;
+
+                            foreach (var cmp in _comparers)
+                            {
+                                var c = dataRow.CreateCell(++index, CellType.STRING);
+                                c.SetCellValue("");
+                                c.CellStyle = style;
+
+                                var results = item.Results.Where(r => r.Comparer == cmp); //check is this comparer did return any result for this
+                                if (results.Any())
+                                {
+                                    var result = results.Where(r => r.Candidates.Contains(match.Root));
+                                    c.SetCellValue(result.Any() ? "true" : "false");
+                                }
+                            }
+
+                            var relWeight = (float)(match.Weight) / (float)(item.MaximalWeight);
+                            var c3 = dataRow.CreateCell(++index, CellType.NUMERIC);
+                            c3.SetCellValue(relWeight);
+                            //c3.SetCellValue(String.Format("{0,-1:f2}%", relWeight));
+                            c3.CellStyle = percentStyle;
+                            if (relWeight < 0.99999 && item.Root != null) //indicate changed value
+                                c3.CellStyle.FillForegroundColor = GetColor(workbook, 255, 0, 0).GetIndex();
+                        }
+                    }
+  
+                }
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception("It wasn't possible to save results to spreadsheet.", e);
+            }
+            finally
+            {
+                var file = File.Create(outputPath);
+                if (workbook != null)
+                    workbook.Write(file);
+                file.Close();
+            }
+        }
+
+        private HSSFColor GetColor(HSSFWorkbook workbook, byte red, byte green, byte blue)
+        {
+            HSSFPalette palette = workbook.GetCustomPalette();
+            HSSFColor colour = palette.FindSimilarColor(red, green, blue);
+            if (colour == null)
+            {
+                // First 64 are system colours
+                if (NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE < 64)
+                {
+                    NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE = 64;
+                }
+                NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE++;
+                colour = palette.AddColor(red, green, blue);
+            }
+            return colour;
+        }
+
+        private HSSFCellStyle GetCellStyle(HSSFWorkbook workbook, string formatString, HSSFColor colour)
+        {
+            HSSFCellStyle cellStyle;
+            cellStyle = workbook.CreateCellStyle() as HSSFCellStyle;
+
+            HSSFDataFormat dataFormat = workbook.CreateDataFormat() as HSSFDataFormat;
+            cellStyle.DataFormat = dataFormat.GetFormat(formatString);
+
+            cellStyle.FillForegroundColor = colour.GetIndex();
+            cellStyle.FillPattern = FillPatternType.SOLID_FOREGROUND;
+
+            //cellStyle.BorderBottom = BorderStyle.THIN;
+            //cellStyle.BorderLeft = BorderStyle.THIN;
+            //cellStyle.BorderRight = BorderStyle.THIN;
+            //cellStyle.BorderTop = BorderStyle.THIN;
+
+            return cellStyle;
+        }
 
     }
 
@@ -170,13 +368,12 @@ namespace Xbim.Analysis.Comparing
         {
             get
             {
-                foreach (var result in this._results)
+                foreach (var result in this._results.Where(r => r.Root == null))
                 {
-                    if (result.Root == null)
-                        foreach (var item in result.BestMatch)
-                        {
-                            yield return item.Root;
-                        }
+                    foreach (var item in result.WeightedResults)
+                    {
+                        yield return item.Root;
+                    }
                 }
             }
         }

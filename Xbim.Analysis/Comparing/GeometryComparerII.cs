@@ -46,8 +46,11 @@ namespace Xbim.Analysis.Comparing
             _precision = baselineModel.ModelFactors.Precision;
             if (Math.Abs(revisedModel.ModelFactors.OneMetre - _meter) > 1e-9)
                 throw new ArgumentException("All models have to use the same length units.");
-            if (Math.Abs(revisedModel.ModelFactors.Precision - _precision) > 1e-9)
-                throw new ArgumentException("All models have to use the same precision.");
+            //if (Math.Abs(revisedModel.ModelFactors.Precision - _precision) > 1e-9)
+            //    throw new ArgumentException("All models have to use the same precision.");
+
+            if (revisedModel.ModelFactors.Precision > _precision)
+                _precision = revisedModel.ModelFactors.Precision;
 
             //get axis aligned BBoxes and overall world size
             XbimRect3D worldBB = XbimRect3D.Empty;
