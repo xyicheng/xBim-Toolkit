@@ -82,7 +82,7 @@ namespace Xbim.ModelGeometry.Converter
                             {
                                 //ADD EACH SHAPE IN THE MAP
                                 string shapeString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
-                                string[] itms = shapeString.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                                string[] itms = shapeString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                                 XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
                                 _geometryHashCodes.Add(data.GeometryHash);
                             }
