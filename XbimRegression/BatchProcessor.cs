@@ -96,7 +96,13 @@ namespace XbimRegression
                         parseTime = watch.ElapsedMilliseconds;
                         string xbimFilename = BuildFileName(ifcFile, ".xbim");
                         //model.Open(xbimFilename, XbimDBAccess.ReadWrite);
-                        XbimMesher.GenerateGeometry(model, Logger, null);
+                        if (model.GeometryVersion.Major == 1)
+                            XbimMesher.GenerateGeometry(model, Logger, null);
+                        else
+                        {
+                            Xbim3DModelContext context = new Xbim3DModelContext(model);
+                            context.CreateContext();
+                        }
                         geomTime = watch.ElapsedMilliseconds - parseTime;
                         XbimSceneBuilder sb = new XbimSceneBuilder();
                         string xbimSceneName = BuildFileName(ifcFile, ".xbimScene");

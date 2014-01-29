@@ -55,7 +55,7 @@ namespace Xbim.Tests.Comparisons
             //there should be nothing new
             Assert.AreEqual(0, results.Added.Count());
             //there is opening and window missing
-            Assert.AreEqual(2, results.Deleted.Count());
+            Assert.AreEqual(3, results.Deleted.Count());
             //there should be no conflicts
             Assert.AreEqual(0, results.Ambiquity.Count());
         }

@@ -159,13 +159,13 @@ namespace Xbim.Analysis.Comparing
             foreach (var candidate in candidates)
             {
                 //compare hash of the geometry
-                //if (CompareHashes(product, candidate))
-                //{
+                if (CompareHashes(product, candidate))
+                {
                     //precise geometry check should go here
 
                     result.Candidates.Add(candidate);
                     _processedFromB.Add(candidate);
-                //}
+                }
             }
             return result;
         }

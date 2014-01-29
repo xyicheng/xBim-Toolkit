@@ -321,7 +321,7 @@ namespace Xbim.ModelGeometry.Converter
                                 if (shapeLookup.TryGetValue(Math.Abs(mapShape.EntityLabel), out counter))
                                 {
                                     Interlocked.Increment(ref counter.ReferenceCount);
-                                    mapHash ^= counter.GeometryHash;
+                                    mapHash += counter.GeometryHash;
                                     mapShapes.Add(counter.GeometryId);
                                     if (mapBounds.IsEmpty) mapBounds = counter.BoundingBox;
                                     else mapBounds.Union(counter.BoundingBox);

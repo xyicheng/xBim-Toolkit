@@ -28,7 +28,6 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcLShapeProfileDef)profile).GetGeometryHashCode();
             else
             {
-                return profile.GetHashCode();
                 throw new XbimGeometryException("Unsupported solid geometry tpype " + profile.GetType().Name);
             }
         }
