@@ -75,6 +75,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <returns></returns>
         public bool Read(String data, XbimMatrix3D? trans = null)
         {
+          
             using (StringReader sr = new StringReader(data))
             {
 
@@ -83,8 +84,10 @@ namespace Xbim.ModelGeometry.Scene
                 String line;
                 // Read and display lines from the data until the end of
                 // the data is reached.
-                while ((line = sr.ReadLine()) != null)
+              
+                while ( (line = sr.ReadLine()) != null)
                 {
+                   
                     string[] tokens = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if(tokens.Length>1) //we need a command and some data
                     {

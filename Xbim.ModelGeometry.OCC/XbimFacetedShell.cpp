@@ -813,7 +813,7 @@ namespace Xbim
 						{
 							size_t index;
 							Float3D p3D((float)p->X,(float)p->Y,(float)p->Z,precision); 
-							p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
+							//p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
 							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
 							if(hit==vertexMap.end()) //not found add it in
 							{	

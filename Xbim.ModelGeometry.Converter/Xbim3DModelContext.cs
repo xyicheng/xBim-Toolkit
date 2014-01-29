@@ -161,7 +161,7 @@ namespace Xbim.ModelGeometry.Converter
            
             
             ParallelOptions pOpts = new ParallelOptions();
-            List<IfcProduct> products = _model.Instances.OfType<IfcProduct>().Where(p => p.Representation != null).ToList();
+            List<IfcProduct> products = _model.Instances.OfType<IfcProduct>().Where(p => p.Representation != null ).ToList();
             List<IfcElement> elements = products.OfType<IfcElement>().ToList();
 
             //get all the shapes that are 3D
@@ -289,8 +289,8 @@ namespace Xbim.ModelGeometry.Converter
             //set up a bag element bounds for clustering
             ConcurrentQueue<XbimBBoxClusterElement> elementsToCluster = new ConcurrentQueue<XbimBBoxClusterElement>();
 
-           // Parallel.ForEach<IfcProduct>(products, pOpts, product =>
-               foreach (var product in _model.Instances.OfType<IfcProduct>().Where(p => p.Representation != null))
+            Parallel.ForEach<IfcProduct>(products, pOpts, product =>
+            //   foreach (var product in products)
             {
                 //select representations that are in the required context
                 //only want solid representations for this context, but rep type is optional so just filter identified 2d elements
@@ -372,7 +372,7 @@ namespace Xbim.ModelGeometry.Converter
                     }
                 }
             }
-         // );
+          );
 
 
             //Write out the actual representation item reference count
@@ -494,7 +494,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <param name="geom"></param>
         /// <param name="refCount">Number of other references to this geometry</param>
         /// <returns></returns>
-        int WriteProductMapToDB(XbimModel model, IEnumerable<int> shapes, IfcGeometricRepresentationContext ctxt, IfcProduct product, XbimMatrix3D placementTransform, XbimRect3D productBounds, bool nettShape = false)
+        int WriteProductMapToDB(XbimModel model, IEnumerable<int> shapes, IfcGeometricRepresentationContext ctxt, IfcProduct product, XbimMatrix3D placementTransform, XbimRect3D productBounds, bool nettShape)
         {
             XbimGeometryCursor geomTable = model.GetGeometryTable();
             try

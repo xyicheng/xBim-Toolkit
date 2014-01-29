@@ -67,7 +67,7 @@ namespace Xbim.IO
 
         //Object that manages geometry conversion etc
         IGeometryManager geometryManager;
-        private Version _geometryVersion = new Version(1,0,0);
+        private Version _geometryVersion = new Version(2,0,0);
 
       
         #endregion

@@ -1316,10 +1316,7 @@ namespace Xbim.Presentation
                         else
                             //add the shape to the right layer
                             shapeLayer.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform);
-                         int r = 8;if (shapeLayer.Hidden.PositionCount == 0)
-                        {
-                          r++;
-                        }
+                        
                     }
                 }
                 foreach (var layer in typeLayers.Values)

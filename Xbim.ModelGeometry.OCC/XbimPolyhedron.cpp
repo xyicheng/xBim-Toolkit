@@ -385,9 +385,9 @@ namespace Xbim
 					i = _meshSet->vertex_storage.begin(); i!=_meshSet->vertex_storage.end(); ++i)
 				{
 					vertex_t vt = *i;
-					vt.v.x = (long)(vt.v.x * rounding10P) / rounding10P;
-					vt.v.y = (long)(vt.v.y * rounding10P) / rounding10P;
-					vt.v.z = (long)(vt.v.z * rounding10P) / rounding10P;
+					//vt.v.x = (long)(vt.v.x * rounding10P) / rounding10P;
+					//vt.v.y = (long)(vt.v.y * rounding10P) / rounding10P;
+					//vt.v.z = (long)(vt.v.z * rounding10P) / rounding10P;
 					sw->Append(String::Format(" {0},{1},{2}",vt.v.x,vt.v.y,vt.v.z));
 				}
 				sw->AppendLine();
