@@ -59,5 +59,15 @@ namespace Xbim.Script.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Empty_template {
+            get {
+                object obj = ResourceManager.GetObject("Empty_template", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

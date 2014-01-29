@@ -15,10 +15,12 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcLShapeProfileDef profile)
         {
-            int hash = profile.Depth.GetHashCode() ^ 
-                 profile.Thickness.GetHashCode() ^ 
+            Func<double, int> f = profile.ModelOf.ModelFactors.GetGeometryDoubleHash;
+
+            int hash = f(profile.Depth) ^ 
+                 f(profile.Thickness) ^ 
                  profile.Position.GetGeometryHashCode();
-            if (profile.Width.HasValue) hash ^= profile.Width.Value.GetHashCode();
+            if (profile.Width.HasValue) hash ^= f(profile.Width ?? 0);
             return hash;
         }
 

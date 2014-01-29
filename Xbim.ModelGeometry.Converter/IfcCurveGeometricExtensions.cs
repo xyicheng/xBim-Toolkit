@@ -15,7 +15,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcCurve curve)
         {
-            return curve.GetHashCode(); //mostly in ifc files equality is enough, might need to define hash functions for specific types later
+            return curve.GetType().Name.GetHashCode(); //mostly in ifc files equality is enough, might need to define hash functions for specific types later
         }
 
         /// <summary>

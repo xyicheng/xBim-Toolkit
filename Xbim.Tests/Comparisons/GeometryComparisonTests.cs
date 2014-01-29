@@ -31,9 +31,9 @@ namespace Xbim.Tests.Comparisons
             //One more window and one more opening
             Assert.AreEqual(2, results.Added.Count());
             //all old products should match one to one
-            Assert.AreEqual(baseline.Instances.Where<IfcProduct>(p => p.Representation != null).Count(), results.MatchOneToOne.Count);
-            //there should be nothing only in old
-            Assert.AreEqual(0, results.Added.Count());
+            Assert.AreEqual(baseline.Instances.Where<IfcProduct>(p => p.Representation != null).Count()-1, results.MatchOneToOne.Count);
+            //there should be nothing only in old but wall has changed
+            Assert.AreEqual(1, results.Deleted.Count());
             //there should be no conflicts
             Assert.AreEqual(0, results.Ambiquity.Count);
         }

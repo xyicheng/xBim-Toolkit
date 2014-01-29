@@ -16,16 +16,20 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcDirection dir)
         {
+            if (dir == null) return 0;
+
+            var model = dir.ModelOf;
+            Func<double, int> f = model.ModelFactors.GetGeometryDoubleHash;
             switch (dir.Dim)
             {
                 case 1:
-                    return dir.X.GetHashCode();
+                    return f(dir.X);
                 case 2:
-                    return dir.X.GetHashCode() ^ dir.Y.GetHashCode();
+                    return f(dir.X) ^ f(dir.Y);
                 case 3:
-                    return dir.X.GetHashCode() ^ dir.Y.GetHashCode() ^ dir.Z.GetHashCode();
+                    return f(dir.X) ^ f(dir.Y) ^ f(dir.Z);
                 default:
-                    return dir.GetHashCode();
+                    throw new NotImplementedException();
             }
         }
 

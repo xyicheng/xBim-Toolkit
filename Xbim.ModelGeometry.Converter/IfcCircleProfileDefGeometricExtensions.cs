@@ -15,7 +15,8 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcCircleProfileDef profile)
         {
-            return profile.Radius.GetHashCode() ^ profile.Position.GetGeometryHashCode();
+            var model = profile.ModelOf;
+            return model.ModelFactors.GetGeometryDoubleHash(profile.Radius) ^ profile.Position.GetGeometryHashCode();
         }
 
         /// <summary>

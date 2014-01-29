@@ -16,9 +16,9 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcExtrudedAreaSolid solid)
         {
-            int round = solid.ModelOf.ModelFactors.Rounding;
+            Func<double, int> f = solid.ModelOf.ModelFactors.GetGeometryDoubleHash;
 
-            return Math.Round(solid.Depth, round).GetHashCode() ^ 
+            return f(solid.Depth) ^ 
                    solid.ExtrudedDirection.GetGeometryHashCode() ^
                    solid.Position.GetGeometryHashCode() ^ 
                    solid.SweptArea.GetGeometryHashCode();

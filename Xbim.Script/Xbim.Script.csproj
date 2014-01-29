@@ -78,6 +78,12 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\packages\NPOI.1.2.5\lib\net40\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI">
+      <HintPath>..\packages\NPOI.1.2.5\lib\net40\NPOI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -152,18 +158,20 @@
     <None Include="Classifications\Uniclass2-Zz.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
     <None Include="Parser\gplex.exe" />
     <None Include="Parser\gplex.pdf" />
     <None Include="Parser\gppg.exe" />
     <Content Include="Parser\Queries.txt" />
     <None Include="Parser\gppg.pdf" />
-    <None Include="PredefinedRules\ClassifyModelToNRM.bql">
+    <None Include="Templates\ClassifyModelToNRM.bql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="PredefinedRules\EmbeddedNRM.bql">
+    <None Include="Templates\EmbeddedNRM.bql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="README.rtf" />
+    <None Include="Templates\Empty_template.xls" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Parser\makeparser.bat" />
@@ -171,6 +179,7 @@
     <None Include="Parser\Scanner.lex" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="PredefinedRules\" />
     <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>

@@ -15,7 +15,10 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcCircleHollowProfileDef profile)
         {
-            return profile.Radius.GetHashCode() ^ profile.WallThickness.GetHashCode() ^ profile.Position.GetGeometryHashCode();
+            if (profile == null) return 0;
+            Func<double, int> f = profile.ModelOf.ModelFactors.GetGeometryDoubleHash;
+
+            return f(profile.Radius) ^ f(profile.WallThickness) ^ profile.Position.GetGeometryHashCode();
         }
 
         /// <summary>

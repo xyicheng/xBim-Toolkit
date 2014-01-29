@@ -15,7 +15,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcAxis2Placement3D ax2)
         {
-            return ax2.Location.GetGeometryHashCode() ^ ax2.P[0].GetHashCode() ^ ax2.P[1].GetHashCode();
+            return ax2.Location.GetGeometryHashCode() ^ ax2.Axis.GetGeometryHashCode() ^ ax2.RefDirection.GetGeometryHashCode();
         }
 
         /// <summary>

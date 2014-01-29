@@ -18,6 +18,9 @@ using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.MaterialPropertyResource;
 using Xbim.Ifc2x3.QuantityResource;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.HSSF.Util;
 
 namespace Xbim.Script
 {
@@ -754,8 +757,21 @@ namespace Xbim.Script
 
         private void DumpAttributes(string identifier,IEnumerable<string> attrNames, string outputPath = null)
         {
+            if (outputPath == null)
+                ExportCSV(identifier, attrNames, null);
+            var ext = Path.GetExtension(outputPath).ToLower();
+            if (ext == ".xls")
+                ExportXLS(identifier, attrNames, outputPath);
+            else
+                ExportCSV(identifier, attrNames, outputPath);
+           
+            
+        }
 
+        private void ExportCSV(string identifier, IEnumerable<string> attrNames, string outputPath = null)
+        {
             TextWriter output = null;
+            StringBuilder str = null;
             try
             {
                 if (outputPath != null)
@@ -763,7 +779,7 @@ namespace Xbim.Script
                     output = new StreamWriter(outputPath, false);
                 }
 
-                StringBuilder str = new StringBuilder();
+                str = new StringBuilder();
                 if (Variables.IsDefined(identifier))
                 {
                     var header = "";
@@ -793,11 +809,6 @@ namespace Xbim.Script
                 else
                     str.AppendLine(String.Format("Variable {0} is not defined.", identifier));
 
-                if (output != null)
-                    output.Write(str.ToString());
-                else
-                    Write(str.ToString());
-
             }
             catch (Exception e)
             {
@@ -805,10 +816,126 @@ namespace Xbim.Script
             }
             finally
             {
-                //make sure output will not stay opened
-                if (output != null) output.Close();
+                if (output != null)
+                {
+                    output.Write(str.ToString());
+                    output.Close();
+                }
+                else
+                    Write(str.ToString());
             }
-            
+        }
+
+        private void ExportXLS(string identifier, IEnumerable<string> attrNames, string outputPath)
+        {
+            if (String.IsNullOrEmpty(outputPath)) 
+                throw new ArgumentException();
+
+            if (!Variables.IsDefined(identifier))
+                Scanner.yyerror(String.Format("Variable {0} is not defined.", identifier));
+
+            HSSFWorkbook workbook = null;
+            try
+            {
+                if (File.Exists(outputPath))
+                    workbook = new HSSFWorkbook(File.Open(outputPath, FileMode.Open, FileAccess.ReadWrite));
+                else
+                    workbook = new HSSFWorkbook();
+
+                // Getting the worksheet by its name... 
+                ISheet sheet = workbook.GetSheet(identifier) ?? workbook.CreateSheet(identifier);
+
+                //create header
+                var headerColour = GetColor(workbook, 220, 220, 220);
+                var headerStyle = GetCellStyle(workbook, "", headerColour);
+                var rowNum = sheet.LastRowNum == 0 ? 0 : sheet.LastRowNum + 1;
+                IRow dataRow = sheet.CreateRow(rowNum);
+                var cellType = dataRow.CreateCell(0, CellType.STRING);
+                cellType.SetCellValue("IFC Type");
+                cellType.CellStyle = headerStyle;
+                var cellLabel = dataRow.CreateCell(1, CellType.STRING);
+                cellLabel.SetCellValue("Label");
+                cellLabel.CellStyle = headerStyle;
+
+                var names = attrNames.ToList();
+                for (int i = 0; i < attrNames.Count(); i++)
+                {
+                    var cell = dataRow.CreateCell(i + 2, CellType.STRING);
+                    cell.SetCellValue(names[i]);
+                    cell.CellStyle = headerStyle;
+                }
+                    
+
+                //export values
+                var entities = Variables[identifier].ToList();
+                for (int j = 0; j < entities.Count; j++)
+                {
+                    var entity = entities[j];
+                    dataRow = sheet.CreateRow(++rowNum);
+                    dataRow.CreateCell(0, CellType.STRING).SetCellValue(entity.GetType().Name);
+                    var label = "#" + Math.Abs(entity.EntityLabel);
+                    dataRow.CreateCell(1, CellType.STRING).SetCellValue(label);
+
+                    for (int i = 0; i < attrNames.Count(); i++)
+                    {
+                        var name = names[i];
+                        var cell = dataRow.CreateCell(i+2, CellType.STRING);
+                        //get attribute
+                        var value = GetAttributeValue(name, entity);
+                        if (value == null)
+                            value = GetProperty(name, entity);
+                        if (value != null)
+                            cell.SetCellValue(value.ToString());
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Scanner.yyerror("It was not possible to dump specified content of the " + identifier + ": " + e.Message);
+            }
+            finally
+            {
+                var file = File.Create(outputPath);
+                if (workbook != null)
+                    workbook.Write(file);
+                file.Close();
+            }
+        }
+
+        private HSSFColor GetColor (HSSFWorkbook workbook, byte red, byte green, byte blue)
+        {
+            HSSFPalette palette = workbook.GetCustomPalette();
+            HSSFColor colour = palette.FindSimilarColor(red, green, blue);
+            if (colour == null)
+            {
+                // First 64 are system colours
+                if (NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE < 64)
+                {
+                    NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE = 64;
+                }
+                NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE++;
+                colour = palette.AddColor(red, green, blue);
+            }
+            return colour;
+        }
+
+        private HSSFCellStyle GetCellStyle(HSSFWorkbook workbook, string formatString, HSSFColor colour)
+        {
+            HSSFCellStyle cellStyle;
+            cellStyle = workbook.CreateCellStyle() as HSSFCellStyle;
+
+            HSSFDataFormat dataFormat = workbook.CreateDataFormat() as HSSFDataFormat;
+            cellStyle.DataFormat = dataFormat.GetFormat(formatString);
+
+            cellStyle.FillForegroundColor = colour.GetIndex();
+            cellStyle.FillPattern = FillPatternType.SOLID_FOREGROUND;
+
+            //cellStyle.BorderBottom = BorderStyle.THIN;
+            //cellStyle.BorderLeft = BorderStyle.THIN;
+            //cellStyle.BorderRight = BorderStyle.THIN;
+            //cellStyle.BorderTop = BorderStyle.THIN;
+
+            return cellStyle;
         }
 
         private void ClearIdentifier(string identifier)

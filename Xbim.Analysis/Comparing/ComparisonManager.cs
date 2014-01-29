@@ -114,6 +114,8 @@ namespace Xbim.Analysis.Comparing
             file.Close();
         }
 
+
+
     }
 
     /// <summary>

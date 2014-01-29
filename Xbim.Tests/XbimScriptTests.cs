@@ -13,6 +13,7 @@ using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.MaterialResource;
 using Xbim.Ifc2x3.QuantityResource;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using System.IO;
 
 namespace XbimQueryTest
 {
@@ -126,10 +127,10 @@ namespace XbimQueryTest
                 {"Clear $wallType;",true},
 
                 //model manipulation syntax
-                {"Save revision to file 'output.ifc';", true},
-                {"Close revision;", true},
-                {"Open revision from file 'output.ifc';", true},
-                {"Validate revision;", true},
+                {"Save model to file 'output.ifc';", true},
+                {"Close model;", true},
+                {"Open model from file 'output.ifc';", true},
+                {"Validate model;", true},
 
                 //setting of attributes and properties
                 {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
@@ -731,13 +732,13 @@ namespace XbimQueryTest
             parser.Parse(dataCreation);
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Save revision to file 'output2.ifc';");
+            parser.Parse("Save model to file 'output2.ifc';");
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Close revision;");
+            parser.Parse("Close model;");
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Open revision from file 'output2.ifc';");
+            parser.Parse("Open model from file 'output2.ifc';");
             Assert.AreEqual(0, parser.Errors.Count());
 
             parser.Parse("Select every wall;");
@@ -955,8 +956,8 @@ namespace XbimQueryTest
                 Create new wall 'Wall 4, revision 1';
                 Create new wall 'Wall 5, revision 1';
                 
-                Save revision to file 'TestModel1.xBIM';
-                Close revision;
+                Save model to file 'TestModel1.xBIM';
+                Close model;
                 
                 Create new wall 'Wall 1, revision 2';
                 Create new wall 'Wall 2, revision 2';
@@ -964,8 +965,8 @@ namespace XbimQueryTest
                 Create new wall 'Wall 4, revision 2';
                 Create new wall 'Wall 5, revision 2';
                 
-                Save revision to file 'TestModel2.xBIM';
-                Close revision;
+                Save model to file 'TestModel2.xBIM';
+                Close model;
                 
                 Create new wall 'Wall 1, revision 3';
                 Create new wall 'Wall 2, revision 3';
@@ -973,20 +974,20 @@ namespace XbimQueryTest
                 Create new wall 'Wall 4, revision 3';
                 Create new wall 'Wall 5, revision 3';
                 
-                Save revision to file 'TestModel3.xBIM';
-                Close revision;
+                Save model to file 'TestModel3.xBIM';
+                Close model;
                 
-                Add reference revision 'TestModel1.xBIM' where organization is 'Organization A' and owner is 'Antoineta';
-                Add reference revision 'TestModel2.xBIM' where organization is 'Organization B' and owner is 'Bugatti';
-                Add reference revision 'TestModel3.xBIM' where organization is 'Organization C' and owner is 'Cecilia';
+                Add reference model 'TestModel1.xBIM' where organization is 'Organization A' and owner is 'Antoineta';
+                Add reference model 'TestModel2.xBIM' where organization is 'Organization B' and owner is 'Bugatti';
+                Add reference model 'TestModel3.xBIM' where organization is 'Organization C' and owner is 'Cecilia';
 
                 $walls is every wall;
 
-                $test1 is every wall where revision is 'TestModel1';
-                $test2 is every wall where revision is 'TestModel1.xBIM';
-                $test3 is every wall where revision is 'testmodel1';
-                $test4 is every wall where revision owner is 'Cecilia';
-                $test5 is every wall where revision organization is 'Organization B';
+                $test1 is every wall where model is 'TestModel1';
+                $test2 is every wall where model is 'TestModel1.xBIM';
+                $test3 is every wall where model is 'testmodel1';
+                $test4 is every wall where model owner is 'Cecilia';
+                $test5 is every wall where model organization is 'Organization B';
             ");
 
             //test if everything was all right
@@ -1008,9 +1009,9 @@ namespace XbimQueryTest
 
             //test opening from IFC file
             parser.Parse(@"
-                Save revision to file 'Federation.ifc';
-                Close revision;
-                Open revision from file 'Federation.ifc';
+                Save model to file 'Federation.ifc';
+                Close model;
+                Open model from file 'Federation.ifc';
                 $walls is every wall;
             ");
             Assert.AreEqual(15, parser.Results["$walls"].Count());
@@ -1050,7 +1051,7 @@ namespace XbimQueryTest
                 Create new slab 'My slab No.1';
                 Create new slab 'My slab No.2';
                 
-                Save revision to file 'EmbededScript.ifc';
+                Save model to file 'EmbededScript.ifc';
             ");
             Assert.AreEqual(0, parser.Errors.Count());
             var g2 = parser.Model.Instances.Where<IfcGroup>(g => g.Name == "Group B").FirstOrDefault();
@@ -1064,6 +1065,35 @@ namespace XbimQueryTest
 
             Assert.AreEqual(3, walls.Count());
             Assert.AreEqual(2, slabs.Count());
+        }
+
+        [TestMethod]
+        public void ExportToXLSTest()
+        {
+            //new parser with default empty model
+            XbimQueryParser parser = new XbimQueryParser();
+            
+            //create data using queries
+            parser.Parse(@"
+            Create new wall with name 'My wall No. 1' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
+            Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
+            Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
+            $walls is every wall;
+            $group is new group with name '02.05.01' and description 'External walls';
+            $building = new building with name 'Default building';
+            Add $walls to $group;
+            Add $walls to $building;
+            Set 'Fire protection' to 'Great', 'Warranty date' to '12/05/2016' for $walls in property set 'Testing property set';
+            
+            Export 'Fire protection', 'Warranty date' from $walls to file 'TestXLS.xls';
+            Export 'Fire protection', 'Warranty date' from $walls to file 'TestXLS.xls';
+            Export name, description from $group to file 'TestXLS.xls';
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            Assert.IsTrue(File.Exists("TestXLS.xls"));
+            System.Diagnostics.Process.Start("TestXLS.xls");
         }
     }
 }

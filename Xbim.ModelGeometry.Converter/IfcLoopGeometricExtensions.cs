@@ -20,7 +20,9 @@ namespace Xbim.ModelGeometry.Converter
             if (polyLoop != null)
                 return polyLoop.GetGeometryHashCode();
             else
-                throw new XbimGeometryException("Only loops of type IfcPolyLoop are currently supported");
+                return loop.GetType().Name.GetHashCode();
+
+            //    throw new XbimGeometryException("Only loops of type IfcPolyLoop are currently supported");
         }
 
         /// <summary>

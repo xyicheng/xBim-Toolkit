@@ -55,6 +55,18 @@ namespace Xbim.Common
         /// Returns the value for one millimetre in the units of the model
         /// </summary>
         readonly public double OneMilliMetre;
+
+        private int _significantOrder;
+        public int GetGeometryFloatHash(float number)
+        {
+            return Math.Round(number, _significantOrder).GetHashCode();
+        }
+
+        public int GetGeometryDoubleHash(double number)
+        {
+            return Math.Round(number, _significantOrder).GetHashCode();
+        }
+
         public XbimModelFactors(double angToRads, double lenToMeter, double? precision = null)
         {
             AngleToRadiansConversionFactor = angToRads;
@@ -73,6 +85,9 @@ namespace Xbim.Common
             PrecisionBoolean = OneMilliMetre / 100;
             PrecisionBooleanMax = OneMilliMetre *10;
             Rounding = Math.Abs((int)Math.Log10(Precision));
+
+            var exp = Math.Floor(Math.Log10(Math.Abs(OneMilliMetre / 10d))); //get exponent of first significant digit
+            _significantOrder = exp > 0 ? 0 : (int)Math.Abs(exp);
         }
     }
 }

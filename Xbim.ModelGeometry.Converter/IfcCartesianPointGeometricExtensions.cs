@@ -15,16 +15,17 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcCartesianPoint pt)
         {
+            Func<double, int> f = pt.ModelOf.ModelFactors.GetGeometryDoubleHash;
             switch (pt.Dim)
             {
                 case 1:
-                    return pt.X.GetHashCode();
+                    return f(pt.X);
                 case 2:
-                    return pt.X.GetHashCode() ^ pt.Y.GetHashCode();
+                    return f(pt.X) ^ f(pt.Y);
                 case 3:
-                    return pt.X.GetHashCode() ^ pt.Y.GetHashCode() ^ pt.Z.GetHashCode();
+                    return f(pt.X) ^ f(pt.Y) ^ f(pt.Z);
                 default:
-                    return pt.GetHashCode();
+                    throw new NotImplementedException();
             }
         }
         /// <summary>

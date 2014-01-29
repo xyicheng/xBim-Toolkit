@@ -16,12 +16,14 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcRectangleProfileDef profile)
         {
-            if(profile.YDim != 0) //dividing x/y makes profile hash unique
-                return profile.XDim.GetHashCode() ^ 
-                    (profile.XDim/profile.YDim).GetHashCode() ^ 
+            Func<double, int> f = profile.ModelOf.ModelFactors.GetGeometryDoubleHash;
+
+            if (profile.YDim != 0) //dividing x/y makes profile hash unique
+                return f(profile.XDim) ^ 
+                    f(profile.XDim/profile.YDim) ^ 
                     profile.Position.GetGeometryHashCode();
             else
-                return profile.XDim.GetHashCode() ^
+                return f(profile.XDim) ^
                         profile.Position.GetGeometryHashCode();
         }
 

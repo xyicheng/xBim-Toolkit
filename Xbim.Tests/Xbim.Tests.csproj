@@ -65,6 +65,7 @@
     <Compile Include="COBie\MergePrecedenceRulesTests.cs" />
     <Compile Include="Comparisons\AttributeComparisonTests.cs" />
     <Compile Include="Comparisons\ComparisonManagerTests.cs" />
+    <Compile Include="Comparisons\FloatingGeometryHashTest.cs" />
     <Compile Include="Comparisons\GeometryComparisonTests.cs" />
     <Compile Include="Comparisons\GuidComparisonTests.cs" />
     <Compile Include="Comparisons\MaterialComparisonTests.cs" />
