@@ -185,12 +185,22 @@ namespace Xbim.Analysis.Comparing
                 //create header
                 var headerStyle = GetCellStyle(workbook, "", GetColor(workbook, 192, 192, 192));
                 IRow dataRow = sheet.CreateRow(rowNum);
-                var cellType = dataRow.CreateCell(index, CellType.STRING);
-                cellType.SetCellValue("Baseline label");
+                var cellBase = dataRow.CreateCell(index, CellType.STRING);
+                cellBase.SetCellValue("Baseline label");
+                cellBase.CellStyle = headerStyle;
+                
+                var cellType = dataRow.CreateCell(++index, CellType.STRING);
+                cellType.SetCellValue("Baseline type");
                 cellType.CellStyle = headerStyle;
+
                 var cellLabel = dataRow.CreateCell(++index, CellType.STRING);
                 cellLabel.SetCellValue("Revision label");
                 cellLabel.CellStyle = headerStyle;
+
+                cellType = dataRow.CreateCell(++index, CellType.STRING);
+                cellType.SetCellValue("Revision type");
+                cellType.CellStyle = headerStyle;
+                
 
                 foreach (var cmp in _comparers)
                 {
@@ -207,6 +217,7 @@ namespace Xbim.Analysis.Comparing
                 {
 
                     var baseLabel = item.Baseline != null ? "#" + Math.Abs(item.Baseline.EntityLabel).ToString() : "";
+                    var baseType = item.Baseline != null ? item.Baseline.GetType().Name : "";
                     var bestMatch = item.BestMatch;
 
                     HSSFColor color = GetColor(workbook, 255, 255, 255);
@@ -235,8 +246,16 @@ namespace Xbim.Analysis.Comparing
                         c1.CellStyle = style;
 
                         var c2 = dataRow.CreateCell(++index, CellType.STRING);
-                        c2.SetCellValue("");
+                        c2.SetCellValue(baseType);
                         c2.CellStyle = style;
+
+                        var ct = dataRow.CreateCell(++index, CellType.STRING);
+                        ct.SetCellValue("");
+                        ct.CellStyle = style;
+
+                        ct = dataRow.CreateCell(++index, CellType.STRING);
+                        ct.SetCellValue("");
+                        ct.CellStyle = style;
 
                         foreach (var cmp in _comparers)
                         {
@@ -264,10 +283,19 @@ namespace Xbim.Analysis.Comparing
                             c1.SetCellValue(baseLabel);
                             c1.CellStyle = style;
 
+                            c1 = dataRow.CreateCell(++index, CellType.STRING);
+                            c1.SetCellValue(baseType);
+                            c1.CellStyle = style;
+
                             var matchLabel = match.Candidate != null ? "#" + Math.Abs(match.Candidate.EntityLabel).ToString() : "";
+                            var matchType = match.Candidate != null ? match.Candidate.GetType().Name : "";
                             var c2 = dataRow.CreateCell(++index, CellType.STRING);
                             c2.SetCellValue(matchLabel);
                             c2.CellStyle = style;
+                            
+                            var ct = dataRow.CreateCell(++index, CellType.STRING);
+                            ct.SetCellValue(matchType);
+                            ct.CellStyle = style;
 
                             foreach (var cmp in _comparers)
                             {
