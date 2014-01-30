@@ -1270,6 +1270,8 @@ namespace Xbim.Presentation
         /// </summary>
         public LayerStyling.ILayerStyler LayerStyler = null;
 
+        public LayerStyling.ILayerStylerV2 LayerStylerV2 = null;
+
         /// <summary>
         /// This version uses the new Geometry representation
         /// </summary>
@@ -1285,44 +1287,27 @@ namespace Xbim.Presentation
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             
             //set a colour map, using the standard one
-            XbimColourMap colourMap = new XbimColourMap(StandardColourMaps.IfcProductTypeMap);
+            
             if (context.IsGenerated) //if we have generated the context then use, else nothing to draw
             {
-                Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> typeLayers =
-                            new Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
+                if (LayerStylerV2 == null)
+                    LayerStylerV2 = new LayerStyling.LayerStylerV2TypeAndStyle();
+                LayerStylerV2.Init();
+
+                
                 //get each product and draw its shapes
                 ParallelOptions pOpts = new ParallelOptions();
                 //Parallel.ForEach<XbimProductShape>(context.ProductShapes.Where(p=>p.ProductType != typeof(IfcOpeningElement)), pOpts, productShape =>
                 foreach (var productShape in context.ProductShapes)
                 {
-                    
-                    Type productType = productShape.ProductType;
-                    XbimTexture texture = new XbimTexture().CreateTexture(colourMap[productType.Name]); //get the colour to use
-                    XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> typeLayer;
-                    if (!typeLayers.TryGetValue(texture, out typeLayer))
-                    {
-                        typeLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, texture);
-                        typeLayers.Add(texture, typeLayer);
-                    }
+                    LayerStylerV2.NewProduct(productShape, model);
                     XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
-
                     foreach (var shape in productShape.Shapes)
                     {
-                        XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> shapeLayer;
-                        //get the style of the shape if it has one and create or find a layer to use
-                        if (shape.HasStyle)
-                        {
-                            IfcSurfaceStyle ifcStyle = model.Instances[shape.StyleLabel] as IfcSurfaceStyle;
-                            XbimTexture shapeTexture = new XbimTexture().CreateTexture(ifcStyle);
-                            if (!typeLayers.TryGetValue(shapeTexture, out shapeLayer))
-                            {
-                                shapeLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, shapeTexture);
-                                typeLayers.Add(shapeTexture, shapeLayer);
-                            }
-                        }
-                        else
-                            shapeLayer = typeLayer; //use the type layer as default
-                        //work out all transformations required
+                        XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> shapeLayer = LayerStylerV2.GetLayer(shape, productShape);
+                        if (shapeLayer == null)
+                            continue;
+
                         XbimMatrix3D? shapeTransform = shape.Transform;
                         if (shapeTransform.HasValue)
                             //add the shape to the right layer
@@ -1330,13 +1315,11 @@ namespace Xbim.Presentation
                         else
                             //add the shape to the right layer
                             shapeLayer.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform);
-
                     }
                 }
                // );
-                foreach (var layer in typeLayers.Values)
+                foreach (var layer in LayerStylerV2.Layers.Values)
                 {
-                   
                     scene.Add(layer);
                     if (modelBounds.IsEmpty) modelBounds = layer.BoundingBoxHidden();
                     else modelBounds.Union(layer.BoundingBoxHidden()); 

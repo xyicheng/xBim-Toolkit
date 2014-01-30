@@ -21,6 +21,7 @@ using Xbim.IO;
 using Xbim.ModelGeometry.Converter;
 using Xbim.ModelGeometry.Scene;
 using Xbim.Presentation;
+using Xbim.Presentation.LayerStyling;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions.SelectTypes;
 
@@ -536,6 +537,33 @@ namespace XbimXplorer.Querying
                             {
                                 ReportAdd("Visual mode set to Odd/Even.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerEvenOdd();
+                                ParentWindow.DrawingControl.ReloadModel();
+                            }
+                            else if (t == "slabsandwalls")
+                            {
+                                ReportAdd("Visual mode set to SlabsAndWalls.");
+                                var visualGrouping = new Xbim.Presentation.LayerStyling.LayerStylerV2CustomGroups();
+                                
+                                // walls
+                                var wallsGroup = new LayerStyler2CustomSetAppearence();
+                                foreach (var item in Model.Instances.OfType<IfcWall>())
+                                {
+                                    wallsGroup.Set.Add(item);
+                                }
+                                wallsGroup.Appearence = new XbimTexture().CreateTexture(255, 0, 0, 128);
+                                visualGrouping.GroupSpecs.Add(wallsGroup);
+
+                                // slabs
+                                // walls
+                                var SlabsGroup = new LayerStyler2CustomSetAppearence();
+                                foreach (var item in Model.Instances.OfType<IfcSlab>())
+                                {
+                                    SlabsGroup.Set.Add(item);
+                                }
+                                SlabsGroup.Appearence = new XbimTexture().CreateTexture(0, 255, 0, 255);
+                                visualGrouping.GroupSpecs.Add(SlabsGroup);
+
+                                ParentWindow.DrawingControl.LayerStylerV2 = visualGrouping;
                                 ParentWindow.DrawingControl.ReloadModel();
                             }
                             else
