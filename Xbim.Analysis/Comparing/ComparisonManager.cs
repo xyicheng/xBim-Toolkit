@@ -68,18 +68,40 @@ namespace Xbim.Analysis.Comparing
             );
 
             //clean up candidaes which are supposed to be new but they are already somewhere else
-            var candidates = _results.Added;
-            foreach (var candidate in candidates)
+            var added = _results.Added.ToList();
+            foreach (var candidate in added)
             {
                 foreach (var item in _results.MatchOneToOne)
                 {
+                    //object is already assigned somewhere else as a match one to one which takes precedence
+                    //so it should be removed from here
                     if (item.Value == candidate)
                     {
                         //remove from results
-                        foreach (var result in _results.Results)
+                        foreach (var result in _results.Results.Where(r => r.Baseline == null))
                             foreach (var res in result.Results)
-                                if (res.Candidates.Contains(candidate) && res.Baseline == null)
+                                if (res.Candidates.Contains(candidate))
                                     res.Candidates.Remove(candidate);
+                    }
+                }
+            }
+
+            //clean up candidaes which are supposed to be new but they are already somewhere else
+            var ambiquities = _results.Ambiquity.ToList();
+            foreach (var candidate in ambiquities)
+            {
+                foreach (var match in _results.MatchOneToOne)
+                {
+                    //ambiquity should be removed as it is already good match for some other element
+                    var toRemove = candidate.Value.Where(c => c.Candidate == match.Value);
+                    if (toRemove.Any()) 
+                    {
+                        var rootToRemove = toRemove.FirstOrDefault().Candidate;
+                        //remove from results
+                        foreach (var result in _results.Results.Where(r => r.Baseline == candidate.Key))
+                            foreach (var res in result.Results)
+                                if (res.Candidates.Contains(rootToRemove))
+                                    res.Candidates.Remove(rootToRemove);
                     }
                 }
             }
@@ -107,7 +129,7 @@ namespace Xbim.Analysis.Comparing
             //write content
             foreach (var item in _results.Results)
             {
-                var baseLabel = item.Root != null ? "#" + Math.Abs(item.Root.EntityLabel).ToString() : "-";
+                var baseLabel = item.Baseline != null ? "#" + Math.Abs(item.Baseline.EntityLabel).ToString() : "-";
                 var bestMatch = item.BestMatch;
 
                 if (bestMatch.Count == 0)
@@ -121,7 +143,7 @@ namespace Xbim.Analysis.Comparing
 
                 foreach (var match in item.BestMatch)
                 {
-                    var matchLabel = "#" + Math.Abs(match.Root.EntityLabel).ToString();
+                    var matchLabel = "#" + Math.Abs(match.Candidate.EntityLabel).ToString();
                     file.Write("{0},{1}", baseLabel, matchLabel);
                     foreach (var cmp in _comparers)
                     {
@@ -130,7 +152,7 @@ namespace Xbim.Analysis.Comparing
                             file.Write(",-");
                         else
                         {
-                            var result = results.Where(r => r.Candidates.Contains(match.Root)).FirstOrDefault();
+                            var result = results.Where(r => r.Candidates.Contains(match.Candidate)).FirstOrDefault();
                             file.Write("," + (result != null ? "true" : "false"));
                         }
                     }
@@ -184,21 +206,26 @@ namespace Xbim.Analysis.Comparing
                 foreach (var item in _results.Results)
                 {
 
-                    var baseLabel = item.Root != null ? "#" + Math.Abs(item.Root.EntityLabel).ToString() : "";
+                    var baseLabel = item.Baseline != null ? "#" + Math.Abs(item.Baseline.EntityLabel).ToString() : "";
                     var bestMatch = item.BestMatch;
 
                     HSSFColor color = GetColor(workbook, 255, 255, 255);
-                    if (bestMatch.Count == 0 && item.Root != null) //deleted
+                    if (bestMatch.Count == 0 && item.Baseline != null) //deleted
                         color = GetColor(workbook, 255, 0, 0);
-                    if (item.Root == null)                          //added
+                    if (item.Baseline == null)                          //added
                         color = GetColor(workbook, 0, 255, 0);
-                    if (item.Root != null && bestMatch.Count > 1) //ambiquity
+                    if (item.Baseline != null && bestMatch.Count > 1) //ambiquity
                         color = GetColor(workbook, 0, 0, 255);
+                    var weightRate = (float)item.BestMatchWeight / (float)item.MaximalWeight;
+                    if (item.Baseline != null && bestMatch.Count == 1 && 
+                        (weightRate < 0.99999)) //changed
+                        color = GetColor(workbook, 255, 255, 0);
 
                     var style = GetCellStyle(workbook, "", color);
+                    var redStyle = GetCellStyle(workbook, "", GetColor(workbook, 255, 0, 0));
                     var percentStyle = GetCellStyle(workbook, "0.00%", color);
 
-                    if (bestMatch.Count == 0)
+                    if (bestMatch.Count == 0 && item.Baseline != null)
                     {
                         dataRow = sheet.CreateRow(++rowNum);
                         index = 0;
@@ -208,13 +235,17 @@ namespace Xbim.Analysis.Comparing
                         c1.CellStyle = style;
 
                         var c2 = dataRow.CreateCell(++index, CellType.STRING);
+                        c2.SetCellValue("");
                         c2.CellStyle = style;
 
                         foreach (var cmp in _comparers)
                         {
                             var c = dataRow.CreateCell(++index, CellType.STRING);
-                            c.SetCellValue("false");
+                            c.SetCellValue("");
                             c.CellStyle = style;
+                            var comparers = item.Results.Where(r => r.Comparer == cmp); //check is this comparer did return any result for this
+                            if (comparers.Any())
+                                c.SetCellValue("false");
                         }
 
                         var c3 = dataRow.CreateCell(++index, CellType.NUMERIC);
@@ -223,7 +254,7 @@ namespace Xbim.Analysis.Comparing
                     }
                     else
                     {
-                        var collection = item.Root == null ? item.WeightedResults : bestMatch;
+                        var collection = item.Baseline == null ? item.WeightedResults : bestMatch;
                         foreach (var match in collection)
                         {
                             dataRow = sheet.CreateRow(++rowNum);
@@ -233,7 +264,7 @@ namespace Xbim.Analysis.Comparing
                             c1.SetCellValue(baseLabel);
                             c1.CellStyle = style;
 
-                            var matchLabel = match.Root != null ? "#" + Math.Abs(match.Root.EntityLabel).ToString() : "";
+                            var matchLabel = match.Candidate != null ? "#" + Math.Abs(match.Candidate.EntityLabel).ToString() : "";
                             var c2 = dataRow.CreateCell(++index, CellType.STRING);
                             c2.SetCellValue(matchLabel);
                             c2.CellStyle = style;
@@ -244,21 +275,22 @@ namespace Xbim.Analysis.Comparing
                                 c.SetCellValue("");
                                 c.CellStyle = style;
 
-                                var results = item.Results.Where(r => r.Comparer == cmp); //check is this comparer did return any result for this
-                                if (results.Any())
+                                var comparers = item.Results.Where(r => r.Comparer == cmp); //check is this comparer did return any result for this
+                                if (comparers.Any() && item.Baseline != null)
                                 {
-                                    var result = results.Where(r => r.Candidates.Contains(match.Root));
+                                    var result = comparers.Where(r => r.Candidates.Contains(match.Candidate));
                                     c.SetCellValue(result.Any() ? "true" : "false");
+                                    if (!result.Any())
+                                        c.CellStyle = redStyle;
                                 }
                             }
 
                             var relWeight = (float)(match.Weight) / (float)(item.MaximalWeight);
                             var c3 = dataRow.CreateCell(++index, CellType.NUMERIC);
                             c3.SetCellValue(relWeight);
-                            //c3.SetCellValue(String.Format("{0,-1:f2}%", relWeight));
                             c3.CellStyle = percentStyle;
-                            if (relWeight < 0.99999 && item.Root != null) //indicate changed value
-                                c3.CellStyle.FillForegroundColor = GetColor(workbook, 255, 0, 0).GetIndex();
+                            if (item.Baseline == null)
+                                c3.SetCellValue(0);
                         }
                     }
   
@@ -267,7 +299,7 @@ namespace Xbim.Analysis.Comparing
             }
             catch (Exception e)
             {
-                throw new Exception("It wasn't possible to save results to spreadsheet.", e);
+                throw new Exception("It wasn't possible to save comparers to spreadsheet.", e);
             }
             finally
             {
@@ -335,7 +367,7 @@ namespace Xbim.Analysis.Comparing
         public void Add(ComparisonResult result)
         {
             var baseline = result.Baseline;
-            var item = _results.Where(i => i.Root == baseline).FirstOrDefault();
+            var item = _results.Where(i => i.Baseline == baseline).FirstOrDefault();
             if (item != null)
                 item.Add(result);
             else
@@ -355,8 +387,8 @@ namespace Xbim.Analysis.Comparing
             {
                 foreach (var result in this._results)
                 {
-                    if (result.BestMatch.Count == 0 && result.Root != null)
-                        yield return result.Root;
+                    if (result.BestMatch.Count == 0 && result.Baseline != null)
+                        yield return result.Baseline;
                 }
             }
         }
@@ -368,11 +400,11 @@ namespace Xbim.Analysis.Comparing
         {
             get
             {
-                foreach (var result in this._results.Where(r => r.Root == null))
+                foreach (var result in this._results.Where(r => r.Baseline == null))
                 {
                     foreach (var item in result.WeightedResults)
                     {
-                        yield return item.Root;
+                        yield return item.Candidate;
                     }
                 }
             }
@@ -390,8 +422,8 @@ namespace Xbim.Analysis.Comparing
                 foreach (var result in this._results)
                 {
                     var bestMatch = result.BestMatch;
-                    if (result.Root != null && bestMatch.Count == 1)
-                        res.Add(result.Root, bestMatch[0].Root);
+                    if (result.Baseline != null && bestMatch.Count == 1)
+                        res.Add(result.Baseline, bestMatch[0].Candidate);
                 }
                 return res;
             }
@@ -411,8 +443,8 @@ namespace Xbim.Analysis.Comparing
                 foreach (var result in this._results)
                 {
                     var bestMatch = result.BestMatch;
-                    if (result.Root != null && bestMatch.Count > 1)
-                        res.Add(result.Root, bestMatch);
+                    if (result.Baseline != null && bestMatch.Count > 1)
+                        res.Add(result.Baseline, bestMatch);
                 }
                 return res;
             }
@@ -434,7 +466,7 @@ namespace Xbim.Analysis.Comparing
             }
         }
 
-        public IfcRoot Root
+        public IfcRoot Baseline
         {
             get
             {
@@ -445,12 +477,12 @@ namespace Xbim.Analysis.Comparing
 
         public void Add(ComparisonResult result)
         {
-            if (Root == null)
+            if (Baseline == null)
             {
                 _results.Add(result);
                 return;
             }
-            if (Root == result.Baseline)
+            if (Baseline == result.Baseline)
                 _results.Add(result);
             else
                 throw new ArgumentException("Result must have the same baseline object");
@@ -462,10 +494,10 @@ namespace Xbim.Analysis.Comparing
             {
                 var best = BestMatch;
                 var weightedResults = WeightedResults;
-                if (best.Count == 1 && Root != null) return ResultType.MATCH;
-                if (Root != null && best.Count == 0) return ResultType.ONLY_BASELINE;
-                if (Root == null && weightedResults.Count > 0) return ResultType.ONLY_REVISION;
-                if (Root != null && best.Count > 1) return ResultType.AMBIGUOUS;
+                if (best.Count == 1 && Baseline != null) return ResultType.MATCH;
+                if (Baseline != null && best.Count == 0) return ResultType.ONLY_BASELINE;
+                if (Baseline == null && weightedResults.Count > 0) return ResultType.ONLY_REVISION;
+                if (Baseline != null && best.Count > 1) return ResultType.AMBIGUOUS;
                 return ResultType.AMBIGUOUS;
             }
         }
@@ -479,11 +511,11 @@ namespace Xbim.Analysis.Comparing
                 {
                     foreach (var item in result.Candidates)
                     {
-                        var existing = weightedResults.Where(wr => wr.Root == item).FirstOrDefault();
+                        var existing = weightedResults.Where(wr => wr.Candidate == item).FirstOrDefault();
                         if (existing != null)
                             existing.Weight += result.Comparer.Weight;
                         else
-                            weightedResults.Add(new WeightedRoot() { Root = item, Weight = result.Comparer.Weight });
+                            weightedResults.Add(new WeightedRoot() { Candidate = item, Weight = result.Comparer.Weight });
                     }
                 }
                 //sort result
@@ -533,7 +565,7 @@ namespace Xbim.Analysis.Comparing
     public class WeightedRoot : IComparable
     {
         public int Weight;
-        public IfcRoot Root;
+        public IfcRoot Candidate;
 
         public int CompareTo(object obj)
         {

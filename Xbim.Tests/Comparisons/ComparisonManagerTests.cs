@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Analysis.Comparing;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
 
 namespace Xbim.Tests.Comparisons
 {
@@ -24,7 +26,7 @@ namespace Xbim.Tests.Comparisons
             var comparerAttribute = new AttributeComparer("ObjectType", revision);
             var comparerGeom = new GeometryComparerII(baseline, revision);
             var comparerGuid = new GuidComparer();
-            var comparerMaterial = new MaterialComparer(revision);
+            //var comparerMaterial = new MaterialComparer(revision);
             var comparerName = new NameComparer();
             var comparerProperty = new PropertyComparer(baseline, revision);
 
@@ -32,7 +34,7 @@ namespace Xbim.Tests.Comparisons
             manager.AddComparer(comparerAttribute);
             manager.AddComparer(comparerGeom);
             manager.AddComparer(comparerGuid);
-            manager.AddComparer(comparerMaterial);
+            //manager.AddComparer(comparerMaterial);
             manager.AddComparer(comparerName);
             manager.AddComparer(comparerProperty);
 
@@ -54,7 +56,7 @@ namespace Xbim.Tests.Comparisons
             var comparerAttribute = new AttributeComparer("ObjectType", revision);
             var comparerGeom = new GeometryComparerII(baseline, revision);
             var comparerGuid = new GuidComparer();
-            var comparerMaterial = new MaterialComparer(revision);
+            //var comparerMaterial = new MaterialComparer(revision);
             var comparerName = new NameComparer();
             var comparerProperty = new PropertyComparer(baseline, revision);
 
@@ -62,7 +64,7 @@ namespace Xbim.Tests.Comparisons
             manager.AddComparer(comparerAttribute);
             manager.AddComparer(comparerGeom);
             manager.AddComparer(comparerGuid);
-            manager.AddComparer(comparerMaterial);
+            //manager.AddComparer(comparerMaterial);
             manager.AddComparer(comparerName);
             manager.AddComparer(comparerProperty);
 

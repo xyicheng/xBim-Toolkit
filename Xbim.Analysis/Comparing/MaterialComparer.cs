@@ -69,8 +69,11 @@ namespace Xbim.Analysis.Comparing
             var hashes = _cache.Where(m => m.GetHashCode() == matHashed.GetHashCode());
             foreach (var h in hashes)
             {
-                result.Candidates.Add(h.Root);
-                _processed.Add(h.Root);
+                if ((h.Root is IfcObject && baseline is IfcObject) || (h.Root is IfcTypeObject && baseline is IfcTypeObject))
+                {
+                    result.Candidates.Add(h.Root);
+                    _processed.Add(h.Root);
+                }
             }
             return result;
         }
