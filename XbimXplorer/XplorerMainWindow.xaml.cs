@@ -49,6 +49,8 @@ using Xbim.COBie.Contracts;
 using Xbim.ModelGeometry.Converter;
 using XbimXplorer.Dialogs;
 using System.Windows.Media.Imaging;
+using Xbim.Analysis.Comparing;
+using Xbim.Script;
 #endregion
 
 namespace XbimXplorer
@@ -155,7 +157,7 @@ namespace XbimXplorer
 
         void DrawingControl_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            
+
         }
 
         public IPersistIfcEntity SelectedItem
@@ -166,7 +168,7 @@ namespace XbimXplorer
 
         // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof(IPersistIfcEntity), typeof(XplorerMainWindow), 
+            DependencyProperty.Register("SelectedItem", typeof(IPersistIfcEntity), typeof(XplorerMainWindow),
                                         new UIPropertyMetadata(null, new PropertyChangedCallback(OnSelectedItemChanged)));
 
 
@@ -210,9 +212,9 @@ namespace XbimXplorer
                 _temporaryXbimFileName = Path.GetTempFileName();
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress, true, false);
-              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 if (model.GeometryVersion.Major == 1)
-                XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+                    XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                 else
                 {
                     Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
@@ -236,7 +238,7 @@ namespace XbimXplorer
                     }
                     return;
                 }
-              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite, worker.ReportProgress);
+                //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite, worker.ReportProgress);
 
                 args.Result = model;
 
@@ -270,7 +272,7 @@ namespace XbimXplorer
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 if (model.GeometryVersion.Major == 1)
-                XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+                    XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                 else
                 {
                     Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
@@ -293,7 +295,7 @@ namespace XbimXplorer
                     }
                     return;
                 }
-               // model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
+                // model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
                 this.Dispatcher.BeginInvoke(new Action(() => { Model.AddModelReference(_temporaryXbimFileName, "Organisation X", IfcRole.BuildingOperator); }), System.Windows.Threading.DispatcherPriority.Background);
             }
             catch (Exception ex)
@@ -353,16 +355,16 @@ namespace XbimXplorer
 
         private void dlg_InsertXbimFile(object sender, CancelEventArgs e)
         {
-             OpenFileDialog dlg = sender as OpenFileDialog;
+            OpenFileDialog dlg = sender as OpenFileDialog;
             if (dlg != null)
             {
                 FileInfo fInfo = new FileInfo(dlg.FileName);
                 string ext = fInfo.Extension.ToLower();
                 StatusBar.Visibility = Visibility.Visible;
-                
+
                 CreateWorker();
                 if (dlg.FileName.ToLower() == _currentModelFileName) //same file do nothing
-                   return;
+                    return;
                 switch (ext)
                 {
                     case ".ifc": //it is an Ifc File
@@ -392,7 +394,7 @@ namespace XbimXplorer
                 StatusBar.Visibility = Visibility.Visible;
                 CreateWorker();
                 if (dlg.FileName.ToLower() == _currentModelFileName) //same file do nothing
-                   return;
+                    return;
                 switch (ext)
                 {
                     case ".ifc": //it is an Ifc File
@@ -407,7 +409,7 @@ namespace XbimXplorer
                     case ".xbim": //it is an xbim File, just open it in the main thread
                         CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenXbimFile;
-                        _worker.RunWorkerAsync(dlg.FileName);   
+                        _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     default:
                         break;
@@ -477,7 +479,7 @@ namespace XbimXplorer
             if (msg != null) StatusMsg.Text = msg;
         }
 
-        
+
         // this variable is used to determine when the user is trying again to double click on the selected item
         // from this we detect that he's probably not happy with the view, therefore we add a cutting plane to make the 
         // element visible.
@@ -497,7 +499,7 @@ namespace XbimXplorer
         {
             _camChanged = true;
         }
-       
+
         private void dlg_FileSaveAs(object sender, CancelEventArgs e)
         {
             SaveFileDialog dlg = sender as SaveFileDialog;
@@ -511,7 +513,7 @@ namespace XbimXplorer
                     if (Model != null)
                     {
                         Model.SaveAs(dlg.FileName);
-                       
+
                         if (string.Compare(Path.GetExtension(dlg.FileName), "XBIM", true) == 0 &&
                             !string.IsNullOrWhiteSpace(_temporaryXbimFileName)) //we have a temp file open, it is now redundant as we have upgraded to another xbim file
                         {
@@ -529,7 +531,7 @@ namespace XbimXplorer
             }
         }
 
-       
+
 
         private void CommandBinding_SaveAs(object sender, ExecutedRoutedEventArgs e)
         {
@@ -539,7 +541,7 @@ namespace XbimXplorer
             dlg.Filter = "xBIM File (*.xBIM)|*.xBIM|Ifc File (*.ifc)|*.ifc|IfcXml File (*.IfcXml)|*.ifcxml|IfcZip File (*.IfcZip)|*.ifczip"; // Filter files by extension 
             dlg.Title = "Save As";
             dlg.AddExtension = true;
-           
+
             // Show open file dialog box 
             dlg.FileOk += new CancelEventHandler(dlg_FileSaveAs);
             dlg.ShowDialog(this);
@@ -559,11 +561,11 @@ namespace XbimXplorer
             ModelProvider.Refresh();
 
         }
-        
-       
+
+
         private void CommandBinding_Open(object sender, ExecutedRoutedEventArgs e)
         {
-           
+
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "Xbim Files|*.xbim;*.xbimf;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
             dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);
@@ -575,7 +577,7 @@ namespace XbimXplorer
         /// </summary>
         private void CloseAndDeleteTemporaryFiles()
         {
-           
+
             try
             {
                 if (_worker != null && _worker.IsBusy)
@@ -594,7 +596,7 @@ namespace XbimXplorer
             {
                 if (!(_worker != null && _worker.IsBusy && _worker.CancellationPending)) //it is still busy but has been cancelled 
                 {
-             
+
                     if (!string.IsNullOrWhiteSpace(_temporaryXbimFileName) && File.Exists(_temporaryXbimFileName))
                         File.Delete(_temporaryXbimFileName);
                     _temporaryXbimFileName = null;
@@ -699,7 +701,7 @@ namespace XbimXplorer
 
         private void EditFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            FederatedModelDlg fdlg = new FederatedModelDlg();          
+            FederatedModelDlg fdlg = new FederatedModelDlg();
             fdlg.DataContext = Model;
             bool? done = fdlg.ShowDialog();
             if (done.HasValue && done.Value == true)
@@ -709,15 +711,15 @@ namespace XbimXplorer
         }
         private void EditFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            
+
             e.CanExecute = Model != null && Model.IsFederation;
         }
 
         private void OpenFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-             OpenFileDialog dlg = new OpenFileDialog();
-             dlg.Filter = "Xbim Federation Files|*.xbimf"; // Filter files by extension 
-             dlg.CheckFileExists = true;
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Xbim Federation Files|*.xbimf"; // Filter files by extension 
+            dlg.CheckFileExists = true;
             bool? done = dlg.ShowDialog(this);
             if (done.HasValue && done.Value == true)
             {
@@ -729,7 +731,7 @@ namespace XbimXplorer
             }
         }
 
-    
+
 
         private void OpenFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -770,10 +772,10 @@ namespace XbimXplorer
                 {
                     MessageBox.Show(ex.Message, "Model Creation Failed", MessageBoxButton.OK);
                 }
-                
-              
 
-                
+
+
+
             }
         }
         private void CreateFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -799,9 +801,9 @@ namespace XbimXplorer
             Gat.Controls.About about = new Gat.Controls.About();
             //
             about.Title = "xBIM Xplorer";
-            about.Hyperlink = new Uri("http://xbim.codeplex.com",UriKind.Absolute);
+            about.Hyperlink = new Uri("http://xbim.codeplex.com", UriKind.Absolute);
             about.HyperlinkText = "http://xbim.codeplex.com";
-            about.Publisher="xBIM Team - Steve Lockley";
+            about.Publisher = "xBIM Team - Steve Lockley";
             about.Description = "This application is designed to demonstrate potential usages of the xBIM toolkit";
             about.ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,/xBIM.ico", UriKind.RelativeOrAbsolute));
             about.Copyright = "Prof. Steve Lockley";
@@ -832,7 +834,7 @@ namespace XbimXplorer
         private void USTemplate_Click(object sender, RoutedEventArgs e)
         {
             MenuItem mi = (MenuItem)sender;
-            
+
             if (mi.IsChecked)
             {
                 COBieTemplate = _USTemplate;
@@ -870,14 +872,103 @@ namespace XbimXplorer
                 GroupControl.Regenerate();
                 //SpatialControl.Regenerate();
             };
-            
+
 
             ScriptResults.Visibility = Visibility.Visible;
-            win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg) {
-                ScriptResults.Visibility = Visibility.Collapsed; 
+            win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg)
+            {
+                ScriptResults.Visibility = Visibility.Collapsed;
             });
 
             win.Show();
         }
+
+        private void CompareItem_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Xbim Files|*.xbim;*.xbimf;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
+            bool? ok = dlg.ShowDialog(this);
+            if (ok.HasValue && ok.Value == true)
+            {
+                string baselineName = dlg.FileName;
+                var baseline = new XbimModel();
+                string ext = Path.GetExtension(baselineName).ToLower();
+                if (ext == ".ifc" || ext == ".ifcxml" || ext == ".ifczip")
+                    baseline.CreateFrom(baselineName);
+                else if (ext == ".xbim")
+                    baseline.Open(baselineName, XbimDBAccess.Read, null);
+                else
+                    return;
+                var revision = Model;
+
+                var comparerAttribute = new AttributeComparer("ObjectType", revision);
+                var comparerGeom = new GeometryComparerII(baseline, revision);
+                var comparerGuid = new GuidComparer();
+                //  var comparerMaterial = new MaterialComparer(revision);
+                var comparerName = new NameComparer();
+                var comparerProperty = new PropertyComparer(baseline, revision);
+
+                var manager = new ComparisonManager(baseline, revision);
+                manager.AddComparer(comparerAttribute);
+                manager.AddComparer(comparerGeom);
+                manager.AddComparer(comparerGuid);
+                // manager.AddComparer(comparerMaterial);
+                manager.AddComparer(comparerName);
+                manager.AddComparer(comparerProperty);
+
+
+                manager.Compare<IfcProduct>();
+                //  manager.SaveResultToCSV("comparison_report");
+                manager.SaveResultToXLS("comparison_report");
+                Process.Start("comparison_report.xls");
+            }
+        }
+        private void MergeItem_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "CSV files|*.csv"; // Filter files by extension 
+            dlg.CheckFileExists = true;
+            bool? done = dlg.ShowDialog(this);
+            if (done.HasValue && done.Value == true)
+            {
+                StreamReader sr = new StreamReader(dlg.FileName);
+                string line = sr.ReadLine();
+                StringBuilder script = new StringBuilder();
+                while (line != null)
+                {
+                    string[] cols = line.Split(',');
+                    string propertyToMatch = cols[0];
+                    string propertyValue = cols[1];
+                    script.AppendFormat("$selection is every product where '{0}' is '{1}';", propertyToMatch, propertyValue);
+                    script.AppendLine();
+                    for (int i = 2; i < cols.Length; i += 2)
+                    {
+                        script.AppendFormat(" Set '{0}' to '{1}' for $selection in PropertySet 'BIMAcademyProperties';", cols[i], cols[i + 1]);
+                        script.AppendLine();
+                    }
+                    line = sr.ReadLine();
+                    script.AppendLine(" Clear $selection;");
+                }
+                string scriptString = script.ToString();
+                XbimQueryParser parser = new XbimQueryParser(Model);
+                bool ok = parser.Parse(scriptString);
+                if (ok)
+                {
+                    MessageBox.Show("Use SaveAs and select Ifc filetype to see updates in other viewers or look at the properties window below for BIMAcademy Properties. The Script that ran is....\n" + scriptString, "Model has been updated");
+                }
+                else
+                {
+                    StringBuilder b = new StringBuilder();
+                    b.AppendLine("Errors reading the CSV file and updating the model");
+                    foreach (var err in parser.Errors)
+                    {
+                        b.AppendLine(err);
+                    }
+                    MessageBox.Show(b.ToString());
+                }
+            }
+
+        }
+
     }
 }

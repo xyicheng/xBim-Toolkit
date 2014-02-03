@@ -260,6 +260,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="ToMerge.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="XbimXplorer_TemporaryKey.pfx" />
     <Resource Include="xBimQueryLogo.png" />
   </ItemGroup>

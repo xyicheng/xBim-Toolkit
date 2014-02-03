@@ -331,6 +331,8 @@ namespace Xbim
 				geomModel =  gcnew XbimFacetedShell((IfcShellBasedSurfaceModel^)repItem);
 			else if(dynamic_cast<IfcFaceBasedSurfaceModel^>(repItem)) 
 				geomModel =  gcnew XbimFacetedShell((IfcFaceBasedSurfaceModel^)repItem);
+			else if(dynamic_cast<IfcCsgSolid^>(repItem))	
+				geomModel = Build((IfcCsgSolid^)repItem,maps); 
 			else if(dynamic_cast<IfcSolidModel^>(repItem))	
 				geomModel = gcnew XbimSolid((IfcSolidModel^)repItem); 
 			else if(dynamic_cast<IfcBooleanResult^>(repItem)) 

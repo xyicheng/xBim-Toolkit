@@ -73,6 +73,7 @@
     <Compile Include="IfcCircleHollowProfileDefGeometricExtensions.cs" />
     <Compile Include="IfcCircleProfileDefGeometricExtensions.cs" />
     <Compile Include="IfcConnectedFaceSetGeometricExtensions.cs" />
+    <Compile Include="IfcCsgSolidGeometricExtensions.cs" />
     <Compile Include="IfcCurveGeometricExtensions.cs" />
     <Compile Include="IfcDirectionGeometricExtensions.cs" />
     <Compile Include="IfcExtrudedAreaSolidGeometryExtensions.cs" />
@@ -89,7 +90,9 @@
     <Compile Include="IfcRectangleProfileDefGeometricExtensions.cs" />
     <Compile Include="IfcRepresentationGeometryExtensions.cs" />
     <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
+    <Compile Include="IfcRevolvedAreaSolidGeometricExtensions.cs" />
     <Compile Include="IfcSolidModelGeometryExtensions.cs" />
+    <Compile Include="IfcSurfaceCurveSweptAreaSolidGeometricExtension.cs" />
     <Compile Include="IModelGeometryExtensions.cs" />
     <Compile Include="Xbim3DModelContext.cs" />
     <Compile Include="XbimMesher.cs" />

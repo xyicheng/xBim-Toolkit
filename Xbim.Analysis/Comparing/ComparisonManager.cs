@@ -39,7 +39,7 @@ namespace Xbim.Analysis.Comparing
         public void Compare<T>() where T : IfcRoot
         {
             _results = new ComparisonResultsCollection();
-            var baselineRoots = _baseModel.Instances.OfType<T>();
+            var baselineRoots = _baseModel.Instances.OfType<T>().ToList();
 
             //perform all the comparisons in parallel
             //foreach (var comparer in _comparers)

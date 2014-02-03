@@ -34,6 +34,12 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcExtrudedAreaSolid)solid).GetGeometryHashCode();
             else if( solid is IfcFacetedBrep)
                 return ((IfcFacetedBrep)solid).GetGeometryHashCode();
+            else if (solid is IfcRevolvedAreaSolid)
+                return ((IfcRevolvedAreaSolid)solid).GetGeometryHashCode();
+            else if (solid is IfcCsgSolid)
+                return ((IfcCsgSolid)solid).GetGeometryHashCode();
+            else if (solid is IfcSurfaceCurveSweptAreaSolid)
+                return ((IfcSurfaceCurveSweptAreaSolid)solid).GetGeometryHashCode();
             else
             {
                 throw new XbimGeometryException("Unsupported solid geometry tpype " + solid.GetType().Name);
@@ -52,6 +58,12 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcExtrudedAreaSolid)a).GeometricEquals(b);
             else if (a is IfcFacetedBrep)
                 return ((IfcFacetedBrep)a).GeometricEquals(b);
+            else if (a is IfcRevolvedAreaSolid)
+                return ((IfcRevolvedAreaSolid)a).GeometricEquals(b);
+            else if (a is IfcCsgSolid)
+                return ((IfcCsgSolid)a).GeometricEquals(b);
+            else if (a is IfcSurfaceCurveSweptAreaSolid)
+                return ((IfcSurfaceCurveSweptAreaSolid)a).GeometricEquals(b);
             else
             {
                 throw new XbimGeometryException("Unsupported solid geometry tpype " + a.GetType().Name);

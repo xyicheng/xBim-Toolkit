@@ -109,8 +109,11 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcBooleanResult)a).GeometricEquals(b);
             else if (a is IfcFaceBasedSurfaceModel)
                 return ((IfcFaceBasedSurfaceModel)a).GeometricEquals(b);
+            //else if (a is IfcShellBasedSurfaceModel)
+            //    return ((IfcShellBasedSurfaceModel)a).GeometricEquals(b);
             else
             {
+              //  return false;
                 throw new XbimGeometryException("Unsupported solid geometry type " + a.GetType().Name);
             }
         }

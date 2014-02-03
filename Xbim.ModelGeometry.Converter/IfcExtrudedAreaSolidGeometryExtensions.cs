@@ -17,7 +17,7 @@ namespace Xbim.ModelGeometry.Converter
         public static int GetGeometryHashCode(this IfcExtrudedAreaSolid solid)
         {
             Func<double, int> f = solid.ModelOf.ModelFactors.GetGeometryDoubleHash;
-
+            
             return f(solid.Depth) ^ 
                    solid.ExtrudedDirection.GetGeometryHashCode() ^
                    solid.Position.GetGeometryHashCode() ^ 

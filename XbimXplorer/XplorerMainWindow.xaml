@@ -88,6 +88,9 @@
                 <MenuItem Header="S_cripting" Click="OpenScriptingWindow" />
                 <MenuItem Header="_Close" Command="Close" />
                 <MenuItem Header="S_eparate" Click="SeparateMenuItem_Click" />
+                <MenuItem Header="_Merge" Click="MergeItem_Click"/>
+                <MenuItem Header="Com_pare" Click="CompareItem_Click" />
+                
             </MenuItem>
             <MenuItem Header="Federate">
                 <MenuItem Header="_Create" Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" />

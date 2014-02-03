@@ -1297,8 +1297,9 @@ namespace Xbim.Presentation
                 
                 //get each product and draw its shapes
                 ParallelOptions pOpts = new ParallelOptions();
-                //Parallel.ForEach<XbimProductShape>(context.ProductShapes.Where(p=>p.ProductType != typeof(IfcOpeningElement)), pOpts, productShape =>
-                foreach (var productShape in context.ProductShapes)
+                List<XbimProductShape> productShapes = context.ProductShapes.Where(p => !typeof(IfcFeatureElement).IsAssignableFrom(p.ProductType)).ToList();
+             //   Parallel.ForEach<XbimProductShape>(productShapes, pOpts, productShape =>
+                foreach (var productShape in productShapes)
                 {
                     LayerStylerV2.NewProduct(productShape, model);
                     XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
