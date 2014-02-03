@@ -226,7 +226,25 @@ namespace XbimXplorer.Querying
                             ReportAdd(string.Format("- Schema: {0}", item));
                         }
                         continue;
-                    } 
+                    }
+
+                    // SelectionHighlighting [WholeMesh|Normals]
+                    m = Regex.Match(cmd, @"^(SelectionHighlighting|sh) (?<mode>(wholemesh|normals))+", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        string mode = m.Groups["mode"].Value.ToLowerInvariant();
+                        if (mode == "normals")
+                        {
+                            ReportAdd("Selection visual style set to 'Normals'");
+                            ParentWindow.DrawingControl.SelectionHighlightMode = DrawingControl3D.SelectionHighlightModes.Normals;
+                        }
+                        else
+                        {
+                            ReportAdd("Selection visual style set to 'WholeMesh'");
+                            ParentWindow.DrawingControl.SelectionHighlightMode = DrawingControl3D.SelectionHighlightModes.WholeMesh;
+                        }
+                        continue;
+                    }
 
                     m = Regex.Match(cmd, @"^(IfcSchema|is) (?<mode>(list|count|short|full) )*(?<type>.+)", RegexOptions.IgnoreCase);
                     if (m.Success)
@@ -681,6 +699,9 @@ namespace XbimXplorer.Querying
             t.Append("    'Visual mode ...' changes the mode of the layer tree structure", Brushes.Gray);
             
             t.AppendFormat("- clear [on|off]");
+
+            t.AppendFormat("- SelectionHighlighting [WholeMesh|Normals]");
+            t.Append("    defines the graphical style for selection highliting.", Brushes.Gray);
             
             t.AppendFormat("- SimplifyGUI");
             t.Append("    opens a GUI for simplifying IFC files (useful for debugging purposes).", Brushes.Gray);
