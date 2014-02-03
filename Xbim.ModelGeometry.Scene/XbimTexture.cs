@@ -146,14 +146,35 @@ namespace Xbim.ModelGeometry.Scene
             return this;
         }
 
+        /// <summary>
+        /// Sets the texture property for a single colour
+        /// </summary>
+        /// <param name="red">the red component of the colour in a range 0 to 255</param>
+        /// <param name="green">the green component of the colour in a range 0 to 255</param>
+        /// <param name="blue">the blue component of the colour in a range 0 to 255</param>
+        /// <param name="alpha">opaqueness of the colour in a range 0 to 255 (255 meaning completely opaque)</param>
+        /// <returns></returns>
         public XbimTexture CreateTexture(byte red = 255, byte green = 255, byte blue = 255, byte alpha = 255)
         {
             ColourMap.Clear();
-            ColourMap.Add(new XbimColour("C1", red, green, blue, alpha));
+            ColourMap.Add(new XbimColour("C1",
+                (float)red / 255,
+                (float)green / 255,
+                (float)blue / 255,
+                (float)alpha / 255
+                ));
             return this;
         }
 
-        public XbimTexture CreateTexture(float red = 255, float green = 255, float blue = 255, float alpha = 255)
+        /// <summary>
+        /// Sets the texture property for a single colour
+        /// </summary>
+        /// <param name="red">the red component of the colour in a range 0.0f to 1.0f</param>
+        /// <param name="green">the green component of the colour in a range 0.0f to 1.0f</param>
+        /// <param name="blue">the blue component of the colour in a range 0.0f to 1.0f</param>
+        /// <param name="alpha">opaqueness of the colour in a range 0.0f to 1.0f (1.0f meaning completely opaque)</param>
+        /// <returns></returns>
+        public XbimTexture CreateTexture(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
         {
             ColourMap.Clear();
             ColourMap.Add(new XbimColour("C1", red, green, blue, alpha));

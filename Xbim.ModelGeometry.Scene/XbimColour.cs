@@ -59,18 +59,17 @@ namespace Xbim.ModelGeometry.Scene
         /// Constructor for Material
         /// </summary>
         /// <param name="name">Material Name</param>
-        /// <param name="red">Red Value</param>
-        /// <param name="green">Green Value</param>
-        /// <param name="blue">Blue Value</param>
-        /// <param name="alpha">Alpha Value</param>
-        public XbimColour(String name, float red, float green, float blue, float alpha = 1)
+        /// <param name="red">Red component Value (range 0 to 1.0 inclusive)</param>
+        /// <param name="green">Green Value (range 0 to 1.0 inclusive)</param>
+        /// <param name="blue">Blue Value (range 0 to 1.0 inclusive)</param>
+        /// <param name="alpha">Alpha Value (range 0 to 1.0 inclusive)</param>
+        public XbimColour(String name, float red, float green, float blue, float alpha = 1.0f)
         {
             this.Name = name;
             this.Red = red;
             this.Green = green;
             this.Blue = blue;
             this.Alpha = alpha;
-           
         }
 
         public XbimColour(String name, double red, double green, double blue, double alpha = 1.0)
