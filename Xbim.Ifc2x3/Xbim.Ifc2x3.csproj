@@ -289,6 +289,7 @@
     <Compile Include="HVACDomain\IfcVibrationIsolatorType.cs" />
     <Compile Include="HVACDomain\IfcVibrationIsolatorTypeEnum.cs" />
     <Compile Include="IfcEntityNameEnum.cs" />
+    <Compile Include="MaterialPropertyResource\IfcMechanicalConcreteMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcExtendedMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcMechanicalMaterialProperties.cs" />
