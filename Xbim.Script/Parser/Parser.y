@@ -71,6 +71,7 @@
 %token  IT
 %token  EVERY
 %token  COPY
+%token  RULE
 
 /* commands */
 %token  SELECT
@@ -121,6 +122,7 @@ expression
 	| attr_setting ';'
 	| variables_actions ';'
 	| model_actions ';'
+	| rule_check ';'
 	| error
 	;
 
@@ -246,6 +248,8 @@ condition
 attributeCondition	
 	: attribute op_bool STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
 	| attribute op_bool NONDEF				{$$.val = GenerateAttributeCondition($1.strVal, null, ((Tokens)($2.val)));}
+	| attribute OP_EQ DEFINED				{$$.val = GenerateAttributeCondition($1.strVal, null, Tokens.OP_NEQ); }
+	| attribute OP_NEQ DEFINED				{$$.val = GenerateAttributeCondition($1.strVal, null, Tokens.OP_EQ); }
 	| attribute op_cont STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
 	;
 
@@ -358,6 +362,13 @@ object
 	| MATERIAL				{$$.typeVal = $1.typeVal;}
 	| GROUP					{$$.typeVal = $1.typeVal;}
 	| ORGANIZATION			{$$.typeVal = $1.typeVal;}
+	;
+
+rule_check
+	: RULE STRING ':' conditions_set FOR IDENTIFIER					{ CheckRule($2.strVal, (Expression)($4.val), $6.strVal); }
+	| RULE STRING ':' conditions_set FOR selection_statement		{ CheckRule($2.strVal, (Expression)($4.val), (IEnumerable<IPersistIfcEntity>)($6.val)); }
+	| CLEAR RULE													{ ClearRules(); }
+	| SAVE RULE TO FILE STRING										{ SaveRules($5.strVal); }
 	;
 	
 %%

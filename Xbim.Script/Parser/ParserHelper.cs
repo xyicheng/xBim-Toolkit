@@ -888,17 +888,15 @@ namespace Xbim.Script
                             cell.SetCellValue(value.ToString());
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Scanner.yyerror("It was not possible to dump specified content of the " + identifier + ": " + e.Message);
-            }
-            finally
-            {
+
                 var file = File.Create(outputPath);
                 if (workbook != null)
                     workbook.Write(file);
                 file.Close();
+            }
+            catch (Exception e)
+            {
+                Scanner.yyerror("It was not possible to dump specified content of the " + identifier + ": " + e.Message);
             }
         }
 
@@ -1754,6 +1752,58 @@ namespace Xbim.Script
         }
         #endregion
 
+        #region Rule checking
+        private RuleCheckResultsManager _ruleChecks = new RuleCheckResultsManager();
+        public RuleCheckResultsManager RuleChecks { get { return _ruleChecks; } }
+
+        private void CheckRule(string ruleName, Expression condition, string identifier)
+        {
+            if (!Variables.IsDefined(identifier))
+                Scanner.yyerror("Variable {0} is not defined.", identifier);
+            
+            CheckRule(ruleName, condition, Variables[identifier]);
+
+        }
+
+        private void CheckRule(string ruleName, Expression condition, IEnumerable<IPersistIfcEntity> elements)
+        {
+            var func = Expression.Lambda<Func<IPersistIfcEntity, bool>>(condition, _input).Compile();
+            foreach (var item in elements)
+            {
+                //check the rule
+                var check = func(item);
+                var result = new RuleCheckResult() { Entity = item, IsCompliant = check};
+                _ruleChecks.Add(ruleName, result);
+
+                if (!check)
+                    WriteLine(String.Format("{0} #{1} doesn't comply to the rule \"{2}\"", item.GetType().Name, Math.Abs(item.EntityLabel), ruleName));
+            }
+        }
+
+        private void ClearRules()
+        {
+            _ruleChecks = new RuleCheckResultsManager();
+        }
+
+        private void SaveRules(string path)
+        {
+            var ext = (Path.GetExtension(path) ?? "").ToLower();
+            try
+            {
+                if (ext == ".xls")
+                    _ruleChecks.SaveToXLS(path);
+                else
+                    _ruleChecks.SaveToCSV(path);
+            }
+            catch (Exception e)
+            {
+                Scanner.yyerror("It was not possible to save rule checking results to the file {0}. Error: {1}", path, e.Message);
+            }
+
+        }
+
+        #endregion
+
         /// <summary>
         /// Unified function so that the same output can be send 
         /// to the Console and to the optional text writer as well.
@@ -1817,5 +1867,147 @@ namespace Xbim.Script
         {
             _newModel = newModel;
         }
+    }
+
+    public class RuleCheckResult
+    {
+        public IPersistIfcEntity Entity { get; set; }
+        public bool IsCompliant { get; set; }
+    }
+
+    public class RuleCheckResults
+    {
+        public string Rule { get; set; }
+        public List<RuleCheckResult> CheckResults { get; set; }
+
+        public RuleCheckResults()
+        {
+            CheckResults = new List<RuleCheckResult>();
+        }
+
+
+    }
+
+    public class RuleCheckResultsManager
+    {
+        private List<RuleCheckResults> _results = new List<RuleCheckResults>();
+        public IEnumerable<RuleCheckResults> Results
+        {
+            get 
+            {
+                foreach (var item in _results)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        public void Add(string rule, RuleCheckResult result)
+        {
+            var res = _results.Where(r => r.Rule == rule);
+            if (res.Any())
+                res.FirstOrDefault().CheckResults.Add(result);
+            else
+            {
+                var r = new RuleCheckResults() { Rule = rule };
+                r.CheckResults.Add(result);
+                _results.Add(r);
+            }
+        }
+
+        public void Clear()
+        {
+            _results = new List<RuleCheckResults>();
+        }
+
+        public void SaveToCSV(string path)
+        {
+            try
+            {
+                var ext = Path.GetExtension(path);
+                if (String.IsNullOrEmpty(ext))
+                    path += ".csv";
+
+                //create text file or overwrite existing
+                var file = File.CreateText(path);
+
+                //write header
+                file.WriteLine("{0},{1},{2},{3}", "Rule", "Element type", "Label", "Is Compliant");
+
+                //write results
+                foreach (var result in _results)
+                    foreach (var ruleRes in result.CheckResults)
+                    {
+                        var entity = ruleRes.Entity;
+                        var label = Math.Abs(entity.EntityLabel);
+                        file.WriteLine("{0},{1},#{2},{3}", result.Rule, entity.GetType().Name, label, ruleRes.IsCompliant);
+                    }
+
+                //close file
+                file.Close();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void SaveToXLS(string path)
+        {
+            try
+            {
+                var ext = Path.GetExtension(path);
+                if (String.IsNullOrEmpty(ext))
+                    path += ".xls";
+
+                //create text file or overwrite existing
+                var rowNum = -1;
+                var cellNum = -1;
+                HSSFWorkbook workbook = new HSSFWorkbook();
+                ISheet sheet = workbook.CreateSheet("Rule_checking_results");
+                IRow dataRow = sheet.CreateRow(++rowNum);
+                
+
+                //write header
+                var cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                cell.SetCellValue("Rule");
+                cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                cell.SetCellValue("Element type");
+                cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                cell.SetCellValue("Label");
+                cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                cell.SetCellValue("Is Compliant");
+
+                //write results
+                foreach (var result in _results)
+                    foreach (var ruleRes in result.CheckResults)
+                    {
+                        var entity = ruleRes.Entity;
+                        var label = Math.Abs(entity.EntityLabel);
+                        dataRow = sheet.CreateRow(++rowNum);
+                        cellNum = -1;
+
+                        cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                        cell.SetCellValue(result.Rule);
+                        cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                        cell.SetCellValue(entity.GetType().Name);
+                        cell = dataRow.CreateCell(++cellNum, CellType.STRING);
+                        cell.SetCellValue("#" + label);
+                        cell = dataRow.CreateCell(++cellNum, CellType.BOOLEAN);
+                        cell.SetCellValue(ruleRes.IsCompliant);
+                    }
+
+                //save and close file
+                var file = File.Create(path);
+                if (workbook != null)
+                    workbook.Write(file);
+                file.Close();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
     }
 }

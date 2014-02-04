@@ -151,6 +151,8 @@
 "layer_set"	|
 "layerset"		{ return (int)Tokens.LAYER_SET; }
 "code"		{ return (int)Tokens.CODE; }
+"rule" |
+"rules"		{ return (int)Tokens.RULE; }
 
 "null" |
 "undefined" |
