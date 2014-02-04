@@ -92,7 +92,9 @@ namespace Xbim.COBie
                 SetExcludeComponentTypes(CobiePickLists);
                 SetExcludeObjTypeTypes(CobiePickLists);
             }
-
+            //start the Cache
+            Context.Model.CacheStart();
+                
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
             Workbook.Add(cq.GetCOBieFacilitySheet()); 

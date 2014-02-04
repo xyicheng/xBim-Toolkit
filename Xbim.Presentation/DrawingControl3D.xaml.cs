@@ -55,7 +55,7 @@ namespace Xbim.Presentation
     ///   Interaction logic for DrawingControl3D.xaml
     /// </summary>
     public partial class DrawingControl3D : UserControl
-    {
+    {   
         public DrawingControl3D()
         {
             InitializeComponent();
@@ -67,7 +67,74 @@ namespace Xbim.Presentation
             ClearGraphics();
             MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);            
         }
+
+        CombinedManipulator ClipHandler = null;
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            var plane = GetCutPlane();
+            if (e.Key == Key.LeftShift && ClipHandler == null && plane != null)
+                ClipPlaneHandlesShow();
+            else if (e.Key == Key.Delete &&
+                ((e.KeyboardDevice.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) // shift is pressed
+                )
+            {
+                if (plane != null)
+                {
+                    ClearCutPlane();
+                }
+                ClipPlaneHandlesHide();
+                ClipHandler = null;
+            }
+            base.OnPreviewKeyDown(e);
+        }
+
+        private void ClipPlaneHandlesPlace(Point3D pos)
+        {
+            Matrix3D m = Matrix3D.Identity;
+            m.Translate(new Vector3D(
+                pos.X, pos.Y, pos.Z)
+                );
+            Extras.Transform = new MatrixTransform3D(m);
+            // ClipPlaneHandlesShow();
+        }
+
+        private void ClipPlaneHandlesShow()
+        {
+            ClipHandler = new CombinedManipulator();
+            Extras.Children.Add(ClipHandler);
+        }
+
+        protected override void OnPreviewKeyUp(KeyEventArgs e)
+        {
+            // dealing with cutting plane update
+            //
+            if (e.Key == Key.LeftShift && ClipHandler != null)
+            {
+                var m1 = Extras.Transform.Value;
+                var m2 = ClipHandler.Transform.Value;
+
+                ClipPlaneHandlesHide();
+
+                var newMatrix = Matrix3D.Multiply(m2, m1);
+                Extras.Transform = new MatrixTransform3D(newMatrix);
+
+                Point3D p = new Point3D(newMatrix.OffsetX, newMatrix.OffsetY, newMatrix.OffsetZ);
+                var n = newMatrix.Transform(new Vector3D(0, 0, -1));
+                ClearCutPlane();
+                SetCutPlane(p.X, p.Y, p.Z, n.X, n.Y, n.Z);
+            }
+            base.OnPreviewKeyUp(e);
+        }
+
+        private void ClipPlaneHandlesHide()
+        {
+            Extras.Children.Clear();
+            ClipHandler = null;
+        }
+
 
         // elements associated with vector polygons drafted interactively on the model by the user
         //
@@ -139,32 +206,38 @@ namespace Xbim.Presentation
         void Viewport_CameraChanged(object sender, RoutedEventArgs e)
         {
             HelixViewport3D snd = sender as HelixViewport3D;
-            if (viewBounds.Length() > 0 && snd != null)
-            {
-                var middlePoint = viewBounds.Centroid();
-                double CentralDistance = Math.Sqrt(
+            if (snd == null)
+                return;
+
+            var middlePoint = viewBounds.Centroid();
+            double CentralDistance = Math.Sqrt(
                     Math.Pow(snd.Camera.Position.X, 2) + Math.Pow(middlePoint.X, 2) +
                     Math.Pow(snd.Camera.Position.Y, 2) + Math.Pow(middlePoint.Y, 2) +
                     Math.Pow(snd.Camera.Position.Z, 2) + Math.Pow(middlePoint.Z, 2)
                     );
 
-                double FarPlane = CentralDistance + 1.5 * viewBounds.Length();
-                double NearPlane = CentralDistance - 1.5 * viewBounds.Length();
-
-                const double nearLimit = 0.125;
-                if (NearPlane < nearLimit)
-                {
-                    NearPlane = nearLimit;
-                }
-                if (Viewport.Camera.NearPlaneDistance != NearPlane)
-                {
-                    Viewport.Camera.NearPlaneDistance = NearPlane;  // Debug.WriteLine("Near: " + NearPlane);
-                }
-                if (Viewport.Camera.FarPlaneDistance != FarPlane)
-                {
-                    Viewport.Camera.FarPlaneDistance = FarPlane;    // Debug.WriteLine("Far: " + FarPlane);
-                }
+            double diag = 40;
+            if (viewBounds.Length() > 0)
+            {
+                diag = viewBounds.Length();
             }
+            double FarPlane = CentralDistance + 1.5 * diag;
+            double NearPlane = CentralDistance - 1.5 * diag;
+
+            const double nearLimit = 0.125;
+            if (NearPlane < nearLimit)
+            {
+                NearPlane = nearLimit;
+            }
+            if (Viewport.Camera.NearPlaneDistance != NearPlane)
+            {
+                Viewport.Camera.NearPlaneDistance = NearPlane;  // Debug.WriteLine("Near: " + NearPlane);
+            }
+            if (Viewport.Camera.FarPlaneDistance != FarPlane)
+            {
+                Viewport.Camera.FarPlaneDistance = FarPlane;    // Debug.WriteLine("Far: " + FarPlane);
+            }
+
         }
 
         void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
@@ -189,12 +262,24 @@ namespace Xbim.Presentation
         /// <value>The model.</value>
         public Model3D Model3d { get; set; }
 
+        public Plane3D GetCutPlane()
+        {
+            object p = this.FindName("cuttingGroup");
+            XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
+            if (cpg == null || cpg.IsEnabled == false) 
+                return null;
+            if (cpg.CuttingPlanes.Count == 1)
+                return cpg.CuttingPlanes[0];
+            return null;
+        }
+
         public void SetCutPlane(double PosX, double PosY, double PosZ, double NrmX, double NrmY, double NrmZ)
         {   
             object p = this.FindName("cuttingGroup");
             XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
             if (cpg != null)
             {
+                cpg.IsEnabled = false;
                 cpg.CuttingPlanes.Clear();
                 cpg.CuttingPlanes.Add(
                     new Plane3D(
@@ -236,7 +321,8 @@ namespace Xbim.Presentation
             Remove,
             Single,
             Ignore,
-            Measure
+            Measure,
+            SetClip
         }
 
         public Dictionary<ModifierKeys, MouseClickActions> MouseModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
@@ -320,6 +406,12 @@ namespace Xbim.Presentation
                             
                             // UserModeledDimension.SetToVisual(FurtherGeometries); 
                             break;
+                        case MouseClickActions.SetClip:
+                            SetCutPlane(
+                                hit.PointHit.X, hit.PointHit.Y, hit.PointHit.Z,
+                                0, 0, -1);
+                            ClipPlaneHandlesPlace(hit.PointHit);
+                            break;
                     }
                 }
             }
@@ -333,8 +425,6 @@ namespace Xbim.Presentation
         
         private PointGeomInfo GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
         {
-            // List<PointGeomInfo> gret = new List<PointGeomInfo>();
-
             int[] pts = new int[] {
                 hit.VertexIndex1,
                 hit.VertexIndex2,
@@ -369,9 +459,6 @@ namespace Xbim.Presentation
             pRet.Point = hit.MeshHit.Positions[iClosest];
 
             return pRet;
-
-            //gret.Add(pRet);
-            //return gret;
         }
 
         private static IPersistIfcEntity GetClickedEntity(RayMeshGeometry3DHitTestResult hit)
@@ -409,7 +496,6 @@ namespace Xbim.Presentation
         // Using a DependencyProperty as the backing store for ModelOpacity.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ModelOpacityProperty =
             DependencyProperty.Register("ModelOpacity", typeof(double), typeof(DrawingControl3D), new UIPropertyMetadata(1.0, OnModelOpacityChanged));
-
 
         private static void OnModelOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -483,10 +569,15 @@ namespace Xbim.Presentation
             DrawingControl3D d3d = d as DrawingControl3D;
             if (d3d != null)
             {
-                XbimModel model = e.NewValue as XbimModel;
-                d3d.LoadGeometry(model);
-                d3d.SetValue(LayerSetProperty, d3d.LayerSetRefresh());
+                // XbimModel model = e.NewValue as XbimModel;
+                d3d.ReloadModel();
             }
+        }
+
+        public void ReloadModel()
+        {
+            LoadGeometry((XbimModel)this.GetValue(ModelProperty));
+            SetValue(LayerSetProperty, LayerSetRefresh());
         }
 
         public bool ForceRenderBothSides
@@ -513,6 +604,7 @@ namespace Xbim.Presentation
             SingleSelection,
             MultipleSelection
         }
+
 #if DEBUG
         public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.MultipleSelection;
 #else
@@ -946,7 +1038,6 @@ namespace Xbim.Presentation
                                         new UIPropertyMetadata(0.0));
         private XbimVector3D _modelTranslation;
         public XbimMatrix3D wcsTransform;
-      
 
         private void ClearGraphics()
         {
@@ -961,13 +1052,10 @@ namespace Xbim.Presentation
             Transparents.Children.Clear();
             Extras.Children.Clear();
 
-
-            
-
             this.ClearCutPlane();
 
             modelBounds = XbimRect3D.Empty;
-            viewBounds = new XbimRect3D(0, 0, 0, 10000, 10000, 5000);    
+            viewBounds = new XbimRect3D(0, 0, 0, 10, 10, 5);    
             scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
             Viewport.ResetCamera();
             Highlighted.Mesh = null;
@@ -1148,6 +1236,12 @@ namespace Xbim.Presentation
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
             return scene;
         }
+        
+        /// <summary>
+        /// LayerStyler provides a mechanism to define colouring schemes for elements in DrawingControl3D.
+        /// After setting a new LayerStyler issue a ReloadModel (<see cref="Xbim.Presentation.DrawingControl3D.ReloadModel()"/>). 
+        /// </summary>
+        public LayerStyling.ILayerStyler LayerStyler = null;
 
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
@@ -1170,19 +1264,27 @@ namespace Xbim.Presentation
             double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
 
-            Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
-            // foreach (var layerContent in handles.FilterByBuildingElementTypes())
+            // prepare groping and layering behaviours
+            if (LayerStyler == null)
+                LayerStyler = new LayerStyling.LayerStylerTypeAndIFCStyle();
+
+            Dictionary<string, XbimGeometryHandleCollection> GroupedHandlers = LayerStyler.GroupLayers(handles);
+
+            Parallel.ForEach<string>(GroupedHandlers.Keys, LayerName =>
             {
-                string elementTypeName = layerContent.Key;
-                XbimGeometryHandleCollection layerHandles = layerContent.Value;
-                IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
-                XbimColour colour = scene.LayerColourMap[elementTypeName];
-                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = elementTypeName };
-                //add all content initially into the hidden field
+                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = LayerStyler.GetLayer(LayerName, model, scene);
+                IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(GroupedHandlers[LayerName]);
+
+                // initially add all content into the hidden field (underlying geometry info)
+                // it will later be moved to the visible WPF implementation
                 foreach (var geomData in geomColl)
                 {
                     geomData.TransformBy(wcsTransform);
-                    layer.AddToHidden(geomData, model);
+
+                    if (LayerStyler.UseIfcSubStyles)
+                        layer.AddToHidden(geomData, model);
+                    else
+                        layer.AddToHidden(geomData, null);
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
@@ -1207,13 +1309,13 @@ namespace Xbim.Presentation
         /// </summary>
         private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerely called DrawLayer
         {
-            //move it to the visual element
-            // byte[] bytes = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
+            // move it to the visual element
+            // 
             layer.Show();
 
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
             m3d.SetValue(TagProperty, layer);
-            //sort out materials and bind
+            // sort out materials and bind
             if (layer.Style.RenderBothFaces)
                 m3d.BackMaterial = m3d.Material = (WpfMaterial)layer.Material;
             else if (layer.Style.SwitchFrontAndRearFaces)
@@ -1241,8 +1343,26 @@ namespace Xbim.Presentation
         public IEnumerable<string> ListItems(string OfItem)
         {
             foreach (var scene in scenes)
-                foreach (var layer in scene.SubLayers) //go over top level layers only
+                foreach (var layer in scene.SubLayers) //go over top level layers 
+                {
                     yield return layer.Name;
+                }
+        }
+
+        /// <summary>
+        /// Useful for analysis and debugging purposes (invoked by Querying interface)
+        /// </summary>
+        /// <returns>A string tree of layers in scenes</returns>
+        public IEnumerable<string> LayersTree()
+        {
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers 
+                {
+                    foreach (var item in layer.LayersTree(0))
+                    {
+                        yield return item;    
+                    }
+                }   
         }
 
 
@@ -1277,9 +1397,7 @@ namespace Xbim.Presentation
                     if (toHide.Contains(layer.Name + ";"))
                         layer.HideAll();
         }
-
-
-        
+       
         public static readonly DependencyProperty LayerSetProperty =
             DependencyProperty.Register("LayerSet", typeof(List<LayerViewModel>), typeof(DrawingControl3D));
 
@@ -1294,7 +1412,7 @@ namespace Xbim.Presentation
             var ret = new List<LayerViewModel>();
             ret.Add(new LayerViewModel("All", this));
             foreach (var scene in scenes)
-                foreach (var layer in scene.SubLayers) //go over top level layers only
+                foreach (var layer in scene.SubLayers) // go over top level layers only
                     ret.Add(new LayerViewModel(layer.Name, this));
             return ret;
         }
@@ -1350,8 +1468,24 @@ namespace Xbim.Presentation
             if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
             {
                 Rect3D r3d = Highlighted.Mesh.GetBounds();
-                // Debug.WriteLine("SelectedBBox: " + r3d.ToString());
                 ZoomTo(r3d);
+            }
+        }
+
+        /// <summary>
+        /// This functions sets a cutting plane at a distance of delta over the base of the selected element.
+        /// It is useful when the selected element is obscured by elements surrounding it.
+        /// </summary>
+        /// <param name="delta">positive distance of the cutting plane above the base of the selected element.</param>
+        public void ClipBaseSelected(double delta)
+        {
+            if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
+            {
+                Rect3D r3d = Highlighted.Mesh.GetBounds();
+                SetCutPlane(
+                    r3d.X, r3d.Y, r3d.Z + delta, 
+                    0, 0, -1
+                    );
             }
         }
 
@@ -1362,10 +1496,12 @@ namespace Xbim.Presentation
         /// <param name="DoubleRectSize">Effectively doubles the size of the bounding box so to fit more space around it.</param>
         private void ZoomTo(Rect3D r3d, bool DoubleRectSize = true)
         {
-            
             if (!r3d.IsEmpty)
             {
-                Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
+                Rect3D bounds = new Rect3D(
+                    viewBounds.X, viewBounds.Y, viewBounds.Z, 
+                    viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ
+                    );
                 if (DoubleRectSize)
                 {
                     r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
@@ -1375,7 +1511,7 @@ namespace Xbim.Presentation
                 }
                 if (!r3d.IsEmpty)
                 {
-                    if (r3d.Contains(bounds)) //if bigger than bounds zoom bounds
+                    if (r3d.Contains(bounds)) // if bigger than bounds zoom bounds
                         Viewport.ZoomExtents(bounds, 200);
                     else
                         Viewport.ZoomExtents(r3d, 200);

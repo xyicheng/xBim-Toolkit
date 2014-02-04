@@ -775,7 +775,7 @@ namespace Xbim.IO
                     else
                         throw new XbimException("Invalid file type ." + ext.ToUpper() + " in file " + outputFileName);
                 }
-                if (storageType.Value == XbimStorageType.XBIM) //make a copy
+                if (storageType.Value == XbimStorageType.XBIM && this.DatabaseName != null) //make a copy
                 {
                     string srcFile = this.DatabaseName;
                     if(string.Compare(srcFile, outputFileName, true, CultureInfo.InvariantCulture) == 0)

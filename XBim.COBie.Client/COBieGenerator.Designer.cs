@@ -45,18 +45,14 @@
             this.ProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.StatusMsg = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.gbFilter = new System.Windows.Forms.GroupBox();
-            this.rbNoFilters = new System.Windows.Forms.RadioButton();
-            this.rbPickList = new System.Windows.Forms.RadioButton();
-            this.rbDefault = new System.Windows.Forms.RadioButton();
             this.ValidateChkBox = new System.Windows.Forms.CheckBox();
             this.SkipGeoChkBox = new System.Windows.Forms.CheckBox();
             this.checkedListRoles = new System.Windows.Forms.CheckedListBox();
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnClassFilter = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            this.gbFilter.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -250,51 +246,6 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
-            // gbFilter
-            // 
-            this.gbFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.gbFilter.Controls.Add(this.rbNoFilters);
-            this.gbFilter.Controls.Add(this.rbPickList);
-            this.gbFilter.Controls.Add(this.rbDefault);
-            this.gbFilter.Location = new System.Drawing.Point(424, 140);
-            this.gbFilter.Name = "gbFilter";
-            this.gbFilter.Size = new System.Drawing.Size(87, 98);
-            this.gbFilter.TabIndex = 9;
-            this.gbFilter.TabStop = false;
-            this.gbFilter.Text = "Class Filter ";
-            // 
-            // rbNoFilters
-            // 
-            this.rbNoFilters.AutoSize = true;
-            this.rbNoFilters.Location = new System.Drawing.Point(6, 75);
-            this.rbNoFilters.Name = "rbNoFilters";
-            this.rbNoFilters.Size = new System.Drawing.Size(69, 17);
-            this.rbNoFilters.TabIndex = 2;
-            this.rbNoFilters.Text = "No Filters";
-            this.rbNoFilters.UseVisualStyleBackColor = true;
-            // 
-            // rbPickList
-            // 
-            this.rbPickList.AutoSize = true;
-            this.rbPickList.Location = new System.Drawing.Point(6, 47);
-            this.rbPickList.Name = "rbPickList";
-            this.rbPickList.Size = new System.Drawing.Size(65, 17);
-            this.rbPickList.TabIndex = 1;
-            this.rbPickList.Text = "Pick List";
-            this.rbPickList.UseVisualStyleBackColor = true;
-            // 
-            // rbDefault
-            // 
-            this.rbDefault.AutoSize = true;
-            this.rbDefault.Checked = true;
-            this.rbDefault.Location = new System.Drawing.Point(6, 19);
-            this.rbDefault.Name = "rbDefault";
-            this.rbDefault.Size = new System.Drawing.Size(59, 17);
-            this.rbDefault.TabIndex = 0;
-            this.rbDefault.TabStop = true;
-            this.rbDefault.Text = "Default";
-            this.rbDefault.UseVisualStyleBackColor = true;
-            // 
             // ValidateChkBox
             // 
             this.ValidateChkBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -312,7 +263,8 @@
             // 
             this.SkipGeoChkBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.SkipGeoChkBox.AutoSize = true;
-            this.SkipGeoChkBox.Location = new System.Drawing.Point(424, 244);
+            this.SkipGeoChkBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.SkipGeoChkBox.Location = new System.Drawing.Point(419, 140);
             this.SkipGeoChkBox.Name = "SkipGeoChkBox";
             this.SkipGeoChkBox.Size = new System.Drawing.Size(93, 17);
             this.SkipGeoChkBox.TabIndex = 11;
@@ -351,17 +303,27 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Merge to IFC";
             // 
+            // btnClassFilter
+            // 
+            this.btnClassFilter.Location = new System.Drawing.Point(430, 176);
+            this.btnClassFilter.Name = "btnClassFilter";
+            this.btnClassFilter.Size = new System.Drawing.Size(75, 26);
+            this.btnClassFilter.TabIndex = 14;
+            this.btnClassFilter.Text = "Class filter";
+            this.btnClassFilter.UseVisualStyleBackColor = true;
+            this.btnClassFilter.Click += new System.EventHandler(this.btnClassFilter_Click);
+            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(523, 472);
+            this.Controls.Add(this.btnClassFilter);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.checkedListRoles);
             this.Controls.Add(this.SkipGeoChkBox);
             this.Controls.Add(this.ValidateChkBox);
-            this.Controls.Add(this.gbFilter);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.btnClear);
@@ -375,8 +337,6 @@
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            this.gbFilter.ResumeLayout(false);
-            this.gbFilter.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
@@ -399,10 +359,6 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel StatusMsg;
         private System.Windows.Forms.ToolStripProgressBar ProgressBar;
-        private System.Windows.Forms.GroupBox gbFilter;
-        private System.Windows.Forms.RadioButton rbNoFilters;
-        private System.Windows.Forms.RadioButton rbPickList;
-        private System.Windows.Forms.RadioButton rbDefault;
         private System.Windows.Forms.CheckBox MergeChkBox;
         private System.Windows.Forms.CheckBox GeoOnlyChkBox;
         private System.Windows.Forms.Button mergeBtn;
@@ -412,6 +368,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.Button btnClassFilter;
     }
 }
 

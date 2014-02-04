@@ -63,7 +63,6 @@ namespace Xbim.Querying.Nodes
                     _queue = (LeftObjectNode)child;
                 }
             }
-
         }
 
         // fairly default behaviour

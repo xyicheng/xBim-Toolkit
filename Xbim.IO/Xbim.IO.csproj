@@ -95,6 +95,9 @@
     <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
     <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="FileReferenceResolver.cs" />
+    <Compile Include="GroupingAndStyling\EntityLabel.cs" />
+    <Compile Include="GroupingAndStyling\IGeomHandlesGrouping.cs" />
+    <Compile Include="GroupingAndStyling\TypeAndStyle.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
     <Compile Include="Parser\IfcForwardReference.cs" />

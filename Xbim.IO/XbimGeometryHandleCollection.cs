@@ -39,17 +39,11 @@ namespace Xbim.IO
             return uniqueStyles;
         }
 
-        public Dictionary<string, XbimGeometryHandleCollection> FilterByBuildingElementTypes()
+        [Obsolete("Function relocated to IGeomHandlesGrouping concrete classes for API grouping configuration.", false)]
+        public Dictionary<string, XbimGeometryHandleCollection> GroupByBuildingElementTypes()
         {
-            Dictionary<string, XbimGeometryHandleCollection> result = new Dictionary<string, XbimGeometryHandleCollection>();
-            IfcType baseType = IfcMetaData.IfcType(typeof(IfcProduct));
-            foreach (var subType in baseType.NonAbstractSubTypes)
-            {
-                short ifcTypeId = IfcMetaData.IfcTypeId(subType);
-                XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(this.Where(g=>g.IfcTypeId==ifcTypeId));
-                if (handles.Count > 0) result.Add(subType.Name, handles);
-            }
-            return result;
+            GroupingAndStyling.TypeAndStyle t = new GroupingAndStyling.TypeAndStyle();
+            return t.GroupLayers(this);
         }
 
         /// <summary>

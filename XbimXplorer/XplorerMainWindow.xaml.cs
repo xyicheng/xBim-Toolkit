@@ -64,9 +64,15 @@ namespace XbimXplorer
         public static RoutedCommand OpenFederationCmd = new RoutedCommand();
         public static RoutedCommand InsertCmd = new RoutedCommand();
         public static RoutedCommand ExportCOBieCmd = new RoutedCommand();
+        public static RoutedCommand COBieClassFilter = new RoutedCommand();
         private string _currentModelFileName;
         private string _temporaryXbimFileName;
         private string _defaultFileName;
+        const string _UKTemplate = "COBie-UK-2012-template.xls";
+        const string _USTemplate = "COBie-US-2_4-template.xls";
+
+        private FilterValues UserFilters { get; set; }
+        public string COBieTemplate { get; set; }
 
         public XplorerMainWindow()
         {
@@ -75,6 +81,9 @@ namespace XbimXplorer
             this.Loaded += XplorerMainWindow_Loaded;
             this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
             this.DrawingControl.UserModeledDimensionChangedEvent += DrawingControl_MeasureChangedEvent;
+
+            UserFilters = new FilterValues();//COBie Class filters, set to initial defaults
+            COBieTemplate = _UKTemplate;
         }
 
         private void DrawingControl_MeasureChangedEvent(DrawingControl3D m, Xbim.Presentation.ModelGeomInfo.PolylineGeomInfo e)
@@ -453,14 +462,26 @@ namespace XbimXplorer
             if (msg != null) StatusMsg.Text = msg;
         }
 
+        
+        // this variable is used to determine when the user is trying again to double click on the selected item
+        // from this we detect that he's probably not happy with the view, therefore we add a cutting plane to make the 
+        // element visible.
+        //
+        private bool _camChanged = false;
         private void SpatialControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            _camChanged = false;
+            DrawingControl.Viewport.Camera.Changed += Camera_Changed;
             DrawingControl.ZoomSelected();
+            DrawingControl.Viewport.Camera.Changed -= Camera_Changed;
+            if (!_camChanged)
+                DrawingControl.ClipBaseSelected(0.15);
         }
 
-       
-          
-
+        void Camera_Changed(object sender, EventArgs e)
+        {
+            _camChanged = true;
+        }
 
         private void dlg_FileSaveAs(object sender, CancelEventArgs e)
         {
@@ -596,23 +617,11 @@ namespace XbimXplorer
 
             // Build context
             COBieContext context = new COBieContext();
-            context.TemplateFileName = "COBie-UK-2012-template.xls";
+            context.TemplateFileName = COBieTemplate;
             context.Model = Model;
             //set filter option
+            context.Exclude = UserFilters;
 
-            //switch (chckBtn.Name)
-            //{
-            //    case "rbDefault":
-            //        break;
-            //    case "rbPickList":
-            //        context.ExcludeFromPickList = true;
-            //        break;
-            //    case "rbNoFilters":
-            //        context.Exclude.Clear();
-            //        break;
-            //    default:
-            //        break;
-            //}
             //set the UI language to get correct resource file for template
             //if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
             //{
@@ -628,7 +637,8 @@ namespace XbimXplorer
             }
 
             COBieBuilder builder = new COBieBuilder(context);
-            ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+            COBieXLSSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+            serialiser.Excludes = UserFilters;
             builder.Export(serialiser);
             Process.Start(outputFile);
         }
@@ -639,6 +649,21 @@ namespace XbimXplorer
             XbimModel model = ModelProvider.ObjectInstance as XbimModel;
             bool canEdit = (model!=null && model.CanEdit && model.Instances.OfType<IfcBuilding>().FirstOrDefault()!=null);       
             e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
+        }
+
+        private void COBieClassFilterCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            COBieClassFilter classFilterDlg = new COBieClassFilter(UserFilters);
+            bool? done = classFilterDlg.ShowDialog();
+            if (done.HasValue && done.Value == true)
+            {
+                UserFilters = classFilterDlg.UserFilters; //not needed, but makes intent clear
+            }
+        }
+
+        private void COBieClassFilterCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
         }
 
         private void InsertCmdExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -759,16 +784,53 @@ namespace XbimXplorer
             Gat.Controls.About about = new Gat.Controls.About();
             //
             about.Title = "xBIM Xplorer";
-            about.Hyperlink = new Uri("http://www.codeplex.com",UriKind.Absolute);
-            about.HyperlinkText = "http://www.codeplex.com";
+            about.Hyperlink = new Uri("http://xbim.codeplex.com",UriKind.Absolute);
+            about.HyperlinkText = "http://xbim.codeplex.com";
             about.Publisher="xBIM Team - Steve Lockley";
-            about.Description = "This is a demonstratore application designed to show some of the potential of the xBIM toolkit";
+            about.Description = "This application is designed to demonstrate potential usages of the xBIM toolkit";
             about.ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,/xBIM.ico", UriKind.RelativeOrAbsolute));
             about.Copyright = "Prof. Steve Lockley";
             about.PublisherLogo = about.ApplicationLogo;
-            about.AdditionalNotes = "The xBIM toolkit is an Open Source software initiative to help software developers and researchers to support the next generation of BIM tools ";
+            about.AdditionalNotes = "The xBIM toolkit is an Open Source software initiative to help software developers and researchers to support the next generation of BIM tools; unlike other open source application xBIM license is compatible with commercial environments (http://xbim.codeplex.com/license)";
             about.Show();
+        }
 
+        private void UKTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem mi = (MenuItem)sender;
+
+            if (mi.IsChecked)
+            {
+                COBieTemplate = _UKTemplate;
+                if (US.IsChecked)
+                {
+                    US.IsChecked = false;
+                }
+            }
+            else
+            {
+                US.IsChecked = true;
+                COBieTemplate = _USTemplate;
+            }
+        }
+
+        private void USTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem mi = (MenuItem)sender;
+            
+            if (mi.IsChecked)
+            {
+                COBieTemplate = _USTemplate;
+                if (UK.IsChecked)
+                {
+                    UK.IsChecked = false;
+                }
+            }
+            else
+            {
+                UK.IsChecked = true;
+                COBieTemplate = _UKTemplate;
+            }
         }
 
         private void OpenScriptingWindow(object sender, RoutedEventArgs e)

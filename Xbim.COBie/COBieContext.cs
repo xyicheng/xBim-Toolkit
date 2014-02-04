@@ -68,7 +68,7 @@ namespace Xbim.COBie
         /// <summary>
         /// filter values for attribute extraction in sheets
         /// </summary>
-        public FilterValues Exclude { get; private set; } 
+        public FilterValues Exclude { get;  set; } 
 
         /// <summary>
         /// set the error reporting to be either one (first row is labelled one) or 

@@ -30,6 +30,14 @@ namespace Xbim.Script
             return result;
         }
 
+        public IEnumerable<string> GetVariables
+        {
+            get
+            {
+                return _data.Select(x => x.Key).AsEnumerable();
+            }
+        }
+
 
         public bool IsDefined(string variable)
         {
