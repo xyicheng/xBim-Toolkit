@@ -73,7 +73,7 @@ namespace Xbim.Presentation
         }
 
         CombinedManipulator ClipHandler = null;
-
+        XbimMeshFragment _selectedMeshFragment;
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             var plane = GetCutPlane();
@@ -353,8 +353,8 @@ namespace Xbim.Presentation
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
             // the highlighting of the selected component is triggered by the change of SelectedEntity (see OnSelectedEntityChanged)
+          //  _selectedMeshFragment = GetClickedMeshFragment(hit);
             var thisSelectedEntity = GetClickedEntity(hit);
-
             if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
                 // default behaviour is single selection
@@ -376,6 +376,8 @@ namespace Xbim.Presentation
                 }
                 else
                 {
+
+                    
                     switch (mc)
                     {
                         case MouseClickActions.Add:
@@ -420,8 +422,30 @@ namespace Xbim.Presentation
             }
             else
             {
-                SelectedEntity = thisSelectedEntity;
+                    SelectedEntity = thisSelectedEntity;
             }
+        }
+
+        private XbimMeshFragment GetClickedMeshFragment(RayMeshGeometry3DHitTestResult hit)
+        {
+           
+            if (hit != null)
+            {
+                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = hit.ModelHit.GetValue(TagProperty) as XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>; //get the fragments
+                if (layer != null)
+                {
+                    var frag = layer.Visible.Meshes.Find(hit.VertexIndex1);
+                    if (frag.IsEmpty)
+                        frag = layer.Visible.Meshes.Find(hit.VertexIndex2);
+                    if (frag.IsEmpty)
+                        frag = layer.Visible.Meshes.Find(hit.VertexIndex3);
+                    if (!frag.IsEmpty)
+                    {
+                        return frag;
+                    }
+                }
+            }
+            return default(XbimMeshFragment);
         }
 
         
@@ -700,25 +724,41 @@ namespace Xbim.Presentation
                 foreach (var item in Selection)
                 {
                     var fromModel = item.ModelOf as XbimModel;
-                    if (fromModel != null)
+                    Xbim3DModelContext context = new Xbim3DModelContext(fromModel);
+                    XbimProductShape productShape = context.GetProductShape((IfcProduct)newVal);
+                    XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
+                    foreach (var shape in productShape.Shapes)
                     {
-                        var geomDataSet = fromModel.GetGeometryData(item.EntityLabel, XbimGeometryType.TriangulatedMesh);
-                        foreach (var geomData in geomDataSet)
-                        {
-                            m.Add(geomData.TransformBy(wcsTransform));
-                        }
+                        XbimMatrix3D? shapeTransform = shape.Transform;
+                        if (shapeTransform.HasValue)
+                            //add the shape to the right layer
+                            m.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, shapeTransform.Value * prodTransform);
+                        else
+                            //add the shape to the right layer
+                            m.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform);
                     }
+
+
                 }
             }
             else if (newVal != null)
             {
                 var fromModel = newVal.ModelOf as XbimModel;
+                
                 if (fromModel != null)
                 {
-                    var geomDataSet = fromModel.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
-                    foreach (var geomData in geomDataSet)
+                    Xbim3DModelContext context = new Xbim3DModelContext(fromModel);
+                    XbimProductShape productShape = context.GetProductShape((IfcProduct)newVal);
+                    XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
+                    foreach (var shape in productShape.Shapes)
                     {
-                        m.Add(geomData.TransformBy(wcsTransform));
+                        XbimMatrix3D? shapeTransform = shape.Transform;
+                        if (shapeTransform.HasValue)
+                            //add the shape to the right layer
+                            m.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, shapeTransform.Value * prodTransform);
+                        else
+                            //add the shape to the right layer
+                            m.Add(shape.Mesh, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform);
                     }
                 }
             }

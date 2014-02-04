@@ -55,6 +55,7 @@ namespace Xbim.XbimExtensions
         /// NB This is a deprecated method and will be removed for the latest geometry support and is only used in first geometry implementation
         /// </summary>
         /// <param name="matrix"></param>
+        [Obsolete ("This method should not be used and is marked for deletion",false)]
         public XbimGeometryData TransformBy(XbimMatrix3D matrix)
         {
             XbimMatrix3D t =  XbimMatrix3D.FromArray(DataArray2);

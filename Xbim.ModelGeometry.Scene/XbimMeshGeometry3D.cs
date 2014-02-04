@@ -723,5 +723,8 @@ namespace Xbim.ModelGeometry.Scene
             meshes.Add(frag);
 
         }
+
+      
+       
     }
 }
