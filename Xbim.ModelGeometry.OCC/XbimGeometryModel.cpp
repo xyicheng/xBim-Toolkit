@@ -772,10 +772,10 @@ TryIntersectSolid:
 							nbNormals = nbNodes;
 							const TShort_Array1OfShortReal& normals = facing->Normals();
 							sb->AppendFormat("N");
-							for (Standard_Integer nm = 1 ; nm <= nbNodes ; nm++)
+							for (Standard_Integer nm = 0 ; nm < nbNodes ; nm++)
 							{
 
-								sb->AppendFormat(" {0},{1},{2}", (float)normals(nm),(float)normals(nm+1),(float)normals(nm+2));	
+								sb->AppendFormat(" {0},{1},{2}", (float)normals(nm*3+1),(float)normals(nm*3+2),(float)normals(nm*3+3));	
 							    
 								
 							}

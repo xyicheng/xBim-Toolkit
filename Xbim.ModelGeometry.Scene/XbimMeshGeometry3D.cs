@@ -117,8 +117,8 @@ namespace Xbim.ModelGeometry.Scene
                                     XbimVector3D v = new  XbimVector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
-                                    if (trans.HasValue)
-                                        v = trans.Value.Transform(v);
+                                    //if (trans.HasValue)
+                                    //    v = trans.Value.Transform(v);
                                     normalList.Add(v);
                                 }
                                 break;
@@ -142,33 +142,32 @@ namespace Xbim.ModelGeometry.Scene
                                             {
                                                 case "F": //Front
                                                     currentNormal = new XbimVector3D(0, -1, 0);
-                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "B": //Back
                                                     currentNormal = new XbimVector3D(0, 1, 0);
-                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "L": //Left
                                                     currentNormal = new XbimVector3D(-1, 0, 0);
-                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "R": //Right
                                                     currentNormal = new XbimVector3D(1, 0, 0);
-                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
                                                     break;
                                                 case "U": //Up
-                                                    currentNormal = new XbimVector3D(0, 0, 1);
-                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
+                                                    currentNormal = new XbimVector3D(0, 0, 1); 
                                                     break;
                                                 case "D": //Down
-                                                    currentNormal = new XbimVector3D(0, 0, -1);
-                                                    if (trans.HasValue) currentNormal = trans.Value.Transform(currentNormal);
+                                                    currentNormal = new XbimVector3D(0, 0, -1);               
                                                     break;
                                                 default: //it is an index number
                                                     int normalIndex = int.Parse(indexNormalPair[1]);
                                                     currentNormal = normalList[normalIndex];
                                                     break;
                                             }
+                                        }
+                                        if (trans.HasValue)
+                                        {
+                                            currentNormal = trans.Value.Transform(currentNormal);
+                                            currentNormal.Normalize();
                                         }
                                         //now add the index
                                         int index = int.Parse(indexNormalPair[0]);
