@@ -14,7 +14,7 @@
 #include <BRepTools.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Solid.hxx>
-
+#include <BRepGProp_Face.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
@@ -38,7 +38,7 @@
 #include <ShapeFix_ShapeTolerance.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <carve/triangulator.hpp>
-
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 
 using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
@@ -706,24 +706,45 @@ TryIntersectSolid:
 					for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 	
 					{
 						const TopoDS_Face & face = TopoDS::Face(faceEx.Current());
+						
 						TopAbs_Orientation orient = face.Orientation();
 						TopLoc_Location loc;
 						Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
 						if(facing.IsNull()) continue;
-
+						Handle(Geom_Surface) surf = BRep_Tool::Surface(face); //the surface
+						BRepGProp_Face gprop(face);
 						Standard_Integer nbNodes = facing->NbNodes();
 						Standard_Integer nbNormals=0; //set when we know if it planar or not
 						Standard_Integer nbTriangles = facing->NbTriangles();
 						
+
 						const TColgp_Array1OfPnt& points = facing->Nodes();
 						std::vector<size_t> posMap;
 						posMap.reserve(nbNodes+1);
 						posMap.push_back(-1); //Opencascade lists are 1 based, move on one to avoid decrementing all indexes
 						bool vWritten = false;
+						GeomLib_IsPlanarSurface ps(surf, precision);
+						Standard_Boolean planar = ps.IsPlanar();
+						std::vector<double> normals;
+						if(!planar) //only need to reserve if we have a curved surface
+							normals.reserve(nbNodes * 3);
 						for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 						{
 							gp_XYZ p = points(nd).XYZ();
-							loc.Transformation().Transforms(p);			 
+							loc.Transformation().Transforms(p);	
+							if(!planar) //need to calculate the exact normals
+							{
+								GeomAPI_ProjectPointOnSurf projpnta(p, surf);
+								double au, av; //the u- and v-coordinates of the projected point
+								projpnta.LowerDistanceParameters(au, av); //get the nearest projection
+								gp_Pnt centre;
+								gp_Vec normalDir;
+								gprop.Normal(au,av,centre,normalDir);	
+								normalDir.Normalize();
+								normals.push_back(normalDir.X());
+								normals.push_back(normalDir.Y());
+								normals.push_back(normalDir.Z());
+							}
 							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z(),precision); 
 							//p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
 							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
@@ -743,8 +764,7 @@ TryIntersectSolid:
 								posMap.push_back(hit->second);
 						}
 						if(vWritten) sb->AppendLine();
-						GeomLib_IsPlanarSurface ps(BRep_Tool::Surface(face), precision);
-						Standard_Boolean planar = ps.IsPlanar();
+						
 						String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
 						if(planar)
 						{
@@ -770,16 +790,12 @@ TryIntersectSolid:
 						}
 						else
 						{
-							Poly::ComputeNormals(facing);
-							nbNormals = nbNodes;
-							const TShort_Array1OfShortReal& normals = facing->Normals();
+							nbNormals = nbNodes;					
 							sb->AppendFormat("N");
 							for (Standard_Integer nm = 0 ; nm < nbNodes ; nm++)
 							{
-
-								sb->AppendFormat(" {0},{1},{2}", (float)normals(nm*3+1),(float)normals(nm*3+2),(float)normals(nm*3+3));	
-							    
-								
+								int ofs = nm*3;
+								sb->AppendFormat(" {0},{1},{2}", normals[ofs],normals[ofs+1],normals[ofs+2]);	
 							}
 							sb->AppendLine();
 						}
