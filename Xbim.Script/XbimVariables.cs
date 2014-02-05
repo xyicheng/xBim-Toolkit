@@ -24,7 +24,8 @@ namespace Xbim.Script
         
         public IEnumerable<IPersistIfcEntity> GetEntities(string variable)
         {
-            IEnumerable<IPersistIfcEntity> result = new IPersistIfcEntity[]{};
+            FixVariableName(ref variable);
+            IEnumerable<IPersistIfcEntity> result = new IPersistIfcEntity[] { };
             _data.TryGetValue(variable, out result);
             return result;
         }
@@ -38,13 +39,16 @@ namespace Xbim.Script
         }
 
 
+
         public bool IsDefined(string variable)
         {
+            FixVariableName(ref variable);
             return _data.ContainsKey(variable);
         }
 
         public void Set(string variable, IPersistIfcEntity entity)
         {
+            FixVariableName(ref variable);
             if (entity == null && IsDefined(variable))
                 Clear(variable);
             else
@@ -53,6 +57,7 @@ namespace Xbim.Script
 
         public void Set(string variable, IEnumerable<IPersistIfcEntity> entities)
         {
+            FixVariableName(ref variable);
             if (IsDefined(variable))
                 _data[variable] = entities.ToList();
             else
@@ -62,6 +67,7 @@ namespace Xbim.Script
 
         public void AddEntities(string variable, IEnumerable<IPersistIfcEntity> entities)
         {
+            FixVariableName(ref variable);
             if (IsDefined(variable))
             {
                 _data[variable] = _data[variable].Union(entities.ToList());
@@ -74,6 +80,7 @@ namespace Xbim.Script
 
         public void RemoveEntities(string variable, IEnumerable<IPersistIfcEntity> entities)
         {
+            FixVariableName(ref variable);
             if (IsDefined(variable))
             {
                 _data[variable] = _data[variable].Except(entities.ToList());
@@ -88,6 +95,7 @@ namespace Xbim.Script
         {
             get
             {
+                FixVariableName(ref key);
                 return _data[key];
             }
         }
@@ -99,12 +107,19 @@ namespace Xbim.Script
 
         public void Clear(string identifier)
         {
+            FixVariableName(ref identifier);
             if (IsDefined(identifier))
                 _data[identifier] = new IPersistIfcEntity[] { };
             else
                 throw new ArgumentException(identifier + " is not defined;");
         }
 
-
+        private void FixVariableName(ref string variable)
+        {
+            if (String.IsNullOrEmpty(variable))
+                throw new ArgumentNullException("variable");
+            if (variable[0] != '$')
+                variable = "$" + variable;
+        }
     }
 }

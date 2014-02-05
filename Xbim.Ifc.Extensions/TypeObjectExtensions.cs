@@ -42,10 +42,12 @@ namespace Xbim.Ifc2x3.Extensions
         /// <param name="obj"></param>
         /// <param name="pSetName"></param>
         /// <returns></returns>
-        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName)
+        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, bool caseSensitive = true)
         {
             if (obj.HasPropertySets == null) return null;
-            else return obj.HasPropertySets.Where<IfcPropertySet>(r => r.Name == pSetName).FirstOrDefault();
+            else return caseSensitive ? 
+                obj.HasPropertySets.Where<IfcPropertySet>(r => r.Name == pSetName).FirstOrDefault() :
+                obj.HasPropertySets.Where<IfcPropertySet>(r => r.Name.ToString().ToLower() == pSetName.ToLower()).FirstOrDefault();
         }
 
         public static IfcPropertySingleValue GetPropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
@@ -241,11 +243,14 @@ namespace Xbim.Ifc2x3.Extensions
             return new IfcElementQuantity[] { };
         }
 
-        public static IfcElementQuantity GetElementQuantity(this IfcTypeObject elem, string pSetName)
+        public static IfcElementQuantity GetElementQuantity(this IfcTypeObject elem, string pSetName, bool caseSensitive = true )
         {
             if (elem.HasPropertySets == null) return null;
-            IfcElementQuantity elemQuant = elem.HasPropertySets.Where<IfcElementQuantity>(r => r.Name == pSetName).FirstOrDefault();
-            return elemQuant;
+            
+            return caseSensitive ? 
+                elem.HasPropertySets.Where<IfcElementQuantity>(r => r.Name == pSetName).FirstOrDefault() :
+                elem.HasPropertySets.Where<IfcElementQuantity>(r => r.Name.ToString().ToLower() == pSetName.ToLower()).FirstOrDefault()
+                ;
         }
 
         public static void RemoveElementPhysicalSimpleQuantity(this IfcTypeObject elem, string pSetName, string qualityName)

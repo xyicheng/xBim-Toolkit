@@ -372,7 +372,9 @@
       <FileType>Assembly</FileType>
     </PublishFile>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="NSIS_installer\" />
+  </ItemGroup>
   <ItemGroup>
     <FileAssociation Include=".xBIM">
       <Visible>False</Visible>

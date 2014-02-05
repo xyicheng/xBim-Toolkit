@@ -153,6 +153,8 @@
 "code"		{ return (int)Tokens.CODE; }
 "rule" |
 "rules"		{ return (int)Tokens.RULE; }
+"property"		{ return (int)Tokens.PROPERTY; }
+"attribute"		{ return (int)Tokens.ATTRIBUTE; }
 
 "null" |
 "undefined" |

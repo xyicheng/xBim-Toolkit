@@ -14,16 +14,17 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.MaterialPropertyResource;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MaterialPropertyResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class MaterialExtension
     {
@@ -31,7 +32,7 @@ namespace Xbim.Ifc.Extensions
                                                   string propertyName, IfcValue value)
         {
             IfcExtendedMaterialProperties pSet = GetExtendedProperties(material, model, pSetName) ??
-                                                 model.New<IfcExtendedMaterialProperties>(ps =>
+                                                 model.Instances.New<IfcExtendedMaterialProperties>(ps =>
                                                                                               {
                                                                                                   ps.Material = material;
                                                                                                   ps.Name = pSetName;
@@ -39,7 +40,7 @@ namespace Xbim.Ifc.Extensions
             IfcPropertySingleValue singleValue = GetExtendedSingleValue(material, model, pSetName, propertyName);
             if (singleValue == null)
             {
-                singleValue = model.New<IfcPropertySingleValue>(sv =>
+                singleValue = model.Instances.New<IfcPropertySingleValue>(sv =>
                                                                     {
                                                                         sv.Name = propertyName;
                                                                         sv.NominalValue = value;
@@ -51,7 +52,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetExtendedSingleValue(this IfcMaterial material, string pSetName, string propertyName,
                                                   IfcValue value)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             SetExtendedSingleValue(material, model, pSetName, propertyName, value);
         }
 
@@ -69,7 +70,7 @@ namespace Xbim.Ifc.Extensions
         public static IfcPropertySingleValue GetExtendedSingleValue(this IfcMaterial material, string pSetName,
                                                                     string propertyName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetExtendedSingleValue(material, model, pSetName, propertyName);
         }
 
@@ -89,7 +90,7 @@ namespace Xbim.Ifc.Extensions
         public static IfcValue GetExtendedSingleValueValue(this IfcMaterial material, string pSetName,
                                                            string propertyName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetExtendedSingleValueValue(material, model, pSetName, propertyName);
         }
 
@@ -107,43 +108,41 @@ namespace Xbim.Ifc.Extensions
 
         public static void DeleteExtendedSingleValue(this IfcMaterial material, string pSetName, string propertyName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             DeleteExtendedSingleValue(material, model, pSetName, propertyName);
         }
 
         public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, IModel model,
-                                                                          string pSetName)
+                                                                          string pSetName, bool caseSensitive = true)
         {
-            IfcExtendedMaterialProperties result =
-                model.InstancesWhere<IfcExtendedMaterialProperties>(
-                    pSet => pSet.Name == pSetName && pSet.Material == material).FirstOrDefault();
-            IEnumerable<IfcExtendedMaterialProperties> resultTemp =
-                model.InstancesOfType<IfcExtendedMaterialProperties>();
+            IfcExtendedMaterialProperties result = caseSensitive ?
+                model.Instances.Where<IfcExtendedMaterialProperties>(pSet => pSet.Name == pSetName && pSet.Material == material).FirstOrDefault() :
+                model.Instances.Where<IfcExtendedMaterialProperties>(pSet => pSet.Name.ToString().ToLower() == pSetName.ToLower() && pSet.Material == material).FirstOrDefault();
             return result;
         }
 
-        public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, string pSetName)
+        public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, string pSetName, bool caseSensitive = true)
         {
-            IModel model = ModelManager.ModelOf(material);
-            return GetExtendedProperties(material, model, pSetName);
+            IModel model = material.ModelOf;
+            return GetExtendedProperties(material, model, pSetName, caseSensitive);
         }
 
         public static List<IfcExtendedMaterialProperties> GetAllExtendedPropertySets(this IfcMaterial material,
                                                                                      IModel model)
         {
-            return model.InstancesWhere<IfcExtendedMaterialProperties>(pSet => pSet.Material == material).ToList();
+            return model.Instances.Where<IfcExtendedMaterialProperties>(pSet => pSet.Material == material).ToList();
         }
 
         public static List<IfcExtendedMaterialProperties> GetAllPropertySets(this IfcMaterial material)
         {
             IModel model = (material as IPersistIfcEntity).ModelOf;
-            return model.InstancesWhere<IfcExtendedMaterialProperties>(pset => pset.Material == material).ToList();
+            return model.Instances.Where<IfcExtendedMaterialProperties>(pset => pset.Material == material).ToList();
         }
 
         public static Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> GetAllPropertySingleValues(
             this IfcMaterial material)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetAllPropertySingleValues(material, model);
         }
 
@@ -151,7 +150,7 @@ namespace Xbim.Ifc.Extensions
             this IfcMaterial material, IModel model)
         {
             IEnumerable<IfcExtendedMaterialProperties> pSets =
-                model.InstancesWhere<IfcExtendedMaterialProperties>(pset => pset.Material == material);
+                model.Instances.Where<IfcExtendedMaterialProperties>(pset => pset.Material == material);
             Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> result =
                 new Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>>();
 
