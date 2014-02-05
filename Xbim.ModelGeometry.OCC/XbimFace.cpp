@@ -42,13 +42,13 @@ namespace Xbim
 				return gcnew XbimFaceOuterBound(BRepTools::OuterWire(*nativeHandle), *nativeHandle);
 			}
 
-			gp_Vec XbimFace::GetNormalAt( gp_Pnt pnt)
+			gp_Vec XbimFace::GetNormalAt(const TopoDS_Face & face, gp_Pnt pnt)
 			{
-				Handle(Geom_Surface) surf = BRep_Tool::Surface(*nativeHandle); //the surface
+				Handle(Geom_Surface) surf = BRep_Tool::Surface(face); //the surface
 				GeomAPI_ProjectPointOnSurf projpnta(pnt, surf);
 				double au, av; //the u- and v-coordinates of the projected point
 				projpnta.LowerDistanceParameters(au, av); //get the nearest projection
-				BRepGProp_Face prop(*nativeHandle);
+				BRepGProp_Face prop(face);
 				gp_Pnt centre;
 				gp_Vec normalDir;
 				prop.Normal(au,av,centre,normalDir);	

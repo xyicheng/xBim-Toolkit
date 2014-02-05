@@ -63,7 +63,7 @@ namespace Xbim
 
 				//calculates the topological normal of the face
 				static gp_Vec TopoNormal(const TopoDS_Face & face);
-				gp_Vec GetNormalAt(gp_Pnt pnt);
+				static gp_Vec GetNormalAt(const TopoDS_Face & face, gp_Pnt pnt);
 				property XbimFaceOuterBound^ OuterBound
 				{
 					XbimFaceOuterBound^ get();
