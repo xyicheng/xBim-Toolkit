@@ -16,7 +16,7 @@
 #include <ShapeFix_ShapeTolerance.hxx>
 #include <Geom_Plane.hxx>
 #include <Handle_Geom_Plane.hxx>
-
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -40,6 +40,19 @@ namespace Xbim
 			XbimFaceOuterBound^ XbimFace::OuterBound::get()
 			{
 				return gcnew XbimFaceOuterBound(BRepTools::OuterWire(*nativeHandle), *nativeHandle);
+			}
+
+			gp_Vec XbimFace::GetNormalAt( gp_Pnt pnt)
+			{
+				Handle(Geom_Surface) surf = BRep_Tool::Surface(*nativeHandle); //the surface
+				GeomAPI_ProjectPointOnSurf projpnta(pnt, surf);
+				double au, av; //the u- and v-coordinates of the projected point
+				projpnta.LowerDistanceParameters(au, av); //get the nearest projection
+				BRepGProp_Face prop(*nativeHandle);
+				gp_Pnt centre;
+				gp_Vec normalDir;
+				prop.Normal(au,av,centre,normalDir);	
+				return normalDir;
 			}
 
 			gp_Vec XbimFace::TopoNormal(const TopoDS_Face & face)

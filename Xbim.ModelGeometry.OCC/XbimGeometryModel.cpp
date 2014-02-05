@@ -38,6 +38,8 @@
 #include <ShapeFix_ShapeTolerance.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <carve/triangulator.hpp>
+
+
 using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace Xbim::Ifc2x3::SharedComponentElements;
@@ -826,7 +828,7 @@ TryIntersectSolid:
 				return sb->ToString();
 			}
 
-
+			
 
 			XbimRect3D XbimGeometryModel::GetAxisAlignedBoundingBox()
 			{
