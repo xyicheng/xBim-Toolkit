@@ -42,7 +42,7 @@ namespace Xbim.ModelGeometry.Scene
                 var n = nEn.Current;
                 sb.AppendFormat("{0} pos: {1} nrm:{2}\r\n", i++, p, n);
             }
-
+             
             i = 0;
             sb.AppendLine("Triangles:");
             foreach (var item in TriangleIndices)
