@@ -702,6 +702,66 @@ namespace Xbim.Common.Geometry
         #endregion
 
 
+        
+        /// <summary>
+        /// Decomposes a matrix into a scale, rotation, and translation.
+        /// </summary>
+        /// <param name="scale">When the method completes, contains the scaling component of the decomposed matrix.</param>
+        /// <param name="rotation">When the method completes, contains the rtoation component of the decomposed matrix.</param>
+        /// <param name="translation">When the method completes, contains the translation component of the decomposed matrix.</param>
+        /// <remarks>
+        /// This method is designed to decompose an SRT transformation matrix only.
+        /// </remarks>
+        public bool Decompose(out XbimVector3D scale, out XbimQuaternion rotation, out XbimVector3D translation)
+        {
+            //Source: Unknown
+            // References: http://www.gamedev.net/community/forums/topic.asp?topic_id=441695
+            // via https://code.google.com/p/sharpdx/source/browse/Source/SharpDX/Matrix.cs?r=9f9e209b1be04f06f294bc6d72b06055ad6abdcc
+
+            //Get the translation.
+            translation = new XbimVector3D();
+            translation.X = this._offsetX;
+            translation.Y = this._offsetY;
+            translation.Z = this._offsetZ;
+
+            //Scaling is the length of the rows.
+            scale = new XbimVector3D();
+            scale.X = (float)Math.Sqrt((M11 * M11) + (M12 * M12) + (M13 * M13));
+            scale.Y = (float)Math.Sqrt((M21 * M21) + (M22 * M22) + (M23 * M23));
+            scale.Z = (float)Math.Sqrt((M31 * M31) + (M32 * M32) + (M33 * M33));
+
+            //If any of the scaling factors are zero, than the rotation matrix can not exist.
+            // 
+
+            double ZeroTolerance = 0.000003;
+            if (Math.Abs(scale.X) < ZeroTolerance ||
+                Math.Abs(scale.Y) < ZeroTolerance ||
+                Math.Abs(scale.Z) < ZeroTolerance)
+            {
+                rotation = new XbimQuaternion(); // defaults to identity
+                return false;
+            }
+
+            //The rotation is the left over matrix after dividing out the scaling.
+            XbimMatrix3D rotationmatrix = new XbimMatrix3D();
+            rotationmatrix.M11 = M11 / scale.X;
+            rotationmatrix.M12 = M12 / scale.X;
+            rotationmatrix.M13 = M13 / scale.X;
+
+            rotationmatrix.M21 = M21 / scale.Y;
+            rotationmatrix.M22 = M22 / scale.Y;
+            rotationmatrix.M23 = M23 / scale.Y;
+
+            rotationmatrix.M31 = M31 / scale.Z;
+            rotationmatrix.M32 = M32 / scale.Z;
+            rotationmatrix.M33 = M33 / scale.Z;
+
+            rotationmatrix.M44 = 1;
+
+            XbimQuaternion.RotationMatrix(ref rotationmatrix, out rotation);
+            return true;
+        }
+
 
 
         public XbimVector3D Transform(XbimVector3D xbimVector3D)
@@ -1064,7 +1124,13 @@ namespace Xbim.Common.Geometry
             //}
         }
 
-
-        
+        public XbimQuaternion GetRotationQuaternion()
+        {
+            XbimVector3D scale;
+            XbimVector3D translation;
+            XbimQuaternion rotation;
+            this.Decompose(out scale, out rotation, out translation);
+            return rotation;
+        }
     }
 }
