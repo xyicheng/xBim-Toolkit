@@ -86,10 +86,10 @@ namespace Xbim.ModelGeometry.Scene
                 String line;
                 // Read and display lines from the data until the end of
                 // the data is reached.
-
+              
                 while ((line = sr.ReadLine()) != null)
                 {
-
+                   
                     string[] tokens = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if (tokens.Length > 1) //we need a command and some data
                     {
@@ -103,13 +103,13 @@ namespace Xbim.ModelGeometry.Scene
                             case "V": //process vertices
                                 for (int i = 1; i < tokens.Length; i++)
                                 {
-                                    string[] xyz = tokens[i].Split(',');
-                                    XbimPoint3D p = new XbimPoint3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
-                                                                      Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
-                                                                      Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
-                                    if (trans.HasValue)
-                                        p = trans.Value.Transform(p);
-                                    vertexList.Add(p);
+                                   string[] xyz = tokens[i].Split(',');
+                                   XbimPoint3D p = new XbimPoint3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                                                     Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
+                                                                     Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
+                                   if (trans.HasValue)
+                                       p = trans.Value.Transform(p);
+                                   vertexList.Add(p);
                                 }
                                 break;
                             case "N": //processes normals
@@ -119,8 +119,6 @@ namespace Xbim.ModelGeometry.Scene
                                     XbimVector3D v = new XbimVector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
-                                    //if (trans.HasValue)
-                                    //    v = trans.Value.Transform(v);
                                     normalList.Add(v);
                                 }
                                 break;
@@ -155,10 +153,10 @@ namespace Xbim.ModelGeometry.Scene
                                                     currentNormal = new XbimVector3D(1, 0, 0);
                                                     break;
                                                 case "U": //Up
-                                                    currentNormal = new XbimVector3D(0, 0, 1);
+                                                    currentNormal = new XbimVector3D(0, 0, 1); 
                                                     break;
                                                 case "D": //Down
-                                                    currentNormal = new XbimVector3D(0, 0, -1);
+                                                    currentNormal = new XbimVector3D(0, 0, -1);               
                                                     break;
                                                 default: //it is an index number
                                                     int normalIndex = int.Parse(indexNormalPair[1]);
@@ -177,7 +175,7 @@ namespace Xbim.ModelGeometry.Scene
 
                                         //now add the index
                                         int index = int.Parse(indexNormalPair[0]);
-
+                                       
                                         int alreadyWrittenAt = index; //in case it is the first mesh
                                         if (!writtenVertices.TryGetValue(index, out alreadyWrittenAt)) //if we haven't  written it in this mesh pass, add it again unless it is the first one which we know has been written
                                         {
@@ -193,11 +191,11 @@ namespace Xbim.ModelGeometry.Scene
                                         }
                                     }
                                 }
-
+                                
                                 break;
                             default:
                                 throw new Exception("Invalid Geometry Command");
-
+                               
                         }
                     }
                 }

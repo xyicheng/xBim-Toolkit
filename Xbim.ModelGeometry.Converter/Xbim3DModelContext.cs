@@ -607,7 +607,8 @@ namespace Xbim.ModelGeometry.Converter
         public XbimProductShape GetProductShape(IfcProduct product)
         {
             //get the product shapes
-           return  new XbimProductShape(this, _model.GetGeometryData(product,XbimGeometryType.ProductPolyhedronMap).FirstOrDefault());
+           return  new XbimProductShape(this, _model.GetGeometryData(product,XbimGeometryType.ProductPolyhedronMap)
+               .Where(d=>d.Counter==_contextId).FirstOrDefault());
         }
 
         public IEnumerable<XbimProductShape> ProductShapes
