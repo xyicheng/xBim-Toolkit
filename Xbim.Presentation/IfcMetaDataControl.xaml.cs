@@ -31,6 +31,9 @@ using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.QuantityResource;
 using Xbim.Ifc2x3.MaterialResource;
 using Xbim.Ifc2x3.MeasureResource;
+using System.Collections;
+using System.Data;
+using System.Windows.Documents;
 
 #endregion
 
@@ -73,7 +76,20 @@ namespace Xbim.Presentation
                 set { _value = value; }
             }
 
-            
+            private string[] _schemas = new [] { "file", "ftp", "http", "https" };
+            public bool IsLink 
+            {
+                get
+                {
+                    Uri uri = null;
+                    if (Uri.TryCreate(Value, UriKind.Absolute, out uri))
+                    {
+                        var schema = uri.Scheme;
+                        return _schemas.Contains(schema);
+                    }
+                    return false;
+                }
+            }
         }
 
         private IPersistIfcEntity _entity;
@@ -168,6 +184,8 @@ namespace Xbim.Presentation
             {
                 ctrl.DataRebind((IPersistIfcEntity)e.NewValue);
             }
+
+            //ctrl.SetUpLinks();
         }
 
         private void DataRebind(IPersistIfcEntity entity)
@@ -517,5 +535,58 @@ namespace Xbim.Presentation
         }
 
         #endregion
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            var hyperlink = sender as Hyperlink;
+            if (hyperlink == null)
+                throw new ArgumentNullException();
+            System.Diagnostics.Process.Start(e.Uri.OriginalString);
+        }
+
+        //private void SetUpLinks()
+        //{
+        //    var grid = PropertiesGrid;
+        //    var rows = GetDataGridRows(grid);
+        //    if (rows.Count() == 0)
+        //        return;
+
+        //    foreach (DataGridRow r in rows)
+        //    {
+        //        DataRowView rv = (DataRowView)r.Item;
+        //        DataGridColumn column = grid.Columns[1];
+        //        if (column.GetCellContent(r) is TextBox)
+        //        {
+        //            TextBox cellContent = column.GetCellContent(r) as TextBox;
+        //            var text = cellContent.Text;
+
+        //            //find if it is a hyperlink
+        //            if (Uri.IsWellFormedUriString(text, UriKind.RelativeOrAbsolute))
+        //            {
+        //                //create hyperlink
+        //                Run linkText = new Run("text");
+        //                Hyperlink link = new Hyperlink(linkText);
+        //                link.NavigateUri = new Uri(text);
+
+        //                //change content to hyperlink
+        //                var label = new Label();
+        //                label.Content = link;
+        //                rv.Row.ItemArray[1] = label;
+        //            }
+        //        }
+        //    }
+        //}
+
+        //public IEnumerable<DataGridRow> GetDataGridRows(DataGrid grid)
+        //{
+        //    var itemsSource = grid.ItemsSource as IEnumerable;
+        //    if (null != itemsSource)
+        //        foreach (var item in itemsSource)
+        //        {
+        //            var row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+        //            if (null != row) 
+        //                yield return row;
+        //        }
+        //}
     }
 }
