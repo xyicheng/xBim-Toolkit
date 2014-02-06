@@ -164,11 +164,11 @@ namespace Xbim.ModelGeometry.Scene
                                                     break;
                                             }
                                         }
-                                        if (trans.HasValue)
-                                        {
-                                            currentNormal = trans.Value.Transform(currentNormal);
-                                            currentNormal.Normalize();
-                                        }
+                                        //if (trans.HasValue)
+                                        //{
+                                        //    currentNormal = trans.Value.Transform(currentNormal);
+                                        //    currentNormal.Normalize();
+                                        //}
                                         //now add the index
                                         int index = int.Parse(indexNormalPair[0]);
                                        
