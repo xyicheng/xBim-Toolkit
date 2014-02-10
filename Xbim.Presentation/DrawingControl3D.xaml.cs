@@ -1482,10 +1482,11 @@ namespace Xbim.Presentation
             if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
             {
                 Rect3D r3d = Highlighted.Mesh.GetBounds();
-                SetCutPlane(
-                    r3d.X, r3d.Y, r3d.Z + delta, 
-                    0, 0, -1
-                    );
+                if (!r3d.IsEmpty)
+                    SetCutPlane(
+                        r3d.X, r3d.Y, r3d.Z + delta, 
+                        0, 0, -1
+                        );
             }
         }
 
