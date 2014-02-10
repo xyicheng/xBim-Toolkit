@@ -18,6 +18,7 @@
 		public double doubleVal;
 		public bool boolVal;
 		public Type typeVal;
+		public IEnumerable<IPersistIfcEntity> entities;
 		public object val;
 	  }
 
@@ -85,6 +86,7 @@
 %token  CLOSE
 %token  SAVE
 %token  COUNT
+%token  SUM
 %token  VALIDATE
 
 /* spatial keywords */
@@ -125,10 +127,11 @@ expression
 	| variables_actions ';'
 	| model_actions ';'
 	| rule_check ';'
+	| aggregation ';'
 	;
 
 attr_setting
-	: SET value_setting_list FOR IDENTIFIER								{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)));}
+	: SET value_setting_list FOR element_set			{EvaluateSetExpression($4.entities, ((List<Expression>)($2.val)));}
 	;
 
 value_setting_list
@@ -166,10 +169,14 @@ model_actions
 variables_actions
 	: DUMP IDENTIFIER												{DumpIdentifier($2.strVal);}
 	| CLEAR IDENTIFIER												{ClearIdentifier($2.strVal);}
-	| COUNT IDENTIFIER												{CountIdentifier($2.strVal);}
-	| DUMP string_list FROM IDENTIFIER								{DumpAttributes($4.strVal, ((List<string>)($2.val)));}
-	| DUMP string_list FROM IDENTIFIER TO FILE STRING				{DumpAttributes($4.strVal, ((List<string>)($2.val)), $7.strVal);}
+	| DUMP string_list FROM element_set								{DumpAttributes($4.entities, ((List<string>)($2.val)), null, $4.strVal);}
+	| DUMP string_list FROM element_set TO FILE STRING				{DumpAttributes($4.entities, ((List<string>)($2.val)), $7.strVal, $4.strVal);}
 	;
+
+aggregation
+	: COUNT element_set												{$$.intVal = CountEntities($2.entities); $$.val = Tokens.INTEGER;}
+	| SUM attrOrProp FROM element_set								{$$.doubleVal = SumEntities($2.strVal, (Tokens)($2.val), $4.entities); $$.val = Tokens.DOUBLE;}
+	;	
 
 string_list
 	: string_list ',' STRING										{((List<string>)($1.val)).Add($3.strVal); $$.val = $1.val;}
@@ -188,6 +195,11 @@ selection_statement
 	| EVERY object STRING												{$$.val = Select($2.typeVal, $3.strVal);}
 	| EVERY object WHERE conditions_set									{$$.val = Select($2.typeVal, ((Expression)($4.val)));}
 	| EVERY CLASSIFICATION CODE STRING									{$$.val = SelectClassification($4.strVal);}
+	;
+
+element_set
+	: IDENTIFIER													{$$.entities = GetVariableContent($1.strVal); $$.strVal = $1.strVal;}
+	| selection_statement											{$$.entities = (IEnumerable<IPersistIfcEntity>)($1.val); }
 	;
 	
 creation
@@ -213,8 +225,8 @@ layer
 	;
 
 addition
-	: ADD IDENTIFIER TO IDENTIFIER									{AddOrRemove(Tokens.ADD, $2.strVal, $4.strVal);}
-	| REMOVE IDENTIFIER FROM IDENTIFIER								{AddOrRemove(Tokens.REMOVE, $2.strVal, $4.strVal);}
+	: ADD element_set TO IDENTIFIER									{AddOrRemove(Tokens.ADD, $2.entities, $4.strVal);}
+	| REMOVE element_set FROM IDENTIFIER								{AddOrRemove(Tokens.REMOVE, $2.entities, $4.strVal);}
 	;
 
 conditions_set
@@ -277,7 +289,7 @@ property
 	| PROPERTY NAME								{$$.strVal = "Name";}
 	| PROPERTY DESCRIPTION						{$$.strVal = "Description";}
 	| PROPERTY PREDEFINED_TYPE					{$$.strVal = "PredefinedType";}
-	| property FROM PROPERTY_SET STRING			{$$.strVal = $4.strVal + "\n" + $1.strVal;}
+	| property IN PROPERTY_SET STRING			{$$.strVal = $4.strVal + "\n" + $1.strVal;}
 	;
 
 attribute
@@ -378,8 +390,7 @@ object
 	;
 
 rule_check
-	: RULE STRING ':' conditions_set FOR IDENTIFIER					{ CheckRule($2.strVal, (Expression)($4.val), $6.strVal); }
-	| RULE STRING ':' conditions_set FOR selection_statement		{ CheckRule($2.strVal, (Expression)($4.val), (IEnumerable<IPersistIfcEntity>)($6.val)); }
+	: RULE STRING ':' conditions_set FOR element_set				{ CheckRule($2.strVal, (Expression)($4.val), $6.entities); }
 	| CLEAR RULE													{ ClearRules(); }
 	| SAVE RULE TO FILE STRING										{ SaveRules($5.strVal); }
 	;

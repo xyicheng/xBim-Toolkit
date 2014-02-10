@@ -51,11 +51,7 @@ namespace Xbim.Script
         /// <param name="model">Model which shuldbe used for the script execution</param>
         public XbimQueryParser(XbimModel model)
         {
-            _scanner = new Scanner();
-            _parser = new Parser(_scanner, model);
-            _parser.OnModelChanged += delegate(object sender, ModelChangedEventArgs e) {
-                ModelChanged(e.NewModel);
-            };
+            Init(model);
         }
 
         /// <summary>
@@ -65,13 +61,22 @@ namespace Xbim.Script
         /// </summary>
         public XbimQueryParser()
         {
-            //create new empty model
-            var model = XbimModel.CreateTemporaryModel();
+            Init(null);
+        }
+
+        private void Init(XbimModel model)
+        {
+            if (model == null)
+                model = XbimModel.CreateTemporaryModel();
             _scanner = new Scanner();
             _parser = new Parser(_scanner, model);
             _parser.OnModelChanged += delegate(object sender, ModelChangedEventArgs e)
             {
                 ModelChanged(e.NewModel);
+            };
+            _parser.OnFileReportCreated += delegate(object sender, FileReportCreatedEventArgs e)
+            {
+                FileReportCreated(e.FilePath);
             };
         }
 
@@ -239,6 +244,18 @@ namespace Xbim.Script
         {
             if (OnScriptParsed != null)
                 OnScriptParsed(this, new ScriptParsedEventArgs());
+        }
+
+        /// <summary>
+        /// This event is fired when file with report is created 
+        /// (like XLS or CSV as an export of properties and arguments 
+        /// or result of rule checking)
+        /// </summary>
+        public event FileReportCreatedHandler OnFileReportCreated;
+        private void FileReportCreated(string path)
+        {
+            if (OnFileReportCreated != null)
+                OnFileReportCreated(this, new FileReportCreatedEventArgs(path));
         }
 
     }

@@ -96,7 +96,10 @@ namespace Xbim.Script
             get
             {
                 FixVariableName(ref key);
-                return _data[key];
+                if (_data.ContainsKey(key))
+                    return _data[key];
+                else
+                    return new IPersistIfcEntity [] {};
             }
         }
 

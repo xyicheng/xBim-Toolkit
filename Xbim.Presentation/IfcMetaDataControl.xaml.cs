@@ -543,50 +543,5 @@ namespace Xbim.Presentation
                 throw new ArgumentNullException();
             System.Diagnostics.Process.Start(e.Uri.OriginalString);
         }
-
-        //private void SetUpLinks()
-        //{
-        //    var grid = PropertiesGrid;
-        //    var rows = GetDataGridRows(grid);
-        //    if (rows.Count() == 0)
-        //        return;
-
-        //    foreach (DataGridRow r in rows)
-        //    {
-        //        DataRowView rv = (DataRowView)r.Item;
-        //        DataGridColumn column = grid.Columns[1];
-        //        if (column.GetCellContent(r) is TextBox)
-        //        {
-        //            TextBox cellContent = column.GetCellContent(r) as TextBox;
-        //            var text = cellContent.Text;
-
-        //            //find if it is a hyperlink
-        //            if (Uri.IsWellFormedUriString(text, UriKind.RelativeOrAbsolute))
-        //            {
-        //                //create hyperlink
-        //                Run linkText = new Run("text");
-        //                Hyperlink link = new Hyperlink(linkText);
-        //                link.NavigateUri = new Uri(text);
-
-        //                //change content to hyperlink
-        //                var label = new Label();
-        //                label.Content = link;
-        //                rv.Row.ItemArray[1] = label;
-        //            }
-        //        }
-        //    }
-        //}
-
-        //public IEnumerable<DataGridRow> GetDataGridRows(DataGrid grid)
-        //{
-        //    var itemsSource = grid.ItemsSource as IEnumerable;
-        //    if (null != itemsSource)
-        //        foreach (var item in itemsSource)
-        //        {
-        //            var row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-        //            if (null != row) 
-        //                yield return row;
-        //        }
-        //}
     }
 }

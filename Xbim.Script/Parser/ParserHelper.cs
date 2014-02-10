@@ -21,6 +21,7 @@ using Xbim.Ifc2x3.ExternalReferenceResource;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.Util;
+using System.Globalization;
 
 namespace Xbim.Script
 {
@@ -905,6 +906,20 @@ namespace Xbim.Script
             }
         }
 
+        private IEnumerable<IPersistIfcEntity> GetVariableContent(string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+                throw new ArgumentNullException();
+
+            if (_variables.IsDefined(identifier))
+                return _variables[identifier];
+            else
+            {
+                Scanner.yyerror("Identifier {0} is not defined", identifier);
+                return new IPersistIfcEntity[] { };
+            }
+        }
+
         private void DumpIdentifier(string identifier, string outputPath = null)
         {
             TextWriter output = null;
@@ -937,20 +952,30 @@ namespace Xbim.Script
             if (output != null) output.Close();
         }
 
-        private void DumpAttributes(string identifier,IEnumerable<string> attrNames, string outputPath = null)
+        private void DumpAttributes(IEnumerable<IPersistIfcEntity> entities, IEnumerable<string> attrNames, string outputPath = null, string identifier = null)
         {
             if (outputPath == null)
-                ExportCSV(identifier, attrNames, null);
-            var ext = Path.GetExtension(outputPath).ToLower();
-            if (ext == ".xls")
-                ExportXLS(identifier, attrNames, outputPath);
+                ExportCSV(entities, attrNames, null);
             else
-                ExportCSV(identifier, attrNames, outputPath);
-           
-            
+            {
+                try
+                {
+                    var ext = Path.GetExtension(outputPath).ToLower();
+                    if (ext == ".xls")
+                        ExportXLS(entities, attrNames, outputPath, identifier);
+                    else
+                        ExportCSV(entities, attrNames, outputPath);
+                    FileReportCreated(outputPath);
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
+            }
         }
 
-        private void ExportCSV(string identifier, IEnumerable<string> attrNames, string outputPath = null)
+        private void ExportCSV(IEnumerable<IPersistIfcEntity> entities, IEnumerable<string> attrNames, string outputPath = null)
         {
             TextWriter output = null;
             StringBuilder str = null;
@@ -962,45 +987,49 @@ namespace Xbim.Script
                 }
 
                 str = new StringBuilder();
-                if (Variables.IsDefined(identifier))
+                var header = "";
+                foreach (var name in attrNames)
                 {
-                    var header = "";
+                    header += "," + name;
+                }
+                if (header.Length > 0)
+                {
+                    header = header.Remove(0, 1);
+                    str.AppendLine(header);
+                }
+
+                foreach (var entity in entities)
+                {
+                    var line = "";
                     foreach (var name in attrNames)
                     {
-                        header += name + "; ";
+                        //get attribute
+                        var attr = GetAttributeValue(name, entity);
+                        if (attr == null)
+                            attr = GetPropertyValue(name, entity);
+                        if (attr != null)
+                            line += "," + attr.ToString();
+                        else
+                            line += ", - ";
                     }
-                    str.AppendLine(header);
-
-                    foreach (var entity in Variables[identifier])
+                    if (line.Length > 0)
                     {
-                        var line = "";
-                        foreach (var name in attrNames)
-                        {
-                            //get attribute
-                            var attr = GetAttributeValue(name, entity);
-                            if (attr == null)
-                                attr = GetPropertyValue(name, entity);
-                            if (attr != null)
-                                line += attr.ToString() + "; ";
-                            else
-                                line += " - ; ";
-                        }
+                        line = line.Remove(0, 1);
                         str.AppendLine(line);
                     }
                 }
-                else
-                    str.AppendLine(String.Format("Variable {0} is not defined.", identifier));
 
+                if (output != null)
+                    output.Write(str.ToString());
             }
             catch (Exception e)
             {
-                Scanner.yyerror("It was not possible to dump specified content of the " + identifier + ": " + e.Message);
+                Scanner.yyerror("It was not possible to dump/export specified content: " + e.Message);
             }
             finally
             {
                 if (output != null)
                 {
-                    output.Write(str.ToString());
                     output.Close();
                 }
                 else
@@ -1008,13 +1037,13 @@ namespace Xbim.Script
             }
         }
 
-        private void ExportXLS(string identifier, IEnumerable<string> attrNames, string outputPath)
+        private void ExportXLS(IEnumerable<IPersistIfcEntity> entities, IEnumerable<string> attrNames, string outputPath, string identifier)
         {
             if (String.IsNullOrEmpty(outputPath)) 
                 throw new ArgumentException();
 
-            if (!Variables.IsDefined(identifier))
-                Scanner.yyerror(String.Format("Variable {0} is not defined.", identifier));
+            if (identifier == null)
+                identifier = "Exported_values";
 
             HSSFWorkbook workbook = null;
             try
@@ -1049,10 +1078,10 @@ namespace Xbim.Script
                     
 
                 //export values
-                var entities = Variables[identifier].ToList();
-                for (int j = 0; j < entities.Count; j++)
+                var entList = entities.ToList();
+                for (int j = 0; j < entList.Count; j++)
                 {
-                    var entity = entities[j];
+                    var entity = entList[j];
                     dataRow = sheet.CreateRow(++rowNum);
                     dataRow.CreateCell(0, CellType.STRING).SetCellValue(entity.GetType().Name);
                     var label = "#" + Math.Abs(entity.EntityLabel);
@@ -1078,7 +1107,7 @@ namespace Xbim.Script
             }
             catch (Exception e)
             {
-                Scanner.yyerror("It was not possible to dump specified content of the " + identifier + ": " + e.Message);
+                Scanner.yyerror("It was not possible to dump/export specified content: " + e.Message);
             }
         }
 
@@ -1126,24 +1155,67 @@ namespace Xbim.Script
             }
         }
 
-        private void CountIdentifier(string identifier)
+        private int CountEntities(IEnumerable<IPersistIfcEntity> entities)
         {
-            if (Variables.IsDefined(identifier))
-            {
-                WriteLine(Variables[identifier].Count().ToString());
-            }
+            var result = entities.Count();
+            WriteLine(result.ToString());
+            return result;
         }
+
+        private double SumEntities(string attrOrPropName, Tokens attrType, IEnumerable<IPersistIfcEntity> entities)
+        {
+            double sum = double.NaN;
+            foreach (var entity in entities)
+            {
+                double value = double.NaN;
+                switch (attrType)
+                {
+                    case Tokens.STRING:
+                        var attr1 = GetAttributeValue(attrOrPropName, entity);
+                        if (attr1 == null)
+                            attr1 = GetPropertyValue(attrOrPropName, entity);
+                        if (attr1 != null)
+                        {
+                            var attrStr = attr1.ToString();
+                            Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+                        }
+                        break;
+                    case Tokens.ATTRIBUTE:
+                        var attr = GetAttributeValue(attrOrPropName, entity);
+                        if (attr != null)
+                        {
+                            var attrStr = attr.ToString();
+                            Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+                        }
+                        break;
+                    case Tokens.PROPERTY:
+                        var prop = GetPropertyValue(attrOrPropName, entity);
+                        if (prop != null)
+                        {
+                            var attrStr = prop.ToString();
+                            Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+                        }
+                        break;
+                    default:
+                        throw new ArgumentException("Unexpected attribute type. STRING, ATTRIBUTE or PROPERTY expected");
+                }
+                if (!double.IsNaN(value))
+                {
+                    if (double.IsNaN(sum)) sum = 0;
+                    sum += value;
+                }
+            }
+
+            WriteLine(sum.ToString());
+            return sum;
+        }
+
         #endregion
 
         #region Add or remove elements to and from group or type or spatial element
-        private void AddOrRemove(Tokens action, string productsIdentifier, string aggregation)
+        private void AddOrRemove(Tokens action, IEnumerable<IPersistIfcEntity> entities, string aggregation)
         { 
         //conditions
-            if (!Variables.IsDefined(productsIdentifier))
-            {
-                Scanner.yyerror("Variable '" + productsIdentifier + "' is not defined and doesn't contain any products.");
-                return;
-            }
             if (!Variables.IsDefined(aggregation))
             {
                 Scanner.yyerror("Variable '" + aggregation + "' is not defined and doesn't contain any products.");
@@ -1156,7 +1228,7 @@ namespace Xbim.Script
             }
 
             //check if all of the objects are from the actual model and not just referenced ones
-            foreach (var item in Variables[productsIdentifier])
+            foreach (var item in entities)
             {
                 if (item.ModelOf != _model)
                 {
@@ -1186,8 +1258,8 @@ namespace Xbim.Script
 
             if (classification != null)
             {
-                var objects = Variables[productsIdentifier].OfType<IfcRoot>().Cast<IfcRoot>();
-                if (objects.Count() != Variables[productsIdentifier].Count())
+                var objects = entities.OfType<IfcRoot>().Cast<IfcRoot>();
+                if (objects.Count() != entities.Count())
                     Scanner.yyerror("Only objects which are subtypes of 'IfcRoot' can be assigned to classification '" + aggregation + "'.");
 
                 perform = () => {
@@ -1211,8 +1283,8 @@ namespace Xbim.Script
 
             if (group != null)
             {
-                var objects = Variables[productsIdentifier].OfType<IfcObjectDefinition>().Cast<IfcObjectDefinition>();
-                if (objects.Count() != Variables[productsIdentifier].Count())
+                var objects = entities.OfType<IfcObjectDefinition>().Cast<IfcObjectDefinition>();
+                if (objects.Count() != entities.Count())
                     Scanner.yyerror("Only objects which are subtypes of 'IfcObjectDefinition' can be assigned to group '" + aggregation + "'.");
 
                 perform = () =>
@@ -1237,8 +1309,8 @@ namespace Xbim.Script
 
             if (typeObject != null)
             {
-                var objects = Variables[productsIdentifier].OfType<IfcObject>().Cast<IfcObject>();
-                if (objects.Count() != Variables[productsIdentifier].Count())
+                var objects = entities.OfType<IfcObject>().Cast<IfcObject>();
+                if (objects.Count() != entities.Count())
                     Scanner.yyerror("Only objects which are subtypes of 'IfcObject' can be assigned to 'IfcTypeObject' '" + aggregation + "'.");
 
                 perform = () => {
@@ -1286,8 +1358,8 @@ namespace Xbim.Script
 
             if (spatialStructure != null)
             {
-                var objects = Variables[productsIdentifier].OfType<IfcProduct>().Cast<IfcProduct>();
-                if (objects.Count() != Variables[productsIdentifier].Count())
+                var objects = entities.OfType<IfcProduct>().Cast<IfcProduct>();
+                if (objects.Count() != entities.Count())
                     Scanner.yyerror("Only objects which are subtypes of 'IfcProduct' can be assigned to 'IfcSpatialStructureElement' '" + aggregation + "'.");
 
                 perform = () =>
@@ -1412,14 +1484,11 @@ namespace Xbim.Script
         #endregion
 
         #region Objects manipulation
-        private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions)
+        private void EvaluateSetExpression(IEnumerable<IPersistIfcEntity> entities, IEnumerable<Expression> expressions)
         {
-            if (identifier == null || expressions == null) throw new ArgumentNullException();
-
-            Action<string, IEnumerable<Expression>> perform = (ident, exprs) => {
-                var entities = _variables.GetEntities(ident);
+            Action perform = () => {
                 if (entities == null) return;
-                foreach (var expression in exprs)
+                foreach (var expression in expressions)
                 {
                     try
                     {
@@ -1434,11 +1503,11 @@ namespace Xbim.Script
             };
 
             if (_model.IsTransacting)
-                perform(identifier, expressions);
+                perform();
             else
                 using (var txn = _model.BeginTransaction("Setting properties and attribues"))
                 {
-                    perform(identifier, expressions);
+                    perform();
                     txn.Commit();
                 }
         }
@@ -1872,15 +1941,6 @@ namespace Xbim.Script
         private RuleCheckResultsManager _ruleChecks = new RuleCheckResultsManager();
         public RuleCheckResultsManager RuleChecks { get { return _ruleChecks; } }
 
-        private void CheckRule(string ruleName, Expression condition, string identifier)
-        {
-            if (!Variables.IsDefined(identifier))
-                Scanner.yyerror("Variable {0} is not defined.", identifier);
-            
-            CheckRule(ruleName, condition, Variables[identifier]);
-
-        }
-
         private void CheckRule(string ruleName, Expression condition, IEnumerable<IPersistIfcEntity> elements)
         {
             var func = Expression.Lambda<Func<IPersistIfcEntity, bool>>(condition, _input).Compile();
@@ -1906,10 +1966,12 @@ namespace Xbim.Script
             var ext = (Path.GetExtension(path) ?? "").ToLower();
             try
             {
+                string finalPath = null;
                 if (ext == ".xls")
-                    _ruleChecks.SaveToXLS(path);
+                    finalPath = _ruleChecks.SaveToXLS(path);
                 else
-                    _ruleChecks.SaveToCSV(path);
+                    finalPath = _ruleChecks.SaveToCSV(path);
+                FileReportCreated(finalPath);
             }
             catch (Exception e)
             {
@@ -1944,13 +2006,31 @@ namespace Xbim.Script
                 Output.Write(message);
         }
 
-        //event to be used in the event driven environment
+
+        #region Events
+        /// <summary>
+        /// This event is fired when parser open or 
+        /// close model from script action
+        /// </summary>
         public event ModelChangedHandler OnModelChanged;
         private void ModelChanged(XbimModel newModel)
         {
             if (OnModelChanged != null)
                 OnModelChanged(this, new ModelChangedEventArgs(newModel));
         }
+
+        /// <summary>
+        /// This event is fired when file with report is created 
+        /// (like XLS or CSV as an export of properties and arguments 
+        /// or result of rule checking)
+        /// </summary>
+        public event FileReportCreatedHandler OnFileReportCreated;
+        private void FileReportCreated(string path)
+        {
+            if (OnFileReportCreated != null)
+                OnFileReportCreated(this, new FileReportCreatedEventArgs(path));
+        }
+        #endregion
     }
 
     internal struct Layer
@@ -1982,6 +2062,18 @@ namespace Xbim.Script
         public ModelChangedEventArgs(XbimModel newModel)
         {
             _newModel = newModel;
+        }
+    }
+
+    public delegate void FileReportCreatedHandler(object sender, FileReportCreatedEventArgs e);
+
+    public class FileReportCreatedEventArgs : EventArgs
+    {
+        private string _filePath;
+        public string FilePath { get { return _filePath; } }
+        public FileReportCreatedEventArgs(string path)
+        {
+            _filePath = path;
         }
     }
 
@@ -2036,7 +2128,12 @@ namespace Xbim.Script
             _results = new List<RuleCheckResults>();
         }
 
-        public void SaveToCSV(string path)
+        /// <summary>
+        /// Saves report of the rules check as a CSV file
+        /// </summary>
+        /// <param name="path">Path of the file</param>
+        /// <returns>Final path with extension</returns>
+        public string SaveToCSV(string path)
         {
             try
             {
@@ -2061,6 +2158,7 @@ namespace Xbim.Script
 
                 //close file
                 file.Close();
+                return path;
             }
             catch (Exception)
             {
@@ -2068,7 +2166,12 @@ namespace Xbim.Script
             }
         }
 
-        public void SaveToXLS(string path)
+        /// <summary>
+        /// Saves report of the rules check as a XLS file
+        /// </summary>
+        /// <param name="path">Path of the file</param>
+        /// <returns>Final path with extension</returns>
+        public string SaveToXLS(string path)
         {
             try
             {
@@ -2118,6 +2221,7 @@ namespace Xbim.Script
                 if (workbook != null)
                     workbook.Write(file);
                 file.Close();
+                return path;
             }
             catch (Exception)
             {

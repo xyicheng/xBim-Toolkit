@@ -139,7 +139,7 @@ namespace XbimQueryTest
                 {"Set name to 'New name', description to 'New description' for $wall;", true},
                 {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
                 {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
-                {"Set property name from property set 'Testing pSet' to 'Some name' for $wall;", true},
+                {"Set property name in property set 'Testing pSet' to 'Some name' for $wall;", true},
 
                 //element type attributes and properties
                 {"Select every wall where type name is 'Some name';",true},
@@ -155,7 +155,7 @@ namespace XbimQueryTest
 
                 //specific property and attribute conditions
                 {"Select every wall where property name is 'alternative name';", true},
-                {"Select every wall where property 'Fire Protection' from property set 'PSet_WallCommon' is true;", true},
+                {"Select every wall where property 'Fire Protection' in property set 'PSet_WallCommon' is true;", true},
                 {"Select every wall where attribute tag is not defined;", true},
                 {"Select every wall where attribute name is 'Name as an attribute';", true},
             };
@@ -346,7 +346,7 @@ namespace XbimQueryTest
             {"Select every wall where 'null value' = null;",3},
             {"Select every wall where 'null value' doesn't equal null;",0},
             {"Select every wall where property name is 'alternative';",1},
-            {"Select every wall where property name from property set 'special properties' is 'alternative';",1},
+            {"Select every wall where property name in property set 'special properties' is 'alternative';",1},
             };
 
             //create parser and perform the test
@@ -455,9 +455,9 @@ namespace XbimQueryTest
             $slab is new slab 'Roof slab';
             Set predefined type to 'roof' for $slab;
             Set 
-                property name from property set 'PSet_Slab_Common' to 'Some name', 
-                property Description from property set 'PSet_Slab_Common' to 'Property description', 
-                property fire_rating from property set 'PSet_Slab_Common' to 123.5 
+                property name in property set 'PSet_Slab_Common' to 'Some name', 
+                property Description in property set 'PSet_Slab_Common' to 'Property description', 
+                property fire_rating in property set 'PSet_Slab_Common' to 123.5 
             for $slab;
             ");
 
@@ -886,8 +886,8 @@ namespace XbimQueryTest
             Add $walls to $group;
             Add $walls to $building;
             Set 
-                property 'Fire protection' from property set 'Testing property set' to 'Great', 
-                property 'Warranty date' from property set 'Testing property set' to '12/05/2016' 
+                property 'Fire protection' in property set 'Testing property set' to 'Great', 
+                property 'Warranty date' in property set 'Testing property set' to '12/05/2016' 
             for $walls;
             
             $test1 is every wall where (description contains cat OR description contains cow) AND description contains dog;
@@ -1110,21 +1110,21 @@ namespace XbimQueryTest
             Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
             Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
             Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
-            $walls is every wall;
             $group is new group with name '02.05.01' and description 'External walls';
             $building = new building with name 'Default building';
-            Add $walls to $group;
-            Add $walls to $building;
-            Set 'Fire protection' to 'Great', 'Warranty date' to '12/05/2016' for $walls in property set 'Testing property set';
+            Add every wall to $group;
+            Add every wall to $building;
+            Set property 'Fire protection' in property set 'Testing property set' to 'Great', 
+                property 'Warranty date' in property set 'Testing property set' to '12/05/2016' for every wall;
             
-            Export 'Fire protection', 'Warranty date' from $walls to file 'TestXLS.xls';
-            Export 'Fire protection', 'Warranty date' from $walls to file 'TestXLS.xls';
+            Export 'Fire protection', 'Warranty date' from every wall to file 'TestXLS.xls';
+            Export 'Fire protection', 'Warranty date' from every wall to file 'TestXLS.xls';
             Export name, description from $group to file 'TestXLS.xls';
             ");
 
             Assert.AreEqual(0, parser.Errors.Count);
             Assert.IsTrue(File.Exists("TestXLS.xls"));
-            System.Diagnostics.Process.Start("TestXLS.xls");
+            //System.Diagnostics.Process.Start("TestXLS.xls");
         }
 
 
@@ -1160,6 +1160,35 @@ namespace XbimQueryTest
             Assert.AreEqual(3, parser.Results["$test3"].Count());
             Assert.AreEqual(2, parser.Results["$test4"].Count());
             Assert.AreEqual(3, parser.Results["$test5"].Count());
+        }
+
+        [TestMethod]
+        public void RuleCheckTest()
+        {
+              //new parser with default empty model
+            XbimQueryParser parser = new XbimQueryParser();
+            
+            //create data using queries
+            parser.Parse(@"
+            Create new wall with name 'My wall No. 1' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
+            Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
+            Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
+            $group is new group with name '02.05.01' and description 'External walls';
+            $building = new building with name 'Default building';
+            Add every wall to $group;
+            Add every wall to $building;
+            Set property 'Fire protection' in property set 'Testing property set' to 'Great', 
+                property 'Warranty date' in property set 'Testing property set' to '12/05/2016' for every wall;
+            
+            Rule '01: Every wall has a name': Name is defined for every wall;
+            Rule '02: Every wall has great fire protection': 'Fire protection' is 'Great' for every wall;
+            Rule '03: Every wall has cat in description': Description contains 'cat' for every wall;
+            Save rules to file 'RuleTestResults.xls';
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            Assert.IsTrue(File.Exists("RuleTestResults.xls"));
         }
     }
 }

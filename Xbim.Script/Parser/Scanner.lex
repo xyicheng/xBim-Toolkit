@@ -119,6 +119,7 @@
 "export" |
 "dump"			{ return (int)Tokens.DUMP; }
 "count"			{ return (int)Tokens.COUNT; }
+"sum"			{ return (int)Tokens.SUM; }
 "clear"			{ return (int)Tokens.CLEAR; }
 "open"			{ return (int)Tokens.OPEN; }
 "close"			{ return (int)Tokens.CLOSE; }
