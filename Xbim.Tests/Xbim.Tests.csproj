@@ -73,6 +73,7 @@
     <Compile Include="Comparisons\PropertyComparisonTests.cs" />
     <Compile Include="Comparisons\SampleModelsCreator.cs" />
     <Compile Include="Federation Tests.cs" />
+    <Compile Include="Geometry\GeometryStreamingTests.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="XmlDynamicGroupingTests.cs" />
     <Compile Include="XbimInstanceCollectionTests.cs" />
@@ -88,6 +89,12 @@
     <Folder Include="TestSourceFiles\Temp\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="..\Test Models\BIM Logo-ExclaimationBody.ifc">
       <Link>TestSourceFiles\BIM Logo-ExclaimationBody.ifc</Link>
     </None>
@@ -159,6 +166,10 @@
     <None Include="Comparisons\TestFiles\OneRoom_replaced_with_the_same_window.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Geometry\TestFiles\OneRoom.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
     <None Include="TestSourceFiles\BIM Logo - Coordination View 2 - No M.xBIM">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -186,6 +197,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
+    <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>

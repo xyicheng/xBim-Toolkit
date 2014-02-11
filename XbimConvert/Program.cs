@@ -83,14 +83,28 @@ namespace XbimConvert
                 if (!arguments.NoGeometry)
                         {
 
-                            if (model.GeometryVersion.Major == 1)
+                            if (arguments.GeomVersion == 1)
                                 XbimMesher.GenerateGeometry(model, Logger, progDelegate);
-                            else
+                            else //assume 2;
                             {
                                 Xbim3DModelContext m3d = new Xbim3DModelContext(model);
                                 try
                                 {
                                     m3d.CreateContext(progDelegate);
+                                    
+                                    StringWriter sw = new StringWriter();
+                                    foreach (var productShape in m3d.ProductShapes)
+                                    {
+                                        productShape.WriteMetaData(sw);
+                                        foreach (var shape in productShape.Shapes)
+                                        {
+                                            shape.WriteToStream(sw);
+                                        }
+                                    }
+                                    string result = sw.ToString();
+                                    Console.WriteLine(result);
+                                   string maps =  m3d.MappedShapes();
+                                  // m3d.WriteShapesToStream(maps);
                                 }
                                 catch (Exception ce)
                                 {

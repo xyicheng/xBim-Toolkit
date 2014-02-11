@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Geometry;
@@ -63,6 +64,15 @@ namespace Xbim.ModelGeometry.Converter
         public override int StyleLabel
         {
             get { return this.styleLabel; }
+        }
+
+        public override void WriteToStream(StringWriter sw)
+        {
+            string str = string.Format("S {0},{1},{2},{3}", this.GeometryLabel, StyleLabel > 0 ? StyleLabel.ToString() : "", ReferenceCount > 0 ? ReferenceCount.ToString() : "", this.Transform.HasValue ? Transform.Value.ToString() : "");
+            str = str.TrimEnd(',');
+            sw.WriteLine(str);
+            sw.Write(mesh);
+
         }
     }
 }

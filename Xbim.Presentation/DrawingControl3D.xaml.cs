@@ -1129,27 +1129,28 @@ namespace Xbim.Presentation
 
             //reset all the visuals
             ClearGraphics();
-            
-            if (model == null) 
+
+            if (model == null)
                 return; //nothing to show
+            int geometrySupportLevel = model.GeometrySupportLevel;
             Xbim3DModelContext context = new Xbim3DModelContext(model);
-           XbimRegion largest;
-           if (Model.GeometryVersion.Major == 1)
-               largest = GetLargestRegion(model);
-           else
-               largest = context.GetLargestRegion();
-            XbimPoint3D c = new XbimPoint3D(0,0,0);
+            XbimRegion largest;
+            if (geometrySupportLevel == 1)
+                largest = GetLargestRegion(model);
+            else //assume we are the latest level (2)
+                largest = context.GetLargestRegion();
+            XbimPoint3D c = new XbimPoint3D(0, 0, 0);
             XbimRect3D bb = XbimRect3D.Empty;
-            if(largest!=null)
+            if (largest != null)
                 bb = new XbimRect3D(largest.Centre, largest.Centre);
-            
+
             foreach (var refModel in model.ReferencedModels)
             {
-                
-                XbimRegion r ;
-                if (Model.GeometryVersion.Major == 1)
+
+                XbimRegion r;
+                if (geometrySupportLevel == 1)
                     r = GetLargestRegion(refModel.Model);
-                else
+                else  //assume we are the latest level (2)
                 {
                     Xbim3DModelContext refContext = new Xbim3DModelContext(refModel.Model);
                     r = refContext.GetLargestRegion();
@@ -1167,17 +1168,17 @@ namespace Xbim.Presentation
             model.ReferencedModels.CollectionChanged += RefencedModels_CollectionChanged;
             //build the geometric scene and render as we go
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene;
-            if (Model.GeometryVersion.Major == 1)
+            if ( geometrySupportLevel == 1)
                 scene = BuildScene(model, EntityLabels);
-            else
+            else  //assume we are the latest level (2)
                 scene = BuildScene2(model, context);
             if(scene.Layers.Count() > 0)
                 scenes.Add(scene);
             foreach (var refModel in model.ReferencedModels)
             {
-                if (Model.GeometryVersion.Major == 1)
+                if (refModel.Model.GeometrySupportLevel == 1)
                     scenes.Add(BuildRefModelScene(refModel.Model, refModel.DocumentInformation));
-                else
+                else  //assume we are the latest level (2)
                 {
                     Xbim3DModelContext refContext = new Xbim3DModelContext(refModel.Model);
                     scenes.Add(BuildScene2(refModel.Model, refContext));

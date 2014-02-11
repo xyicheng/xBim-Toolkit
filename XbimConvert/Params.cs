@@ -10,6 +10,7 @@ namespace XbimConvert
 {
     public class Params
     {
+        public  int GeomVersion = 2;
         public static Params ParseParams(string[] args)
         {
             Params result = new Params(args);
@@ -24,7 +25,8 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs[:options]] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs[:options]] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ] [-geomVersion|-gv]");
+                Console.Write("-geomversion options are: 1 or 2, 2 is the latest and default version supporting maps");
                 Console.Write("-generatescene options are: ");
                 foreach (var i in Enum.GetValues(typeof(GenerateSceneOption)))
                     Console.Write(" " + i.ToString());
@@ -93,6 +95,11 @@ namespace XbimConvert
                                 break;
                             case "-occ":
                                 OCC = true;
+                                break;
+                            case "-geomversion":
+                            case "-gv":
+                                if(argNames.Length>1 && Convert.ToInt32(argNames[1])==1)
+                                    GeomVersion = 1;
                                 break;
                             default:
                                 Console.WriteLine("Skipping un-expected argument '{0}'", arg);

@@ -1075,6 +1075,22 @@ namespace Xbim.IO
         //    }
         //}
 
+        /// <summary>
+        /// Returns the level of geometry supported in the model
+        /// 0 = No geometry has been compiled in the model
+        /// 1 = Triangulated Mesh only
+        /// 2 = Polygonal  geometry meshes supporting maps
+        /// </summary>
+        public int GeometrySupportLevel
+        {
+            get
+            {
+                if (GetGeometryData(XbimGeometryType.ProductPolyhedronMap).Any()) return 2;
+                else if (GetGeometryData(XbimGeometryType.TriangulatedMesh).Any()) return 1;
+                else return 0;
+            }
+        }
+
         public IEnumerable<XbimGeometryData> GetGeometryData(XbimGeometryType ofType)
         {
             foreach (var shape in cache.GetGeometryData(ofType))
@@ -1358,12 +1374,5 @@ namespace Xbim.IO
         public object Tag { get; set; }
 
 
-        public Version GeometryVersion
-        {
-            get
-            {
-                return _geometryVersion;
-            }
-        }
     }
 }

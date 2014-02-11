@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Exceptions;
@@ -110,6 +111,43 @@ namespace Xbim.ModelGeometry.Converter
             BoundingBox.FromString(boundsString);
         }
 
-       
+        /// <summary>
+        /// Write the meta dat for the product shape to a string, does not include full mesh geometry
+        /// Use these method for lightweight streaming of product shapes
+        /// </summary>
+        /// <returns></returns>
+        public void WriteMetaData(TextWriter tw)
+        {
+            string prodLine = string.Format("P {0},{1},{2}", ProductLabel, ProductType.Name, Placement);
+            tw.WriteLine(prodLine);
+            XbimGeometryCursor geomTable = Model.GetGeometryTable();
+            try
+            {
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
+                {
+                    string shapeString="M I";
+                    foreach (var geomLabel in _shapeGeomLabels)
+                    {
+                        XbimGeometryData data = geomTable.GetGeometryData(geomLabel);
+                        if (data.GeometryType == XbimGeometryType.PolyhedronMap)
+                        {
+                            string mapString = System.Text.Encoding.ASCII.GetString(data.ShapeData);     
+                            tw.WriteLine("M " + mapString); //write the transform matrix
+                        }
+                        else //it must be a shape
+                        {
+                            shapeString += ("," + geomLabel);
+                        }
+                    }
+                    if (shapeString.Length > 3) //we have soem shapes
+                        tw.WriteLine(shapeString);
+                   
+                }
+            }
+            finally
+            {
+                Model.FreeTable(geomTable);
+            }
+        }
     }
 }

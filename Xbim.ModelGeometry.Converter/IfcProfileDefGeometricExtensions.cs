@@ -26,9 +26,11 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcCircleHollowProfileDef)profile).GetGeometryHashCode();
             else if (profile is IfcLShapeProfileDef)
                 return ((IfcLShapeProfileDef)profile).GetGeometryHashCode();
+            else if (profile is IfcIShapeProfileDef)
+                return ((IfcIShapeProfileDef)profile).GetGeometryHashCode();
             else
             {
-                throw new XbimGeometryException("Unsupported solid geometry tpype " + profile.GetType().Name);
+                throw new XbimGeometryException("Unsupported solid geometry type " + profile.GetType().Name);
             }
         }
 
@@ -50,9 +52,11 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcCircleHollowProfileDef)a).GeometricEquals(b);
             else if (a is IfcLShapeProfileDef)
                 return ((IfcLShapeProfileDef)a).GeometricEquals(b);
+            else if (a is IfcIShapeProfileDef)
+                return ((IfcIShapeProfileDef)a).GeometricEquals(b);
             else
             {
-                return a.Equals(b); //default to identity
+                return false; //default to false
             }
         }
 

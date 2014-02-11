@@ -88,11 +88,13 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcBooleanResult)repItem).GetGeometryHashCode();
             else if (repItem is IfcFaceBasedSurfaceModel)
                 return ((IfcFaceBasedSurfaceModel)repItem).GetGeometryHashCode();
-            //else
-            //{
-            //    //throw new XbimGeometryException("Unsupported solid geometry tpype " + repItem.GetType().Name);
-            //}
-            return 0;
+            else if (repItem is IfcShellBasedSurfaceModel)
+                return ((IfcShellBasedSurfaceModel)repItem).GetGeometryHashCode();
+            else
+            {
+                throw new XbimGeometryException("Unsupported solid geometry type " + repItem.GetType().Name);
+            }
+            
         }
 
         /// <summary>
@@ -109,12 +111,12 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcBooleanResult)a).GeometricEquals(b);
             else if (a is IfcFaceBasedSurfaceModel)
                 return ((IfcFaceBasedSurfaceModel)a).GeometricEquals(b);
-            //else if (a is IfcShellBasedSurfaceModel)
-            //    return ((IfcShellBasedSurfaceModel)a).GeometricEquals(b);
+            else if (a is IfcShellBasedSurfaceModel)
+                return ((IfcShellBasedSurfaceModel)a).GeometricEquals(b);
             else
             {
-              //  return false;
-                throw new XbimGeometryException("Unsupported solid geometry type " + a.GetType().Name);
+               // return false;
+               throw new XbimGeometryException("Unsupported solid geometry type " + a.GetType().Name);
             }
         }
     }

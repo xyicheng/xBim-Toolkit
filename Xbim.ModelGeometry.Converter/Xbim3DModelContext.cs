@@ -83,7 +83,17 @@ namespace Xbim.ModelGeometry.Converter
             public RepresentationItemGeometricHashKey(IfcRepresentationItem item)
             {
                 Item = item;
-                _hash = Item.GetGeometryHashCode();
+                try
+                {
+                    _hash = Item.GetGeometryHashCode();
+                }
+                catch (XbimGeometryException eg)
+                {
+
+                    Logger.WarnFormat("HashCode error in representation of type {0}, err = {1}", item.GetType().Name, eg.Message);
+                    _hash = 0;
+                }
+               
             }
 
             public override int GetHashCode()
@@ -94,8 +104,16 @@ namespace Xbim.ModelGeometry.Converter
             public override bool Equals(object obj)
             {
                 if (obj == null || !(obj is RepresentationItemGeometricHashKey)) return false;
-
-                return Item.GeometricEquals(((RepresentationItemGeometricHashKey)obj).Item);
+                try
+                {
+                    return Item.GeometricEquals(((RepresentationItemGeometricHashKey)obj).Item);
+                }
+                catch (XbimGeometryException eg)
+                {
+                    Logger.WarnFormat("Equality error in representation of type {0}, err = {1}", Item.GetType().Name, eg.Message);
+                    return false;
+                }
+               
             }
 
             public override string ToString()
@@ -468,10 +486,6 @@ namespace Xbim.ModelGeometry.Converter
 
                 XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
                 short typeId = IfcMetaData.IfcTypeId(element);
-                if (element.EntityLabel == 254336)
-                {
-                    Logger.ErrorFormat("Failed to add element geometry for entity #{0}, no geometry generated", element.EntityLabel);
-                }
                 IXbimGeometryModelGroup geomModelGrp = element.Geometry3D();
                 foreach (var geomModel in geomModelGrp)
                 {
@@ -727,6 +741,46 @@ namespace Xbim.ModelGeometry.Converter
             }
             else
                 return null;
+        }
+
+        /// <summary>
+        /// Returns a string of all the shape lables that are referenced more than or equal to minDuplicates times
+        /// </summary>
+        /// <param name="minDplicates"></param>
+        /// <returns></returns>
+        public string MappedShapes(int minDplicates = 1)
+        {
+            XbimGeometryCursor geomTable = Model.GetGeometryTable();
+            try
+            {
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
+                {
+                    IEnumerable<XbimGeometryData> maps = geomTable.GeometryData(XbimGeometryType.Polyhedron);
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var map in maps)
+                    {
+                        if (map.Counter >= minDplicates)
+                        {
+                            sb.Append(map.IfcProductLabel + ",");
+                        }
+                    }
+                    string res = sb.ToString().TrimEnd(',');
+                    return res;
+                }
+            }
+            finally
+            {
+                Model.FreeTable(geomTable);
+            }
+        }
+
+        public void WriteShapesToStream(string maps, StringWriter sw)
+        {
+            string[] itms = maps.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var itm in itms)
+            {
+                
+            }
         }
     }
 

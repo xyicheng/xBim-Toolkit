@@ -80,6 +80,7 @@
     <Compile Include="IfcFaceBasedSurfaceModelGeometricExtensions.cs" />
     <Compile Include="IfcFaceBoundGeometricExtensions.cs" />
     <Compile Include="IfcFaceGeometricExtensions.cs" />
+    <Compile Include="IfcIShapeProfileDefGeometricExtensions.cs" />
     <Compile Include="IfcLoopGeometricExtensions.cs" />
     <Compile Include="IfcManifoldSolidBrepGeometricExtensions.cs" />
     <Compile Include="IfcLShapeProfileDefGeometricExtensions.cs" />
@@ -91,6 +92,8 @@
     <Compile Include="IfcRepresentationGeometryExtensions.cs" />
     <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
     <Compile Include="IfcRevolvedAreaSolidGeometricExtensions.cs" />
+    <Compile Include="IfcShellBasedSurfaceModelGeometricExtensions.cs" />
+    <Compile Include="IfcShellGeometricextensions.cs" />
     <Compile Include="IfcSolidModelGeometryExtensions.cs" />
     <Compile Include="IfcSurfaceCurveSweptAreaSolidGeometricExtension.cs" />
     <Compile Include="IModelGeometryExtensions.cs" />
@@ -331,6 +334,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

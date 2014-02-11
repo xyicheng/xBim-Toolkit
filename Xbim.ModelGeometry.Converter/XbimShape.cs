@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Geometry;
@@ -33,5 +34,7 @@ namespace Xbim.ModelGeometry.Converter
 
         public abstract bool HasStyle { get;}
         public abstract int StyleLabel { get; }
+
+        public abstract void WriteToStream(StringWriter sw);
     }
 }

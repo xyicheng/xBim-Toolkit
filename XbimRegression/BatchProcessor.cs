@@ -96,7 +96,7 @@ namespace XbimRegression
                         parseTime = watch.ElapsedMilliseconds;
                         string xbimFilename = BuildFileName(ifcFile, ".xbim");
                         //model.Open(xbimFilename, XbimDBAccess.ReadWrite);
-                        if (model.GeometryVersion.Major == 1)
+                        if (_params.GeometryV1)
                             XbimMesher.GenerateGeometry(model, Logger, null);
                         else
                         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common;
@@ -21,7 +22,7 @@ namespace Xbim.ModelGeometry.Converter
             
             this.shapeGeometry = shape;
             if (shape.Transform.HasValue) 
-                transform = shape.Transform.Value * transform;
+                this.transform = shape.Transform.Value * transform;
             else
                 this.transform = transform;
             this.geometryLabel = geometryLabel;
@@ -44,5 +45,14 @@ namespace Xbim.ModelGeometry.Converter
         {
             get { if (shapeGeometry.HasStyle) return shapeGeometry.StyleLabel; else return this.styleLabel; }
         }
+
+        public override void WriteToStream(StringWriter sw)
+        {
+            string str = string.Format("R {0},{1},{2}", shapeGeometry.GeometryLabel, StyleLabel > 0 ? StyleLabel.ToString() : "", this.Transform.HasValue ? Transform.Value.ToString() : "");
+            str = str.TrimEnd(',');
+            sw.WriteLine(str);
+           
+        }
     }
 }
+ 

@@ -15,7 +15,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static int GetGeometryHashCode(this IfcCurve curve)
         {
-            return curve.GetType().Name.GetHashCode(); //mostly in ifc files equality is enough, might need to define hash functions for specific types later
+            return curve.GetHashCode(); //this will mostly give a hash, the geometric  hash functions for curves needs to be implemented, for now this avoids problems
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public static bool GeometricEquals(this IfcCurve a, IfcCurve b)
         {
-            return a.Equals(b);
+            return a.Equals(b); //comparing two objects from different models hould always fails, this needs a proper implementation, but for now this ensure correctness but does find true duplicates
         }
 
     }

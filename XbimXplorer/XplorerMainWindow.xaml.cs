@@ -213,9 +213,9 @@ namespace XbimXplorer
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress, true, false);
                 //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
-                if (model.GeometryVersion.Major == 1)
-                    XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
-                else
+                //if (model.GeometryVersion.Major == 1)
+                //    XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+                //else
                 {
                     Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
                     context.CreateContext(worker.ReportProgress);
@@ -271,9 +271,9 @@ namespace XbimXplorer
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
-                if (model.GeometryVersion.Major == 1)
-                    XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
-                else
+                //if (model.GeometryVersion.Major == 1)
+                //    XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+                //else
                 {
                     Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
                     context.CreateContext(worker.ReportProgress);
