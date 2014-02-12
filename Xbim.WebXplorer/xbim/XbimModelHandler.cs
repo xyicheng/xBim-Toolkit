@@ -129,7 +129,7 @@ namespace Xbim.WebXplorer.xbim
                 style = new XbimTexture().CreateTexture(TypeMap[topstyle.IfcType.Name]);
             }
             m.CreateMaterial(style);
-            m.Material.MaterialID = topstyle.IfcSurfaceStyleLabel;
+            m.Material.MaterialID = topstyle.IfcSurfaceStyleLabel.ToString();
             xMaterials[topstyle.IfcSurfaceStyleLabel.ToString()] = m;
             xLayers[topstyle.IfcSurfaceStyleLabel.ToString()] = new List<long>();
         }

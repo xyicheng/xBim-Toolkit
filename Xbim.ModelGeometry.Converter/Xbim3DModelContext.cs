@@ -652,7 +652,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        internal IEnumerable<XbimShape> Shapes(IEnumerable<int> geomIDs, bool cache = true)
+        public IEnumerable<XbimShape> Shapes(IEnumerable<int> geomIDs, bool cache = true)
         {
             XbimGeometryCursor geomTable = Model.GetGeometryTable();
             try
@@ -727,7 +727,18 @@ namespace Xbim.ModelGeometry.Converter
                 return _model;
             }
         }
-
+        public IEnumerable<XbimRegion> GetRegions()
+        {
+            if (_context == null) return null; //nothing to do
+            IEnumerable<XbimGeometryData> regionDataColl = _model.GetGeometryData(Math.Abs(_context.EntityLabel), XbimGeometryType.Region);
+            if (regionDataColl != null && regionDataColl.Any())
+            {
+                XbimGeometryData regionData = regionDataColl.FirstOrDefault();
+                XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
+                return regions;
+            }
+            return Enumerable.Empty<XbimRegion>();
+        }
         public XbimRegion GetLargestRegion()
         {
             if (_context == null) return null; //nothing to do
@@ -744,28 +755,18 @@ namespace Xbim.ModelGeometry.Converter
         }
 
         /// <summary>
-        /// Returns a string of all the shape lables that are referenced more than or equal to minDuplicates times
+        /// Returns a List of all the shape labels that are referenced more than or equal to minDuplicates times
         /// </summary>
         /// <param name="minDplicates"></param>
         /// <returns></returns>
-        public string MappedShapes(int minDplicates = 1)
-        {
+        public IEnumerable<Tuple<Int32, Int32>> MappedShapes(int minDuplicates = 1)
+        { 
             XbimGeometryCursor geomTable = Model.GetGeometryTable();
             try
             {
                 using (var transaction = geomTable.BeginReadOnlyTransaction())
                 {
-                    IEnumerable<XbimGeometryData> maps = geomTable.GeometryData(XbimGeometryType.Polyhedron);
-                    StringBuilder sb = new StringBuilder();
-                    foreach (var map in maps)
-                    {
-                        if (map.Counter >= minDplicates)
-                        {
-                            sb.Append(map.IfcProductLabel + ",");
-                        }
-                    }
-                    string res = sb.ToString().TrimEnd(',');
-                    return res;
+                    return geomTable.GeometryData(XbimGeometryType.Polyhedron).Where(d => d.Counter >= minDuplicates).Select(d => new Tuple<Int32,Int32>(d.GeometryLabel, d.Counter));
                 }
             }
             finally
@@ -780,6 +781,25 @@ namespace Xbim.ModelGeometry.Converter
             foreach (var itm in itms)
             {
                 
+            }
+        }
+
+        public IEnumerable<int> GetShapeStyleLabels()
+        {
+            XbimGeometryCursor geomTable = Model.GetGeometryTable();
+            try
+            {
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
+                {
+                    var shapelabels = geomTable.GeometryData(XbimGeometryType.Polyhedron).Select(d => d.StyleLabel).Distinct();
+                    var maplabels = geomTable.GeometryData(XbimGeometryType.PolyhedronMap).Select(d => d.StyleLabel).Distinct();
+
+                    return shapelabels.Union(maplabels).Where(l => l > 0);
+                }
+            }
+            finally
+            {
+                Model.FreeTable(geomTable);
             }
         }
     }

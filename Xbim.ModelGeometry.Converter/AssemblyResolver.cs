@@ -67,13 +67,26 @@ namespace Xbim.ModelGeometry.Converter
                     return asm;
 
             };
-            string path;
+            string path = String.Empty;
+            Assembly location;
+
             if (!string.IsNullOrWhiteSpace(basePath)) //if we have a base path use it else look at the executable
                 path = basePath;
-            else
-                path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            else {
+                location = Assembly.GetEntryAssembly();
+                if (location != null && location.Location !=null)
+                {
+                    path = Path.GetDirectoryName(location.Location);
+                }
+            }
             if (!string.IsNullOrWhiteSpace(path))
-                path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            {
+                location = Assembly.GetExecutingAssembly();
+                if (location != null && location.Location != null)
+                {
+                    path = Path.GetDirectoryName(location.Location);
+                }
+            }
 
             if (IntPtr.Size == 8) // or for .NET4 use Environment.Is64BitProcess
             {
@@ -92,7 +105,8 @@ namespace Xbim.ModelGeometry.Converter
             }
             else
             {
-                throw new Exception(string.Format("Could not load the Geometry engine at {0}",path));  
+                return null;
+                //throw new Exception(string.Format("Could not load the Geometry engine at {0}",path));  
             }
             
         }

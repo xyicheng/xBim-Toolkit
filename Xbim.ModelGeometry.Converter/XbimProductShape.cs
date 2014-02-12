@@ -149,5 +149,51 @@ namespace Xbim.ModelGeometry.Converter
                 Model.FreeTable(geomTable);
             }
         }
+
+        public Object GetSimpleMetadataObject()
+        {
+            var ShapeCollection = new List<Int32>();
+            var ShapeMaps = new List<Object>();
+
+            XbimGeometryCursor geomTable = Model.GetGeometryTable();
+            try
+            {
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
+                {
+                    foreach (var geomLabel in _shapeGeomLabels)
+                    {
+                        XbimGeometryData data = geomTable.GetGeometryData(geomLabel);
+                        if (data.GeometryType == XbimGeometryType.PolyhedronMap)
+                        {
+                            string mapString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
+                            string[] itms = mapString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                            //XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
+                            var ShapeMapCollection = new List<Int32>();
+                                for (int i = 1; i < itms.Length; i++)
+                                {
+                                    ShapeMapCollection.Add(Int32.Parse(itms[i]));
+                                }
+                                ShapeMaps.Add(new {MapID=geomLabel, Transform=itms[0], Items=ShapeMapCollection});
+                        }
+                        else //it must be a shape
+                        {
+                            ShapeCollection.Add(geomLabel);
+                        }
+                    }                   
+                }
+            }
+            finally
+            {
+                Model.FreeTable(geomTable);
+            }
+
+            return new
+            {
+                ProductLabel = ProductLabel,
+                Placement = Placement.ToString(),
+                Shapes = ShapeCollection,
+                MappedShapes = ShapeMaps
+            };
+        }
     }
 }

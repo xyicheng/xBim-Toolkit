@@ -8,7 +8,7 @@ namespace Xbim.WebXplorer.xbim
 {
     public class BaseMaterial
     {
-        public Int32 MaterialID;
+        public String MaterialID;
         public String Name;
         public Single Red;
         public Single Green;
@@ -19,12 +19,12 @@ namespace Xbim.WebXplorer.xbim
         public Single Specular;
         public UInt16 Priority;
 
-        public byte[] Data { get {
+        public byte[] GetData() { 
             UTF8Encoding encoder = new UTF8Encoding();
             byte[] btemp = encoder.GetBytes((Name));
 
             List<byte> temp = new List<Byte>(36 + btemp.Length);
-            temp.AddRange(BitConverter.GetBytes(MaterialID));
+            //temp.AddRange(BitConverter.GetBytes(MaterialID));
             temp.AddRange(BitConverter.GetBytes((UInt32)btemp.Length));
             temp.AddRange(btemp);
             temp.AddRange(BitConverter.GetBytes(Red));
@@ -37,7 +37,7 @@ namespace Xbim.WebXplorer.xbim
             temp.AddRange(BitConverter.GetBytes(Priority));
 
             return temp.ToArray();
-        } }
+        }
     }
     public class XBimMaterial : IXbimRenderMaterial
     {
@@ -185,7 +185,7 @@ namespace Xbim.WebXplorer.xbim
             BaseMaterial mat = new BaseMaterial
             {
                 Name = name,
-                MaterialID = id,
+                MaterialID = id.ToString(),
                 Red = colour.Red,
                 Green = colour.Green,
                 Blue = colour.Blue,
