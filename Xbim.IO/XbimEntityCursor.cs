@@ -15,6 +15,7 @@ namespace Xbim.IO
     public class XbimEntityCursor : XbimCursor
     {
 
+        
         private  const string ifcEntityTableName = "IfcEntities";
         private const string entityTableTypeLabelIndex = "EntByTypeLabel";
         

@@ -10,64 +10,50 @@ using namespace System::Collections::Generic;
 using namespace  Xbim::Ifc2x3::Extensions;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::Common::Geometry;
+using namespace Xbim::IO;
+using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
+using namespace System::Linq;
+using namespace  System::Threading;
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
 		namespace OCC
 		{
-			public ref class XbimGeometryModelCollection : XbimGeometryModel, IEnumerable<XbimGeometryModel^>
+			static int CompareBoundinBoxSize(XbimGeometryModel^ a, XbimGeometryModel^ b)
 			{
-				TopoDS_Compound* pCompound;
+			    XbimRect3D aBox = a->GetBoundingBox();
+				XbimRect3D bBox = b->GetBoundingBox();
+				double aVol = a->Volume;
+				double bVol = b->Volume;
+				return bVol.CompareTo(aVol);
+			}
+
+			public ref class XbimGeometryModelCollection : public XbimGeometryModel, IEnumerable<XbimGeometryModel^>
+			{
+			protected:
 				List<XbimGeometryModel^>^ shapes;
-				bool _hasCurvedEdges;
-				XbimMatrix3D _transform;
+				void Init();
 			public:
-
-				XbimGeometryModelCollection(bool hasCurvedEdges)
+				XbimGeometryModelCollection(void);
+				XbimGeometryModelCollection(bool hasCurvedEdges, int representationLabel, int surfaceStyleLabel);
+				XbimGeometryModelCollection(int representationLabel, int surfaceStyleLabel);
+				XbimGeometryModelCollection(IfcRepresentationItem^ representationItem);
+				XbimGeometryModelCollection(IfcRepresentation^ representation);
+				XbimGeometryModelCollection(const TopoDS_Shape&  shape, bool hasCurves,int representationLabel, int surfaceStyleLabel );
+				
+#if USE_CARVE
+				//virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override;
+				
+#endif
+				virtual property bool IsValid
 				{
-
-					shapes = gcnew List<XbimGeometryModel^>();
-
-					_hasCurvedEdges = hasCurvedEdges;
-				};
-
-				XbimGeometryModelCollection(IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
-				{
-					shapes = gcnew List<XbimGeometryModel^>();
-
-					_hasCurvedEdges = false;
-
-					if(origin !=nullptr)
+					bool get() override
 					{
-						if(dynamic_cast<IfcAxis2Placement3D^>(origin))
-							_transform = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)origin,maps);
-						else if(dynamic_cast<IfcAxis2Placement2D^>(origin))
-							_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin,maps);
-						else
-							throw gcnew XbimGeometryException("Invalid IfcAxis2Placement argument");
-
+						return shapes->Count > 0;
 					}
-
-					if(transform!=nullptr)
-						_transform= XbimMatrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
-				};
-
-
-				XbimGeometryModelCollection(const TopoDS_Compound & pComp, bool hasCurves,bool isMap)
-				{
-
-					shapes = gcnew List<XbimGeometryModel^>();
-					_hasCurvedEdges = hasCurves;
-
-
-				};
-				XbimGeometryModelCollection(const TopoDS_Compound & pComp, List<XbimGeometryModel^>^ features, bool hasCurves,bool isMap)
-				{
-					shapes = gcnew List<XbimGeometryModel^>(features);
-					_hasCurvedEdges = hasCurves;
-
-				};
+				}
+			
 
 				~XbimGeometryModelCollection()
 				{
@@ -78,28 +64,8 @@ namespace Xbim
 				{
 					InstanceCleanup();
 				}
-				void InstanceCleanup()
-				{   
-					shapes=nullptr;
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)pCompound, 0);
-					if(temp!=0)
-					{
-						if (pCompound)
-						{
-							delete pCompound;
-							pCompound=0;
-							System::GC::SuppressFinalize(this);
-						}
-					}
-				}
+				
 
-				virtual property XbimMatrix3D Transform
-				{
-					XbimMatrix3D get() override
-					{
-						return _transform;
-					}
-				}
 				// IEnumerable<XbimGeometryModel^> Members
 
 				virtual property XbimLocation ^ Location 
@@ -116,6 +82,8 @@ namespace Xbim
 					}
 				};
 
+				virtual void Move(TopLoc_Location location) override;
+			
 				virtual property double Volume
 				{
 					double get() override
@@ -155,60 +123,107 @@ namespace Xbim
 					return shapes->GetEnumerator();
 				}
 
-				virtual property bool HasCurvedEdges
-				{
-					virtual bool get() override
-					{
-						if(_hasCurvedEdges) return true;
-						for each(XbimGeometryModel^ gm in this) //if any not other return false
-						{
-							if(gm->HasCurvedEdges) return true;
-						}
-						return false;
-					}
-				}
-
 
 				void Add(XbimGeometryModel^ shape)
 				{
 					shapes->Add(shape);
-					if(pCompound)
+					if(shape->HasCurvedEdges) _hasCurvedEdges=true;
+					if(nativeHandle)
 					{
-						delete pCompound;
-						pCompound=0;
+						delete nativeHandle;
+						nativeHandle=nullptr;
 					}
 				}
 
-				XbimGeometryModel^ Solidify();
-
-
+			
 				/*Interfaces*/
+				//returns a handle to a compound of all the shapes in this collecton, nb they are not sewn
 				virtual property TopoDS_Shape* Handle
 				{
 					//
 
 					TopoDS_Shape* get() override
 					{
-						if(!pCompound)
+
+						Monitor::Enter(this);
+						try
 						{
-							BRep_Builder b;
-							pCompound = new TopoDS_Compound();;
-							b.MakeCompound(*pCompound);
-							for each(XbimGeometryModel^ shape in shapes)
+							if(nativeHandle == nullptr)
 							{
-								if(!shape->Handle->IsNull())
-									b.Add(*pCompound, *(shape->Handle));
+								BRep_Builder b;
+								nativeHandle = new TopoDS_Compound();
+								b.MakeCompound(*((TopoDS_Compound*)nativeHandle));
+								for each(XbimGeometryModel^ shape in shapes)
+								{
+									if(!shape->Handle->IsNull())
+									{
+										b.Add(*((TopoDS_Compound*)nativeHandle), *(shape->Handle));
+										if(shape->HasCurvedEdges) _hasCurvedEdges=true;
+									}
+								}
 							}
 						}
-						return pCompound;
+						finally
+						{
+							Monitor::Exit(this);
+						}
+
+						return nativeHandle;
 					};
 				}
-				virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
-				virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
-				virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
-				virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection) override;
-				virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
-				virtual void Move(TopLoc_Location location) override;
+
+				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
+				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
+				
+				virtual void ToSolid(double precision, double maxPrecision) override;
+				virtual property int Count
+				{
+					int get() {return shapes->Count;};
+				}
+
+				//returns the first in the collection or nulllptr if the collection is empty
+				virtual property XbimGeometryModel^ FirstOrDefault
+				{
+					XbimGeometryModel^ get() {return Enumerable::FirstOrDefault<XbimGeometryModel^>(shapes);};
+				}
+
+				
+				void Remove(XbimGeometryModel^ shape)
+				{
+					shapes->Remove(shape);
+					if(nativeHandle)
+					{
+						delete nativeHandle;
+						nativeHandle=nullptr;
+					}
+				}
+				void Replace(int idx,XbimGeometryModel^ shape)
+				{
+					shapes[idx]=shape;
+					if(nativeHandle)
+					{
+						delete nativeHandle;
+						nativeHandle=nullptr;
+					}
+				}
+				void Insert(int idx, XbimGeometryModel^ shape)
+				{
+					shapes->Insert(idx, shape);
+					if(nativeHandle)
+					{
+						delete nativeHandle;
+						nativeHandle=nullptr;
+					}
+				}
+				XbimGeometryModel^ Shape(int idx)
+				{
+					return shapes[idx];
+				}
+				//sorts with largest element first
+				void SortDescending()
+				{
+					shapes->Sort(gcnew Comparison<XbimGeometryModel^>(CompareBoundinBoxSize));
+				}
 			};
 		}
 	}

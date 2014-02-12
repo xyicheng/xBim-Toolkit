@@ -92,7 +92,9 @@ namespace Xbim.COBie
                 SetExcludeComponentTypes(CobiePickLists);
                 SetExcludeObjTypeTypes(CobiePickLists);
             }
-
+            //start the Cache
+            Context.Model.CacheStart();
+                
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
             Workbook.Add(cq.GetCOBieFacilitySheet()); 
@@ -191,14 +193,15 @@ namespace Xbim.COBie
                 
                 // Validate the workbook
                 progress.ReportMessage("Starting Validation...");
-                Workbook.Validate((lastProcessedSheetIndex) =>
+                Workbook.Validate(Context.ErrorRowStartIndex, (lastProcessedSheetIndex) =>
                 {
                     // When each sheet has been processed, increment the progress bar
                     progress.IncrementAndUpdate();
-                });
+                } );
                 progress.ReportMessage("Finished Validation");
 
                 progress.Finalise();
+
             }
             catch (Exception)
             {
@@ -223,7 +226,19 @@ namespace Xbim.COBie
             Initialise();
             Workbook.SetInitialHashCode();//set the initial row hash value to compare against for row changes
            
-            PopulateErrors();			
+            PopulateErrors();
+
+            //Role validation
+            COBieProgress progress = new COBieProgress(Context);
+            //check we have values in MapMergeRoles, only on federated or via test harness
+            if ((Context.MapMergeRoles.Count > 0) &&
+                (Context.MapMergeRoles.ContainsKey(Context.Model))
+                )
+            {
+                progress.ReportMessage(string.Format("Starting Merge Validation for {0}...", Context.MapMergeRoles[Context.Model]));
+                Workbook.ValidateRoles(Context.Model, Context.MapMergeRoles[Context.Model]);
+                progress.ReportMessage("Finished Merge Validation...");
+            }
         }
 
 		/// <summary>

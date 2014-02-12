@@ -58,8 +58,8 @@ namespace Xbim.ModelGeometry.Converter
         {
             if (File.Exists(sceneDbName)) 
                 File.Delete(sceneDbName);
-            
-            
+
+
             //get a connection
             using (var db = new XbimSqliteDB(sceneDbName))
             {
@@ -75,7 +75,7 @@ namespace Xbim.ModelGeometry.Converter
                     int projectId = 0;
                     if (project != null) projectId = Math.Abs(project.EntityLabel);
                     
-                    float mScalingReference = (float)model.GetModelFactors.OneMetre;
+                    float mScalingReference = (float)model.ModelFactors.OneMetre;
 
                     if (Logger != null)
                         Logger.DebugFormat("XbimScene: Scaling reference {0}\r\n", mScalingReference);
@@ -116,7 +116,7 @@ namespace Xbim.ModelGeometry.Converter
                                         string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
                                         item.Name
                                         );
-                            }
+                    }
                         }
                     }
 
@@ -135,7 +135,7 @@ namespace Xbim.ModelGeometry.Converter
 
                     if (Logger != null)
                         Logger.DebugFormat("XbimScene: Exporting layers.\r\n", mScalingReference);
-                    foreach (var layerContent in handles.FilterByBuildingElementTypes())
+                    foreach (var layerContent in handles.GroupByBuildingElementTypes())
                     {
                         string elementTypeName = layerContent.Key;
                         XbimGeometryHandleCollection layerHandles = layerContent.Value;
@@ -204,7 +204,7 @@ namespace Xbim.ModelGeometry.Converter
                                     {
                                         parent = item.RelatingObject as IfcSpatialStructureElement;
                                         if (parent != null)
-                                        {
+                    {
                                             break;
                                         }
                                     }
@@ -212,19 +212,19 @@ namespace Xbim.ModelGeometry.Converter
                                     // Decomposes RelatingObject
                                 }
                                 if (parent != null)
-                                {
+                        {
                                     db.AddMetaData(
                                         "SpaceToStorey",
                                         iEntLabel,
                                         string.Format("StoreyName={0};StoreyLabel={1};", parent.Name, parent.EntityLabel),
                                         iEntLabel.ToString());
                                 }
-                            }
                         }
+                    }
 
                         // binary data loop
-                        foreach (var space in model.Instances.OfType<IfcSpace>())
-                        {
+                    foreach (var space in model.Instances.OfType<IfcSpace>())
+                    {
                             int iEntLabel = Math.Abs(space.EntityLabel);
                             if ((Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox)
                             {
@@ -256,7 +256,7 @@ namespace Xbim.ModelGeometry.Converter
                         if (Logger != null)
                             Logger.DebugFormat("XbimScene: Exporting storeys.\r\n", mScalingReference);
                         double storeyHeight = 0;//all scenes are in metres
-                        int defaultStoreyName = 0;                        
+                        int defaultStoreyName = 0;
                         foreach (var storey in bld.GetBuildingStoreys(true))
                         {
                             string cleanName;
@@ -286,20 +286,20 @@ namespace Xbim.ModelGeometry.Converter
                                 // Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
                                 db.AddMetaData(
-                                    "Storey",
+                                "Storey",
                                     Math.Abs(storey.EntityLabel),
                                     string.Format("Name:{0};Elevation:{1};SpaceCount:{2};", cleanName, InTranslatedReferenceZ, spacesCount), // storeyHeight),
-                                    cleanName);
-                            }
+                                cleanName);
                         }
                     }
+                }
                 }
                 finally
                 {
                     db.Flush();
                     GC.Collect();
                 }
-            } 
+            }
         }
 
         private int RecursivelyPersistLayer(XbimSqliteDB db, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)

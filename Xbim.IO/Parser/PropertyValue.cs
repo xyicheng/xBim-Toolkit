@@ -143,7 +143,7 @@ namespace Xbim.IO.Parser
             get
             {
                 string ret = _strVal.Substring(1, _strVal.Length - 2); //remove the quotes
-                if (ret.Contains('\\'))
+                if (ret.Contains('\\') || ret.Contains("'")) 
                 {
                     XbimP21StringDecoder d = new XbimP21StringDecoder();
                     ret = d.Unescape(ret);

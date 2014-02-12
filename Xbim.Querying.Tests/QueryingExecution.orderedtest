@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<OrderedTest name="QueryingExecution" storage="e:\dev\codeplex\xbim\xbimframework\head\xbim.querying.tests\queryingexecution.orderedtest" id="a195f18b-3928-48e0-9ecb-60f3ade56505" continueAfterFailure="true" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <TestLinks>
+    <TestLink id="a6ff6371-5a75-cd41-c0a3-a1de5e0877c6" name="BasicSetup" storage="bin\debug\xbim.querying.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="0db999d5-9d4e-6cd5-7651-0e88e091cd81" name="ModelRootBasicQuery" storage="bin\debug\xbim.querying.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="317ac850-7ab6-bea6-3a18-d4bb017ca1dc" name="QueryingSelectFunction" storage="bin\debug\xbim.querying.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="7f74edc3-7c16-5974-93e3-9b28b9e2bed7" name="QueryingSelectNestedProp" storage="bin\debug\xbim.querying.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <TestLink id="50a772a2-aec9-5708-ae27-d0782cff04c2" name="QueryingSelectProp" storage="bin\debug\xbim.querying.tests.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  </TestLinks>
+</OrderedTest>

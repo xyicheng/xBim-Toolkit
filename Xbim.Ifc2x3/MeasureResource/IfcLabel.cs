@@ -68,7 +68,7 @@ namespace Xbim.Ifc2x3.MeasureResource
             if (format[0] == 'D') //delimited list
             {
                 string delim = format.Substring(1);
-                return string.Join(delim, this.Cast<string>().ToArray());
+                return string.Join(delim, this.Select<IfcLabel,String>(lbl=>lbl.ToString()));
             }
             else
                 throw new FormatException(String.Format("Invalid format string: '{0}'.", format));

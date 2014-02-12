@@ -8,6 +8,7 @@ using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.SharedBldgServiceElements;
 using Xbim.Ifc2x3.SharedComponentElements;
 using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.StructuralAnalysisDomain;
 
 namespace Xbim.COBie
 {
@@ -127,7 +128,9 @@ namespace Xbim.COBie
                                         typeof(IfcProject),
                                         //typeof(IfcTendon),
                                         //typeof(IfcTendonAnchor),
-                                        //typeof(IfcFooting),
+                                        typeof(IfcFooting),
+                                        typeof(IfcStructuralActivity),
+                                        typeof(IfcStructuralItem)
                                         //typeof(ifcCovering),
                                         ///typeof(IfcColumnStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
@@ -135,6 +138,7 @@ namespace Xbim.COBie
                                         //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
                                         //typeof(IfcSlabStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcWallElementedCase), //IFC2x Edition 4.
+                                        //typeof(IfcSpatialElement),//IFC2x Edition 4.
                                         //typeof(IfcCableCarrierSegment), //IFC2x Edition 4.
                                         //typeof(IfcCableSegment), //IFC2x Edition 4.
                                         //typeof(IfcCableCarrierFitting),
@@ -167,7 +171,10 @@ namespace Xbim.COBie
                                                             typeof(IfcPipeSegmentType),
                                                             typeof(IfcFastenerType),
                                                             typeof(IfcSpaceType),
-                                                            typeof(IfcBuildingElementProxyType)
+                                                            typeof(IfcBuildingElementProxyType),
+                                                            typeof(IfcFlowFittingType),
+                                                            typeof(IfcFlowSegmentType)
+                                                            //typeof(IfcTypeProcess), //IFC2x Edition 4.
                                                             //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
                                                             //typeof(IfcStairType), //IFC2x Edition 4.
                                                              };

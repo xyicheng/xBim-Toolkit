@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</ProjectGuid>
+    <ProjectGuid>{6DF47D23-8F4D-4069-A44B-BBDACD3F9AEA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Xbim.Ifc2x3.Extensions</RootNamespace>
@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
@@ -58,17 +58,6 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
-    <OutputPath>..\bin\NugetDistribution\</OutputPath>
-    <DefineConstants>TRACE;SupportActivation</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>true</CodeAnalysisFailOnMissingRules>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
@@ -92,6 +81,7 @@
     <Compile Include="CalendarDateExtensions.cs" />
     <Compile Include="CartesianPointExtensions.cs" />
     <Compile Include="CartesianTransformationOperatorExtensions.cs" />
+    <Compile Include="ClassificationNotationSelectExtension.cs" />
     <Compile Include="ClassMaker\CodeGenerator.cs" />
     <Compile Include="ClassMaker\IfcEntityAttribute.cs" />
     <Compile Include="ConnectedFaceSetExtensions.cs" />
@@ -641,6 +631,7 @@
     <Compile Include="ClassificationExtensions.cs" />
     <Compile Include="ObjectReferenceSelectExtensions.cs" />
     <Compile Include="PersonExtensions.cs" />
+    <Compile Include="PhysicalSimpleQuantityExtensions.cs" />
     <Compile Include="TimeSeriesExtensions.cs" />
     <Compile Include="UnitExtensions.cs" />
     <Compile Include="LocalTimeExtensions.cs" />

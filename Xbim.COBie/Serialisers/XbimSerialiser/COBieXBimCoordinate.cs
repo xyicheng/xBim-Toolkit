@@ -44,9 +44,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     int count = 1;
                     ProgressIndicator.ReportMessage("Starting Coordinates...");
                     ProgressIndicator.Initialise("Creating Coordinates", cOBieSheet.RowCount);
+                    var rows = cOBieSheet.Rows.OrderBy(a => a.SheetName == "Component").ThenBy(a => a.SheetName == "Space").ThenBy(a => a.SheetName == "Floor"); //order into Floor,Space,Component, needed to build object placements
+
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
-                        COBieCoordinateRow row = cOBieSheet[i];
+                        COBieCoordinateRow row = rows.ElementAt(i);// cOBieSheet[i];
                         COBieCoordinateRow rowNext = null;
                         BumpTransaction(trans, count);
                         count++;
@@ -69,7 +71,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             i++; //set to get next row
 
                             if (i < cOBieSheet.RowCount) //get next row if still in range
-                                rowNext = cOBieSheet[i];
+                                rowNext = rows.ElementAt(i);//cOBieSheet[i];
 
                             if ((rowNext != null) &&
                                 (ValidateString(rowNext.Category)) && 
@@ -161,6 +163,31 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="rowNext">COBieCoordinateRow holding the data for the other corner</param>
         private void AddBoundingBoxAsExtrudedAreaSolid(COBieCoordinateRow row, COBieCoordinateRow rowNext)
         {
+            if (row.SheetName.ToLower() == "floor")
+            {
+                IfcBuildingStorey ifcBuildingStorey = null;
+                if (ValidateString(row.ExtIdentifier))
+                {
+                    IfcGloballyUniqueId id = new IfcGloballyUniqueId(row.ExtIdentifier);
+                    ifcBuildingStorey = Model.Instances.Where<IfcBuildingStorey>(bs => bs.GlobalId == id).FirstOrDefault();
+                }
+
+                if ((ifcBuildingStorey == null) && (ValidateString(row.RowName)))
+                {
+                    ifcBuildingStorey = Model.Instances.Where<IfcBuildingStorey>(bs => bs.Name == row.RowName).FirstOrDefault();
+                }
+
+                if (ifcBuildingStorey != null)
+                {
+                    //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
+                    //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
+                    using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcBuildingStorey.OwnerHistory))
+                    {
+                        IfcProduct placementRelToIfcProduct = ifcBuildingStorey.SpatialStructuralElementParent as IfcProduct;
+                        AddExtrudedRectangle(row, rowNext, ifcBuildingStorey, placementRelToIfcProduct);
+                    }
+                }
+            } 
             if (row.SheetName.ToLower() == "space")
             {
                 IfcSpace ifcSpace = null;

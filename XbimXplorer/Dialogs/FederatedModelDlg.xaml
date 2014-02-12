@@ -1,0 +1,19 @@
+﻿<Window x:Class="XbimXplorer.FederatedModelDlg"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xbim="http://schemas.Xbim.com/Presentation"
+        Title="FederatedModelDlg" Height="300" Width="302.4">
+    <Grid  >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <xbim:FederatedModelProperties x:Name="FederatedList" Grid.Row="0" Margin="0,5,0,38" Grid.ColumnSpan="2"></xbim:FederatedModelProperties>
+        <Button x:Name="Modifiy" Margin="10,239,5,5" Click="Modify_Click" IsEnabled="False" >Modify Model</Button>
+        <Button x:Name="Add" Margin="5,239,10,5" Click="Add_Click" Grid.Column="1">Add Model</Button>
+    </Grid>
+</Window>

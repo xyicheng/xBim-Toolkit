@@ -10,6 +10,8 @@ using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.SharedFacilitiesElements;
 using Xbim.Ifc2x3.UtilityResource;
 using Xbim.Ifc2x3.MaterialResource;
+using System.Diagnostics;
+using System;
 
 namespace Xbim.COBie.Data
 {
@@ -26,7 +28,11 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="model">The context of the model being generated</param>
         public COBieDataType(COBieContext context) : base(context)
-        { }
+        {
+            RowHashs = new Dictionary<string, bool>();
+        }
+
+        private Dictionary<string, bool> RowHashs { get; set; }
 
         #region Methods
 
@@ -36,6 +42,10 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieTypeRow></returns>
         public override COBieSheet<COBieTypeRow> Fill()
         {
+#if DEBUG
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+#endif            
             ProgressIndicator.ReportMessage("Starting Types...");
 
             // Create new Sheet
@@ -50,7 +60,7 @@ namespace Xbim.COBie.Data
             
             
             //set up property set helper class
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Types.AttributesEqualTo);//we do not want for the attribute sheet so filter them out
@@ -76,14 +86,14 @@ namespace Xbim.COBie.Data
                 }
 
                 //set allPropertyValues to this element
-                allPropertyValues.SetAllPropertySingleValues(type); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                allPropertyValues.SetAllPropertyValues(type); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 
                 typeRow.Name = name;
                 string create_By = allPropertyValues.GetPropertySingleValueValue("COBieTypeCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
                 typeRow.CreatedBy = ValidateString(create_By) ? create_By : GetTelecomEmailAddress(type.OwnerHistory);
                 string created_On = allPropertyValues.GetPropertySingleValueValue("COBieTypeCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
                 typeRow.CreatedOn = ValidateString(created_On) ? created_On : GetCreatedOnDateAsFmtString(type.OwnerHistory);
-                typeRow.Category = GetCategory(type, allPropertyValues);
+                typeRow.Category = GetCategory(allPropertyValues);
                 string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
                 typeRow.Description = ValidateString(description) ? description : GetTypeObjDescription(type);
 
@@ -98,7 +108,17 @@ namespace Xbim.COBie.Data
                 //not duplicate so add to sheet
                 //if (CheckForDuplicateRow(lastRow, typeRow)) 
                 //{
+                string rowhash = typeRow.RowHashValue;
+                if (RowHashs.ContainsKey(rowhash))
+                {
+                    continue;
+                }
+                else
+                {
                     types.AddRow(typeRow);
+                    RowHashs.Add(rowhash, true);
+                }
+                    
                     //lastRow = typeRow; //save this row to test on next loop
                 //}
                 // Provide Attribute sheet with our context
@@ -110,16 +130,19 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(type); //fill attribute sheet rows
                 
             }
+            ProgressIndicator.Finalise();
             //--------------Loop all IfcMaterialLayerSet-----------------------------
+            ProgressIndicator.ReportMessage("Starting MaterialLayerSets...");
             IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.Instances.OfType<IfcMaterialLayerSet>();
             ChildNamesList rowHolderChildNames = new ChildNamesList();
             ChildNamesList rowHolderLayerChildNames = new ChildNamesList();
             
             string createdBy = DEFAULT_STRING, createdOn = DEFAULT_STRING, extSystem = DEFAULT_STRING;
+            ProgressIndicator.Initialise("Creating MaterialLayerSets", ifcMaterialLayerSets.Count());
 
             foreach (IfcMaterialLayerSet ifcMaterialLayerSet in ifcMaterialLayerSets)
             {
-                
+                ProgressIndicator.IncrementAndUpdate();
                 //Material layer has no owner history, so lets take the owner history from IfcRelAssociatesMaterial.RelatingMaterial -> (IfcMaterialLayerSetUsage.ForLayerSet -> IfcMaterialLayerSet) || IfcMaterialLayerSet || IfcMaterialLayer as it is a IfcMaterialSelect
                 IfcOwnerHistory ifcOwnerHistory = GetMaterialOwnerHistory(ifcMaterialLayerSet);
                 if (ifcOwnerHistory != null)
@@ -179,12 +202,15 @@ namespace Xbim.COBie.Data
                     }
                 }
             }
+            ProgressIndicator.Finalise();
             //--------Loop Materials in case they are not in a layer Set-----
+            ProgressIndicator.ReportMessage("Starting Materials...");
+            
             IEnumerable<IfcMaterial> ifcMaterials = Model.Instances.OfType<IfcMaterial>();
-
+            ProgressIndicator.Initialise("Creating Materials", ifcMaterials.Count());
             foreach (IfcMaterial ifcMaterial in ifcMaterials)
             {
-
+                ProgressIndicator.IncrementAndUpdate();
                 string name = ifcMaterial.Name.ToString().Trim();
                 if (!string.IsNullOrEmpty(ifcMaterial.Name))
                 {
@@ -205,8 +231,12 @@ namespace Xbim.COBie.Data
                     rowHolderChildNames.Add(name.ToLower());
                 }
             }
-
             ProgressIndicator.Finalise();
+
+#if DEBUG
+            timer.Stop();
+            Console.WriteLine(String.Format("Time to generate Type data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+#endif
             return types;
         }
 
@@ -238,46 +268,54 @@ namespace Xbim.COBie.Data
         {
                
             //get related object properties to extract from if main way fails
-            allPropertyValues.SetAllPropertySingleValues(type, "Pset_Asset");
+            allPropertyValues.SetAllPropertyValues(type, "Pset_Asset");
             typeRow.AssetType =     GetAssetType(type, allPropertyValues); 
-            allPropertyValues.SetAllPropertySingleValues(type, "Pset_ManufacturersTypeInformation");
+            allPropertyValues.SetAllPropertyValues(type, "Pset_ManufacturersTypeInformation");
             string manufacturer =   allPropertyValues.GetPropertySingleValueValue("Manufacturer", false);
             typeRow.Manufacturer =  ((manufacturer == DEFAULT_STRING) || (!IsEmailAddress(manufacturer))) ? Constants.DEFAULT_EMAIL : manufacturer;
+
             typeRow.ModelNumber =   GetModelNumber(type, allPropertyValues);
 
+
+            allPropertyValues.SetAllPropertyValues(type, new List<string>(new string[] { "COBie_Warranty", "Pset_Warranty" })); //reset property set name from "Pset_Warranty" to "COBie_Warranty"
             
-            allPropertyValues.SetAllPropertySingleValues(type, "Pset_Warranty");
-            typeRow.WarrantyGuarantorParts =    GetWarrantyGuarantorParts(type, allPropertyValues);
             string warrantyDurationPart =       allPropertyValues.GetPropertySingleValueValue("WarrantyDurationParts", false);
             typeRow.WarrantyDurationParts =     ((warrantyDurationPart == DEFAULT_STRING) || (!IsNumeric(warrantyDurationPart)) ) ? DEFAULT_NUMERIC : warrantyDurationPart;
-            typeRow.WarrantyGuarantorLabor =    GetWarrantyGuarantorLabor(type, allPropertyValues);
-            typeRow.WarrantyDescription =       GetWarrantyDescription(type, allPropertyValues);
             Interval warrantyDuration =         GetDurationUnitAndValue(allPropertyValues.GetPropertySingleValue("WarrantyDurationLabor")); 
             typeRow.WarrantyDurationLabor =     (!IsNumeric(warrantyDuration.Value)) ? DEFAULT_NUMERIC : warrantyDuration.Value;
             typeRow.WarrantyDurationUnit =      (string.IsNullOrEmpty(warrantyDuration.Unit)) ? "Year" : warrantyDuration.Unit; //redundant column via matrix sheet states set as year
-            typeRow.ReplacementCost =           GetReplacementCost(type, allPropertyValues); 
 
-            allPropertyValues.SetAllPropertySingleValues(type, "Pset_ServiceLife");
+            typeRow.ReplacementCost =           GetReplacementCost(type, allPropertyValues); 
+            typeRow.WarrantyGuarantorParts =    GetWarrantyGuarantorParts(type, allPropertyValues);
+            typeRow.WarrantyGuarantorLabor =    GetWarrantyGuarantorLabor(type, allPropertyValues);
+            typeRow.WarrantyDescription =       GetWarrantyDescription(type, allPropertyValues);
+            
+
+            allPropertyValues.SetAllPropertyValues(type, "Pset_ServiceLife");
+            
             Interval serviceDuration =  GetDurationUnitAndValue(allPropertyValues.GetPropertySingleValue("ServiceLifeDuration"));
             typeRow.ExpectedLife =      GetExpectedLife(type, serviceDuration, allPropertyValues);
             typeRow.DurationUnit =      serviceDuration.Unit;
 
-            allPropertyValues.SetAllPropertySingleValues(type, "Pset_Specification");
+            allPropertyValues.SetAllPropertyValues(type, new List<string>(new string[] { "COBie_Specification", "Pset_Specification" }));//changed from "Pset_Specification" via v16 matrix sheet
+            
+            typeRow.Shape = allPropertyValues.GetPropertySingleValueValue("Shape", false);
+            typeRow.Size =                          allPropertyValues.GetPropertySingleValueValue("Size", false);
+            typeRow.Finish =                        allPropertyValues.GetPropertySingleValueValue("Finish", false);
+            typeRow.Grade =                         allPropertyValues.GetPropertySingleValueValue("Grade", false);
+            typeRow.Material =                      allPropertyValues.GetPropertySingleValueValue("Material", false);
+            typeRow.Features =                      allPropertyValues.GetPropertySingleValueValue("Features", false);
+
             typeRow.NominalLength =                 GetNominalLength(type, allPropertyValues);
             typeRow.NominalWidth =                  GetNominalWidth(type, allPropertyValues);
             typeRow.NominalHeight =                 GetNominalHeight(type, allPropertyValues);
             typeRow.ModelReference =                GetModelReference(type, allPropertyValues);
-            typeRow.Shape =                         allPropertyValues.GetPropertySingleValueValue("Shape", false);
-            typeRow.Size =                          allPropertyValues.GetPropertySingleValueValue("Size", false);
             typeRow.Color =                         GetColour(type, allPropertyValues);
-            typeRow.Finish =                        allPropertyValues.GetPropertySingleValueValue("Finish", false);
-            typeRow.Grade =                         allPropertyValues.GetPropertySingleValueValue("Grade", false);
-            typeRow.Material =                      allPropertyValues.GetPropertySingleValueValue("Material", false);
             typeRow.Constituents =                  GetConstituents(type, allPropertyValues);
-            typeRow.Features =                      allPropertyValues.GetPropertySingleValueValue("Features", false);
             typeRow.AccessibilityPerformance =      GetAccessibilityPerformance(type, allPropertyValues);
             typeRow.CodePerformance =               GetCodePerformance(type, allPropertyValues);
             typeRow.SustainabilityPerformance =     GetSustainabilityPerformance(type, allPropertyValues); 
+            
         }
 
         /// <summary>
@@ -312,14 +350,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("SustainabilityPerformance", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Environmental", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -337,14 +372,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("CodePerformance", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Regulation", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -363,14 +395,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("AccessibilityPerformance", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Access", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -388,14 +417,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("constituents", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("parts", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -415,14 +441,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Colour", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Color", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -435,19 +458,17 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetModelReference(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
         {
+            allPropertyValues.SetAllPropertyValues(ifcTypeObject, "Pset_ManufacturersTypeInformation");
             string value = allPropertyValues.GetPropertySingleValueValue("ModelReference", false);
             //Fall back to wild card properties
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("ModelReference", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Reference", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -465,7 +486,7 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("NominalHeight", true);
                 if (value == DEFAULT_STRING)
@@ -473,8 +494,7 @@ namespace Xbim.COBie.Data
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Height", true);
 
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
+                
             }
             return ConvertNumberOrDefault(value);
         }
@@ -493,15 +513,14 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("NominalWidth", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("OverallWidth", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Width", true);
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
+                
             }
             return ConvertNumberOrDefault(value);
         }
@@ -519,16 +538,13 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("NominalLength", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("OverallLength", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Length", true);
-
-                //reset back to property set "Pset_Specification"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
             return ConvertNumberOrDefault(value);
         }
@@ -547,7 +563,7 @@ namespace Xbim.COBie.Data
 
             //Fall back to wild card properties
             //get the property single values for this ifcTypeObject
-            allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+            allPropertyValues.SetAllPropertyValues(ifcTypeObject);
             if (value == DEFAULT_STRING)
                 value = allPropertyValues.GetPropertySingleValueValue("ServiceLifeDuration", true);
             if (value == DEFAULT_STRING)
@@ -564,14 +580,14 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetReplacementCost(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
         {
-            allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_EconomicImpactValues");
+            allPropertyValues.SetAllPropertyValues(ifcTypeObject, "COBie_EconomicImpactValues"); //changed from "Pset_EconomicImpactValues" on v16 of matrix
             string value = allPropertyValues.GetPropertySingleValueValue("ReplacementCost", false);
 
             //Fall back to wild card properties
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("ReplacementCost", true);
                 if (value == DEFAULT_STRING)
@@ -580,8 +596,6 @@ namespace Xbim.COBie.Data
                     value = allPropertyValues.GetPropertySingleValueValue("Cost", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("Replacement", true);
-                //reset back to property set "Pset_Warranty"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Warranty");
             }
             return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING) || (!IsNumeric(value))) ? DEFAULT_NUMERIC : value;
 
@@ -601,14 +615,13 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("WarrantyDescription", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("WarrantyIdentifier", true);
 
-                //reset back to property set "Pset_Warranty"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
+                
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -626,14 +639,13 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("WarrantyGuarantorParts", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("PointOfContact", true);
 
-                //reset back to property set "Pset_Warranty"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
+                
             }
             return (((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) || (!IsEmailAddress(value))) ? Constants.DEFAULT_EMAIL : value;
         }
@@ -651,14 +663,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("WarrantyGuarantorParts", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("PointOfContact", true);
-
-                //reset back to property set "Pset_Warranty"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
             }
             return (((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) || (!IsEmailAddress(value))) ? Constants.DEFAULT_EMAIL : value;
         }
@@ -676,14 +685,11 @@ namespace Xbim.COBie.Data
             //get the property single values for this ifcTypeObject
             if (value == DEFAULT_STRING)
             {
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject);
+                allPropertyValues.SetAllPropertyValues(ifcTypeObject);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("ArticleNumber", true);
                 if (value == DEFAULT_STRING)
                     value = allPropertyValues.GetPropertySingleValueValue("ModelLabel", true);
-
-                //reset back to property set "Pset_Asset"
-                allPropertyValues.SetAllPropertySingleValues(ifcTypeObject, "Pset_Asset"); 
             }
             return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
@@ -699,37 +705,35 @@ namespace Xbim.COBie.Data
             {
                 if (!string.IsNullOrEmpty(type.Description)) return type.Description;
                 else if (!string.IsNullOrEmpty(type.Name)) return type.Name;
-                else
+                
+                //if supports PredefinedType and no description or name then use the predefined type or ElementType if they exist
+                IEnumerable<PropertyInfo> pInfo = type.GetType().GetProperties(); //get properties
+                var predefinedType =  pInfo.Where(p => p.Name == "PredefinedType").FirstOrDefault();
+                if (predefinedType != null)
                 {
-                    //if supports PredefinedType and no description or name then use the predefined type or ElementType if they exist
-                    IEnumerable<PropertyInfo> pInfo = type.GetType().GetProperties(); //get properties
+                    string temp = predefinedType.GetValue(type, null).ToString(); //get predefindtype as description
 
-                    if (pInfo.Where(p => p.Name == "PredefinedType").Count() == 1)
+                    if (!string.IsNullOrEmpty(temp))
                     {
-                        // TODO: Looks Wrong
-                        string temp = pInfo.First().GetValue(type, null).ToString(); //get predefindtype as description
-
-                        if (!string.IsNullOrEmpty(temp))
+                        if (temp == "USERDEFINED")
                         {
-                            if (temp == "USERDEFINED")
+                            //if used defined then the type description should be in ElementType, so see if property exists
+                            var elementType = pInfo.Where(p => p.Name == "ElementType").FirstOrDefault();
+                            if (elementType != null)
                             {
-                                //if used defined then the type description should be in ElementType, so see if property exists
-                                if (pInfo.Where(p => p.Name == "ElementType").Count() == 1)
-                                {
-                                    temp = pInfo.First().GetValue(type, null).ToString(); //get ElementType
-                                    if (!string.IsNullOrEmpty(temp)) return temp;
-                                }
+                                temp = elementType.GetValue(type, null).ToString(); //get ElementType
+                                if (!string.IsNullOrEmpty(temp)) return temp;
                             }
-                            if (temp == "NOTDEFINED") //if not defined then give up and return default
-                            {
-                                return DEFAULT_STRING;
-                            }
-
-                            return temp;
+                        }
+                        if (temp == "NOTDEFINED") //if not defined then give up and return default
+                        {
+                            return DEFAULT_STRING;
                         }
 
+                        return temp;
                     }
                 }
+                
             }
             return DEFAULT_STRING;
         }
@@ -808,9 +812,9 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="type">IfcTypeObject</param>
         /// <returns>string of the category</returns>
-        public string GetCategory(IfcTypeObject type, COBieDataPropertySetValues allPropertyValues)
+        public string GetCategory(COBieDataPropertySetValues allPropertyValues)
         {
-            string categoryRef = GetCategoryClassification(type);
+            string categoryRef = GetCategoryClassification(allPropertyValues.CurrentObject);
             if (!string.IsNullOrEmpty(categoryRef))
             {
                 return categoryRef;
@@ -825,26 +829,25 @@ namespace Xbim.COBie.Data
                                                              "Uniclass_Description","Category Description", "Category_Description", "Classification Description", "Classification_Description" };
             List<string> categoriesTest = new List<string>();
             categoriesCode.AddRange(categoriesDesc);
-            
-            IEnumerable<IfcPropertySingleValue> properties = Enumerable.Empty<IfcPropertySingleValue>();
 
-            Dictionary<IfcPropertySet, List<IfcSimpleProperty>> propertysets = allPropertyValues[type];
-            if (propertysets != null)
+            IEnumerable<IfcPropertySingleValue> properties = allPropertyValues.ObjProperties.OfType<IfcPropertySingleValue>();
+
+            if (properties.Any())
             {
-                 properties = (from dic in propertysets
-                             from psetval in dic.Value
-                              where categoriesTest.Contains(psetval.Name.ToString())
-                               select psetval).OfType<IfcPropertySingleValue>();
+                properties = from psetval in properties
+                             where categoriesTest.Contains(psetval.Name.ToString())
+                             select psetval;
             }
             //second fall back on objects defined by this type, see if they hold a category on the first related object to this type
             if (!properties.Any())
             {
-                propertysets = allPropertyValues.GetRelatedProperties(type);
+                Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>> propertysets = allPropertyValues.GetRelatedProperties(allPropertyValues.CurrentObject as IfcTypeObject);
+            
                 if (propertysets != null)
                 {
                     properties = (from dic in propertysets
-                             from psetval in dic.Value
-                                 where categoriesTest.Contains(psetval.Name.ToString())
+                                  from psetval in dic.Value
+                                  where categoriesTest.Contains(psetval.Name.ToString())
                                   select psetval).OfType<IfcPropertySingleValue>();
                 }
             }

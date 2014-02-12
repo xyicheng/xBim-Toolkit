@@ -49,8 +49,8 @@ namespace Xbim
 				}
 				void InstanceCleanup()
 				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)pExplorer, 0);
-					if(temp!=0)
+					IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(pExplorer), IntPtr(0));
+					if(temp!=IntPtr(0))
 					{
 						if (pExplorer)
 						{

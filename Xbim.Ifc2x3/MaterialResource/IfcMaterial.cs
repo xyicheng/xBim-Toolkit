@@ -73,11 +73,11 @@ namespace Xbim.Ifc2x3.MaterialResource
         {
             return !(left == right);
         }
-
         #region IPersistIfcEntity Members
 
         private int _entityLabel;
         private IModel _model;
+
         public IModel ModelOf
         {
             get { return _model; }
@@ -101,7 +101,7 @@ namespace Xbim.Ifc2x3.MaterialResource
 
         void IPersistIfcEntity.Activate(bool write)
         {
-            if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false);
+            lock(this) { if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false); }
             if (write) _model.Activate(this, write);
         }
 

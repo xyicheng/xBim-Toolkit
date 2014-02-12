@@ -264,6 +264,7 @@ namespace Xbim.COBie.Serialisers
                 }
                 Model.Header.FileDescription.Description.Clear();
                 Model.Header.FileDescription.Description.Add("ViewDefinition[CoordinationView]");
+                Model.Header.FileName.Name = Path.GetFileName(FileName);
                 Model.Header.FileName.AuthorName.Add("4Projects");
                 Model.Header.FileName.AuthorizationName = "4Projects";
                 IfcProject project = Model.Instances.New<IfcProject>();

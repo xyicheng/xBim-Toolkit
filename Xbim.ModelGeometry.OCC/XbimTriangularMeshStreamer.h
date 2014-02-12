@@ -1,8 +1,7 @@
 #pragma once
 
-#include <list>
-#include <map>
-#include <unordered_map>
+#include <carve/carve.hpp>
+#include <carve/collection_types.hpp>
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
 #include "IXbimMeshGeometry.h"
@@ -13,6 +12,8 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 
 #pragma unmanaged
+
+
 
 namespace Xbim
 {
@@ -129,7 +130,7 @@ namespace Xbim
 				int WriteByte(unsigned char* pStream, unsigned int value);
 				int WriteShort(unsigned char* pStream, unsigned int value);
 				int WriteInt(unsigned char* pStream, unsigned int value);
-
+				
 			};
 #pragma managed
 		}

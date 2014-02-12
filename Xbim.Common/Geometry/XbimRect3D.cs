@@ -13,7 +13,7 @@ namespace Xbim.Common.Geometry
         public static XbimRect3D Empty
         {
             get { return XbimRect3D._empty; }
-        }
+        } 
 
         #region Underlying Coordinate properties
         private float _x;
@@ -22,7 +22,7 @@ namespace Xbim.Common.Geometry
         private float _sizeX;
         private float _sizeY;
         private float _sizeZ;
-     
+       
         public float SizeX
         {
             get { return _sizeX; }
@@ -156,7 +156,7 @@ namespace Xbim.Common.Geometry
             this._sizeY = Math.Max(vMin.Y, vMax.Y) - this._y;
             this._sizeZ = Math.Max(vMin.Z, vMax.Z) - this._z;
         }
-
+        
         #endregion
 
         /// <summary>
@@ -177,6 +177,14 @@ namespace Xbim.Common.Geometry
             get
             {
                 return this.Location;
+            }
+        }
+
+        public double Volume
+        {
+            get
+            {
+                return _sizeX * _sizeY * _sizeZ;
             }
         }
 
@@ -407,6 +415,16 @@ namespace Xbim.Common.Geometry
             return (((((x >= this._x) && (x <= (this._x + this._sizeX))) && ((y >= this._y) && (y <= (this._y + this._sizeY)))) && (z >= this._z)) && (z <= (this._z + this._sizeZ)));
   
         }
+
+        public bool Intersects(XbimRect3D rect)
+        {
+            if (this.IsEmpty || rect.IsEmpty)
+            {
+                return false;
+            }
+            return (((((rect._x <= (this._x + this._sizeX)) && ((rect._x + rect._sizeX) >= this._x)) && ((rect._y <= (this._y + this._sizeY)) && ((rect._y + rect._sizeY) >= this._y))) && (rect._z <= (this._z + this._sizeZ))) && ((rect._z + rect._sizeZ) >= this._z));
+        }
+       
 
         public bool Contains(XbimRect3D rect)
         {

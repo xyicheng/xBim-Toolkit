@@ -292,6 +292,46 @@ namespace Xbim.Common.Geometry
             _m44 = m44;
              _isNotDefaultInitialised=true;
         }
+        public XbimMatrix3D(XbimVector3D Offset)
+        {
+            _m11 = Identity.M11;
+            _m12 = Identity.M12;
+            _m13 = Identity.M13;
+            _m14 = Identity.M14;
+            _m21 = Identity.M21;
+            _m22 = Identity.M22;
+            _m23 = Identity.M23;
+            _m24 = Identity.M24;
+            _m31 = Identity.M31;
+            _m32 = Identity.M32;
+            _m33 = Identity.M33;
+            _m34 = Identity.M34;
+            _offsetX = Offset.X;
+            _offsetY = Offset.Y;
+            _offsetZ = Offset.Z;
+            _m44 = Identity.M44;
+            _isNotDefaultInitialised = true;
+        }
+        public XbimMatrix3D(Single Scale)
+        {
+            _m11 = Scale;
+            _m12 = Identity.M12;
+            _m13 = Identity.M13;
+            _m14 = Identity.M14;
+            _m21 = Identity.M21;
+            _m22 = Scale;
+            _m23 = Identity.M23;
+            _m24 = Identity.M24;
+            _m31 = Identity.M31;
+            _m32 = Identity.M32;
+            _m33 = Scale;
+            _m34 = Identity.M34;
+            _offsetX = Identity.OffsetX;
+            _offsetY = Identity.OffsetY;
+            _offsetZ = Identity.OffsetZ;
+            _m44 = Identity.M44; ;
+            _isNotDefaultInitialised = true;
+        }
         /// <summary>
         /// Initialises with doubles, there is a possible loss of data as this matrix uses floats internally
         /// </summary>

@@ -66,7 +66,18 @@ namespace Xbim.IO
             if (_currentInstance.Entity != null)
             {
                 //CurrentInstance.SetPropertyValue(PropertyValue);
-                _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
+                try
+                {
+                    _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
+                }
+                catch (Exception e)
+                {
+                    XbimModel.Logger.ErrorFormat("Parser error, the Attribute {0} of {1} is incorrectly specified and has been ignored. {2}",
+                       _currentInstance.CurrentParamIndex,
+                        _currentInstance.Entity.GetType().Name,
+                        e.Message);
+                }
+               
             }
             if (_listNestLevel == 0)
                 _currentInstance.CurrentParamIndex++;
@@ -125,6 +136,37 @@ namespace Xbim.IO
             //CurrentInstance.SetPropertyValue(PropertyValue);
             _currentInstance.Entity.IfcParse(_currentInstance.CurrentParamIndex, _propertyValue);
             if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+        }
+
+        internal void SkipProperty()
+        {
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+        }
+
+        internal IfcMetaProperty CurrentProperty
+        {
+            get
+            {
+                return IfcMetaData.IfcType(_currentInstance.Entity).IfcProperties[_currentInstance.CurrentParamIndex+1];
+            }
+        }
+        internal short CurrentPropertyId
+        {
+            get
+            {
+                return (short) _currentInstance.CurrentParamIndex;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the parser is working through a list of items
+        /// </summary>
+        public bool InList 
+        {
+            get
+            {
+                return _listNestLevel > 0;
+            }
         }
     }
 }

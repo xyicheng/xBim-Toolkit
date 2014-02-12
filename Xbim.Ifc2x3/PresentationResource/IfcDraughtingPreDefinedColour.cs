@@ -18,13 +18,15 @@ using System.Globalization;
 using System.Linq;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
 
 #endregion
 
 namespace Xbim.Ifc2x3.PresentationResource
 {
     [IfcPersistedEntityAttribute]
-    public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour
+    public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour, IfcFillStyleSelect
     {
         #region Constructors
 
@@ -118,6 +120,18 @@ namespace Xbim.Ifc2x3.PresentationResource
         }
 
         #endregion
+
+        public override void IfcParse(int propIndex, IPropertyValue value)
+        {
+            switch (propIndex)
+            {
+                case 0:
+                    base.IfcParse(propIndex, value);
+                    break;
+                default:
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
+            }
+        }
     }
 
 }

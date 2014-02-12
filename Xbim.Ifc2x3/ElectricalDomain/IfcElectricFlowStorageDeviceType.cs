@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.Ifc2x3.ElectricalDomain
 {
     [IfcPersistedEntityAttribute]
-    public class IfcElectricFlowStorageDeviceType : IfcFlowStorageDevice
+    public class IfcElectricFlowStorageDeviceType : IfcFlowStorageDeviceType
     {
         #region Fields
 

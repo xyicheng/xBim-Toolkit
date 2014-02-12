@@ -1,31 +1,73 @@
 #pragma once
 #include "XbimGeometryModel.h"
-#include "XbimGeometryModel.h"
+#include "XbimGeometryModelCollection.h"
 #include "XbimShell.h"
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::Ifc2x3::TopologyResource;
 using namespace Xbim::Common::Logging;
+using namespace  System::Threading;
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
 		namespace OCC
 		{
-		public ref class XbimFacetedShell : XbimGeometryModel
+			//This class is a container for various shell meshes or polyhedron
+			//it supports conversions between XbimPolyhedron, IfcShell and XbimShell
+		public ref class XbimFacetedShell : public XbimGeometryModelCollection
 		{
 		private:
-			IfcConnectedFaceSet^ _faceSet;
-			XbimShell^ _occShell;
-			XbimRect3D _boundingBox;
-			static ILogger^ Logger = LoggerFactory::GetLogger();
-		public:
+			IfcRepresentationItem^ _faceSet;	
+			bool isSolid;
 
+			void Build(IfcFaceBasedSurfaceModel^ repItem);
+			void Build(IfcShellBasedSurfaceModel^ repItem);
+			void Build(IfcRepresentationItem^ repItem);
+			void Build(IfcConnectedFaceSet^ repItem);
+			void Build(IfcClosedShell^ repItem);
+			XbimTriangulatedModel^ TriangulateFaceSet(IEnumerable<IfcFace^>^ faces);
+
+		public:
+			void Build();
+			XbimFacetedShell(bool isSolid,IfcRepresentationItem^ faceSet, bool hasCurves,int representationLabel, int surfaceStyleLabel );
+			XbimFacetedShell(IfcShellBasedSurfaceModel^ sbms);
+			XbimFacetedShell(IfcFaceBasedSurfaceModel^ fbms);
+			XbimFacetedShell(IfcFacetedBrep^ brep);
 			XbimFacetedShell(IfcConnectedFaceSet^ faceSet);
+			virtual void ToSolid(double precision, double maxPrecision) override;
 			XbimFacetedShell(IfcOpenShell^ shell);
 			XbimFacetedShell(IfcClosedShell^ shell);
 			XbimFacetedShell(IfcShell^ shell);
-			
+			IList<IfcFace^>^ Faces();
 
+			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
+
+			virtual property bool IsValid
+			{
+				bool get() override
+				{
+					return _faceSet!=nullptr;
+				}
+			}
+
+			virtual void Move(TopLoc_Location location) override;
+
+			virtual property double Volume
+			{
+				double get() override
+				{
+					double volume = 0;
+					if(Handle!=nullptr) //we don't have a collection
+						return XbimGeometryModel::Volume; //calculate the single shaep
+					else
+						return XbimGeometryModelCollection::Volume; //add up all the components
+					
+				}
+			}
+			
+#if USE_CARVE
+				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override;
+#endif
 				~XbimFacetedShell()
 				{
 					InstanceCleanup();
@@ -35,67 +77,20 @@ namespace Xbim
 				{
 					InstanceCleanup();
 				}
-				void InstanceCleanup()
+				virtual void InstanceCleanup() override
 				{   
-					_faceSet=nullptr;
-					_occShell=nullptr;
+					_faceSet=nullptr;			
+					
+				}
 
-				}
-			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
-			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
-			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
-			virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
-			virtual void Move(TopLoc_Location location) override;
-			virtual property bool HasCurvedEdges
-			{
-				virtual bool get() override//this geometry never has curved edges
-				{
-					return false;
-				}
-			}
-			virtual XbimRect3D GetBoundingBox()  override
-			{
-				return _boundingBox;
-			};
+			virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
 			
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection) override;
-			virtual property double Volume			{
-				double get() override
-				{
-					throw gcnew NotImplementedException("Volume needs to be implemented");
-				}
-			}
-
-			virtual property XbimLocation ^ Location  
-			{
-				XbimLocation ^ get() override
-				{
-					throw gcnew NotImplementedException("Location needs to be implemented");
-				}
-				void set(XbimLocation ^ location) override
-				{
-					throw gcnew NotImplementedException("Location needs to be implemented");
-				}
-			};
 
 			virtual property TopoDS_Shape* Handle
 			{
-				TopoDS_Shape* get() override
-				{
-					if(_occShell==nullptr)
-						_occShell = gcnew XbimShell(_faceSet);
-					return _occShell->Handle;	
-				};		
-				
+				TopoDS_Shape* get() override;
 			}
 
-			virtual property XbimMatrix3D Transform
-			{
-				XbimMatrix3D get() override
-				{
-					return XbimMatrix3D::Identity;
-				}
-			}
 			
 		};
 	}

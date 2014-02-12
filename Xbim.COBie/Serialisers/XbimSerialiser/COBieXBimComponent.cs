@@ -83,69 +83,65 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 return;//we have it so no need to create
             }
             //we need the ExtObject to exist to create the object
-            if (ValidateString(row.ExtObject))
-            {
-                //Create object using reflection
-                IfcElement ifcElement = GetElementInstance(row.ExtObject, Model);
+            //Create object using reflection
+            IfcElement ifcElement = GetElementInstance(row.ExtObject, Model);
                     
-                if(ifcElement != null)
+            if(ifcElement != null)
+            {
+                //Add Created By, Created On and ExtSystem to Owner History. 
+                SetUserHistory(ifcElement, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+                //using statement will set the Model.OwnerHistoryAddObject to ifcElement.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
+                //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
+                using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
                 {
-                    //Add Created By, Created On and ExtSystem to Owner History. 
-                    SetUserHistory(ifcElement, row.ExtSystem, row.CreatedBy, row.CreatedOn);
-                    //using statement will set the Model.OwnerHistoryAddObject to ifcElement.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
-                    //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
-                    using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
+                    //Add Name
+                    string name = row.Name;
+                    if (ValidateString(name)) ifcElement.Name = name;
+
+                    //Add description
+                    if (ValidateString(row.Description)) ifcElement.Description = row.Description;
+
+                    //Add GlobalId
+                    AddGlobalId(row.ExtIdentifier, ifcElement);
+
+                    //Add Property Set Properties
+                    if (ValidateString(row.SerialNumber))
+                        AddPropertySingleValue(ifcElement, "Pset_Component", "Component Properties From COBie", "SerialNumber", "Serial Number for " + name, new IfcLabel(row.SerialNumber));
+                    if (ValidateString(row.InstallationDate))
+                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "InstallationDate", "Installation Date for " + name, new IfcLabel(row.InstallationDate));
+                    if (ValidateString(row.WarrantyStartDate))
+                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "WarrantyStartDate", "Warranty Start Date for " + name, new IfcLabel(row.WarrantyStartDate));
+                    if (ValidateString(row.TagNumber))
+                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "TagNumber", "Tag Number for " + name, new IfcLabel(row.TagNumber));
+                    if (ValidateString(row.BarCode))
+                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "BarCode", "Bar Code for " + name, new IfcLabel(row.BarCode));
+                    if (ValidateString(row.AssetIdentifier))
+                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "AssetIdentifier", "Asset Identifier for " + name, new IfcLabel(row.AssetIdentifier));
+                    //set up relationship of the component to the type the component is
+                    if (ValidateString(row.TypeName))
                     {
-                        //Add Name
-                        string name = row.Name;
-                        if (ValidateString(name)) ifcElement.Name = name;
-
-                        //Add description
-                        if (ValidateString(row.Description)) ifcElement.Description = row.Description;
-
-                        //Add GlobalId
-                        AddGlobalId(row.ExtIdentifier, ifcElement);
-
-                        //Add Property Set Properties
-                        if (ValidateString(row.SerialNumber))
-                            AddPropertySingleValue(ifcElement, "Pset_Component", "Component Properties From COBie", "SerialNumber", "Serial Number for " + name, new IfcLabel(row.SerialNumber));
-                        if (ValidateString(row.InstallationDate))
-                            AddPropertySingleValue(ifcElement, "Pset_Component", null, "InstallationDate", "Installation Date for " + name, new IfcLabel(row.InstallationDate));
-                        if (ValidateString(row.WarrantyStartDate))
-                            AddPropertySingleValue(ifcElement, "Pset_Component", null, "WarrantyStartDate", "Warranty Start Date for " + name, new IfcLabel(row.WarrantyStartDate));
-                        if (ValidateString(row.TagNumber))
-                            AddPropertySingleValue(ifcElement, "Pset_Component", null, "TagNumber", "Tag Number for " + name, new IfcLabel(row.TagNumber));
-                        if (ValidateString(row.BarCode))
-                            AddPropertySingleValue(ifcElement, "Pset_Component", null, "BarCode", "Bar Code for " + name, new IfcLabel(row.BarCode));
-                        if (ValidateString(row.AssetIdentifier))
-                            AddPropertySingleValue(ifcElement, "Pset_Component", null, "AssetIdentifier", "Asset Identifier for " + name, new IfcLabel(row.AssetIdentifier));
-                        //set up relationship of the component to the type the component is
-                        if (ValidateString(row.TypeName))
-                        {
-                            IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.TypeName.ToLower()).FirstOrDefault();
-                            if (ifcTypeObject != null)
-                                ifcElement.SetDefiningType(ifcTypeObject, Model);
-                            else
-                                ifcElement.ObjectType = row.TypeName; //no type so save type name in IfcLable property of IfcObject
-                        }
-                        //set up relationship of the component to the space
-                        if (ValidateString(row.Space))
-                        {
-                            AddElementRelationship(ifcElement, row.Space);
-                        }
+                        IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.TypeName.ToLower()).FirstOrDefault();
+                        if (ifcTypeObject != null)
+                            ifcElement.SetDefiningType(ifcTypeObject, Model);
                         else
-                        {
-                            GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
-                        }
+                            ifcElement.ObjectType = row.TypeName; //no type so save type name in IfcLable property of IfcObject
+                    }
+                    //set up relationship of the component to the space
+                    if (ValidateString(row.Space))
+                    {
+                        AddElementRelationship(ifcElement, row.Space);
+                    }
+                    else
+                    {
+                        GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
                     }
                 }
-                else
-                {
+            }
+            else
+            {
 #if DEBUG
-                    Console.WriteLine("Failed to create component {0} of {1}", row.Name, row.ExtObject);
+                Console.WriteLine("Failed to create component {0} of {1}", row.Name, row.ExtObject);
 #endif
-                }
-            
             }
         }
 
@@ -221,7 +217,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
 
             if (ifcElement == null)
-                ifcElement = model.Instances.New<IfcVirtualElement>();
+                ifcElement = model.Instances.New<IfcFurnishingElement>(); //was IfcVirtualElement, but this is excluded in the import filters, so just using 
             return ifcElement;
         }
         #endregion

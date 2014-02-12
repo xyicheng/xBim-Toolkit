@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -66,7 +67,6 @@ namespace XbimXplorer.Dialogs
             {
                 System.Windows.MessageBox.Show("Please specify a Project Name");
                 ProjectName.Focus();
-                
             } 
             else if (string.IsNullOrWhiteSpace(FederationName.Text))
             {
@@ -76,6 +76,11 @@ namespace XbimXplorer.Dialogs
             else if (string.IsNullOrWhiteSpace(Location.Text))
             {
                 System.Windows.MessageBox.Show("Please specify a Folder Location");
+                Location.Focus();
+            }
+            else if (!Directory.Exists(Location.Text))
+            {
+                System.Windows.MessageBox.Show("Invalid folder name, please specify a valid one");
                 Location.Focus();
             }
             else if (string.IsNullOrWhiteSpace(CreatedPersonTextBox.Text))
@@ -92,7 +97,6 @@ namespace XbimXplorer.Dialogs
             {
                 DialogResult = true; 
                 this.Close();
-                
             }
         }
 

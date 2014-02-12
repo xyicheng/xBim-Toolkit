@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Common.Geometry
 {
-    public struct XbimVector3D
+    public struct XbimVector3D : IVector3D
     {
         public readonly static XbimVector3D Zero;
 
@@ -123,12 +124,12 @@ namespace Xbim.Common.Geometry
         {
             return XbimVector3D.Multiply(l, v1);
         }
-        
+
         public static XbimVector3D operator *(XbimVector3D v1, double l)
         {
             return XbimVector3D.Multiply((float)l, v1);
         }
-
+        
         public static XbimVector3D operator *(XbimVector3D v1, float l)
         {
             return XbimVector3D.Multiply(l, v1);
@@ -167,7 +168,7 @@ namespace Xbim.Common.Geometry
                 X = 0; Y = 0; Z = 0;
                 return;
             }
-            
+
             len = 1 / len;
             X = x * len;
             Y = y * len;
@@ -199,6 +200,9 @@ namespace Xbim.Common.Geometry
                                     x * y2 - y * x2);
         }
 
+        /// <summary>
+        /// Makes the vector point in the opposite direction
+        /// </summary>
         public void Negate()
         {
             X = -X;
@@ -206,11 +210,40 @@ namespace Xbim.Common.Geometry
             Z = -Z;
         }
 
+        
+
         public static float DotProduct(XbimVector3D v1, XbimVector3D v2)
         {
             return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
         }
-
+        public float DotProduct(XbimVector3D v2)
+        {
+            return XbimVector3D.DotProduct(this, v2);
+        }
         #endregion
+
+
+
+
+
+        double IVector3D.X
+        {
+            get { return X; }
+        }
+
+        double IVector3D.Y
+        {
+            get { return Y; }
+        }
+
+        double IVector3D.Z
+        {
+            get { return Z; }
+        }
+
+        public bool IsInvalid()
+        {
+            return (X == 0.0) && (Y == 0.0) && (Z == 0.0);
+        }
     }
 }

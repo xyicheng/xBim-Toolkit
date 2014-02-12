@@ -1,0 +1,15 @@
+﻿@model IEnumerable<String>
+@{
+    ViewBag.Title = "Home Page";
+    ViewBag.RequireMain = "index";
+}
+
+<h2>@ViewBag.Title</h2>
+
+Available Models:
+<ul>
+@foreach (var s in Model)
+{ 
+    <li>@Html.ActionLink(s, "ViewModel", "Home", new {id=s}, null)</li>
+}
+</ul>

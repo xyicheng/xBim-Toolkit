@@ -103,9 +103,11 @@ namespace Xbim.Ifc2x3.Extensions
         /// <param name="obj"></param>
         /// <param name="pSetName"></param>
         /// <returns></returns>
-        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName)
+        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, bool caseSensitive = true)
         {
-            IfcRelDefinesByProperties rel= obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName).FirstOrDefault();
+            IfcRelDefinesByProperties rel = caseSensitive ?
+                obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName).FirstOrDefault()
+                : obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name.ToString().ToLower() == pSetName.ToLower()).FirstOrDefault();
             if (rel != null) return rel.RelatingPropertyDefinition as IfcPropertySet;
             else return null;
         }
@@ -320,12 +322,44 @@ namespace Xbim.Ifc2x3.Extensions
                 && r.RelatedBuildingElement != null).Select(rsb => rsb.RelatedBuildingElement).Distinct();
         }
 
-        public static IfcElementQuantity GetElementQuantity(this IfcObject elem, string pSetName)
+        public static IfcElementQuantity GetElementQuantity(this IfcObject elem, string pSetName, bool caseSensitive = true)
         {
-            IfcRelDefinesByProperties rel = elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault();
+            IfcRelDefinesByProperties rel = caseSensitive ?
+                elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault()
+                : elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name.ToString().ToLower() == pSetName.ToLower() && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault();
             if (rel != null) return rel.RelatingPropertyDefinition as IfcElementQuantity;
             else return null;
         }
+
+        /// <summary>
+        /// Use this method to get all element quantities related to this object
+        /// </summary>
+        /// <returns>All related element quantities</returns>
+        public static IEnumerable<IfcElementQuantity> GetAllElementQuantities(this IfcObject elem)
+        {
+            var rels = elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition is IfcElementQuantity);
+            foreach (var rel in rels)
+            {
+                yield return rel.RelatingPropertyDefinition as IfcElementQuantity;
+            }
+        }
+
+        /// <summary>
+        /// Use this to get all physical simple quantities (like length, area, volume, count, etc.)
+        /// </summary>
+        /// <returns>All physical simple quantities (like length, area, volume, count, etc.)</returns>
+        public static IEnumerable<IfcPhysicalSimpleQuantity> GetAllPhysicalSimpleQuantities(this IfcObject elem)
+        {
+            foreach (var eq in elem.GetAllElementQuantities())
+            {
+                foreach (var q in eq.Quantities)
+                {
+                    var psq = q as IfcPhysicalSimpleQuantity;
+                    if (psq != null) yield return psq;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns the first quantity in the property set pSetName of name qName
         /// </summary>

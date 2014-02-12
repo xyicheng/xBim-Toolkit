@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Collections.Specialized;
 using Xbim.XbimExtensions.Interfaces;
 using System.Collections.ObjectModel;
+using Xbim.IO.ViewModels;
 
 namespace Xbim.Presentation
 {
@@ -96,9 +97,17 @@ namespace Xbim.Presentation
                     { 
                         // search for composed object
                         var ParentObject = p.Decomposes.FirstOrDefault().RelatingObject;
-                        found = FindUnderContainingSpace(newVal, (IfcProduct)ParentObject);  // direct search of parent through containing space
-                        if (found != null)
-                            found = FindItemDepthFirst(found, newVal); // then search for the child
+                        if (ParentObject is IfcProduct) // 
+                        {
+                            found = FindUnderContainingSpace(newVal, (IfcProduct)ParentObject);  // direct search of parent through containing space
+                            if (found != null)
+                                found = FindItemDepthFirst(found, newVal); // then search for the child
+                        }
+                        else
+                        {
+                            // do basic search
+                            this.Select(newVal, false);
+                        }
                         
                     }
                     if (found != null)
@@ -250,6 +259,9 @@ namespace Xbim.Presentation
                         break;
                     case XbimViewType.IfcEntityType:
                         break;
+                    case XbimViewType.Groups:
+                        tv.ViewGroups();
+                        break;
                     default:
                         break;
                 }
@@ -347,6 +359,58 @@ namespace Xbim.Presentation
             //else //Load any spatialstructure
             //{
             //}
+        }
+
+        private void ViewGroups()
+        {
+            if (Model != null)
+            {
+                this.ChildrenBinding = new Binding("Children");
+                List<GroupViewModel> modelList = new List<GroupViewModel>();
+                
+                var groups = Model.Instances.OfType<IfcGroup>();
+                var groupedObjects = new List<IfcRoot>();
+                foreach (var obj in Model.Instances.OfType<IfcRelAssignsToGroup>())
+                {
+                    groupedObjects.AddRange(obj.RelatedObjects.ToList());
+                }
+
+                foreach (var item in groups)
+                {
+                    if(!groupedObjects.Contains(item))
+                        modelList.Add(new GroupViewModel(item, null)); //add only root groups/systems
+                }
+                this.HierarchySource = modelList;
+                //foreach (var child in modelList)
+                //{
+                //    LazyLoadAll(child); //why to do this?
+                //}
+            }
+        }
+
+        public void Regenerate()
+        {
+            if (Model != null )
+            {
+                Model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
+                switch (ViewDefinition)
+                {
+                    case XbimViewType.SpatialStructure:
+                        ViewModel();
+                        break;
+                    case XbimViewType.Classification:
+                        break;
+                    case XbimViewType.Materials:
+                        break;
+                    case XbimViewType.IfcEntityType:
+                        break;
+                    case XbimViewType.Groups:
+                        ViewGroups();
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }

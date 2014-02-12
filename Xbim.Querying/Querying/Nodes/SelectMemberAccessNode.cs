@@ -9,13 +9,12 @@ using Irony.Parsing;
 
 namespace Xbim.Querying.Nodes
 {
-    public class SelectMemberAccessNode : AstNode
+    public class SelectMemberAccessNode : LeftObjectNode
     {
-        public object Left;
         SelectFunctionNode _TheFunction = null;
         SelectPropertyNode _PropNode = null;
 
-        SelectMemberAccessNode _queue = null;
+        LeftObjectNode _queue = null;
         
         protected override object DoEvaluate(Irony.Interpreter.ScriptThread thread)
         {
@@ -25,18 +24,19 @@ namespace Xbim.Querying.Nodes
             {
                 if (_TheFunction != null)
                 {
-                    _TheFunction.BaseObject = Left;
+                    _TheFunction.Left = Left;
                     retval = _TheFunction.Evaluate(thread);
                 }
                 else if (_PropNode != null)
                 {
-                    _PropNode.BaseObject = Left;
+                    _PropNode.Left = Left;
                     retval = _PropNode.Evaluate(thread);
                 }
             }
-            else if (_queue != null)
+            if (_queue != null)
             {
-
+                _queue.Left = retval;
+                retval = _queue.Evaluate(thread);
             }
             thread.CurrentNode = Parent; //standard epilog
             return retval;
@@ -45,27 +45,30 @@ namespace Xbim.Querying.Nodes
         // this is where data is initially passed to the item
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
+            string sVal = treeNode.FindTokenAndGetText();
             base.Init(context, treeNode);
             var nodes = treeNode.GetMappedChildNodes();
-            var functionOrId = AddChild("FunctionOrId", nodes[0]);
-            if (functionOrId is SelectFunctionNode)
+            var functionOrProperty = AddChild("FunctionOrId", nodes[0]);
+            if (functionOrProperty is SelectFunctionNode)
             {
-                _TheFunction = (SelectFunctionNode)functionOrId;
+                _TheFunction = (SelectFunctionNode)functionOrProperty;
             }
-            else if (functionOrId is SelectPropertyNode)
+            else if (functionOrProperty is SelectPropertyNode)
             {
-                _PropNode = (SelectPropertyNode)functionOrId;
+                _PropNode = (SelectPropertyNode)functionOrProperty;
             }
             else
             {
                 throw new Exception("Unmanaged type in selectmemberaccessnode");
             }
-
-            var child = AddChild("Queue", nodes[1]);
-            string sval = nodes[1].FindTokenAndGetText();
-            if (child is SelectMemberAccessNode)
+            if (nodes.Count > 1)
             {
-                _queue = (SelectMemberAccessNode)child;
+                var child = AddChild("Queue", nodes[1]);
+                string sval = nodes[1].FindTokenAndGetText();
+                if (child is LeftObjectNode)
+                {
+                    _queue = (LeftObjectNode)child;
+                }
             }
         }
 

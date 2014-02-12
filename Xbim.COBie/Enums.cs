@@ -54,4 +54,19 @@ namespace Xbim.COBie
         /// <remarks>e.g. a Component can be assigned to one or more Spaces</remarks>
         ManyToMany
     }
+
+    /// <summary>
+    /// Merge Flags for roles in deciding if an object is allowed or discarded depending on the role of the model
+    /// </summary>
+    [Flags] //allows use to | and & values for multiple boolean tests
+    public enum COBieMergeRoles
+    {
+        Unknown = 0x1,
+        Architectural = 0x2,
+        Mechanical = 0x4,
+        Electrical = 0x8,
+        Plumbing = 0x10,
+        FireProtection = 0x20
+       
+    }
 }

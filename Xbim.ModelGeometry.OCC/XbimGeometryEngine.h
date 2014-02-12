@@ -14,6 +14,7 @@ namespace Xbim
 		public:
 			XbimGeometryEngine(void)
 			{
+				//_representationItemCache = gcnew ConcurrentDictionary<int, XbimGeometryModel^>();
 			};
 			virtual IXbimGeometryModel^ GetGeometry3D(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps);
 			virtual IXbimGeometryModel^ GetGeometry3D(IfcSolidModel^ solid, ConcurrentDictionary<int, Object^>^ maps);
@@ -27,7 +28,6 @@ namespace Xbim
 			}
 		private:
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			//ConcurrentDictionary<int, XbimGeometryModel^>^ _solids;
 			XbimModel^ _model;
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
@@ -36,10 +36,12 @@ namespace Xbim
 			XbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, bool forceSolid, XbimLOD lod, bool occOut);
-			//Builds a TopoDS_Compound from a ShellBasedSurfaceModel
-			XbimGeometryModel^ Build(IfcShellBasedSurfaceModel^ repItem, bool forceSolid);
-			XbimGeometryModel^ Build(IfcFaceBasedSurfaceModel^ repItem, bool forceSolid);
+			
+			XbimGeometryModel^ Build(IfcBooleanResult^ repItem, ConcurrentDictionary<int, Object^>^ maps);
+			XbimGeometryModel^ Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<int, Object^>^ maps);
+
 			bool CutOpenings(IfcProduct^ product, XbimLOD lod);
+
 		};
 	}
 }

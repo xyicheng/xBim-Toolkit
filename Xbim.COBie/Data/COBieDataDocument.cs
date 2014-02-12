@@ -97,7 +97,7 @@ namespace Xbim.COBie.Data
 
                 
                 doc.Description = (string.IsNullOrEmpty(di.Description)) ? DEFAULT_STRING : di.Description.ToString();
-                doc.Reference = (di.DocumentId.Value != null) ? di.DocumentId.Value.ToString() : DEFAULT_STRING;
+                doc.Reference = (string.IsNullOrEmpty(di.DocumentId.Value.ToString())) ? DEFAULT_STRING : di.DocumentId.Value.ToString();
 
                 documents.AddRow(doc);
             }
@@ -208,6 +208,9 @@ namespace Xbim.COBie.Data
         }
 
 
+        //fields for DocumentInformationForObjects
+        List<IfcRelAssociatesDocument> ifcRelAssociatesDocuments = null;
+
         /// <summary>
         /// Missing Inverse method on  IfcDocumentInformation, need to be implemented on IfcDocumentInformation class
         /// </summary>
@@ -215,7 +218,11 @@ namespace Xbim.COBie.Data
         /// <returns>IEnumerable of IfcRelAssociatesDocument objects</returns>
         public  IEnumerable<IfcRelAssociatesDocument> DocumentInformationForObjects (IfcDocumentInformation ifcDocumentInformation )
         {
-            return Model.Instances.Where<IfcRelAssociatesDocument>(irad => (irad.RelatingDocument as IfcDocumentInformation) == ifcDocumentInformation);
+            if (ifcRelAssociatesDocuments == null)
+            {
+                ifcRelAssociatesDocuments = Model.Instances.OfType<IfcRelAssociatesDocument>().ToList();
+            }
+            return ifcRelAssociatesDocuments.Where<IfcRelAssociatesDocument>(irad => (irad.RelatingDocument as IfcDocumentInformation) == ifcDocumentInformation);
         }
 
 

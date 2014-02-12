@@ -43,7 +43,7 @@ namespace Xbim.COBie.Data
             // get all IfcTask objects from IFC file
             IEnumerable<IfcTask> ifcTasks = Model.Instances.OfType<IfcTask>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             
             //IfcTypeObject typObj = Model.Instances.OfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = Model.Instances.OfType<IfcConstructionEquipmentResource>().FirstOrDefault();
@@ -67,7 +67,7 @@ namespace Xbim.COBie.Data
                 job.TypeName = GetObjectType(ifcTask);
                 job.Description = (string.IsNullOrEmpty(ifcTask.Description.ToString())) ? DEFAULT_STRING : ifcTask.Description.ToString();
 
-                allPropertyValues.SetAllPropertySingleValues(ifcTask); //set properties values to this task
+                allPropertyValues.SetAllPropertyValues(ifcTask); //set properties values to this task
                 IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskDuration");
                 job.Duration = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
                 string unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null; 
@@ -136,7 +136,7 @@ namespace Xbim.COBie.Data
             if (relatingTasks.Count > 0)
                 return string.Join(":", relatingTasks);
             else
-                return ifcTask.TaskId.ToString().Trim(); //if no priors, refrence itself
+                return ifcTask.TaskId.ToString().Trim(); //if no priors, reference itself
            
         }
 
@@ -157,7 +157,7 @@ namespace Xbim.COBie.Data
                         strList.Add(ifcConstructionEquipmentResource.Name.ToString());
                 }
             }
-            return (strList.Count > 0) ? string.Join(", ", strList) : DEFAULT_STRING;
+            return (strList.Count > 0) ? (string.Join(", ", strList) + "." ) : DEFAULT_STRING;
         }
         /// <summary>
         /// Get the object IfcTypeObject name from the IfcTask object

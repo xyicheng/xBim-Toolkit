@@ -12,7 +12,7 @@ using namespace Xbim::Ifc2x3::TopologyResource;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 using namespace Xbim::Ifc2x3::MeasureResource;
-
+using namespace Xbim::Common::Logging;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -25,6 +25,7 @@ namespace Xbim
 			private:
 				TopoDS_Wire * pWire;
 				TopoDS_Face * pFace;
+				static ILogger^ Logger = LoggerFactory::GetLogger();
 			public:
 				XbimFaceBound(const TopoDS_Wire & wire, const TopoDS_Face & face);
 				~XbimFaceBound()
@@ -38,8 +39,8 @@ namespace Xbim
 				}
 				void InstanceCleanup()
 				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)pWire, 0);
-					if(temp!=0)
+					IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(pWire), IntPtr(0));
+					if(temp!=IntPtr(0))
 					{
 						if (pWire)
 						{
@@ -55,7 +56,7 @@ namespace Xbim
 
 				//returns the Newell's Normal for a wire
 				static gp_Vec NewellsNormal(const TopoDS_Wire & bound);
-
+				static void AddNewellPoint(const gp_Pnt& previous, const gp_Pnt& current, double & x, double & y, double & z);
 				/*Interface*/
 				virtual property XbimEdgeLoop^ Bound
 				{

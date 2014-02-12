@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.PresentationResource
     public class IfcColourRgb : IfcColourSpecification, IfcFillStyleSelect, IfcColourOrFactor
     {
         #region Fields
-
+        static string ifc2x2Colour = "2x2 Colour";
         private IfcNormalisedRatioMeasure _red = 0;
         private IfcNormalisedRatioMeasure _green = 0;
         private IfcNormalisedRatioMeasure _blue = 0;
@@ -73,9 +73,15 @@ namespace Xbim.Ifc2x3.PresentationResource
 
         public override void IfcParse(int propIndex, IPropertyValue value)
         {
+            if (propIndex == 0 && value.Type == IfcParserType.Real) //we have a 2x2 colour with no name
+            {
+                _name = ifc2x2Colour;
+            }
+            if (_name == ifc2x2Colour) propIndex++; //move all indices along 
+
             switch (propIndex)
             {
-                case 0:
+                case 0:    
                     base.IfcParse(propIndex, value);
                     break;
                 case 1:

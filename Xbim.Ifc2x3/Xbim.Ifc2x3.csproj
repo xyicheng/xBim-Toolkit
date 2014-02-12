@@ -51,7 +51,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
@@ -59,17 +59,6 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
-    <OutputPath>..\bin\NugetDistribution\</OutputPath>
-    <DefineConstants>TRACE;SupportActivation</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>true</CodeAnalysisFailOnMissingRules>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
@@ -300,6 +289,7 @@
     <Compile Include="HVACDomain\IfcVibrationIsolatorType.cs" />
     <Compile Include="HVACDomain\IfcVibrationIsolatorTypeEnum.cs" />
     <Compile Include="IfcEntityNameEnum.cs" />
+    <Compile Include="MaterialPropertyResource\IfcMechanicalConcreteMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcExtendedMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcMechanicalMaterialProperties.cs" />

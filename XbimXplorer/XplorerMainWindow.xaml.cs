@@ -48,6 +48,7 @@ using Xbim.COBie;
 using Xbim.COBie.Contracts;
 using Xbim.ModelGeometry.Converter;
 using XbimXplorer.Dialogs;
+using System.Windows.Media.Imaging;
 #endregion
 
 namespace XbimXplorer
@@ -63,9 +64,15 @@ namespace XbimXplorer
         public static RoutedCommand OpenFederationCmd = new RoutedCommand();
         public static RoutedCommand InsertCmd = new RoutedCommand();
         public static RoutedCommand ExportCOBieCmd = new RoutedCommand();
+        public static RoutedCommand COBieClassFilter = new RoutedCommand();
         private string _currentModelFileName;
         private string _temporaryXbimFileName;
         private string _defaultFileName;
+        const string _UKTemplate = "COBie-UK-2012-template.xls";
+        const string _USTemplate = "COBie-US-2_4-template.xls";
+
+        private FilterValues UserFilters { get; set; }
+        public string COBieTemplate { get; set; }
 
         public XplorerMainWindow()
         {
@@ -73,6 +80,18 @@ namespace XbimXplorer
             this.Closed += new EventHandler(XplorerMainWindow_Closed);
             this.Loaded += XplorerMainWindow_Loaded;
             this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
+            this.DrawingControl.UserModeledDimensionChangedEvent += DrawingControl_MeasureChangedEvent;
+
+            UserFilters = new FilterValues();//COBie Class filters, set to initial defaults
+            COBieTemplate = _UKTemplate;
+        }
+
+        private void DrawingControl_MeasureChangedEvent(DrawingControl3D m, Xbim.Presentation.ModelGeomInfo.PolylineGeomInfo e)
+        {
+            if (e != null)
+            {
+                this.EntityLabel.Text = e.ToString();
+            }
         }
 
         void OpenQuery(object sender, RoutedEventArgs e)
@@ -169,9 +188,7 @@ namespace XbimXplorer
             get
             {
                 return MainFrame.DataContext as ObjectDataProvider;
-               
             }
-            
         }
 
         public XbimModel Model
@@ -192,8 +209,8 @@ namespace XbimXplorer
             {
                 _temporaryXbimFileName = Path.GetTempFileName();
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
-                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
-                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress,true,false);
+              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                // model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
@@ -297,6 +314,13 @@ namespace XbimXplorer
             {
                 _currentModelFileName = fileName.ToLower();
                 model.Open(fileName, XbimDBAccess.Read, worker.ReportProgress); //load entities into the model
+                // sets a convenient integer to all children for model identification
+                // this is used by the federated model selection mechanisms.
+                int i = 0;
+                foreach (var item in model.AllModels)
+                {
+                    item.Tag = i++;
+                }
                 args.Result = model;
             }
             catch (Exception ex)
@@ -438,14 +462,26 @@ namespace XbimXplorer
             if (msg != null) StatusMsg.Text = msg;
         }
 
+        
+        // this variable is used to determine when the user is trying again to double click on the selected item
+        // from this we detect that he's probably not happy with the view, therefore we add a cutting plane to make the 
+        // element visible.
+        //
+        private bool _camChanged = false;
         private void SpatialControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            _camChanged = false;
+            DrawingControl.Viewport.Camera.Changed += Camera_Changed;
             DrawingControl.ZoomSelected();
+            DrawingControl.Viewport.Camera.Changed -= Camera_Changed;
+            if (!_camChanged)
+                DrawingControl.ClipBaseSelected(0.15);
         }
 
-       
-          
-
+        void Camera_Changed(object sender, EventArgs e)
+        {
+            _camChanged = true;
+        }
 
         private void dlg_FileSaveAs(object sender, CancelEventArgs e)
         {
@@ -581,23 +617,11 @@ namespace XbimXplorer
 
             // Build context
             COBieContext context = new COBieContext();
-            context.TemplateFileName = "COBie-UK-2012-template.xls";
+            context.TemplateFileName = COBieTemplate;
             context.Model = Model;
             //set filter option
+            context.Exclude = UserFilters;
 
-            //switch (chckBtn.Name)
-            //{
-            //    case "rbDefault":
-            //        break;
-            //    case "rbPickList":
-            //        context.ExcludeFromPickList = true;
-            //        break;
-            //    case "rbNoFilters":
-            //        context.Exclude.Clear();
-            //        break;
-            //    default:
-            //        break;
-            //}
             //set the UI language to get correct resource file for template
             //if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
             //{
@@ -613,7 +637,8 @@ namespace XbimXplorer
             }
 
             COBieBuilder builder = new COBieBuilder(context);
-            ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+            COBieXLSSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+            serialiser.Excludes = UserFilters;
             builder.Export(serialiser);
             Process.Start(outputFile);
         }
@@ -624,6 +649,21 @@ namespace XbimXplorer
             XbimModel model = ModelProvider.ObjectInstance as XbimModel;
             bool canEdit = (model!=null && model.CanEdit && model.Instances.OfType<IfcBuilding>().FirstOrDefault()!=null);       
             e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
+        }
+
+        private void COBieClassFilterCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            COBieClassFilter classFilterDlg = new COBieClassFilter(UserFilters);
+            bool? done = classFilterDlg.ShowDialog();
+            if (done.HasValue && done.Value == true)
+            {
+                UserFilters = classFilterDlg.UserFilters; //not needed, but makes intent clear
+            }
+        }
+
+        private void COBieClassFilterCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
         }
 
         private void InsertCmdExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -724,6 +764,105 @@ namespace XbimXplorer
         private void CreateFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
+        }
+
+        private void SeparateMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ModelSeparation separate = new ModelSeparation();
+
+            //set data binding
+            Binding b = new Binding("DataContext");
+            b.Source = this.MainFrame;
+            b.Mode = BindingMode.TwoWay;
+            separate.SetBinding(ModelSeparation.DataContextProperty, b);
+
+            separate.Show();
+        }
+
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            Gat.Controls.About about = new Gat.Controls.About();
+            //
+            about.Title = "xBIM Xplorer";
+            about.Hyperlink = new Uri("http://xbim.codeplex.com",UriKind.Absolute);
+            about.HyperlinkText = "http://xbim.codeplex.com";
+            about.Publisher="xBIM Team - Steve Lockley";
+            about.Description = "This application is designed to demonstrate potential usages of the xBIM toolkit";
+            about.ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,/xBIM.ico", UriKind.RelativeOrAbsolute));
+            about.Copyright = "Prof. Steve Lockley";
+            about.PublisherLogo = about.ApplicationLogo;
+            about.AdditionalNotes = "The xBIM toolkit is an Open Source software initiative to help software developers and researchers to support the next generation of BIM tools; unlike other open source application xBIM license is compatible with commercial environments (http://xbim.codeplex.com/license)";
+            about.Show();
+        }
+
+        private void UKTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem mi = (MenuItem)sender;
+
+            if (mi.IsChecked)
+            {
+                COBieTemplate = _UKTemplate;
+                if (US.IsChecked)
+                {
+                    US.IsChecked = false;
+                }
+            }
+            else
+            {
+                US.IsChecked = true;
+                COBieTemplate = _USTemplate;
+            }
+        }
+
+        private void USTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem mi = (MenuItem)sender;
+            
+            if (mi.IsChecked)
+            {
+                COBieTemplate = _USTemplate;
+                if (UK.IsChecked)
+                {
+                    UK.IsChecked = false;
+                }
+            }
+            else
+            {
+                UK.IsChecked = true;
+                COBieTemplate = _UKTemplate;
+            }
+        }
+
+        private void OpenScriptingWindow(object sender, RoutedEventArgs e)
+        {
+            var win = new Scripting.ScriptingWindow();
+            win.Owner = this;
+
+            win.ScriptingConcrol.DataContext = ModelProvider;
+            var binding = new Binding();
+            win.ScriptingConcrol.SetBinding(ScriptingControl.ModelProperty, binding);
+
+            win.ScriptingConcrol.OnModelChangedByScript += delegate(object o, Xbim.Script.ModelChangedEventArgs arg)
+            {
+                ModelProvider.ObjectInstance = null;
+                XbimMesher.GenerateGeometry(arg.NewModel);
+                ModelProvider.ObjectInstance = arg.NewModel;
+                ModelProvider.Refresh();
+            };
+
+            win.ScriptingConcrol.OnScriptParsed += delegate(object o, Xbim.Script.ScriptParsedEventArgs arg)
+            {
+                GroupControl.Regenerate();
+                //SpatialControl.Regenerate();
+            };
+            
+
+            ScriptResults.Visibility = Visibility.Visible;
+            win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg) {
+                ScriptResults.Visibility = Visibility.Collapsed; 
+            });
+            
+            win.Show();
         }
     }
 }

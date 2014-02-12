@@ -89,7 +89,7 @@ namespace Xbim.Ifc2x3.StructuralLoadResource
 
         void IPersistIfcEntity.Activate(bool write)
         {
-            if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false);
+            lock(this) { if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false); }
             if (write) _model.Activate(this, write);
         }
 
