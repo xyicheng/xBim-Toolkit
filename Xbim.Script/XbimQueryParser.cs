@@ -230,7 +230,7 @@ namespace Xbim.Script
         }
 
         /// <summary>
-        /// Event to be used in the event driven environment. Fired when model changes (closed or open)
+        /// Event fired when model changes (closed or open)
         /// </summary>
         public event ModelChangedHandler OnModelChanged;
         private void ModelChanged(XbimModel newModel)
@@ -239,6 +239,9 @@ namespace Xbim.Script
                 OnModelChanged(this, new ModelChangedEventArgs(newModel));
         }
 
+        /// <summary>
+        /// Event is fired when script is parsed
+        /// </summary>
         public event ScriptParsedHandler OnScriptParsed;
         private void ScriptParsed()
         {
