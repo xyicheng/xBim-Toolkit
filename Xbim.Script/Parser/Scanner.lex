@@ -120,6 +120,11 @@
 "dump"			{ return (int)Tokens.DUMP; }
 "count"			{ return (int)Tokens.COUNT; }
 "sum"			{ return (int)Tokens.SUM; }
+"min" |
+"minimal"		{ return (int)Tokens.MIN; }
+"max" |
+"maximal"		{ return (int)Tokens.MAX; }
+"average"		{ return (int)Tokens.AVERAGE; }
 "clear"			{ return (int)Tokens.CLEAR; }
 "open"			{ return (int)Tokens.OPEN; }
 "close"			{ return (int)Tokens.CLOSE; }

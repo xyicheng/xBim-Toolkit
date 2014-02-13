@@ -1165,7 +1165,7 @@ namespace XbimQueryTest
         [TestMethod]
         public void RuleCheckTest()
         {
-              //new parser with default empty model
+            //new parser with default empty model
             XbimQueryParser parser = new XbimQueryParser();
             
             //create data using queries
@@ -1189,6 +1189,44 @@ namespace XbimQueryTest
 
             Assert.AreEqual(0, parser.Errors.Count);
             Assert.IsTrue(File.Exists("RuleTestResults.xls"));
+        }
+
+        [TestMethod]
+        public void AggregationTest()
+        {
+            //new parser with default empty model
+            XbimQueryParser parser = new XbimQueryParser();
+
+            //create data using queries
+            parser.Parse(@"
+            Create new wall with name 'My wall No. 1' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
+            Create new wall with name 'My wall No. 3' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 4' and description 'First description contains dog.';
+            Set 'Integer' to 5 for every wall where description contains 'dog';
+            Set 'Integer' to 1 for every wall where description contains 'cat';
+            Set 'Double' to 1.5 for every wall where description contains 'dog';
+            Set 'Double' to 1.0 for every wall where description contains 'cat';
+            
+            Rule '01': Sum 'Integer' from every wall is 16;
+            Rule '02': Sum 'Double' from every wall is 5.5;
+            Rule '03': Min 'Integer' from every wall is 1;
+            Rule '04': Min 'Double' from every wall is 1;
+            Rule '05': Max 'Integer' from every wall is 5;
+            Rule '06': Max 'Double' from every wall is 1.5;
+            Rule '07': Average 'Integer' from every wall is 4;
+            Rule '08': Average 'Double' from every wall is 1.375;
+            
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            foreach (var check in parser.RuleChecks.Results)
+            {
+                foreach (var result in check.CheckResults)
+                {
+                    Assert.IsTrue(result.IsCompliant);
+                }
+            }
         }
     }
 }

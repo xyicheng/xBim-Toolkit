@@ -1167,38 +1167,7 @@ namespace Xbim.Script
             double sum = double.NaN;
             foreach (var entity in entities)
             {
-                double value = double.NaN;
-                switch (attrType)
-                {
-                    case Tokens.STRING:
-                        var attr1 = GetAttributeValue(attrOrPropName, entity);
-                        if (attr1 == null)
-                            attr1 = GetPropertyValue(attrOrPropName, entity);
-                        if (attr1 != null)
-                        {
-                            var attrStr = attr1.ToString();
-                            Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
-                        }
-                        break;
-                    case Tokens.ATTRIBUTE:
-                        var attr = GetAttributeValue(attrOrPropName, entity);
-                        if (attr != null)
-                        {
-                            var attrStr = attr.ToString();
-                            Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
-                        }
-                        break;
-                    case Tokens.PROPERTY:
-                        var prop = GetPropertyValue(attrOrPropName, entity);
-                        if (prop != null)
-                        {
-                            var attrStr = prop.ToString();
-                            Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
-                        }
-                        break;
-                    default:
-                        throw new ArgumentException("Unexpected attribute type. STRING, ATTRIBUTE or PROPERTY expected");
-                }
+                double value = GetDoubleValue(attrOrPropName, attrType, entity);
                 if (!double.IsNaN(value))
                 {
                     if (double.IsNaN(sum)) sum = 0;
@@ -1208,6 +1177,109 @@ namespace Xbim.Script
 
             WriteLine(sum.ToString());
             return sum;
+        }
+
+        private double MinEntities(string attrOrPropName, Tokens attrType, IEnumerable<IPersistIfcEntity> entities)
+        {
+            double min = double.NaN;
+            foreach (var entity in entities)
+            {
+                double value = GetDoubleValue(attrOrPropName, attrType, entity);
+                if (!double.IsNaN(value))
+                {
+                    if (double.IsNaN(min)) 
+                        min = value;
+                    else
+                        min = Math.Min(value, min);
+                }
+            }
+
+            WriteLine(min.ToString());
+            return min;
+        }
+
+        private double MaxEntities(string attrOrPropName, Tokens attrType, IEnumerable<IPersistIfcEntity> entities)
+        {
+            double max = double.NaN;
+            foreach (var entity in entities)
+            {
+                double value = GetDoubleValue(attrOrPropName, attrType, entity);
+                if (!double.IsNaN(value))
+                {
+                    if (double.IsNaN(max)) 
+                        max = value;
+                    else
+                        max = Math.Max(value, max);
+                }
+            }
+
+            WriteLine(max.ToString());
+            return max;
+        }
+
+        private double AverageEntities(string attrOrPropName, Tokens attrType, IEnumerable<IPersistIfcEntity> entities)
+        {
+            double avg = double.NaN;
+            foreach (var entity in entities)
+            {
+                double value = GetDoubleValue(attrOrPropName, attrType, entity);
+                if (!double.IsNaN(value))
+                {
+                    if (double.IsNaN(avg)) avg = 0;
+                    avg += value;
+                }
+            }
+
+            if (!double.IsNaN(avg) && entities.Count() != 0)
+            {
+                avg = avg / entities.Count();
+                WriteLine(avg.ToString());
+                return avg;
+            }
+
+            return Double.NaN;
+        }
+
+
+
+        private double GetDoubleValue(string attrOrPropName, Tokens attrType, IPersistIfcEntity entity)
+        {
+            double value = double.NaN;
+            switch (attrType)
+            {
+                case Tokens.STRING:
+                    var attr1 = GetAttributeValue(attrOrPropName, entity);
+                    if (attr1 == null)
+                        attr1 = GetPropertyValue(attrOrPropName, entity);
+                    if (attr1 != null)
+                    {
+                        var attrStr = attr1.ToString();
+                        if (!Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                            value = Double.NaN;
+                    }
+                    break;
+                case Tokens.ATTRIBUTE:
+                    var attr = GetAttributeValue(attrOrPropName, entity);
+                    if (attr != null)
+                    {
+                        var attrStr = attr.ToString();
+                        if (!Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                            value = Double.NaN;
+                    }
+                    break;
+                case Tokens.PROPERTY:
+                    var prop = GetPropertyValue(attrOrPropName, entity);
+                    if (prop != null)
+                    {
+                        var attrStr = prop.ToString();
+                        if (!Double.TryParse(attrStr, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                            value = Double.NaN;
+                    }
+                    break;
+                default:
+                    throw new ArgumentException("Unexpected attribute type. STRING, ATTRIBUTE or PROPERTY expected");
+            }
+            return value;
         }
 
         #endregion
@@ -1956,6 +2028,42 @@ namespace Xbim.Script
             }
         }
 
+        private void CheckRule(string ruleName, double valueA, Tokens condition, double valueB)
+        {
+                //check the rule
+                var check = CheckDoubleValue(valueA, valueB, condition);
+                var result = new RuleCheckResult() { Entity = null, IsCompliant = check };
+                _ruleChecks.Add(ruleName, result);
+
+                if (!check)
+                    WriteLine(String.Format("Values don't comply to the rule \"{0}\"", ruleName));
+        }
+
+        private bool CheckDoubleValue(double valueA, double valueB, Tokens condition)
+        {
+            if (Double.IsNaN(valueA) || Double.IsNaN(valueB))
+                return false;
+
+            switch (condition)
+            {
+                case Tokens.OP_GT:
+                    return valueA > valueB;
+                case Tokens.OP_LT:
+                    return valueA < valueB;
+                case Tokens.OP_GTE:
+                    return valueA >= valueB;
+                case Tokens.OP_LTQ:
+                    return valueA <= valueB;
+                case Tokens.OP_EQ:
+                    return Math.Abs( valueA - valueB) < 1E-9;
+                case Tokens.OP_NEQ:
+                    return Math.Abs(valueA - valueB) > 1E-9;
+                default:
+                    throw new NotImplementedException("Unexpected token value");
+            }
+        
+        }
+
         private void ClearRules()
         {
             _ruleChecks = new RuleCheckResultsManager();
@@ -2077,6 +2185,7 @@ namespace Xbim.Script
         }
     }
 
+    #region Rule checking results infrastructure
     public class RuleCheckResult
     {
         public IPersistIfcEntity Entity { get; set; }
@@ -2152,8 +2261,9 @@ namespace Xbim.Script
                     foreach (var ruleRes in result.CheckResults)
                     {
                         var entity = ruleRes.Entity;
-                        var label = Math.Abs(entity.EntityLabel);
-                        file.WriteLine("{0},{1},#{2},{3}", result.Rule, entity.GetType().Name, label, ruleRes.IsCompliant);
+                        var label = entity == null ? 0 : Math.Abs(entity.EntityLabel);
+                        var typeName = entity == null ? "" : entity.GetType().Name;
+                        file.WriteLine("{0},{1},#{2},{3}", result.Rule, typeName, label, ruleRes.IsCompliant);
                     }
 
                 //close file
@@ -2202,14 +2312,15 @@ namespace Xbim.Script
                     foreach (var ruleRes in result.CheckResults)
                     {
                         var entity = ruleRes.Entity;
-                        var label = Math.Abs(entity.EntityLabel);
+                        var label = entity == null ? 0 : Math.Abs(entity.EntityLabel);
+                        var typeName = entity == null ? "" : entity.GetType().Name;
                         dataRow = sheet.CreateRow(++rowNum);
                         cellNum = -1;
 
                         cell = dataRow.CreateCell(++cellNum, CellType.STRING);
                         cell.SetCellValue(result.Rule);
                         cell = dataRow.CreateCell(++cellNum, CellType.STRING);
-                        cell.SetCellValue(entity.GetType().Name);
+                        cell.SetCellValue(typeName);
                         cell = dataRow.CreateCell(++cellNum, CellType.STRING);
                         cell.SetCellValue("#" + label);
                         cell = dataRow.CreateCell(++cellNum, CellType.BOOLEAN);
@@ -2230,4 +2341,5 @@ namespace Xbim.Script
         }
 
     }
+    #endregion
 }

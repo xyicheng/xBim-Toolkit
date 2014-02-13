@@ -87,6 +87,9 @@
 %token  SAVE
 %token  COUNT
 %token  SUM
+%token  MIN
+%token  MAX
+%token  AVERAGE
 %token  VALIDATE
 
 /* spatial keywords */
@@ -174,8 +177,11 @@ variables_actions
 	;
 
 aggregation
-	: COUNT element_set												{$$.intVal = CountEntities($2.entities); $$.val = Tokens.INTEGER;}
-	| SUM attrOrProp FROM element_set								{$$.doubleVal = SumEntities($2.strVal, (Tokens)($2.val), $4.entities); $$.val = Tokens.DOUBLE;}
+	: COUNT element_set												{$$.val = CountEntities($2.entities);}
+	| SUM attrOrProp FROM element_set								{$$.val = SumEntities($2.strVal, (Tokens)($2.val), $4.entities);}
+	| MIN attrOrProp FROM element_set								{$$.val = MinEntities($2.strVal, (Tokens)($2.val), $4.entities);}
+	| MAX attrOrProp FROM element_set								{$$.val = MaxEntities($2.strVal, (Tokens)($2.val), $4.entities);}
+	| AVERAGE attrOrProp FROM element_set							{$$.val = AverageEntities($2.strVal, (Tokens)($2.val), $4.entities);}
 	;	
 
 string_list
@@ -266,7 +272,6 @@ materialCondition
 	: MATERIAL op_bool STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
 	| MATERIAL op_cont STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
 	
-	| THICKNESS op_bool num_value		{$$.val = GenerateThicknessCondition(Convert.ToDouble($3.val), ((Tokens)($2.val)));}
 	| THICKNESS op_num_rel num_value	{$$.val = GenerateThicknessCondition(Convert.ToDouble($3.val), ((Tokens)($2.val)));}
 	;
 	
@@ -309,10 +314,7 @@ attrOrProp
 	;
 
 attrOrPropCondition	
-	: attrOrProp op_bool    INTEGER			{$$.val = GenerateValueCondition($1.strVal, $3.intVal, ((Tokens)($2.val)), (Tokens)($1.val));}
-	| attrOrProp op_num_rel INTEGER			{$$.val = GenerateValueCondition($1.strVal, $3.intVal, ((Tokens)($2.val)), (Tokens)($1.val));}
-	  
-	| attrOrProp  op_bool    DOUBLE			{$$.val = GenerateValueCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)), (Tokens)($1.val));}
+	: attrOrProp op_num_rel INTEGER			{$$.val = GenerateValueCondition($1.strVal, $3.intVal, ((Tokens)($2.val)), (Tokens)($1.val));}
 	| attrOrProp op_num_rel DOUBLE			{$$.val = GenerateValueCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)), (Tokens)($1.val));}
 	  
 	| attrOrProp op_bool STRING				{$$.val = GenerateValueCondition($1.strVal, $3.strVal, ((Tokens)($2.val)), (Tokens)($1.val));}
@@ -374,6 +376,8 @@ op_num_rel
     | OP_LT			{$$.val = Tokens.OP_LT;}
     | OP_GTE		{$$.val = Tokens.OP_GTE;}
     | OP_LTQ		{$$.val = Tokens.OP_LTQ;}
+	| OP_EQ			{$$.val = Tokens.OP_EQ;}
+	| OP_NEQ		{$$.val = Tokens.OP_NEQ;}
 	;
 	
 op_cont
@@ -390,9 +394,10 @@ object
 	;
 
 rule_check
-	: RULE STRING ':' conditions_set FOR element_set				{ CheckRule($2.strVal, (Expression)($4.val), $6.entities); }
-	| CLEAR RULE													{ ClearRules(); }
-	| SAVE RULE TO FILE STRING										{ SaveRules($5.strVal); }
+	: RULE STRING ':' conditions_set FOR element_set					{ CheckRule($2.strVal, (Expression)($4.val), $6.entities); }
+	| RULE STRING ':' aggregation op_num_rel num_value					{ CheckRule($2.strVal, Convert.ToDouble($4.val), (Tokens)($5.val), Convert.ToDouble($6.val)); }
+	| CLEAR RULE														{ ClearRules(); }
+	| SAVE RULE TO FILE STRING											{ SaveRules($5.strVal); }
 	;
 	
 %%

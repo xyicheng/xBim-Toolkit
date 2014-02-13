@@ -27,6 +27,12 @@ namespace Xbim.Script
         public List<ErrorLocation> ErrorLocations { get { return _scanner.ErrorLocations; } }
 
         /// <summary>
+        /// Results of rule checks from the session (lifespan 
+        /// of the parser or after last call to 'Clean results;')
+        /// </summary>
+        public RuleCheckResultsManager RuleChecks { get { return _parser.RuleChecks; } }
+
+        /// <summary>
         /// Messages go to the Console command line normally but 
         /// you can use this property to define optional output 
         /// where messages should go. 
