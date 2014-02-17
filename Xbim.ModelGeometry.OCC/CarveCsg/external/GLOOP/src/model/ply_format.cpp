@@ -26,6 +26,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #include <iostream>
 #include <stdarg.h>
 #include <stdio.h>
@@ -458,7 +459,7 @@ namespace {
   };
 
 
-#pragma unmanaged
+//#pragma unmanaged
   struct elem_info {
     std::string name;
     int count;
@@ -466,27 +467,28 @@ namespace {
     gloop::stream::reader_base *rd;
     gloop::stream::writer_base *wt;
 
-    bool match(const char *elem_name, ...) const {
-      if (elem_name != name) {
-        return false;
-      }
-      bool ok = true;
-      va_list args;
-      va_start(args, elem_name);
-      while (ok) {
-        const char *prop = va_arg(args, const char *);
-        if (!prop) break;
-        ok = false;
-        for (size_t i = 0; i < props.size(); ++i) {
-          if (props[i].name == prop) {
-            ok = true;
-            break;
-          }
-        }
-      }
-      va_end(args);
-      return ok;
-    }
+	bool match(const char *elem_name, ...) const 
+	{
+		if (elem_name != name) {
+			return false;
+		}
+		bool ok = true;
+		va_list args;
+		va_start(args, elem_name);
+		while (ok) {
+			const char *prop = va_arg(args, const char *);
+			if (!prop) break;
+			ok = false;
+			for (size_t i = 0; i < props.size(); ++i) {
+				if (props[i].name == prop) {
+					ok = true;
+					break;
+				}
+			}
+		}
+		va_end(args);
+		return ok;
+	}
 
     elem_info(const std::string &s) : name(), count(0), props(), rd(NULL), wt(NULL) {
       std::istringstream in(s);
@@ -515,7 +517,7 @@ namespace {
     }
   };
 
-#pragma managed
+//#pragma managed
 
   std::list<elem_info>::iterator matchPolyhedronElements(std::list<elem_info>::iterator b,
                                                          std::list<elem_info>::iterator e) {
@@ -774,37 +776,38 @@ namespace gloop {
       for (std::list<std::pair<std::string, stream::block_t> >::iterator i = blocks.begin(); i != blocks.end(); ++i) {
         stream::block_t &block = (*i).second;
 
-        for (stream::named_element_list_t::iterator j = block.elems.begin(); j != block.elems.end(); ++j) {
-          stream::named_element_t &elem = *j;
-          if (elem.wt == NULL) continue;
+		for (stream::named_element_list_t::iterator j = block.elems.begin(); j != block.elems.end(); ++j) 
+		{
+			stream::named_element_t &elem = *j;
+			if (elem.wt == NULL) continue;
 
-          elements.push_back(elem_info(elem.name));
-          elem_info &ei = elements.back();
-          ei.name = elem.name;
-          ei.wt = elem.wt.ptr();
-          ei.count = elem.wt->length();
-          out << ei.header() << std::endl;
+			elements.push_back(elem_info(elem.name));
+			elem_info &ei = elements.back();
+			ei.name = elem.name;
+			ei.wt = elem.wt.ptr();
+			ei.count = elem.wt->length();
+			out << ei.header() << std::endl;
 
-          for (stream::named_prop_list_t::iterator k = elem.props.begin(); k != elem.props.end(); ++k) {
-            stream::named_prop_t &prop = *k;
-            if (prop.wt == NULL) continue;
+			for (stream::named_prop_list_t::iterator k = elem.props.begin(); k != elem.props.end(); ++k) {
+				stream::named_prop_t &prop = *k;
+				if (prop.wt == NULL) continue;
 
-            ei.props.push_back(prop_info(prop.name));
-            prop_info &pi = elements.back().props.back();
-            pi.name = prop.name;
-            pi.wt = prop.wt.ptr();
-            pi.type = prop.wt->dataType();
-            pi.is_list = prop.wt->isList();
-            if (pi.is_list) {
-              pi.count_type = stream::smallest_type((uint32_t)prop.wt->maxLength());
-            }
-            out << pi.header() << std::endl;
-          }
-        }
-      }
+				ei.props.push_back(prop_info(prop.name));
+				prop_info &pi = elements.back().props.back();
+				pi.name = prop.name;
+				pi.wt = prop.wt.ptr();
+				pi.type = prop.wt->dataType();
+				pi.is_list = prop.wt->isList();
+				if (pi.is_list) {
+					pi.count_type = stream::smallest_type((uint32_t)prop.wt->maxLength());
+				}
+				out << pi.header() << std::endl;
+			}
+		}
+	  }
 
-      out << "end_header" << std::endl;
-
+	  out << "end_header" << std::endl;
+	  
       for (std::list<elem_info>::iterator b = elements.begin(); b != elements.end(); ++b) {
         (*b).wt->begin();
         for (int i = 0; i < (*b).count; ++i) {
@@ -825,7 +828,7 @@ namespace gloop {
         }
         (*b).wt->end();
       }
-
+	  
       return true;
     }
 

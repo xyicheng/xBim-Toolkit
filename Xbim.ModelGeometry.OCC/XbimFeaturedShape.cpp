@@ -26,6 +26,7 @@
 #include <TColStd_ListOfInteger.hxx> 
 #include <Bnd_HArray1OfBox.hxx>
 #include <TopTools_HArray1OfShape.hxx> 
+
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 using namespace  System::Runtime::ExceptionServices;
@@ -229,10 +230,12 @@ namespace Xbim
 					{
 
 						XbimPolyhedron^ polyBase = base->ToPolyHedron(deflection,precision ,precisionMax);
+						
 						XbimPolyhedron^ polyResult = polyBase;
 						double currentPolyhedronPrecision = precision;
 						XbimCsg^ csg = gcnew XbimCsg(currentPolyhedronPrecision);
 						bool warned = false;
+						
 						for each (XbimGeometryModel^ nonClashing in preparedOpenings) //do the least number first for performance
 						{
 							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax);
@@ -258,6 +261,10 @@ TryCutPolyhedron:
 							}
 						}
 						GC::KeepAlive(csg);
+						/*polyResult->WritePly("Base.Ply",true);
+						polyResult->WritePly("Base.PlyBin",false);
+						polyResult->WriteObj("Base.Obj");
+						polyResult->WriteVtk("Base.vtk");*/
 						return polyResult;
 					}
 

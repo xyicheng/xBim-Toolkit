@@ -705,6 +705,7 @@ namespace carve {
           if (!detail::testCandidateAttachment(project, current_f_loop, curr, hole_min)) {
             continue;
           }
+		  //check if the candidate causes an intersection with the hole it is part of
 
           attachment_point = curr;
           break;

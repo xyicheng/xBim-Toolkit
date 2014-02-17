@@ -103,7 +103,7 @@ namespace XbimConvert
                                     }
                                     string result = sw.ToString();
                                     Console.WriteLine(result);
-                                   string maps =  m3d.MappedShapes();
+                                  // string maps =  m3d.MappedShapes();
                                   // m3d.WriteShapesToStream(maps);
                                 }
                                 catch (Exception ce)

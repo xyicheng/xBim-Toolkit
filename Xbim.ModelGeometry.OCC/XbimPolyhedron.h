@@ -1,12 +1,12 @@
 #pragma once
-//#include <windows.h>
+
 #include "XbimGeometryModel.h"
 #include <carve\polyhedron_decl.hpp>
 #include <carve\input.hpp>
 #include <carve\csg.hpp>
 #include <carve/carve.hpp>
 #include <carve/collection_types.hpp>
-
+#include "CarveCsg\common\write_ply.hpp"
 #ifndef WIN32
 #  include <stdint.h>
 #endif
@@ -50,6 +50,7 @@ namespace Xbim
 				void BeginPolygon(GLenum type);
 				void EndPolygon();
 				void WriteTriangleIndex(size_t index);
+				
 				size_t WritePoint(IfcCartesianPoint^ p);
 				carve::csg::CSG::meshset_t*  GetPolyhedron();
 				carve::input::PolyhedronData * XbimPolyhedronMeshStreamer::GetPolyData();
@@ -116,6 +117,9 @@ namespace Xbim
 				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
 				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override ;
 				virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
+				void WritePly(String^ fileName, bool ascii);
+				void WriteObj(String^ fileName);
+				void WriteVtk(String^ fileName);
 				virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
 				
 			};

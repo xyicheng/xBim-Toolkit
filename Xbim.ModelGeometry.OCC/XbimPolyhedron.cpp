@@ -13,10 +13,12 @@
 #include <carve/geom.hpp>
 #include "CartesianTransform.h"
 
+
 using namespace  System::Threading;
-using System::Runtime::InteropServices::Marshal;
+
 using namespace  System::Text;
 
+using System::Runtime::InteropServices::Marshal;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -369,7 +371,31 @@ namespace Xbim
 				return "";
 			}*/
 
-			
+			void XbimPolyhedron::WritePly(String^ fileName, bool ascii)
+			{
+				const char* chars = (const char*)(Marshal::StringToHGlobalAnsi(fileName)).ToPointer();
+				std::string stdString = chars;
+				carve::common::writePLY(stdString,_meshSet,ascii);
+				Marshal::FreeHGlobal(IntPtr((void*)chars));
+			}
+
+			void XbimPolyhedron::WriteObj(String^ fileName)
+			{
+				const char* chars = (const char*)(Marshal::StringToHGlobalAnsi(fileName)).ToPointer();
+				std::string stdString = chars;
+				carve::common::writeOBJ(stdString,_meshSet);
+				Marshal::FreeHGlobal(IntPtr((void*)chars));
+
+			}
+
+			void XbimPolyhedron::WriteVtk(String^ fileName)
+			{
+				const char* chars = (const char*)(Marshal::StringToHGlobalAnsi(fileName)).ToPointer();
+				std::string stdString = chars;
+				carve::common::writeVTK(stdString,_meshSet);
+				Marshal::FreeHGlobal(IntPtr((void*)chars));
+				
+			}
 			String^ XbimPolyhedron::WriteAsString(XbimModelFactors^ modelFactors)
 			{
 				double deflection = modelFactors->DeflectionTolerance;

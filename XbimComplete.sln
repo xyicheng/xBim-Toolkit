@@ -44,8 +44,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.DOM", "Xbim.DOM\Xbim.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Common", "Xbim.Common\Xbim.Common.csproj", "{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneJSWebViewer", "Xbim.Web.SceneJSWebViewer\Xbim.SceneJSWebViewer.csproj", "{219A127E-82B8-43A1-8959-7102E4724F8F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimConvert", "XbimConvert\XbimConvert.csproj", "{5B6AC153-AC56-4B01-8734-88EAB805A6DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Tests", "Xbim.Tests\Xbim.Tests.csproj", "{8729CDD1-B493-48EC-A867-61ABAF3E93D2}"
@@ -89,15 +87,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.NuGet", "Nuget Distrib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial.Tests", "Xbim.Spatial.Tests\Xbim.Spatial.Tests.csproj", "{B0EBA5AF-9911-4487-B4F6-3187087723CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignatureExporter", "SignatureExporter\SignatureExporter.csproj", "{5BA35E6E-5125-4530-8C48-E85BF845E8C8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BQLConsole", "BQLConsole\BQLConsole.csproj", "{A0F06F91-D6FE-436C-A0B1-730027361443}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.WebXplorer", "Xbim.WebXplorer\Xbim.WebXplorer.csproj", "{1B2049BE-5697-426E-AF73-5E6B450975BA}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 28
+		SccNumberOfProjects = 25
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -145,56 +139,44 @@ Global
 		SccProjectTopLevelParentUniqueName13 = XbimComplete.sln
 		SccProjectName13 = XbimConvert
 		SccLocalPath13 = XbimConvert
-		SccProjectUniqueName14 = Xbim.Web.SceneJSWebViewer\\Xbim.SceneJSWebViewer.csproj
-		SccProjectTopLevelParentUniqueName14 = XbimComplete.sln
-		SccProjectName14 = Xbim.Web.SceneJSWebViewer
-		SccLocalPath14 = Xbim.Web.SceneJSWebViewer
-		SccProjectUniqueName15 = Xbim.DOM\\Xbim.DOM.csproj
-		SccProjectName15 = Xbim.DOM
-		SccLocalPath15 = Xbim.DOM
-		SccProjectUniqueName16 = XbimXplorer\\XbimXplorer.csproj
-		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
-		SccProjectName16 = XbimXplorer
-		SccLocalPath16 = XbimXplorer
-		SccProjectUniqueName17 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC32.vcxproj
+		SccProjectUniqueName14 = Xbim.DOM\\Xbim.DOM.csproj
+		SccProjectName14 = Xbim.DOM
+		SccLocalPath14 = Xbim.DOM
+		SccProjectUniqueName15 = XbimXplorer\\XbimXplorer.csproj
+		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
+		SccProjectName15 = XbimXplorer
+		SccLocalPath15 = XbimXplorer
+		SccProjectUniqueName16 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC32.vcxproj
+		SccProjectName16 = Xbim.ModelGeometry.OCC
+		SccLocalPath16 = Xbim.ModelGeometry.OCC
+		SccProjectUniqueName17 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC64.vcxproj
 		SccProjectName17 = Xbim.ModelGeometry.OCC
 		SccLocalPath17 = Xbim.ModelGeometry.OCC
-		SccProjectUniqueName18 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC64.vcxproj
-		SccProjectName18 = Xbim.ModelGeometry.OCC
-		SccLocalPath18 = Xbim.ModelGeometry.OCC
-		SccProjectUniqueName19 = VersionComparer\\VersionComparer.csproj
-		SccProjectTopLevelParentUniqueName19 = XbimComplete.sln
-		SccProjectName19 = VersionComparer
-		SccLocalPath19 = VersionComparer
-		SccProjectUniqueName20 = Xbim.Analysis\\Xbim.Analysis.csproj
-		SccProjectName20 = Xbim.Analysis
-		SccLocalPath20 = Xbim.Analysis
-		SccProjectUniqueName21 = Xbim.Script\\Xbim.Script.csproj
-		SccProjectName21 = Xbim.Script
-		SccLocalPath21 = Xbim.Script
-		SccProjectUniqueName22 = XbimInterpret\\XbimInterpret.csproj
-		SccProjectTopLevelParentUniqueName22 = XbimComplete.sln
-		SccProjectName22 = XbimInterpret
-		SccLocalPath22 = XbimInterpret
-		SccProjectUniqueName23 = Nuget\u0020Distribution\\Xbim.NuGet.csproj
-		SccProjectName23 = Nuget\u0020Distribution
-		SccLocalPath23 = Nuget\u0020Distribution
-		SccProjectUniqueName24 = Xbim.Spatial.Tests\\Xbim.Spatial.Tests.csproj
+		SccProjectUniqueName18 = VersionComparer\\VersionComparer.csproj
+		SccProjectTopLevelParentUniqueName18 = XbimComplete.sln
+		SccProjectName18 = VersionComparer
+		SccLocalPath18 = VersionComparer
+		SccProjectUniqueName19 = Xbim.Analysis\\Xbim.Analysis.csproj
+		SccProjectName19 = Xbim.Analysis
+		SccLocalPath19 = Xbim.Analysis
+		SccProjectUniqueName20 = Xbim.Script\\Xbim.Script.csproj
+		SccProjectName20 = Xbim.Script
+		SccLocalPath20 = Xbim.Script
+		SccProjectUniqueName21 = XbimInterpret\\XbimInterpret.csproj
+		SccProjectTopLevelParentUniqueName21 = XbimComplete.sln
+		SccProjectName21 = XbimInterpret
+		SccLocalPath21 = XbimInterpret
+		SccProjectUniqueName22 = Nuget\u0020Distribution\\Xbim.NuGet.csproj
+		SccProjectName22 = Nuget\u0020Distribution
+		SccLocalPath22 = Nuget\u0020Distribution
+		SccProjectUniqueName23 = Xbim.Spatial.Tests\\Xbim.Spatial.Tests.csproj
+		SccProjectTopLevelParentUniqueName23 = XbimComplete.sln
+		SccProjectName23 = Xbim.Spatial.Tests
+		SccLocalPath23 = Xbim.Spatial.Tests
+		SccProjectUniqueName24 = BQLConsole\\BQLConsole.csproj
 		SccProjectTopLevelParentUniqueName24 = XbimComplete.sln
-		SccProjectName24 = Xbim.Spatial.Tests
-		SccLocalPath24 = Xbim.Spatial.Tests
-		SccProjectUniqueName25 = BQLConsole\\BQLConsole.csproj
-		SccProjectTopLevelParentUniqueName25 = XbimComplete.sln
-		SccProjectName25 = BQLConsole
-		SccLocalPath25 = BQLConsole
-		SccProjectUniqueName26 = SignatureExporter\\SignatureExporter.csproj
-		SccProjectTopLevelParentUniqueName26 = XbimComplete.sln
-		SccProjectName26 = SignatureExporter
-		SccLocalPath26 = SignatureExporter
-		SccProjectUniqueName27 = Xbim.WebXplorer\\Xbim.WebXplorer.csproj
-		SccProjectTopLevelParentUniqueName27 = XbimComplete.sln
-		SccProjectName27 = Xbim.WebXplorer
-		SccLocalPath27 = Xbim.WebXplorer
+		SccProjectName24 = BQLConsole
+		SccLocalPath24 = BQLConsole
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -224,10 +206,6 @@ Global
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{219A127E-82B8-43A1-8959-7102E4724F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{219A127E-82B8-43A1-8959-7102E4724F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -300,33 +278,22 @@ Global
 		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0EBA5AF-9911-4487-B4F6-3187087723CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5BA35E6E-5125-4530-8C48-E85BF845E8C8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{219A127E-82B8-43A1-8959-7102E4724F8F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{5BA35E6E-5125-4530-8C48-E85BF845E8C8} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{A0F06F91-D6FE-436C-A0B1-730027361443} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{1B2049BE-5697-426E-AF73-5E6B450975BA} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{B0EBA5AF-9911-4487-B4F6-3187087723CC} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}

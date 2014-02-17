@@ -732,7 +732,7 @@ bool testCandidateAttachment(const std::vector<std::vector<carve::geom2d::P2> > 
                                       hole_min)) {
     return false;
   }
-
+ 
   if (hole_min == pvert(poly, current_f_loop[curr])) {
     return true;
   }
@@ -890,20 +890,42 @@ carve::triangulate::incorporateHolesIntoPolygon(
 
     while (f_loop_heap.size()) {
       std::pop_heap(f_loop_heap.begin(), f_loop_heap.end(), _heap_ordering);
-      size_t curr = f_loop_heap.back();
-      f_loop_heap.pop_back();
-      // test the candidate join from result[curr] to hole_min
+	  size_t curr = f_loop_heap.back();
+	  f_loop_heap.pop_back();
+	  // test the candidate join from result[curr] to hole_min
 
-      if (!testCandidateAttachment(poly, result, curr, hole_min)) {
-        continue;
-      }
+	  if (!testCandidateAttachment(poly, result, curr, hole_min)) {
+		  continue;
+	  }
+	  //test the candidate does not intersect with itself
+	  carve::geom2d::LineSegment2 lineConnect(hole_min, pvert(poly, result[curr]));
 
-      attachment_point = curr;
-      break;
-    }
-	
-    if (attachment_point == result.size()) {
-      CARVE_FAIL("didn't manage to link up hole!");
+	  const size_t hsize =  poly[hole_i].size();
+	  bool selfIntersecting = false;
+	  for (size_t h = 0; h < hsize; ++h) 
+	  {
+		  std::pair<size_t,size_t> v1 = std::make_pair(hole_i,(h+1) % hsize);
+		  std::pair<size_t,size_t> v2 = std::make_pair(hole_i,h);
+		  if (pvert(poly, v1) !=  hole_min &&
+			  pvert(poly, v2) != hole_min) 
+		  {
+			  carve::geom2d::LineSegment2 test2(pvert(poly, v1), pvert(poly, v2));
+			  if (carve::geom2d::lineSegmentIntersection_simple(lineConnect, test2)) 
+			  {
+				  // intersection; failed.
+				  selfIntersecting = true;
+				  break;
+			  }
+		  }
+	  }
+
+	  if(selfIntersecting) continue; //look for another
+	  attachment_point = curr;
+	  break;
+	}
+
+	if (attachment_point == result.size()) {
+		CARVE_FAIL("didn't manage to link up hole!");
     }
 	
     patchHoleIntoPolygon_2d(result, attachment_point, hole_i, hole_i_connect, poly[hole_i].size());
@@ -1148,8 +1170,9 @@ void carve::triangulate::triangulate(const std::vector<carve::geom2d::P2> &poly,
   }
 
   detail::vertex_info *begin = vinfo[0];
-
+ 
   removeDegeneracies(begin, result);
+ 
   doTriangulate(begin, result, EPSILON);
 
 #if defined(CARVE_DEBUG)

@@ -346,7 +346,8 @@ namespace Xbim.ModelGeometry.Converter
                                     else mapBounds.Union(counter.BoundingBox);
                                 }
                                 else
-                                    Logger.ErrorFormat("Failed to find shape #{0}", Math.Abs(mapShape.EntityLabel));
+                                    if(!(mapShape is IfcGeometricSet)) //ignore non solid geometry sets
+                                        Logger.ErrorFormat("Failed to find shape #{0}", Math.Abs(mapShape.EntityLabel));
 
                             }
                             XbimMatrix3D cartesianTransform = map.MappingTarget.ToMatrix3D();
@@ -466,7 +467,7 @@ namespace Xbim.ModelGeometry.Converter
                 cost = geomTable.UpdateReferenceCount(geometryReferenceCounter.GeometryId, geometryReferenceCounter.ReferenceCount);
                 transaction.Commit();
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 Logger.ErrorFormat("Failed to update reference count on geometry #{0}", geometryReferenceCounter.GeometryId);
             }

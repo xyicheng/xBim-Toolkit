@@ -111,6 +111,21 @@
       <Filter>CarveCSG</Filter>
     </ClCompile>
     <ClCompile Include="XbimCsg.cpp" />
+    <ClCompile Include="CarveCsg\external\GLOOP\src\model\stream.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\external\GLOOP\src\model\ply_format.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\external\GLOOP\src\model\obj_format.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\external\GLOOP\src\model\vtk_format.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\common\write_ply.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CartesianTransform.h" />
@@ -167,6 +182,12 @@
       <Filter>CarveCSG</Filter>
     </ClInclude>
     <ClInclude Include="XbimCsg.h" />
+    <ClInclude Include="CarveCsg\external\GLOOP\include\gloop\model\stream.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\common\write_ply.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
