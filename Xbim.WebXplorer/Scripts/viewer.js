@@ -85,10 +85,10 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
             scene.getNode(Geometry.layerid, function (MaterialNode) {
                 MaterialNode.addNode({
                     type: "name",
-                    id:Geometry.id+"_name",
+                    id:Geometry.data.prod+"_"+Geometry.id+ "_" + Geometry.mapid+"_name",
                     nodes: [{
                         type: "geometry",
-                        id: Geometry.id,
+                        id: Geometry.data.prod + "_" + Geometry.id + "_" + Geometry.mapid,
                         data: { product: Geometry.data.prod },
                         primitive: "triangles",
                         positions: Geometry.Positions,
@@ -132,8 +132,9 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
     }
     scene.on("pick",
             function (hit) {
-                var geometryid = hit.nodeId.replace("_name","");
-                alert("picked geometry id: " + geometryid);
+                var ids = hit.nodeId.split("_");
+                //var geometryid = hit.nodeId.replace("_name","");
+                alert("picked geometry id: " + ids[1] + " for product id: "+ids[0]);
             });
     ModelLoader.StartLoading();
 });

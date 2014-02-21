@@ -88,11 +88,12 @@ namespace Xbim.WebXplorer.Models
 
             if (context.IsGenerated)
             {
-                var shapes = context.MappedShapes();
-                returndata = new {
-                    IDs = shapes.Select(d=>d.Item1),
-                    Counts = shapes.Select(d=>d.Item2)
-                };
+                //var shapes = context.Maps();
+                //returndata = new {
+                //    IDs = shapes.Select(d=>d.Item1),
+                //    Counts = shapes.Select(d=>d.Item2)
+                //};
+                returndata = context.Maps();
             }
             else {
                 returndata = Enumerable.Empty<Int32>();
@@ -184,17 +185,6 @@ namespace Xbim.WebXplorer.Models
                 returndata = Enumerable.Empty<XbimShape>();
             }
 
-            //var data = _model.GetGeometry(Ids);
-            
-            //foreach (var i in data)
-            //{
-            //    retval.Add(new { 
-            //        //id = i.GeometryLabel,
-            //        //prod = i.IfcProductLabel,
-            //        //geo = i.ShapeData,
-            //        //matrix = XbimMatrix3D.FromArray(i.DataArray2)
-            //    });
-            //}
             var data = JsonConvert.SerializeObject(returndata);
             _model.Dispose();
             return data;

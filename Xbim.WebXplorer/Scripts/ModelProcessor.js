@@ -52,19 +52,15 @@
         if (!data || !data.length) return;
         for (var i = 0; i < data.length; i++)
         {
-            this.library.materials[data[i].Material.MaterialID] = data[i].Material;
+            //if(data[i].Material.Alpha >= 0.9999)
+                this.library.materials[data[i].Material.MaterialID] = data[i].Material;
         }
         this.library.materials["0"] = { MaterialID:0, Red: 1.0, Green: 0.0, Blue: 1.0, Alpha: 0.0 };
         eventmanager.FireEvent("Materials", this.library.materials);
     }
     processor.prototype.HandleLibraryShapes = function (data) {
-        if (!data || !data.Counts || !data.IDs) return;
-
-        for (var i = 0; i < data.IDs.length; i++)
-        {
-            this.library.maps[data.IDs[i]] = data.Counts[i];
-            this.library.maplist = data.IDs;
-        }
+        if (!data || !data.length) return;
+        this.library.maplist = data;
         return this.library.maplist;
     }
     processor.prototype.HandleProductShapes = function (data) {
@@ -127,7 +123,8 @@
                         prod: product.ProductLabel,
                         placement: product.Placement,
                         transform: Map.Transform,
-                        geoid: Mapping
+                        geoid: Mapping,
+                        mapid:
                     };
                     /**/
                     var product = products[k];
@@ -139,7 +136,7 @@
 
                     var mesh = GeometryMesher(data[i].Mesh, xform);
 
-                    this.ConstructGeometry({ GeometryLabel: product.geoid, StyleLabel: data[i].StyleLabel }, mesh, product.prod);
+                    this.ConstructGeometry({ GeometryLabel: product.geoid, StyleLabel: data[i].StyleLabel, MapLabel: data[i].GeometryLabel }, mesh, product.prod);
                 }
             }
         }
@@ -160,7 +157,7 @@
             mat4.multiply(transform, placement, xform);
 
             var mesh = GeometryMesher(geom.Mesh, xform);
-            this.ConstructGeometry(geom, mesh, prodlabel);
+            //this.ConstructGeometry(geom, mesh, prodlabel);
         }
     }
 
@@ -168,6 +165,7 @@
         var geopiece = {
             id: geom.GeometryLabel,
             layerid: geom.StyleLabel,
+            mapid: geom.MapLabel ? geom.MapLabel:0,
             Positions: mesh.Positions,
             Normals: mesh.Normals,
             Indices: mesh.Indices,

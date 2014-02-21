@@ -775,6 +775,26 @@ namespace Xbim.ModelGeometry.Converter
                 Model.FreeTable(geomTable);
             }
         }
+        /// <summary>
+        /// Returns a List of all the shape labels that are maps
+        /// </summary>
+        /// <param name="minDplicates"></param>
+        /// <returns></returns>
+        public IEnumerable<Int32> Maps()
+        {
+            XbimGeometryCursor geomTable = Model.GetGeometryTable();
+            try
+            {
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
+                {
+                    return geomTable.GeometryData(XbimGeometryType.PolyhedronMap).Select(d => d.GeometryLabel);
+                }
+            }
+            finally
+            {
+                Model.FreeTable(geomTable);
+            }
+        }
 
         public void WriteShapesToStream(string maps, StringWriter sw)
         {
