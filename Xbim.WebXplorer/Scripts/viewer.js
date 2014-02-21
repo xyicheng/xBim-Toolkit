@@ -18,7 +18,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
 
     // Point SceneJS to the bundled plugins
     SceneJS.setConfigs({
-        pluginPath: "/Scripts/plugins"
+        pluginPath: "/Xbim.WebXplorer/Scripts/plugins"
     });
 
     // Create scene
@@ -48,9 +48,9 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
     });
     var canvas = scene.getCanvas();
     eventmanager.RegisterCallback("ModelBounds", function (ModelBounds) {
-        console.log(ModelBounds);
+        //console.log(ModelBounds);
 
-        var transform = new Float32Array(ModelBounds.transforms[0].transform);
+        var transform = ModelBounds;
         scene.getNode("flags", function (flags) {
             flags.addNode({
                 type: "matrix",
@@ -61,12 +61,12 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
         });
     });
     eventmanager.RegisterCallback("Materials", function (Materials) {
-        console.log(Materials);
+        //console.log(Materials);
         
         scene.getNode("modeltransform", function (modeltransform) {
-            for (var i = 0; i < Materials.Materials.length; i++)
+            for (var key in Materials)
             {
-                var mat = Materials.Materials[i].Material;
+                var mat = Materials[key];
                 modeltransform.addNode({
                     type: "material",
                     id: mat.MaterialID,
@@ -77,27 +77,27 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
             }
         });
     });
-    eventmanager.RegisterCallback("Manifest", function (Manifest) {
-        console.log(Manifest);
-    });
+    //eventmanager.RegisterCallback("Manifest", function (Manifest) {
+    //    console.log(Manifest);
+    //});
     eventmanager.RegisterCallback("Geometry", function (Geometry) {
         try {
-        scene.getNode(Geometry.layerid, function (MaterialNode) {
-            MaterialNode.addNode({
-                type: "name",
-                id:Geometry.id+"_name",
-                nodes: [{
-                    type: "geometry",
-                    id: Geometry.id,
-                    data: { product: Geometry.data.prod },
-                    primitive: "triangles",
-                    positions: Geometry.geometry.Positions,
-                    normals: Geometry.geometry.Normals,
-                    indices: Geometry.geometry.Indices
-                }]
+            scene.getNode(Geometry.layerid, function (MaterialNode) {
+                MaterialNode.addNode({
+                    type: "name",
+                    id:Geometry.id+"_name",
+                    nodes: [{
+                        type: "geometry",
+                        id: Geometry.id,
+                        data: { product: Geometry.data.prod },
+                        primitive: "triangles",
+                        positions: Geometry.Positions,
+                        normals: Geometry.Normals,
+                        indices: Geometry.Indices
+                    }]
+                });
             });
-        });
-        } catch (exception) { }
+        } catch (exception) { console.log(exception); }
     });
 
     //register mouse handlers for picking

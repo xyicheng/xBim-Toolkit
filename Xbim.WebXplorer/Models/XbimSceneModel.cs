@@ -22,23 +22,27 @@ namespace Xbim.WebXplorer.Models
         private static String ModelPath = WebConfigurationManager.AppSettings["XbimModelLocation"].ToString();
         private static String ModelExt = WebConfigurationManager.AppSettings["XbimfileExtension"].ToString();
         private XbimModel _model = null;
+        private String fullpath = String.Empty;
         public XbimSceneModel(String ModelName)
         {
-            var fullpath = Path.ChangeExtension(Path.Combine(ModelPath,ModelName), ModelExt);
-            _model = new XbimModel();
-            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
+            fullpath = Path.ChangeExtension(Path.Combine(ModelPath,ModelName), ModelExt);
         }
 
         public String GetGeometrySupportLevel()
         {
+            _model = new XbimModel();
+            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
             object data = new { 
                 GeometrySupportLevel = _model.GeometrySupportLevel
             };
+            _model.Dispose();
             return JsonConvert.SerializeObject(data);
         }
 
         public String GetModelContext()
         {
+            _model = new XbimModel();
+            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
             object returndata;
             switch(_model.GeometrySupportLevel)
             {
@@ -70,11 +74,14 @@ namespace Xbim.WebXplorer.Models
                     break;
             }
 
+            _model.Dispose();
             return JsonConvert.SerializeObject(returndata);
         }
 
         public String GetLibraryShapes()
         {
+            _model = new XbimModel();
+            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
             object returndata;
 
             Xbim3DModelContext context = new Xbim3DModelContext(_model);
@@ -91,10 +98,14 @@ namespace Xbim.WebXplorer.Models
                 returndata = Enumerable.Empty<Int32>();
             }
 
-            return JsonConvert.SerializeObject(returndata);
+            var data = JsonConvert.SerializeObject(returndata);
+            _model.Dispose();
+            return data;
         }
         public String GetProductShapes()
         {
+            _model = new XbimModel();
+            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
             object returndata;
 
             Xbim3DModelContext context = new Xbim3DModelContext(_model);
@@ -109,11 +120,14 @@ namespace Xbim.WebXplorer.Models
                 returndata = Enumerable.Empty<Int32>();
             }
 
-            return JsonConvert.SerializeObject(returndata);
+            var data = JsonConvert.SerializeObject(returndata);
+            _model.Dispose();
+            return data;
         }
         public String GetLibraryStyles()
         {
-            object returndata;
+            _model = new XbimModel();
+            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
 
             Xbim3DModelContext context = new Xbim3DModelContext(_model);
 
@@ -143,13 +157,16 @@ namespace Xbim.WebXplorer.Models
                     Materials.Add(m);
                 }
             }
-            returndata = Materials;
-            return JsonConvert.SerializeObject(returndata);
+            var data = JsonConvert.SerializeObject(Materials);
+            _model.Dispose();
+            return data;
         }
         #region older functions
         
         public String GetMeshes(String Ids)
         {
+            _model = new XbimModel();
+            _model.Open(fullpath, XbimExtensions.XbimDBAccess.Read);
             object returndata;
             String[] stringids = Ids.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries);
 
@@ -178,8 +195,9 @@ namespace Xbim.WebXplorer.Models
             //        //matrix = XbimMatrix3D.FromArray(i.DataArray2)
             //    });
             //}
-
-            return JsonConvert.SerializeObject(returndata);
+            var data = JsonConvert.SerializeObject(returndata);
+            _model.Dispose();
+            return data;
         }
         #endregion
         public void Dispose()
