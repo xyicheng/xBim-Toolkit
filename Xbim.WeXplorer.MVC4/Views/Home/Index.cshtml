@@ -1,0 +1,17 @@
+﻿@model IEnumerable<String>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+
+Available Models:
+<ul>
+@foreach (var s in Model)
+{
+    string fileExt = Path.GetExtension(s).TrimStart('.');
+    string fileName = Path.GetFileNameWithoutExtension(s);
+    <li>@Html.ActionLink(s, "View3D", "XbimModel", new { ext = fileExt, name = fileName }, null)</li>
+}
+</ul>

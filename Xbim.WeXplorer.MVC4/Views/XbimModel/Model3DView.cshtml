@@ -1,0 +1,13 @@
+﻿@model string
+@{
+    ViewBag.Title = "Model3DView";
+    ViewBag.RequireMain = "viewer";
+}
+
+<h2>Model3DView</h2>
+
+<canvas id="modelcanvas" style="width:600px;height:600px;"></canvas>
+<script type="text/javascript">
+    var ModelID = '@Model';
+    var XbimPath = '@Url.Content("~/")';
+</script>

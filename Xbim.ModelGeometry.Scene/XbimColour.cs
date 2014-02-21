@@ -18,7 +18,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public override bool Equals(object obj)
         {
-            return true;
+           
             XbimColour col = obj as XbimColour;
             if (col == null) return false;
             return  col.Red == Red && 

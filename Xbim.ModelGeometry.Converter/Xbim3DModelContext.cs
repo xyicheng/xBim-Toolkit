@@ -169,7 +169,7 @@ namespace Xbim.ModelGeometry.Converter
 
         public bool CreateContext(ReportProgressDelegate progDelegate = null, bool cacheOn = true)
         {
-            if (_context == null) return false;
+            if (_context == null || _engine==null) return false;
             if (_contextIsPersisted) return false; //already created it
             double precision = _engine.Precision;
             //cache booleans only to avoid converting them twice when we process the solid model components

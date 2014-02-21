@@ -72,22 +72,23 @@ namespace Xbim.ModelGeometry.Converter
 
             if (!string.IsNullOrWhiteSpace(basePath)) //if we have a base path use it else look at the executable
                 path = basePath;
-            else {
-                location = Assembly.GetEntryAssembly();
-                if (location != null && location.Location !=null)
-                {
-                    path = Path.GetDirectoryName(location.Location);
-                }
-            }
-            if (!string.IsNullOrWhiteSpace(path))
+            else
             {
-                location = Assembly.GetExecutingAssembly();
+                location = Assembly.GetEntryAssembly();
                 if (location != null && location.Location != null)
                 {
                     path = Path.GetDirectoryName(location.Location);
                 }
-            }
 
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    location = Assembly.GetExecutingAssembly();
+                    if (location != null && location.Location != null)
+                    {
+                        path = Path.GetDirectoryName(location.Location);
+                    }
+                }
+            }
             if (IntPtr.Size == 8) // or for .NET4 use Environment.Is64BitProcess
             {
                 path = Path.Combine(path, "x64");

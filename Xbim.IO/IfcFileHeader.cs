@@ -553,5 +553,62 @@ namespace Xbim.IO
             }
 
         }
+
+
+        public string SchemaVersion
+        {
+            get
+            {
+                if (FileSchema != null && FileSchema.Schemas!=null && FileSchema.Schemas.Count > 0)
+                    return string.Join(", ", FileSchema.Schemas);
+                else
+                    return "";
+            }
+        }
+
+        public string CreatingApplication
+        {
+            get
+            {
+                if (FileName != null && FileName.OriginatingSystem != null)
+                    return FileName.OriginatingSystem;
+                else
+                    return "";
+            }
+        }
+
+        public string ModelViewDefinition
+        {
+            get
+            {
+                if (FileDescription != null && FileDescription.Description != null)
+                    return string.Join(", ", FileDescription.Description);
+                else
+                    return "";
+
+            }
+        }
+
+        public string Name
+        {
+            get 
+            {
+                if (FileName != null && FileName.Name != null)
+                    return FileName.Name;
+                else
+                    return "";
+            }
+        }
+
+        public String TimeStamp
+        {
+            get
+            {
+                if (FileName != null && FileName.TimeStamp != null)
+                    return FileName.TimeStamp;
+                else
+                    return "";
+            }
+        }
     }
 }
