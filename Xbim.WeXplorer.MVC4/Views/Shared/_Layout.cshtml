@@ -12,5 +12,6 @@
 
     @Scripts.Render("~/bundles/jquery")
     @RenderSection("scripts", required: false)
+    <script src ="@Url.Content("~/Scripts/require.js")" type="text/javascript" data-main="@Url.Content("~/Scripts/")@ViewBag.RequireMain"></script>
 </body>
 </html>

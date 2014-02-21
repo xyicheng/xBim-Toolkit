@@ -191,7 +191,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             {
                 using (XbimGeometryModel model = GetXbimGeometryModel(name, ext)) //make sure the model is compiled etc
                 {
-                    return View("Model3DView",model.XbimName as object);
+                    return View("Model3DView",model.Name as object);
                 }
             }
             catch (Exception e)

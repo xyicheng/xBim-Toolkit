@@ -10,7 +10,7 @@
     ModelLoader.prototype.GetModelBounds = function () {
         var self = this;
         $.ajax({
-            url: "/XbimModel/ModelBounds/" + ModelID
+            url: "/XbimModel/GeometryContext?name=" + ModelID + "&ext=xbim"
         })
       .done(function (data) {
           data = JSON.parse(data);
