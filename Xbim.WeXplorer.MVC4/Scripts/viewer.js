@@ -1,4 +1,5 @@
-﻿requirejs.config({
+﻿
+requirejs.config({
     paths: {
         "jquery": "jquery-2.0.2",
         "bootstrap": "bootstrap"
@@ -9,7 +10,7 @@
         },
         "scenejd": {
             deps: ["jquery"],
-            exports:"SceneJS"
+            exports: "SceneJS"
         }
     }
 });
@@ -18,7 +19,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
 
     // Point SceneJS to the bundled plugins
     SceneJS.setConfigs({
-        pluginPath: "/Scripts/plugins"
+        pluginPath: "/Xbim.WeXplorer/Scripts/plugins"
     });
 
     // Create scene
@@ -48,56 +49,55 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
     });
     var canvas = scene.getCanvas();
     eventmanager.RegisterCallback("ModelBounds", function (ModelBounds) {
-        console.log(ModelBounds);
+        //console.log(ModelBounds);
 
-        var transform = new Float32Array(ModelBounds.transforms[0].transform);
+        var transform = ModelBounds;
         scene.getNode("flags", function (flags) {
             flags.addNode({
                 type: "matrix",
                 id: "modeltransform",
                 elements: transform,
-                nodes:[]
+                nodes: []
             });
         });
     });
     eventmanager.RegisterCallback("Materials", function (Materials) {
-        console.log(Materials);
-        
+        //console.log(Materials);
+
         scene.getNode("modeltransform", function (modeltransform) {
-            for (var i = 0; i < Materials.Materials.length; i++)
-            {
-                var mat = Materials.Materials[i].Material;
+            for (var key in Materials) {
+                var mat = Materials[key];
                 modeltransform.addNode({
                     type: "material",
                     id: mat.MaterialID,
                     color: { r: mat.Red, g: mat.Green, b: mat.Blue },
                     alpha: mat.Alpha,
-                    nodes:[]
+                    nodes: []
                 });
             }
         });
     });
-    eventmanager.RegisterCallback("Manifest", function (Manifest) {
-        console.log(Manifest);
-    });
+    //eventmanager.RegisterCallback("Manifest", function (Manifest) {
+    //    console.log(Manifest);
+    //});
     eventmanager.RegisterCallback("Geometry", function (Geometry) {
         try {
-        scene.getNode(Geometry.layerid, function (MaterialNode) {
-            MaterialNode.addNode({
-                type: "name",
-                id:Geometry.id+"_name",
-                nodes: [{
-                    type: "geometry",
-                    id: Geometry.id,
-                    data: { product: Geometry.data.prod },
-                    primitive: "triangles",
-                    positions: Geometry.geometry.Positions,
-                    normals: Geometry.geometry.Normals,
-                    indices: Geometry.geometry.Indices
-                }]
+            scene.getNode(Geometry.layerid, function (MaterialNode) {
+                MaterialNode.addNode({
+                    type: "name",
+                    id: Geometry.data.prod + "_" + Geometry.id + "_" + Geometry.mapid + "_name",
+                    nodes: [{
+                        type: "geometry",
+                        id: Geometry.data.prod + "_" + Geometry.id + "_" + Geometry.mapid,
+                        data: { product: Geometry.data.prod },
+                        primitive: "triangles",
+                        positions: Geometry.Positions,
+                        normals: Geometry.Normals,
+                        indices: Geometry.Indices
+                    }]
+                });
             });
-        });
-        } catch (exception) { }
+        } catch (exception) { console.log(exception); }
     });
 
     //register mouse handlers for picking
@@ -132,8 +132,9 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
     }
     scene.on("pick",
             function (hit) {
-                var geometryid = hit.nodeId.replace("_name","");
-                alert("picked geometry id: " + geometryid);
+                var ids = hit.nodeId.split("_");
+                //var geometryid = hit.nodeId.replace("_name","");
+                alert("picked geometry id: " + ids[1] + " for product id: " + ids[0]);
             });
     ModelLoader.StartLoading();
 });
