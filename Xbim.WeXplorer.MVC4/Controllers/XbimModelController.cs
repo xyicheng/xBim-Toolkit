@@ -185,6 +185,23 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             return json;
         }
 
+        public JsonResult GeometryVersion(string name, string ext, String ids)
+        {
+            JsonResult json = new JsonResult();
+            json.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
+            try
+            {
+                using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
+                {
+                    json.Data = model.GetGeometryVersion();
+                }
+            }
+            catch (Exception e)
+            {
+                json.Data = new { Model = name, Error = e.Message };
+            }
+            return json;
+        }
         public ActionResult View3D(string name, string ext)
         {
             try

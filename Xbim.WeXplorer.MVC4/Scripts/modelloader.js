@@ -9,20 +9,20 @@
     };
     ModelLoader.prototype.StartLoading = function () {
         this.StartTime = new Date();
-        this.GetData("GeometrySupportLevel", this.HandleGeometrySupportLevel);
+        this.GetData("GeometryVersion", this.HandleGeometrySupportLevel);
     }
     ModelLoader.prototype.HandleGeometrySupportLevel = function (self, data) {
 
         //if we aren't looking at level 2, then quit out
-        self.GetData("ModelContext", self.HandleModelContext);
+        self.GetData("GeometryContext", self.HandleModelContext);
     }
     ModelLoader.prototype.HandleModelContext = function (self, data) {
         ModelProcessor.HandleContext(data);
-        self.GetData("LibraryStyles", self.HandleLibraryStyles);
+        self.GetData("StyleLibrary", self.HandleLibraryStyles);
     }
     ModelLoader.prototype.HandleLibraryStyles = function (self, data) {
         ModelProcessor.HandleLibraryStyles(data);
-        self.GetData("LibraryShapes", self.HandleLibraryShapes);
+        self.GetData("ShapeLibrary", self.HandleLibraryShapes);
     }
     ModelLoader.prototype.HandleLibraryShapes = function (self, data) {
         self.MapQueue = ModelProcessor.HandleLibraryShapes(data);
@@ -38,16 +38,19 @@
         if (data) { ModelProcessor.HandleMapGeometry(data); }
 
         //request next batch if we have still got stuff queued
-        if (self.MapQueue.length > 0) {
 
+        if (self.MapQueue && self.MapQueue.length > 0)
+        {
             var geomid = [];
             for (var i = 0; i < self.BATCHAMOUNT && self.MapQueue.length > 0; i++) {
                 geomid.push(self.MapQueue.pop());
             }
 
-            self.GetData("Geometry", self.HandleMapGeometry, geomid.toString());
+            self.GetData("Meshes", self.HandleMapGeometry, geomid.toString());
             //otherwise start on the product shapes
-        } else {
+        }
+        else
+        {
             self.HandleGeometry(self);
         }
     }
@@ -63,7 +66,7 @@
                 geomid.push(self.GeoQueue.pop());
             }
 
-            self.GetData("Geometry", self.HandleGeometry, geomid.toString());
+            self.GetData("Meshes", self.HandleGeometry, geomid.toString());
         } else {
             //done
             self.EndTime = new Date();
@@ -74,7 +77,7 @@
         var self = this;
         $.ajax({
            // url: "/Xbim.WebXplorer/XbimModel/" + Type + "/" + ModelID + "/" + IDs
-            url: "/Xbim.WeXplorer/XbimModel/" + Type + "/?name=" + ModelID + "&ext=xbim&Ids=" + IDs
+            url: "/XbimModel/" + Type + "/?name=" + ModelID + "&ext=xbim&Ids=" + IDs
         })
       .done(function (data) {
           var obj = JSON.parse(data);

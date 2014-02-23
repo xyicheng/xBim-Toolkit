@@ -8,6 +8,7 @@ using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.ModelGeometry.Converter;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
+using Xbim.WeXplorer.MVC4.Helpers;
 
 namespace Xbim.WeXplorer.MVC4.Models
 {
@@ -106,13 +107,8 @@ namespace Xbim.WeXplorer.MVC4.Models
             Xbim3DModelContext context = new Xbim3DModelContext(model);
 
             if (context.IsGenerated)
-            {
-                var shapes = context.MappedShapes();
-                returndata = new
-                {
-                    IDs = shapes.Select(d => d.Item1),
-                    Counts = shapes.Select(d => d.Item2)
-                };
+            {  
+                returndata = context.Maps();
             }
             else
             {
@@ -125,17 +121,19 @@ namespace Xbim.WeXplorer.MVC4.Models
 
         public String GetStyleLibrary()
         {
-            object returndata;
-
+            
             Xbim3DModelContext context = new Xbim3DModelContext(model);
+            XbimWebColourMap ColourMap = new XbimWebColourMap();
 
-            XbimColourMap ColourMap = new XbimColourMap();
-
-            List<XbimColour> Materials = new List<XbimColour>();
+            List<XbimWebMaterial> Materials = new List<XbimWebMaterial>();
 
             foreach (var cm in ColourMap)
-            {      
-                Materials.Add(cm);
+            {
+                XbimTexture t = new XbimTexture().CreateTexture(cm);
+                XbimWebMaterial m = new XbimWebMaterial();
+                m.CreateMaterial(t);
+                m.Material.MaterialID = cm.Name;
+                Materials.Add(m);
             }
 
             if (context.IsGenerated)
@@ -144,13 +142,14 @@ namespace Xbim.WeXplorer.MVC4.Models
 
                 foreach (var label in labels)
                 {
-                    XbimColour m = new XbimColour(model.Instances[label] as IfcSurfaceStyle);
-                    m.Name = label.ToString();
+                    XbimTexture t = new XbimTexture().CreateTexture(model.Instances[label] as IfcSurfaceStyle);
+                    XbimWebMaterial m = new XbimWebMaterial();
+                    m.CreateMaterial(t);
+                    m.Material.MaterialID = label.ToString();
                     Materials.Add(m);
                 }
             }
-            returndata = Materials;
-            return JsonConvert.SerializeObject(returndata);
+            return JsonConvert.SerializeObject(Materials);
         }
 
         public String GetProductShapes()
@@ -184,7 +183,7 @@ namespace Xbim.WeXplorer.MVC4.Models
             if (context.IsGenerated)
             {
                 var shapes = context.Shapes(intIds, cache: false);
-                returndata = shapes;
+                returndata = shapes.ToList();
             }
             else
             {
@@ -192,6 +191,15 @@ namespace Xbim.WeXplorer.MVC4.Models
             }
 
             return JsonConvert.SerializeObject(returndata);
+        }
+
+        public object GetGeometryVersion()
+        {           
+            object data = new
+            {
+                GeometryVersion = model.GeometrySupportLevel
+            };
+            return JsonConvert.SerializeObject(data);           
         }
     }
 }
