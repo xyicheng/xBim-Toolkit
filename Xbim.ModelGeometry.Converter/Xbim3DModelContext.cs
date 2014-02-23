@@ -760,14 +760,14 @@ namespace Xbim.ModelGeometry.Converter
         /// </summary>
         /// <param name="minDplicates"></param>
         /// <returns></returns>
-        public IEnumerable<Tuple<Int32, Int32>> MappedShapes(int minDuplicates = 1)
+        public IEnumerable<Int32> MappedShapes(int minDuplicates = 1)
         { 
             XbimGeometryCursor geomTable = Model.GetGeometryTable();
             try
             {
                 using (var transaction = geomTable.BeginReadOnlyTransaction())
                 {
-                    return geomTable.GeometryData(XbimGeometryType.Polyhedron).Where(d => d.Counter >= minDuplicates).Select(d => new Tuple<Int32,Int32>(d.GeometryLabel, d.Counter));
+                    return geomTable.GeometryData(XbimGeometryType.Polyhedron).Where(d => d.Counter >= minDuplicates).Select(d => d.GeometryLabel);
                 }
             }
             finally

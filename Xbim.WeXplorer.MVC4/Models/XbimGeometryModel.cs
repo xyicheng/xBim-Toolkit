@@ -108,7 +108,7 @@ namespace Xbim.WeXplorer.MVC4.Models
 
             if (context.IsGenerated)
             {  
-                returndata = context.Maps();
+                returndata = context.MappedShapes().ToList();
             }
             else
             {

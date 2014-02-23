@@ -77,9 +77,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
             }
         });
     });
-    //eventmanager.RegisterCallback("Manifest", function (Manifest) {
-    //    console.log(Manifest);
-    //});
+
     eventmanager.RegisterCallback("Geometry", function (Geometry) {
         try {
             scene.getNode(Geometry.layerid, function (MaterialNode) {

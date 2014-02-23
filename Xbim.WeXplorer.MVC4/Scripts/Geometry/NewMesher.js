@@ -47,9 +47,6 @@
                         {
                             var xyz = tokens[i].split(',');
                             var p = vec3.create([parseFloat(xyz[0]),parseFloat(xyz[1]),parseFloat(xyz[2])]);
-                            //XbimPoint3D p = new XbimPoint3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
-                            //                                  Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
-                            //                                  Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
                             if (trans)
                                 mat4.multiplyVec3(trans, p, p);
                             vertexList.push(p[0]);
@@ -61,9 +58,6 @@
                         for (var i = 1; i < tokens.length; i++)
                         {
                             var  xyz = tokens[i].split(',');
-                            //XbimVector3D v = new XbimVector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
-                            //                                   Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
-                            //                                   Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
                             var v = vec3.create([parseFloat(xyz[0]),parseFloat(xyz[1]),parseFloat(xyz[2])]);
                             normalList.push(v[0]);
                             normalList.push(v[1]);
@@ -71,9 +65,8 @@
                         }
                         break;
                     case "T": //process triangulated meshes
-                        //XbimVector3D currentNormal = XbimVector3D.Zero;
-                        var currentNormal = vec3.create();
-								
+                        
+                        var currentNormal = vec3.create();		
                         //each time we start a new mesh face we have to duplicate the vertices to ensure that we get correct shading of planar and non planar faces
                         var writtenVertices = [];
 
@@ -116,8 +109,6 @@
                                     if (trans)
                                     {
                                         var v = vec3.create();
-                                        //Quaternion.Transform(ref currentNormal, ref q, out v);
-                                        //Quaternion.transform(currentNormal, q, v);
                                         quat4.multiplyVec3(q, currentNormal, v);
                                         currentNormal = v;
                                                 

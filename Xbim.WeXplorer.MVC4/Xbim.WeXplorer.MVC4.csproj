@@ -226,6 +226,7 @@
     <Content Include="Scripts\Geometry\NewMesher.js" />
     <Content Include="Scripts\index.js" />
     <Content Include="Scripts\jdataview.js" />
+    <Content Include="App_Data\4WallsWithWindowsCV2.ifc" />
     <None Include="Scripts\jquery-2.1.0.intellisense.js" />
     <Content Include="Scripts\jquery-2.1.0.js" />
     <Content Include="Scripts\jquery-2.1.0.min.js" />
