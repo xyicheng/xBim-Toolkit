@@ -86,10 +86,10 @@
                         transform: Map.Transform,
                         geoid: Mapping
                     };
-                    if (this.dictionary.maps[Map.MapID]) {
-                        this.dictionary.maps[Map.MapID].push(obj);
+                    if (this.dictionary.maps[Mapping]) {
+                        this.dictionary.maps[Mapping].push(obj);
                     } else {
-                        this.dictionary.maps[Map.MapID] = [obj];
+                        this.dictionary.maps[Mapping] = [obj];
                     }
                 }
             }
