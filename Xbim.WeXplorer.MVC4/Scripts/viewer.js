@@ -1,7 +1,7 @@
 ﻿
 requirejs.config({
     paths: {
-        "jquery": "jquery-2.0.2",
+        "jquery": "jquery-2.1.0",
         "bootstrap": "bootstrap"
     },
     shim: {
@@ -19,7 +19,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
 
     // Point SceneJS to the bundled plugins
     SceneJS.setConfigs({
-        pluginPath: "/Xbim.WeXplorer/Scripts/plugins"
+        pluginPath: "/Scripts/plugins"
     });
 
     // Create scene
