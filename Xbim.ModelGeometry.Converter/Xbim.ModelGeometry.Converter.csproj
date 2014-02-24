@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="AssemblyResolver.cs" />
     <Compile Include="IfcArbitraryClosedProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcAxis1PlacementGeometricExtensions.cs" />
     <Compile Include="IfcAxis2Placement2DGeometricExtensions.cs" />
     <Compile Include="IfcAxis2Placement3DGeometricExtensions.cs" />
     <Compile Include="IfcBooleanResultGeometricExtensions.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="IfcLoopGeometricExtensions.cs" />
     <Compile Include="IfcManifoldSolidBrepGeometricExtensions.cs" />
     <Compile Include="IfcLShapeProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcPlaneGeometricExtensions.cs" />
     <Compile Include="IfcPolyLoopGeometricExtensions.cs" />
     <Compile Include="IfcProductGeometryExtensions.cs" />
     <Compile Include="IfcProductRepresentationGeometryExtensions.cs" />
