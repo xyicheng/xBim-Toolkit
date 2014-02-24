@@ -223,7 +223,7 @@
     <Content Include="Scripts\Geometry\gl-matrix.1.3.7.js" />
     <Content Include="Scripts\Geometry\IndexReader.js" />
     <Content Include="Scripts\Geometry\jdataview.js" />
-    <Content Include="Scripts\Geometry\NewMesher.js" />
+    <Content Include="Scripts\Geometry\Geometry2Mesher.js" />
     <Content Include="Scripts\index.js" />
     <Content Include="Scripts\jdataview.js" />
     <Content Include="App_Data\4WallsWithWindowsCV2.ifc" />

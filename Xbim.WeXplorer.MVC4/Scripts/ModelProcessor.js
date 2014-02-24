@@ -1,4 +1,4 @@
-﻿define(['eventmanager', 'Geometry/gl-matrix.1.3.7', 'Geometry/NewMesher'], function (eventmanager, glmatrix, GeometryMesher) {
+﻿define(['eventmanager', 'Geometry/gl-matrix.1.3.7', 'Geometry/Geometry2Mesher'], function (eventmanager, glmatrix, GeometryMesher) {
     var processor = function ()
     {
         this.bounds;
