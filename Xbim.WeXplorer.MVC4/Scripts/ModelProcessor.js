@@ -157,7 +157,7 @@
             mat4.multiply(transform, placement, xform);
 
             var mesh = GeometryMesher(geom.Mesh, xform);
-            //this.ConstructGeometry(geom, mesh, prodlabel);
+            this.ConstructGeometry(geom, mesh, prodlabel);
         }
     }
 
