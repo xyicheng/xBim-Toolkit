@@ -230,12 +230,12 @@ namespace Xbim
 					{
 
 						XbimPolyhedron^ polyBase = base->ToPolyHedron(deflection,precision ,precisionMax);
-						
+						//polyBase->WritePly("Base.Ply",true);
 						XbimPolyhedron^ polyResult = polyBase;
 						double currentPolyhedronPrecision = precision;
 						XbimCsg^ csg = gcnew XbimCsg(currentPolyhedronPrecision);
 						bool warned = false;
-						
+						//int o = 1;
 						for each (XbimGeometryModel^ nonClashing in preparedOpenings) //do the least number first for performance
 						{
 							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax);
@@ -243,6 +243,8 @@ TryCutPolyhedron:
 							try
 							{
 								XbimPolyhedron^ nextResult = csg->Subtract(polyResult,polyOpenings);
+								/*nextResult->WritePly("Opening" + o + ".Ply",true);
+								o++;*/
 								if(nextResult->IsValid)
 									polyResult = nextResult;
 							}
@@ -261,8 +263,8 @@ TryCutPolyhedron:
 							}
 						}
 						GC::KeepAlive(csg);
-						/*polyResult->WritePly("Base.Ply",true);
-						polyResult->WritePly("Base.PlyBin",false);
+					//polyResult->WritePly("Result.Ply",true);
+						/*polyResult->WritePly("Base.PlyBin",false);
 						polyResult->WriteObj("Base.Obj");
 						polyResult->WriteVtk("Base.vtk");*/
 						return polyResult;

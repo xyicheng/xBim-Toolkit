@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,12 +14,12 @@ namespace Xbim.Presentation.LayerStyling
 
         public void Init()
         {
-            _layers = new Dictionary<ModelGeometry.Scene.XbimTexture, ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
+            _layers = new ConcurrentDictionary<ModelGeometry.Scene.XbimTexture, ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
         }
 
-        Dictionary<ModelGeometry.Scene.XbimTexture, ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> _layers;
+        ConcurrentDictionary<ModelGeometry.Scene.XbimTexture, ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> _layers;
 
-        public Dictionary<ModelGeometry.Scene.XbimTexture, ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> Layers
+        public ConcurrentDictionary<ModelGeometry.Scene.XbimTexture, ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> Layers
         {
             get { return _layers; }
         }
@@ -49,11 +50,7 @@ namespace Xbim.Presentation.LayerStyling
             }
             else
             {
-                if (!_layers.TryGetValue(CurrentTexture, out _CurrentLayer))
-                {
-                    _CurrentLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, CurrentTexture);
-                    _layers.Add(CurrentTexture, _CurrentLayer);
-                }
+                 _CurrentLayer = _layers.GetOrAdd(CurrentTexture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, CurrentTexture));    
             }
         }
 

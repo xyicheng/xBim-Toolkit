@@ -1059,7 +1059,7 @@ namespace Xbim.IO
         public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
         {
 
-            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(product), product.EntityLabel, geomType))
+            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(product), Math.Abs(product.EntityLabel), geomType))
             {
                 yield return item;
             }

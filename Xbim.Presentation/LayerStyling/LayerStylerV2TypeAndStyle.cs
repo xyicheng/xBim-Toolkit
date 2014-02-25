@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,8 @@ namespace Xbim.Presentation.LayerStyling
 {
     public class LayerStylerV2TypeAndStyle : ILayerStylerV2
     {
-        private Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> _Layers;
-        public Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> Layers
+        private ConcurrentDictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> _Layers;
+        public ConcurrentDictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> Layers
         {
             get
             {
@@ -22,7 +23,7 @@ namespace Xbim.Presentation.LayerStyling
 
         public void Init()
         {
-            _Layers = new Dictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
+            _Layers = new ConcurrentDictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>>();
             _colourMap = new XbimColourMap(StandardColourMaps.IfcProductTypeMap);            
         }
 
@@ -37,12 +38,7 @@ namespace Xbim.Presentation.LayerStyling
             _model = model;
             Type productType = productShape.ProductType;
             XbimTexture texture = new XbimTexture().CreateTexture(_colourMap[productType.Name]); //get the colour to use
-            
-            if (!_Layers.TryGetValue(texture, out _typeLayer))
-            {
-                _typeLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, texture);
-                _Layers.Add(texture, _typeLayer);
-            }
+            _typeLayer = _Layers.GetOrAdd(texture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, texture));
         }
 
         public XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer(ModelGeometry.Converter.XbimShape shape, ModelGeometry.Converter.XbimProductShape productShape)
@@ -53,11 +49,7 @@ namespace Xbim.Presentation.LayerStyling
             {
                 IfcSurfaceStyle ifcStyle = _model.Instances[shape.StyleLabel] as IfcSurfaceStyle;
                 XbimTexture shapeTexture = new XbimTexture().CreateTexture(ifcStyle);
-                if (!_Layers.TryGetValue(shapeTexture, out shapeLayer))
-                {
-                    shapeLayer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(_model, shapeTexture);
-                    _Layers.Add(shapeTexture, shapeLayer);
-                }
+                shapeLayer = _Layers.GetOrAdd(shapeTexture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(_model, shapeTexture));
             }
             else
                 shapeLayer = _typeLayer; //use the type layer as default
