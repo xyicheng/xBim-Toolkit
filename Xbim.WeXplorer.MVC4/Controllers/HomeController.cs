@@ -23,7 +23,8 @@ namespace Xbim.WeXplorer.MVC4.Controllers
         private static IEnumerable<String> GetModelList(string modelLocation)
         {
             DirectoryInfo d = new DirectoryInfo(modelLocation);
-            var files = d.EnumerateFiles("*" + ".ifc");
+            List<FileInfo> files = d.EnumerateFiles("*" + ".ifc").ToList();
+            files.AddRange(d.EnumerateFiles("*" + ".xbim"));
             List<String> retvals = new List<string>();
             foreach (var f in files)
             {

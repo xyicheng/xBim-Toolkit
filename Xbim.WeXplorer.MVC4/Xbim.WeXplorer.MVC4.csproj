@@ -248,7 +248,9 @@
     <Content Include="Scripts\modelloader.js" />
     <Content Include="Scripts\ModelProcessor.js" />
     <Content Include="Scripts\modernizr-2.7.1.js" />
+    <Content Include="Scripts\plugins\lib\gl-matrix-min.js" />
     <Content Include="Scripts\plugins\node\cameras\orbit.js" />
+    <Content Include="Scripts\plugins\node\cameras\pickFlyOrbit.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\scenejs.js" />
     <Content Include="Scripts\viewer.js" />

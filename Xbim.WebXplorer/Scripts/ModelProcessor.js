@@ -1,6 +1,5 @@
 ﻿define(['eventmanager', 'Geometry/gl-matrix.1.3.7', 'Geometry/NewMesher'], function (eventmanager, glmatrix, GeometryMesher) {
-    var processor = function ()
-    {
+    var processor = function () {
         this.bounds;
         this.transform;
         this.library = {
@@ -13,7 +12,7 @@
             maps: [],
             shapes: []
         };
-    }
+    };
     processor.prototype.HandleContext = function (data) {
         if (!data) return;
         if (!data.MetreFactor) return;
@@ -24,60 +23,55 @@
 
         //get the most populated region
         var mostPopulation = data.Regions[0], mostPopValue = data.Regions[0].Population;
-        for (var i = 0; i < data.Regions.length; i++)
-        {
-            if (Math.max(data.Regions[i].Population, mostPopValue) === data.Regions[i].Population)
-            {
+        for (var i = 0; i < data.Regions.length; i++) {
+            if (Math.max(data.Regions[i].Population, mostPopValue) === data.Regions[i].Population) {
                 mostPopulation = data.Regions[i];
                 mostPopValue = mostPopulation.Population;
             }
         }
 
         this.bounds = {
-            mix: mostPopulation.Centre.X - (mostPopulation.Size.X/2),
-            miy: mostPopulation.Centre.Y - (mostPopulation.Size.Y/2),
-            miz: mostPopulation.Centre.Z - (mostPopulation.Size.Z/2),
-            max: mostPopulation.Centre.X + (mostPopulation.Size.X/2),
-            may: mostPopulation.Centre.Y + (mostPopulation.Size.Y/2),
-            maz: mostPopulation.Centre.Z + (mostPopulation.Size.Z/2)
+            mix: mostPopulation.Centre.X - (mostPopulation.Size.X / 2),
+            miy: mostPopulation.Centre.Y - (mostPopulation.Size.Y / 2),
+            miz: mostPopulation.Centre.Z - (mostPopulation.Size.Z / 2),
+            max: mostPopulation.Centre.X + (mostPopulation.Size.X / 2),
+            may: mostPopulation.Centre.Y + (mostPopulation.Size.Y / 2),
+            maz: mostPopulation.Centre.Z + (mostPopulation.Size.Z / 2)
         };
 
         this.transform = mat4.create();
         mat4.identity(this.transform);
         mat4.translate(this.transform, vec3.create([-mostPopulation.Centre.X, -mostPopulation.Centre.Y, -mostPopulation.Centre.Z]), this.transform);
-        
+
         eventmanager.FireEvent("ModelBounds", this.transform);
-    }
+    };
     processor.prototype.HandleLibraryStyles = function (data) {
         if (!data || !data.length) return;
-        for (var i = 0; i < data.length; i++)
-        {
+        for (var i = 0; i < data.length; i++) {
             //if(data[i].Material.Alpha >= 0.9999)
-                this.library.materials[data[i].Material.MaterialID] = data[i].Material;
+            this.library.materials[data[i].Material.MaterialID] = data[i].Material;
         }
-        this.library.materials["0"] = { MaterialID:0, Red: 1.0, Green: 0.0, Blue: 1.0, Alpha: 0.0 };
+        this.library.materials["0"] = { MaterialID: 0, Red: 1.0, Green: 0.0, Blue: 1.0, Alpha: 0.0 };
         eventmanager.FireEvent("Materials", this.library.materials);
-    }
+    };
     processor.prototype.HandleLibraryShapes = function (data) {
         if (!data || !data.length) return;
         this.library.maplist = data;
         return this.library.maplist;
-    }
+    };
     processor.prototype.HandleProductShapes = function (data) {
         if (!data || !data.length) return;
         var i, j, k, product, Map, Mapping, key, shapes;
 
         for (i = 0; i < data.length; i++) {
-           product = data[i];
-           this.library.shapes[product.ProductLabel] = product;
+            product = data[i];
+            this.library.shapes[product.ProductLabel] = product;
 
             //iterate over all the maps
-            for (j = 0; j < product.MappedShapes.length; j++)
-            {
+            for (j = 0; j < product.MappedShapes.length; j++) {
                 Map = product.MappedShapes[j];
                 //for the maps, iterate over all the individual mappings
-                for(k =0; k < Map.Items.length; k++)
-                {
+                for (k = 0; k < Map.Items.length; k++) {
                     //add it to our map dictionary so we can get a list of products from the maps
                     Mapping = Map.Items[k];
                     var obj = {
@@ -104,11 +98,10 @@
             shapes.push(key);
         }
         return shapes;
-    }
+    };
     processor.prototype.HandleMapGeometry = function (data) {
         if (!data || !data.length) return;
-        for (var i = 0; i < data.length; i++)
-        {
+        for (var i = 0; i < data.length; i++) {
             //var xform = this.CreateMatrix(data[i].Transform);
             //var mesh = GeometryMesher(data[i].Mesh, xform);
             //this.library.maps[data[i].GeometryLabel] = mesh;
@@ -140,7 +133,7 @@
                 }
             }
         }
-    }
+    };
     processor.prototype.HandleGeometry = function (data) {
         if (!data || !data.length) return;
         for (var i = 0; i < data.length; i++) {
@@ -149,7 +142,7 @@
             var prodlabel = this.dictionary.shapes[geom.GeometryLabel];
             var product = this.library.shapes[prodlabel];
 
-            var pplace = product.Placement === "I" ? mat4.identity():JSON.parse("[" + product.Placement.split(" ").join(",") + "]");
+            var pplace = product.Placement === "I" ? mat4.identity() : JSON.parse("[" + product.Placement.split(" ").join(",") + "]");
 
             var placement = mat4.create(pplace);
             var transform = this.CreateMatrix(geom.Transform);
@@ -159,13 +152,13 @@
             var mesh = GeometryMesher(geom.Mesh, xform);
             //this.ConstructGeometry(geom, mesh, prodlabel);
         }
-    }
+    };
 
     processor.prototype.ConstructGeometry = function (geom, mesh, label, transform) {
         var geopiece = {
             id: geom.GeometryLabel,
             layerid: geom.StyleLabel,
-            mapid: geom.MapLabel ? geom.MapLabel:0,
+            mapid: geom.MapLabel ? geom.MapLabel : 0,
             Positions: mesh.Positions,
             Normals: mesh.Normals,
             Indices: mesh.Indices,
@@ -184,7 +177,7 @@
         } else {
             console.log("invalid geometry piece detected: " + geopiece.id);
         }
-    }
+    };
 
     processor.prototype.CreateMatrix = function (trans) {
         if (trans) {
@@ -210,6 +203,6 @@
             trans = mat4.identity();
         }
         return trans;
-    }
+    };
     return new processor();
 });

@@ -30,19 +30,29 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
         // Link to our canvas element
         canvasId: "modelcanvas",
 
-        nodes: [
-
+        nodes: [ 
             // Mouse-orbited camera, defined by
             // plugin in http://scenejs.org/api/latest/plugins/node/cameras/orbit.js
             {
                 type: "cameras/orbit",
                 yaw: 30,
-                pitch: 35,
+                pitch: -25,
                 zoomSensitivity: 3.0,
                 zoom: 50,
                 id: "camera",
                 nodes: [
-                    { type: "flags", id: "flags", flags: { transparent: true, picking: true } }
+                    { 
+                        type: "matrix", //rotate x by 90degrees so the SceneJS Cameras operate on the correct up plane
+                        elements: [1, 0, 0, 0,
+                                   0, 0,-1, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 0, 1],
+                        nodes: [
+                            {
+                                type: "flags", id: "flags", flags: { transparent: false, picking: true, backfaces: true }
+                            }
+                        ]
+                    }
                 ]
             }
         ]
@@ -67,13 +77,17 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
         scene.getNode("modeltransform", function (modeltransform) {
             for (var key in Materials) {
                 var mat = Materials[key];
-                modeltransform.addNode({
+                var flags = modeltransform.addNode({
+                    type: "flags",
+                    flags: { transparent: mat.Alpha < 0.99999 }
+                });
+                flags.addNode({
                     type: "material",
                     id: mat.MaterialID,
                     color: { r: mat.Red, g: mat.Green, b: mat.Blue },
                     alpha: mat.Alpha,
                     nodes: []
-                });
+            });
             }
         });
     });
@@ -103,36 +117,42 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
     canvas.addEventListener('mouseup', mouseUp, true);
     canvas.addEventListener('touchstart', touchStart, true);
     canvas.addEventListener('touchend', touchEnd, true);
+
+    var downtime;
     function mouseDown(event) {
         lastX = event.clientX;
         lastY = event.clientY;
         dragging = true;
+        downtime = new Date();
     }
 
     function touchStart(event) {
         lastX = event.targetTouches[0].clientX;
         lastY = event.targetTouches[0].clientY;
         dragging = true;
+        downtime = new Date();
     }
 
     function mouseUp(event) {
-        if (dragging) {
+        var time = new Date() - downtime;
+        if (dragging && time < 250) { //assume a click event if we take less than a 1/4 second between mousedown and up
             scene.pick(event.clientX, event.clientY);
         }
         dragging = false;
     }
 
     function touchEnd() {
-        if (dragging) {
+        var time = new Date() - downtime;
+        if (dragging && time < 250) { //assume a click event if we take less than a 1/4 second between touchstart and up
             scene.pick(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
         }
         dragging = false;
+        
     }
     scene.on("pick",
             function (hit) {
                 var ids = hit.nodeId.split("_");
-                //var geometryid = hit.nodeId.replace("_name","");
-                alert("picked geometry id: " + ids[1] + " for product id: " + ids[0]);
+                console.log("picked geometry id: " + ids[1] + " for product id: " + ids[0]);
             });
     ModelLoader.StartLoading();
 });

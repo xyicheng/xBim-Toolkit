@@ -47,7 +47,7 @@ SceneJS.Types.addType("cameras/orbit", {
         lookat.set({
             eye: { x: eye.x, y: eye.y, z: -zoom },
             look: { x: look.x, y: look.y, z: look.z },
-            up: { x: 0, y: 0, z: 1 }
+            up: { x: 0, y: 1, z: 0 }
         });
 
         update();
@@ -146,20 +146,16 @@ SceneJS.Types.addType("cameras/orbit", {
             var look = [0, 0, 0];
             var up = [0, 1, 0];
 
-            var eyeVec = vec3.create();
-            vec3.subtract(eye, look, eyeVec);
-            var axis = vec3.create();
-            vec3.cross(up, eyeVec, axis);
+            // TODO: These references are to private SceneJS math methods, which are not part of API
 
-            var pitchMat = mat4.create();
-            mat4.identity(pitchMat);
-            mat4.rotate(pitchMat, pitch * 0.0174532925, axis, pitchMat);
-            var yawMat = mat4.create();
-            mat4.rotate(pitchMat, yaw * 0.0174532925, up, yawMat);
+            var eyeVec = SceneJS_math_subVec3(eye, look, []);
+            var axis = SceneJS_math_cross3Vec3(up, eyeVec, []);
 
-            var eye3 = vec3.create();
-            mat4.multiplyVec3(pitchMat, eye, eye3);
-            mat4.multiplyVec3(yawMat, eye3, eye3);
+            var pitchMat = SceneJS_math_rotationMat4v(pitch * 0.0174532925, axis);
+            var yawMat = SceneJS_math_rotationMat4v(yaw * 0.0174532925, up);
+
+            var eye3 = SceneJS_math_transformPoint3(pitchMat, eye);
+            eye3 = SceneJS_math_transformPoint3(yawMat, eye3);
 
             lookat.setEye({ x: eye3[0], y: eye3[1], z: eye3[2] });
         }
