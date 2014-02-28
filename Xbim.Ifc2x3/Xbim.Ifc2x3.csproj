@@ -489,6 +489,15 @@
     <Compile Include="SharedFacilitiesElements\IfcOccupantTypeEnum.cs" />
     <Compile Include="SharedFacilitiesElements\IfcRelOccupiesSpaces.cs" />
     <Compile Include="SharedFacilitiesElements\IfcSystemFurnitureElementType.cs" />
+    <Compile Include="SharedMgmtElements\IfcProjectOrderRecord.cs" />
+    <Compile Include="SharedMgmtElements\IfcCostSchedule.cs" />
+    <Compile Include="SharedMgmtElements\IfcCostItem.cs" />
+    <Compile Include="SharedMgmtElements\IfcCostScheduleTypeEnum.cs" />
+    <Compile Include="SharedMgmtElements\IfcProjectOrder.cs" />
+    <Compile Include="SharedMgmtElements\IfcProjectOrderRecordTypeEnum.cs" />
+    <Compile Include="SharedMgmtElements\IfcProjectOrderTypeEnum.cs" />
+    <Compile Include="SharedMgmtElements\IfcRelAssignsToProjectOrder.cs" />
+    <Compile Include="SharedMgmtElements\IfcRelAssociatesAppliedValue.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionSourceTypeEnum.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionTypeEnum.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcAnalysisModelTypeEnum.cs" />
