@@ -351,7 +351,7 @@ namespace Xbim.IO
             else if (pInfoType == typeof(bool?)) //convert  logical
             {
                 bool? b = (bool?)pVal;
-                entityWriter.Write(!b.HasValue ? "$" : string.Format(".{0}.", b.Value ? "T" : "F"));
+                entityWriter.Write(!b.HasValue ? ".U." : string.Format(".{0}.", b.Value ? "T" : "F"));
             }
             else
                 throw new ArgumentException(string.Format("Invalid Value Type {0}", pInfoType.Name), "pInfoType");
