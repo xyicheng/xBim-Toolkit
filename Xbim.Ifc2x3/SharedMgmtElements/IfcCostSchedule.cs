@@ -81,7 +81,7 @@ namespace Xbim.Ifc2x3.SharedMgmtElements
         /// <summary>
         /// The current status of a cost schedule. Examples of status values that might be used for a cost schedule status include: - PLANNED - APPROVED - AGREED - ISSUED - STARTED 
         /// /// </summary>
-        [IfcAttribute(8, IfcAttributeState.Optional)]
+        [IfcAttribute(9, IfcAttributeState.Optional)]
         public IfcLabel Status
         {
             get
@@ -95,7 +95,7 @@ namespace Xbim.Ifc2x3.SharedMgmtElements
         /// <summary>
         /// The actors for whom the cost schedule was prepared.
         /// </summary>
-        [IfcAttribute(9, IfcAttributeState.Optional, IfcAttributeType.Set, IfcAttributeType.Class, 1, -1)]
+        [IfcAttribute(10, IfcAttributeState.Optional, IfcAttributeType.Set, IfcAttributeType.Class, 1, -1)]
         public XbimSet<IfcActorSelect> TargetUsers
         {
             get
@@ -109,7 +109,7 @@ namespace Xbim.Ifc2x3.SharedMgmtElements
         /// <summary>
         /// The date that this cost schedule is updated; this allows tracking the schedule history.
         /// </summary>
-        [IfcAttribute(10, IfcAttributeState.Optional)]
+        [IfcAttribute(11, IfcAttributeState.Optional)]
         public IfcDateTimeSelect UpdateDate
         {
             get
@@ -123,7 +123,7 @@ namespace Xbim.Ifc2x3.SharedMgmtElements
         /// <summary>
         /// A unique identification assigned to a cost schedule that enables its differentiation from other cost schedules.
         /// </summary>
-        [IfcAttribute(11, IfcAttributeState.Mandatory)]
+        [IfcAttribute(12, IfcAttributeState.Mandatory)]
         public IfcIdentifier ID
         {
             get
@@ -137,7 +137,7 @@ namespace Xbim.Ifc2x3.SharedMgmtElements
         /// <summary>
         /// Predefined types of cost schedule from which that required may be selected.
         /// </summary>
-        [IfcAttribute(12, IfcAttributeState.Mandatory)]
+        [IfcAttribute(13, IfcAttributeState.Mandatory)]
         public IfcCostScheduleTypeEnum PredefinedType
         {
             get

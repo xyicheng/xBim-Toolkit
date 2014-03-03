@@ -19,7 +19,7 @@ namespace Xbim.Ifc2x3.SharedMgmtElements
         /// <summary>
         /// Note that IfcRelAssociatesAppliedValue, when used for costing purposes, should be used only for relating specific cost values to objects and not for relating cost schedule items to cost schedule (for which purpose IfcRelSchedulesCostItems should be used).
         /// </summary>
-        [IfcAttribute(5, IfcAttributeState.Mandatory)]
+        [IfcAttribute(6, IfcAttributeState.Mandatory)]
         public IfcAppliedValue RelatingAppliedValue
         {
             get
