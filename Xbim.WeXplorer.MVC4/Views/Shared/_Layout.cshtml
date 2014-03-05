@@ -6,12 +6,17 @@
     <title>@ViewBag.Title</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
-</head>
-<body>
-    @RenderBody()
+    @RenderSection("styles", required: false)
 
     @Scripts.Render("~/bundles/jquery")
     @RenderSection("scripts", required: false)
     <script src ="@Url.Content("~/Scripts/require.js")" type="text/javascript" data-main="@Url.Content("~/Scripts/")@ViewBag.RequireMain"></script>
+    <script src ="@Url.Content("~/Proxy/js")" type="text/javascript"></script>
+
+</head>
+<body>
+
+    @RenderBody()
+
 </body>
 </html>

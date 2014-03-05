@@ -139,14 +139,25 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\BQLScriptController.cs" />
+    <Compile Include="Controllers\FileDownloadController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\PropertiesController.cs" />
+    <Compile Include="Controllers\ProxyController.cs" />
+    <Compile Include="Controllers\XbimController.cs" />
     <Compile Include="Controllers\XbimModelController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\XbimWebColourMap.cs" />
     <Compile Include="Helpers\XbimWebMaterial.cs" />
+    <Compile Include="Models\IXbimJsonResult.cs" />
     <Compile Include="Models\XbimDataModel.cs" />
+    <Compile Include="Models\XbimElementModel.cs" />
+    <Compile Include="Models\XbimError.cs" />
+    <Compile Include="Models\XbimPropertyModel.cs" />
+    <Compile Include="Models\XbimPropertySetModel.cs" />
+    <Compile Include="Models\XbimRootModel.cs" />
     <Compile Include="Models\XbimGeometryModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -213,10 +224,43 @@
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.tooltip.min.css" />
+    <Content Include="Content\WebViewer.css" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="App_Data\Standard Classroom CIC 6 class.ifc" />
+    <Content Include="Scripts\editor\ace.js" />
+    <Content Include="Scripts\editor\ext-chromevox.js" />
+    <Content Include="Scripts\editor\ext-elastic_tabstops_lite.js" />
+    <Content Include="Scripts\editor\ext-emmet.js" />
+    <Content Include="Scripts\editor\ext-error_marker.js" />
+    <Content Include="Scripts\editor\ext-keybinding_menu.js" />
+    <Content Include="Scripts\editor\ext-language_tools.js" />
+    <Content Include="Scripts\editor\ext-modelist.js" />
+    <Content Include="Scripts\editor\ext-old_ie.js" />
+    <Content Include="Scripts\editor\ext-options.js" />
+    <Content Include="Scripts\editor\ext-searchbox.js" />
+    <Content Include="Scripts\editor\ext-settings_menu.js" />
+    <Content Include="Scripts\editor\ext-spellcheck.js" />
+    <Content Include="Scripts\editor\ext-split.js" />
+    <Content Include="Scripts\editor\ext-static_highlight.js" />
+    <Content Include="Scripts\editor\ext-statusbar.js" />
+    <Content Include="Scripts\editor\ext-textarea.js" />
+    <Content Include="Scripts\editor\ext-themelist.js" />
+    <Content Include="Scripts\editor\ext-whitespace.js" />
+    <Content Include="Scripts\editor\keybinding-emacs.js" />
+    <Content Include="Scripts\editor\keybinding-vim.js" />
+    <Content Include="Scripts\editor\mode-bql.js" />
+    <Content Include="Scripts\editor\mode-sql.js" />
+    <Content Include="Scripts\editor\theme-eclipse.js" />
     <Content Include="Scripts\b64utilities.js" />
+    <Content Include="Scripts\editor\worker-coffee.js" />
+    <Content Include="Scripts\editor\worker-css.js" />
+    <Content Include="Scripts\editor\worker-javascript.js" />
+    <Content Include="Scripts\editor\worker-json.js" />
+    <Content Include="Scripts\editor\worker-lua.js" />
+    <Content Include="Scripts\editor\worker-php.js" />
+    <Content Include="Scripts\editor\worker-xquery.js" />
+    <Content Include="Scripts\observables.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\eventmanager.js" />
     <Content Include="Scripts\Geometry\GeometryMesher.js" />
@@ -242,6 +286,8 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\jstree.js" />
+    <Content Include="Scripts\jstree.min.js" />
     <Content Include="Scripts\key_status.js" />
     <Content Include="Scripts\knockout-3.0.0.debug.js" />
     <Content Include="Scripts\knockout-3.0.0.js" />
@@ -253,6 +299,13 @@
     <Content Include="Scripts\plugins\node\cameras\pickFlyOrbit.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\scenejs.js" />
+    <Content Include="Scripts\selection.js" />
+    <Content Include="Scripts\themes\default\32px.png" />
+    <Content Include="Scripts\themes\default\40px.png" />
+    <Content Include="Scripts\themes\default\style.css" />
+    <Content Include="Scripts\themes\default\style.min.css" />
+    <Content Include="Scripts\themes\default\throbber.gif" />
+    <Content Include="Scripts\viewer-ui-init.js" />
     <Content Include="Scripts\viewer.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
@@ -301,6 +354,10 @@
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Script\Xbim.Script.csproj">
+      <Project>{bae9a827-0620-4f68-a384-336a491edd91}</Project>
+      <Name>Xbim.Script</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

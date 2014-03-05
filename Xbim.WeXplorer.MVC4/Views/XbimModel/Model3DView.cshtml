@@ -4,9 +4,111 @@
     ViewBag.RequireMain = "viewer";
 }
 
-<h2>Model3DView</h2>
+@section styles
+{
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="~/Scripts/themes/default/style.min.css"/>
+    <link rel="stylesheet" href="~/Content/WebViewer.css"/>
+}
 
-<canvas id="modelcanvas" style="width:600px;height:600px;"></canvas>
+@section scripts
+{
+}
 <script type="text/javascript">
     var ModelID = '@Model';
 </script>
+
+<div id="content-wrapper" class="ui-widget wrapper">
+    <div id="menu-wrapper" class="wrapper">
+        <ul id="menu" class="ui-state-default">
+            <li><a href="#">Model</a>
+                <ul>
+                    <li><a href="#">Open</a></li>
+                    <li><a href="#">Save</a></li>
+                    <li><a href="#">Save as...</a></li>
+                    <li><a href="#">Close</a></li>
+                    <li><a href="#">Compare</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Federate</a></li>
+            <li><a href="#">View</a></li>
+            <li><a href="#">Camera</a></li>
+            <li><a href="#">COBie</a></li>
+            <li><a href="#">About</a></li>
+        </ul>
+    </div>
+    <div id="left-col-wrapper" class="wrapper">
+        <div id="left-col">
+            <h3>Spatial tree</h3>
+            <div>
+                <div id="spatial-tree">
+                    <ul>
+                    <li>Project
+                        <ul>
+                            <li>
+                                Default building
+                                <ul>
+                                    <li>
+                                        Storey A
+                                        <ul>
+                                            <li>Doors</li>
+                                            <li>Walls</li>
+                                            <li>Windows</li>
+                                            <li>Slabs</li>
+                                            <li>Plates</li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Storey B
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                </div>
+            </div>
+            <h3>Properties</h3>
+            <div id="properties-wrapper">
+                <table data-collection-bind-selected-properties="" data-template=" <tr> <td data-bind='Name'> </td> <td data-bind='Value'> </td> </tr> "></table>
+            </div>
+            <h3>Object attributes</h3>
+            <div>
+
+            </div>
+            <h3>Quantities</h3>
+            <div>
+
+            </div>
+            <h3>Materials</h3>
+            <div>
+
+            </div>
+        </div>
+    </div>
+    <div id="viewer-wrapper" class="wrapper ui-corner-all">
+        <canvas id="modelcanvas" style="width: 100%; height: 100%;" class="ui-corner-all"></canvas>
+    </div>
+    <div id="script-editor-wrapper" class="wrapper ui-widget ui-corner-tl">
+        <div id="script-editor-buttons" class="ui-corner-tl">
+            <span class="ui-icon ui-icon-play" id="btnExecuteScript" title="Execute script"></span>
+            <span class="ui-icon ui-icon-arrowreturnthick-1-w" id="btnUndoScriptEdit" title="Undo"></span>
+            <span class="ui-icon ui-icon-arrowreturnthick-1-e" id="btnRedoScriptEdit" title="Redo"></span>
+            <span class="ui-icon ui-icon-circle-close" id="btnClearScript" title="Clear"></span>
+        </div>
+        <div class="wrapper" style="height:270px; width:100%; bottom:3px;">
+            <div id="script-editor" class="ui-widget-content">
+            </div>
+            <div id="script-results" class="scroll-x">
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Infrastructure -->
+<iframe style="display:none" id="download-frame"></iframe>
+<div id="dialog-box" style="display:none"></div>
+
+
+

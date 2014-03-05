@@ -156,7 +156,9 @@ namespace Xbim.Script
             //try to get attribute
             var attr = GetAttributeValue(propertyName, input);
             var prop = attr as IfcValue;
-            
+            if (propertyName.ToLower() == "entitylabel")
+                prop = new IfcInteger(Math.Abs((int)attr));
+
             //try to get property if attribute doesn't exist
             if (prop == null)
              prop = GetPropertyValue(propertyName, input);

@@ -1,21 +1,27 @@
-﻿
-requirejs.config({
+﻿requirejs.config({
     paths: {
-        "jquery": "jquery-2.1.0",
-        "bootstrap": "bootstrap"
+        jquery: "jquery-2.1.0",
+        bootstrap: "bootstrap",
+        ace: "editor/ace"
     },
     shim: {
-        "bootstrap": {
+        bootstrap: {
             deps: ["jquery"]
         },
-        "scenejd": {
+        scenejs: {
             deps: ["jquery"],
             exports: "SceneJS"
+        },
+        "viewer-ui-init": {
+            deps: ["ace"]
+        },
+        ace: {
+            exports: "ace"
         }
     }
 });
 
-define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], function ($, bootstrap, scenejs, ModelLoader, eventmanager, undefined) {
+define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager', 'observables', 'viewer-ui-init'], function ($, bootstrap, scenejs, ModelLoader, eventmanager, undefined, observ, uinit) {
 
     // Point SceneJS to the bundled plugins
     SceneJS.setConfigs({
@@ -30,7 +36,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
         // Link to our canvas element
         canvasId: "modelcanvas",
 
-        nodes: [ 
+        nodes: [
             // Mouse-orbited camera, defined by
             // plugin in http://scenejs.org/api/latest/plugins/node/cameras/orbit.js
             {
@@ -51,9 +57,9 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
                             {
                                 type: "flags", id: "flags", flags: { transparent: false, picking: true, backfaces: true }
                             }
-                        ]
-                    }
                 ]
+            }
+        ]
             }
         ]
     });
@@ -87,7 +93,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
                     color: { r: mat.Red, g: mat.Green, b: mat.Blue },
                     alpha: mat.Alpha,
                     nodes: []
-            });
+                });
             }
         });
     });
@@ -153,6 +159,20 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager'], functi
             function (hit) {
                 var ids = hit.nodeId.split("_");
                 console.log("picked geometry id: " + ids[1] + " for product id: " + ids[0]);
+                //var geometryid = hit.nodeId.replace("_name","");
+                //alert("picked geometry id: " + ids[1] + " for product id: " + ids[0]);
+
+                var pId = ids[0];
+                var proxy = new XbimProxy.Properties();
+                var properties = proxy.GetProperties(ModelID, pId, function (result) {
+                    var pSets = result;
+                    var collection = new ObservableCollection('selected-properties');
+                    for (var i in pSets) {
+                        var prop = new Observable(pSets[i].Label);
+                        prop.fillFromObject(pSets[i]);
+                        collection.add(prop);
+                    }
+                });
             });
     ModelLoader.StartLoading();
 });
