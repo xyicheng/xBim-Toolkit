@@ -498,6 +498,7 @@
     <Compile Include="SharedMgmtElements\IfcProjectOrderTypeEnum.cs" />
     <Compile Include="SharedMgmtElements\IfcRelAssignsToProjectOrder.cs" />
     <Compile Include="SharedMgmtElements\IfcRelAssociatesAppliedValue.cs" />
+    <Compile Include="SharedMgmtElements\IfcRelSchedulesCostItems.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionSourceTypeEnum.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionTypeEnum.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcAnalysisModelTypeEnum.cs" />
