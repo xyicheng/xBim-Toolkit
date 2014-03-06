@@ -71,5 +71,22 @@ namespace Xbim.Tests
                 Assert.IsTrue(localProjectCount == 1);
             }
         }
+
+        [TestMethod]
+        public void CreatedFederationReleasesFederatedFiles()
+        {
+            string ModelA2 = System.IO.Path.ChangeExtension(ModelA, "2.xbim");
+            string ModelB2 = System.IO.Path.ChangeExtension(ModelB, "2.xbim");
+            System.IO.File.Copy(ModelA, ModelA2);
+            System.IO.File.Copy(ModelB, ModelB2);
+            using (var federatedModel = XbimModel.CreateModel("some.xbimf"))
+            {
+                federatedModel.AddModelReference(ModelA2, String.Empty, String.Empty);
+                federatedModel.AddModelReference(ModelB2, String.Empty, String.Empty);
+            }
+            System.IO.File.Delete(ModelA2);
+            System.IO.File.Delete(ModelB2);
+
+        }
     }
 }
