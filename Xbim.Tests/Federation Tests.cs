@@ -83,7 +83,10 @@ namespace Xbim.Tests
             {
                 federatedModel.AddModelReference(ModelA2, String.Empty, String.Empty);
                 federatedModel.AddModelReference(ModelB2, String.Empty, String.Empty);
+                // the next line forces the load of federated models.
+                long ProjectCount = federatedModel.Instances.OfType<IfcProject>().Count();
             }
+            // now deleting the federated models should be possible
             System.IO.File.Delete(ModelA2);
             System.IO.File.Delete(ModelB2);
 
