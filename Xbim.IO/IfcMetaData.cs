@@ -82,9 +82,10 @@ namespace Xbim.IO
             InterfaceToIfcTypesLookup = new Dictionary<Type, List<IfcType>>();
             try
             {
+                // System.Diagnostics.Debug.Write(typesToProcess.Count());
                 foreach (Type typeToProcess in typesToProcess)
                 {
-                    // Debug.WriteLine(type.ToString());
+                    // Debug.WriteLine(typeToProcess.ToString());
                     IfcType ifcTypeToProcess;
                     if (TypeToIfcTypeLookup.Contains(typeToProcess))
                         ifcTypeToProcess = TypeToIfcTypeLookup[typeToProcess];
@@ -137,6 +138,8 @@ namespace Xbim.IO
                 //add the Type Ids to each of the IfcTypes
                 foreach (var item in TypeIdToTypeNameLookup)
                 {
+                    // in case the code fails here make sure he class where the code breaks is marked public
+                    //
                     IfcType ifcType = TypeNameToIfcTypeLookup[item.Value];
                     TypeIdToIfcTypeLookup.Add(item.Key, ifcType);
                     ifcType.TypeId = item.Key;
@@ -168,9 +171,10 @@ namespace Xbim.IO
                 {
                     if (ifcAttributes[0].Order > 0)
                     {
+                        // SUPPORT: if the code breaks here there's a problem with the order attribut in a class property
                         ifcType.IfcProperties.Add(ifcAttributes[0].Order,
-                                                  new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
-                        attributeIdx = ifcAttributes[0].Order;
+                                                    new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
+                        attributeIdx = ifcAttributes[0].Order;                     
                     }
 
                     else
@@ -211,6 +215,14 @@ namespace Xbim.IO
                 child.IfcSuperType = ifcParent;
                 if (!ifcParent.IfcSubTypes.Contains(child))
                     ifcParent.IfcSubTypes.Add(child);
+            }
+        }
+
+        public static IEnumerable<IfcType> Types()
+        {
+            foreach (var item in TypeNameToIfcTypeLookup.Keys)
+            {
+                yield return TypeNameToIfcTypeLookup[item];
             }
         }
 
