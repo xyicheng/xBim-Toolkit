@@ -234,7 +234,7 @@ namespace Xbim.IO
             string elementName = input.LocalName;
             bool isRefType;
             int id = GetId(input, out isRefType);
-
+           
             IfcType ifcType;
             
             IfcParserType parserType;
@@ -478,6 +478,7 @@ namespace Xbim.IO
             }
             if (!string.IsNullOrEmpty(strId)) //must be a new instance or a reference to an existing one  
             {
+               
                 if (!idMap.TryGetValue(strId, out nextId))
                 {
                     ++lastId;
@@ -828,6 +829,7 @@ namespace Xbim.IO
                         else if (string.Compare(input.LocalName, "iso_10303_28", true) == 0)
                         {
                             foundHeader = true;
+                           
                             if (!string.IsNullOrWhiteSpace(input.Prefix))
                             {
                                 _expressNamespace = input.Prefix;
@@ -839,8 +841,19 @@ namespace Xbim.IO
                             {
                                 _cTypeAttribute = "cType";
                                 _posAttribute = "pos";
+                            } //correct the values if the namespace is defined correctly
+                            while (input.MoveToNextAttribute())
+                            {
+                                if (input.Value == "urn:oid:1.0.10303.28.2.1.1" ||
+                                    input.Value =="urn:iso.org:standard:10303:part(28):version(2):xmlschema:common")
+                                {
+                                    _expressNamespace = input.LocalName;
+                                    _cTypeAttribute = _expressNamespace + ":cType";
+                                    _posAttribute = _expressNamespace + ":pos";
+                                    _expressNamespace += ":";
+                                    break;
+                                }  
                             }
-                                
                         }
                         else
                         {
@@ -885,6 +898,7 @@ namespace Xbim.IO
             }
             if (!foundHeader)
                 throw new Exception("Invalid XML format, iso_10303_28 tag not found");
+           
             XmlNodeType prevInputType = XmlNodeType.None;
             string prevInputName = "";
 
