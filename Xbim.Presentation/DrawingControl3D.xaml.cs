@@ -1191,6 +1191,10 @@ namespace Xbim.Presentation
                 scenes.Add(scene);
                 RecalculateView(refModel.Model);
             }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                ReloadModel();
+            }
         }
 
         public void ReportData(StringBuilder sb, IModel model, int entityLabel)
@@ -1313,6 +1317,7 @@ namespace Xbim.Presentation
             // 
             layer.Show();
 
+
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
             m3d.SetValue(TagProperty, layer);
             // sort out materials and bind
@@ -1331,6 +1336,7 @@ namespace Xbim.Presentation
                 Transparents.Children.Add(mv);
             else
                 Opaques.Children.Add(mv);
+
             foreach (var subLayer in layer.SubLayers)
                 AddLayerToDrawingControl(subLayer);
         }

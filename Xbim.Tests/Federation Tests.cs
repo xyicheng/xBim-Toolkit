@@ -38,7 +38,7 @@ namespace Xbim.Tests
                 //now add federated models
                 fedModel.AddModelReference(ModelA, "The Architects Name", IfcRole.Architect);
                 fedModel.AddModelReference(ModelB, "The Owners Name", IfcRole.BuildingOwner);
-                fedModel.AddModelReference(ModelC, "The Cost Consultants Name", IfcRole.UserDefined, "Cost Consultant");
+                fedModel.AddModelReference(ModelC, "The Cost Consultants Name", "Cost Consultant");
                 fedModel.SaveAs("Federated Model", XbimStorageType.IFC);
             } //close and automatically delete the temporary database
             //Now open the Ifc file and see what we have

@@ -292,14 +292,19 @@ namespace Xbim.IO
             {
                 if (_defaultOwningUser == null)
                 {
-                    IfcPerson person = New<IfcPerson>();
-                    IfcOrganization organization = New<IfcOrganization>();
-                    _defaultOwningUser = New<IfcPersonAndOrganization>(po =>
+                    var existing = this.OfType<IfcPersonAndOrganization>();
+                    if (!existing.Any())
                     {
-                        po.TheOrganization = organization;
-                        po.ThePerson = person;
-                    });
-                    
+                        IfcPerson person = New<IfcPerson>();
+                        IfcOrganization organization = New<IfcOrganization>();
+                        _defaultOwningUser = New<IfcPersonAndOrganization>(po =>
+                        {
+                            po.TheOrganization = organization;
+                            po.ThePerson = person;
+                        });
+                    }
+                    else
+                        _defaultOwningUser = existing.FirstOrDefault();
                 }
                 return _defaultOwningUser;
             }

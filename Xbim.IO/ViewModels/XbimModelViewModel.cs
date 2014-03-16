@@ -138,6 +138,12 @@ namespace Xbim.IO.ViewModels
             NotifyPropertyChanged("Children");
         }
 
+        public void RemoveRefModel(XbimRefModelViewModel xbimModelViewModel)
+        {
+            children.Remove(xbimModelViewModel);
+            NotifyPropertyChanged("Children");
+        }
+
 
         public XbimModel Model
         {

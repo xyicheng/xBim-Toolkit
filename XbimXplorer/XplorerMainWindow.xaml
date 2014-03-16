@@ -67,7 +67,6 @@
         <CommandBinding Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}"   Executed="ExportCOBieCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" Executed="EditFederationCmdExecuted" CanExecute="EditFederationCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" Executed="OpenFederationCmdExecuted" CanExecute="OpenFederationCmdCanExecute"/>
-        <CommandBinding Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" Executed="CreateFederationCmdExecuted" CanExecute="CreateFederationCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.COBieClassFilter}" Executed="COBieClassFilterCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
 
     </Window.CommandBindings>
@@ -90,10 +89,8 @@
                 <MenuItem Header="S_eparate" Click="SeparateMenuItem_Click" />
             </MenuItem>
             <MenuItem Header="Federate">
-                <MenuItem Header="_Create" Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" />
                 <MenuItem Header="_Open" Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" />
                 <MenuItem Header="_Edit" Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" />
-                
             </MenuItem>
                 
             <MenuItem Header="View">

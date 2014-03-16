@@ -286,6 +286,18 @@ namespace Xbim.Presentation
                     vm.AddRefModel(new XbimRefModelViewModel(refModel, null));
                 }
             }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (XbimReferencedModel refModel in e.OldItems)
+                {
+                    XbimModelViewModel vm = HierarchySource.Cast<XbimModelViewModel>().FirstOrDefault();
+                    if (vm != null)
+                    {
+                        var modelVM = vm.Children.FirstOrDefault(m => (m as XbimRefModelViewModel).RefModel == refModel) as XbimRefModelViewModel;
+                        vm.RemoveRefModel(modelVM);
+                    }
+                }
+            }
         }
 
         private void ViewSpatialStructure()

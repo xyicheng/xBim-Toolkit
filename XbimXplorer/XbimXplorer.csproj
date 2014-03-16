@@ -138,19 +138,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Dialogs\AddFederatedModel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Dialogs\COBieClassFilter.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialogs\CreateFederationWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialogs\FederatedModelDlg.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -183,18 +171,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Dialogs\AddFederatedModel.xaml.cs">
-      <DependentUpon>AddFederatedModel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialogs\CheckedListItem.cs" />
     <Compile Include="Dialogs\COBieClassFilter.xaml.cs">
       <DependentUpon>COBieClassFilter.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
-      <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialogs\FederatedModelDlg.xaml.cs">
-      <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
     </Compile>
     <Compile Include="ModelSeparation.xaml.cs">
       <DependentUpon>ModelSeparation.xaml</DependentUpon>

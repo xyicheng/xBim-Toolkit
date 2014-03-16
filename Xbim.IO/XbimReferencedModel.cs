@@ -1,22 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Xbim.Common.Exceptions;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.IO
 {
     /// <summary>
-    /// A model that is referenced by  other XbimModels
+    /// A model that is referenced by another XbimModel
     /// </summary>
     public class XbimReferencedModel
     {
         public IfcDocumentInformation DocumentInformation;
         public XbimModel Model;
-        public XbimReferencedModel(IfcDocumentInformation documentInformation,   XbimModel model)
+
+        public XbimReadWriteTransaction DocumentInfoTransaction
+        {
+             get {
+                 return ((XbimModel)DocumentInformation.ModelOf).BeginTransaction();
+             }
+        }
+
+        public XbimReferencedModel(IfcDocumentInformation documentInformation)
         {
             DocumentInformation = documentInformation;
-            Model = model;
+            if (!File.Exists(documentInformation.Name))
+            {
+                throw new XbimException("Reference model not found:" + documentInformation.Name);
+            }
+            Model = new XbimModel();
+            if (!Model.Open(documentInformation.Name, XbimDBAccess.Read))
+            {
+                throw new XbimException("Unable to open reference model: " + documentInformation.Name);
+            }
         }
 
         /// <summary>
@@ -27,15 +48,17 @@ namespace Xbim.IO
             get
             {
                 return DocumentInformation.DocumentId;
-            }            
-        }
-        public string Owner
-        {
-            get
-            {
-                return DocumentInformation.DocumentOwner.ToString();
             }
         }
+
+        //public string Owner
+        //{
+        //    get
+        //    {
+        //        return DocumentInformation.DocumentOwner.ToString();
+        //    }
+        //}
+
         public string Name
         {
             get
@@ -46,7 +69,7 @@ namespace Xbim.IO
 
         public string OrganisationName
         {
-            get 
+            get
             {
                 var organization = DocumentInformation.DocumentOwner as Xbim.Ifc2x3.ActorResource.IfcOrganization;
                 if (organization != null)

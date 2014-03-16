@@ -1,7 +1,5 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -12,21 +10,18 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Xbim.Ifc2x3.ActorResource;
 using Xbim.IO;
-using Xbim.ModelGeometry.Converter;
-using Xbim.Presentation.ViewModels;
-using XbimXplorer.Dialogs;
 
-namespace XbimXplorer
+namespace Xbim.Presentation.FederatedModel
 {
     /// <summary>
-    /// Interaction logic for FederatedModelDlg.xaml
+    /// Interaction logic for fed1.xaml
     /// </summary>
-    public partial class FederatedModelDlg : Window//, INotifyPropertyChanged
+    public partial class FederatedModelDialog : Window
     {
-        public FederatedModelViewModel FederatedModel { get; set; }
-        public FederatedModelDlg()
+		public FederatedModelViewModel FederatedModel { get; set; }
+
+        public FederatedModelDialog()
         {
             FederatedModel = new FederatedModelViewModel();
             DataContext = FederatedModel;

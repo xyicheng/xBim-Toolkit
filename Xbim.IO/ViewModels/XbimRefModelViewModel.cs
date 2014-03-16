@@ -59,6 +59,10 @@ namespace Xbim.IO.ViewModels
             }
         }
 
+        public IO.XbimReferencedModel RefModel
+        {
+            get { return refModel; }
+        }
         public bool HasItems
         {
             get

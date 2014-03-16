@@ -122,45 +122,46 @@ namespace Xbim.IO
         private void GetModelFactors()
         {
             double angleToRadiansConversionFactor = Math.PI / 180; //assume degrees
-                    double lengthToMetresConversionFactor = 1; //assume metres
-                    IfcUnitAssignment ua = Instances.OfType<IfcUnitAssignment>().FirstOrDefault();
-                    if (ua != null)
+            double lengthToMetresConversionFactor = 1; //assume metres
+            var instOfType = Instances.OfType<IfcUnitAssignment>();
+            IfcUnitAssignment ua = instOfType.FirstOrDefault();
+            if (ua != null)
+            {
+                foreach (var unit in ua.Units)
+                {
+                    double value = 1.0;
+                    IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
+                    IfcSIUnit siUnit = unit as IfcSIUnit;
+                    if (cbUnit != null)
                     {
-                        foreach (var unit in ua.Units)
-                        {
-                            double value = 1.0;
-                            IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
-                            IfcSIUnit siUnit = unit as IfcSIUnit;
-                            if (cbUnit != null)
-                            {
-                                IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
-                                if (mu.UnitComponent is IfcSIUnit)
-                                    siUnit = (IfcSIUnit)mu.UnitComponent;
-                                ExpressType et = ((ExpressType)mu.ValueComponent);
+                        IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
+                        if (mu.UnitComponent is IfcSIUnit)
+                            siUnit = (IfcSIUnit)mu.UnitComponent;
+                        ExpressType et = ((ExpressType)mu.ValueComponent);
 
-                                if (et.UnderlyingSystemType == typeof(double))
-                                    value *= (double)et.Value;
-                                else if (et.UnderlyingSystemType == typeof(int))
-                                    value *= (double)((int)et.Value);
-                                else if (et.UnderlyingSystemType == typeof(long))
-                                    value *= (double)((long)et.Value);
-                            }
-                            if (siUnit != null)
-                            {
-                                value *= siUnit.Power();
-                                switch (siUnit.UnitType)
-                                {
-                                    case IfcUnitEnum.LENGTHUNIT:
-                                        lengthToMetresConversionFactor = value;
-                                        break;
-                                    case IfcUnitEnum.PLANEANGLEUNIT:
-                                        angleToRadiansConversionFactor = value;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
+                        if (et.UnderlyingSystemType == typeof(double))
+                            value *= (double)et.Value;
+                        else if (et.UnderlyingSystemType == typeof(int))
+                            value *= (double)((int)et.Value);
+                        else if (et.UnderlyingSystemType == typeof(long))
+                            value *= (double)((long)et.Value);
+                    }
+                    if (siUnit != null)
+                    {
+                        value *= siUnit.Power();
+                        switch (siUnit.UnitType)
+                        {
+                            case IfcUnitEnum.LENGTHUNIT:
+                                lengthToMetresConversionFactor = value;
+                                break;
+                            case IfcUnitEnum.PLANEANGLEUNIT:
+                                angleToRadiansConversionFactor = value;
+                                break;
+                            default:
+                                break;
                         }
+                    }
+                }
             }
             IEnumerable<IfcGeometricRepresentationContext> gcs = this.Instances.OfType<IfcGeometricRepresentationContext>();
             double? defaultPrecision = null;
@@ -748,7 +749,7 @@ namespace Xbim.IO
             }
             catch (Exception e)
             {
-                throw new XbimException(string.Format("Error opening file {0}\n{1}", fileName, e.Message));
+                throw new XbimException(string.Format("Error opening file {0}\n{1}", fileName, e.Message), e);
             }
         }
 
@@ -811,7 +812,7 @@ namespace Xbim.IO
             }
             catch (Exception e)
             {
-                throw new XbimException(string.Format("Failed to Save file as {0}\n{1}", outputFileName, e.Message));
+                throw new XbimException(string.Format("Failed to Save file as {0}\n{1}", outputFileName, e.Message), e);
             }
         }
 
@@ -928,7 +929,7 @@ namespace Xbim.IO
         {
             if (string.IsNullOrWhiteSpace(fileName)) return XbimStorageType.INVALID;
             string ext = Path.GetExtension(fileName).ToLower();
-            if (ext == ".xbim") return XbimStorageType.XBIM;
+            if (ext == ".xbim" || ext == ".xbimf") return XbimStorageType.XBIM;
             else if (ext == ".ifc") return XbimStorageType.IFC;
             else if (ext == ".ifcxml") return XbimStorageType.IFCXML;
             else if (ext == ".zip" || ext == ".ifczip") return XbimStorageType.IFCZIP;
@@ -1172,6 +1173,7 @@ namespace Xbim.IO
         }
 
         #region Model Group functions
+        
         /// <summary>
         /// Adds a model as a reference or federated model, do not call inside a transaction
         /// </summary>
@@ -1179,38 +1181,55 @@ namespace Xbim.IO
         /// <param name="organisationName"></param>
         /// <param name="organisationRole"></param>
         /// <returns></returns>
-        public IfcIdentifier AddModelReference(string refModelPath, string organisationName, IfcRole organisationRole, string userDefinedRoleName = null)
+        public XbimReferencedModel AddModelReference(string refModelPath, string organisationName, string organisationRole)
         {
             using (var txn = BeginTransaction())
             {
-                //create an author of the referenced model
-                IfcOrganization org = Instances.New<IfcOrganization>();
                 IfcActorRole role = Instances.New<IfcActorRole>();
-                if (userDefinedRoleName == null)
-                    role.Role = organisationRole;
-                else
-                {
-                    role.Role = IfcRole.UserDefined;
-                    role.UserDefinedRole = userDefinedRoleName;
-                }
-                org.Name = organisationName; 
-                org.AddRole(role);    
-                IfcIdentifier docId = AddModelReference(refModelPath, org);
+                role.RoleString = organisationRole; // the string is converted appropriately by the IfcActorRoleClass
+
+                IfcOrganization org = Instances.New<IfcOrganization>();
+                org.Name = organisationName;
+                org.AddRole(role);
+
+                var retVal = AddModelReference(refModelPath, org);
                 txn.Commit();
-                return docId;
+                return retVal;
             }
         }
 
-       /// <summary>
-        /// adds a model as a reference model can be called inside a transaction
-       /// </summary>
-        /// <param name="refModelPath">the file path of the xbim model to reference, this must be an xbim file</param>
-       /// <param name="owner">the actor who supplied the model</param>
-       /// <returns></returns>
-        public IfcIdentifier AddModelReference(string refModelPath, IfcActorSelect owner)
+        public XbimReferencedModel AddModelReference(string refModelPath, string organisationName, IfcRole organisationRole)
         {
-            XbimModel refModel = new XbimModel();
-            refModel.Open(refModelPath);
+            using (var txn = BeginTransaction())
+            {
+                var docInfo = Instances.New<IfcDocumentInformation>();
+                docInfo.DocumentId = _referencedModels.NextIdentifer();
+                //create an author of the referenced model
+
+                IfcActorRole role = Instances.New<IfcActorRole>();
+                role.Role = organisationRole; 
+
+                IfcOrganization org = Instances.New<IfcOrganization>();
+                org.Name = organisationName;
+
+                org.AddRole(role);
+
+                var retVal = AddModelReference(refModelPath, org);
+                txn.Commit();
+                return retVal;
+            }
+        }
+
+       
+        /// <summary>
+        /// adds a model as a reference model can be called inside a transaction
+        /// </summary>
+        /// <param name="refModelPath">the file path of the xbim model to reference, this must be an xbim file</param>
+        /// <param name="owner">the actor who supplied the model</param>
+        /// <returns></returns>
+        public XbimReferencedModel AddModelReference(string refModelPath, IfcActorSelect owner)
+        {
+            XbimReferencedModel retVal = null;
             if (!IsTransacting)
             {
                 using (var txn = BeginTransaction())
@@ -1220,9 +1239,9 @@ namespace Xbim.IO
                     docInfo.Name = refModelPath;
                     docInfo.DocumentOwner = owner;
                     docInfo.IntendedUse = refDocument;
-                    _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
+                    retVal = new XbimReferencedModel(docInfo);
+                    _referencedModels.Add(retVal);
                     txn.Commit();
-                    return docInfo.DocumentId;
                 }
             }
             else
@@ -1232,9 +1251,10 @@ namespace Xbim.IO
                 docInfo.Name = refModelPath;
                 docInfo.DocumentOwner = owner;
                 docInfo.IntendedUse = refDocument;
-                _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
-                return docInfo.DocumentId;
+                retVal = new XbimReferencedModel(docInfo);
+                _referencedModels.Add(retVal);
             }
+            return retVal;
         }
 
         /// <summary>
@@ -1243,25 +1263,29 @@ namespace Xbim.IO
         /// 
         /// Loading referenced models defaults to avoiding Exception on file not found; in this way the federated model can still be opened and the error rectified.
         /// </summary>
-        /// <param name="ThrowExceptionOnNotFound"></param>
-        private void LoadReferenceModels(bool ThrowExceptionOnNotFound = false)
+        /// <param name="throwReferenceModelExceptions"></param>
+        private void LoadReferenceModels(bool throwReferenceModelExceptions = false)
         {
             var docInfos = this.Instances.OfType<IfcDocumentInformation>().Where(d => d.IntendedUse == refDocument);
             foreach (var docInfo in docInfos)
             {
-                if (!File.Exists(docInfo.Name))
+                if (throwReferenceModelExceptions)
                 {
-                    if (ThrowExceptionOnNotFound)
-                        throw new XbimException("Reference model not found:" + docInfo.Name);
-                    continue;
-                }
-                XbimModel model = new XbimModel();
-                if (!model.Open(docInfo.Name, XbimDBAccess.Read))
-                {
-                    throw new XbimException("Unable to open reference model: " + docInfo.Name);
+                    // throw exception on referenceModel Creation
+                    _referencedModels.Add(new XbimReferencedModel(docInfo));
                 }
                 else
-                    _referencedModels.Add(new XbimReferencedModel(docInfo, model));
+                {
+                    // do not throw exception on referenceModel Creation
+                    try
+                    {
+                        _referencedModels.Add(new XbimReferencedModel(docInfo));
+                    }
+                    catch (Exception)
+                    {
+                        // drop exception in this case
+                    }
+                }
             }
         }
 
@@ -1327,10 +1351,6 @@ namespace Xbim.IO
             }
         }
 
-        public void AddModelReference(string fileName, string organisationName, string ownerName)
-        {
-            AddModelReference(fileName, organisationName,IfcRole.UserDefined, ownerName);
-        }
 
         /// <summary>
         /// Returns an enumerable of the handles to all entities in the model

@@ -57,7 +57,6 @@ namespace Xbim.IO
 
         protected override void RemoveItem(int index)
         {
-            
             int oldCount = Count;
             XbimReferencedModel removed = this[index];
             base.RemoveItem(index);

@@ -1134,6 +1134,7 @@ namespace XbimXplorer.Querying
             {
                 PropLabel = Math.Abs(pe.EntityLabel);
                 RetIds.Add(PropLabel);
+                pe.Activate(false);
             }
             string ret = propVal.ToString() + ((PropLabel != 0) ? " [#" + Math.Abs(PropLabel).ToString() + "]" : "");
             return ret;
