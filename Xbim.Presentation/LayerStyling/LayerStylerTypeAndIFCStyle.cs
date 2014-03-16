@@ -7,20 +7,31 @@ using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.Presentation.LayerStyling
 {
+    /// <summary>
+    /// Default layer styler for xBim Explorer in WPF
+    /// </summary>
     public class LayerStylerTypeAndIFCStyle : ILayerStyler
     {
-        private Xbim.IO.GroupingAndStyling.TypeAndStyle LayerGrouper { get; set; }
-
+        /// <summary>
+        /// Default initialisation
+        /// </summary>
         public LayerStylerTypeAndIFCStyle()
         {
             UseIfcSubStyles = true;
-            LayerGrouper = new Xbim.IO.GroupingAndStyling.TypeAndStyle();
+            _LayerGrouper = new Xbim.IO.GroupingAndStyling.TypeAndStyle();
         }
 
+        /// <summary>
+        /// this private member takes care of handling the IGeomHandlesGrouping interface
+        /// </summary>
+        private Xbim.IO.GroupingAndStyling.TypeAndStyle _LayerGrouper { get; set; }
+
+        // redirects the grouping requirement to the style using the LayerGrouper
         public Dictionary<string, XbimGeometryHandleCollection> GroupLayers(XbimGeometryHandleCollection InputHandles)
         {
-            return LayerGrouper.GroupLayers(InputHandles);
+            return _LayerGrouper.GroupLayers(InputHandles);
         }
+
 
         public ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer(
             string layerKey, 

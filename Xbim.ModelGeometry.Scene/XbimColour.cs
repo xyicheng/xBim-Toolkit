@@ -34,10 +34,10 @@ namespace Xbim.ModelGeometry.Scene
         /// Constructor for Material
         /// </summary>
         /// <param name="name">Material Name</param>
-        /// <param name="red">Red Value</param>
-        /// <param name="green">Green Value</param>
-        /// <param name="blue">Blue Value</param>
-        /// <param name="alpha">Alpha Value</param>
+        /// <param name="red">Red Value in range 0.0 to 1.0</param>
+        /// <param name="green">Green Value in range 0.0 to 1.0</param>
+        /// <param name="blue">Blue Value in range 0.0 to 1.0</param>
+        /// <param name="alpha">Alpha Value in range 0.0 to 1.0</param>
         public XbimColour(String name, float red, float green, float blue, float alpha = 1)
         {
             this.Name = name;
@@ -48,13 +48,21 @@ namespace Xbim.ModelGeometry.Scene
            
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name">Material Name</param>
+        /// <param name="red">Red Value in range 0.0 to 1.0</param>
+        /// <param name="green">Green Value in range 0.0 to 1.0</param>
+        /// <param name="blue">Blue Value in range 0.0 to 1.0</param>
+        /// <param name="alpha">Alpha Value in range 0.0 to 1.0</param>
         public XbimColour(String name, double red, double green, double blue, double alpha = 1.0)
             : this(name, (float)red, (float)green, (float)blue, (float)alpha)
         {
         }
 
         /// <summary>
-        /// Gets or sets Red Value
+        /// Gets or sets Red component Value in range from 0.0 to 1.0
         /// </summary>
         public float Red
         {
@@ -63,7 +71,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
         /// <summary>
-        /// Gets or sets Green Value
+        /// Gets or sets Green component Value in range from 0.0 to 1.0
         /// </summary>
         public float Green
         {
@@ -72,7 +80,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
         /// <summary>
-        /// Gets or sets Blue Value
+        /// Gets or sets Blue component Value in range from 0.0 to 1.0
         /// </summary>
         public float Blue
         {
@@ -81,7 +89,9 @@ namespace Xbim.ModelGeometry.Scene
         }
 
         /// <summary>
-        /// Gets or sets Alpha Value
+        /// Gets or sets transparency component Value in range from 0.0 to 1.0.
+        /// A value of 0.0 is completely transparent.
+        /// A value of 1.0 makes the colour fully opaque
         /// </summary>
         public float Alpha
         {
@@ -147,7 +157,6 @@ namespace Xbim.ModelGeometry.Scene
             this.TransmissionFactor = (float)transmissionFactor;
             this.ReflectionFactor = (float)reflectanceFactor;
         }
-
         
         public static XbimColour Default 
         {
@@ -157,9 +166,6 @@ namespace Xbim.ModelGeometry.Scene
             }
 
         }
-
-
-
     }
 }
 
