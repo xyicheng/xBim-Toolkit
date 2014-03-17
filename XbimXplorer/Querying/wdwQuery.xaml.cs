@@ -517,6 +517,25 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
+                    m = Regex.Match(cmd, @"^Styler (?<command>.+)", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        var st = ParentWindow.DrawingControl.LayerStyler as Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyleExtended;
+                        if (st != null)
+                        { 
+                            string command = m.Groups["command"].Value;
+                            ReportAdd(
+                                st.SendCommand(command, ParentWindow.DrawingControl.Selection)
+                                );
+                            ParentWindow.DrawingControl.ReloadModel();
+                        }
+                        else
+                        {
+                            ReportAdd("Command not valid under current styler configuration.");
+                        }
+                        continue;
+                    }
+
                     m = Regex.Match(cmd, @"^Visual (?<action>list|tree|on|off|mode)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
@@ -554,6 +573,12 @@ namespace XbimXplorer.Querying
                             {
                                 ReportAdd("Visual mode set to Odd/Even.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerEvenOdd();
+                                ParentWindow.DrawingControl.ReloadModel();
+                            }
+                            else if (t == "demo")
+                            {
+                                ReportAdd("Visual mode set to Demo.");
+                                ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyleExtended();
                                 ParentWindow.DrawingControl.ReloadModel();
                             }
                             else
@@ -693,10 +718,12 @@ namespace XbimXplorer.Querying
             t.AppendFormat("- zoom <Region name>");
             t.Append("    'zoom ?' provides a list of valid region names", Brushes.Gray);
 
-            t.AppendFormat("- Visual [list|tree|[on|off <name>]|mode [entity|type]]");
+            t.AppendFormat("- Visual [list|tree|[on|off <name>]|mode <ModeCommand>]");
             t.Append("    'Visual list' provides a list of valid layer names", Brushes.Gray);
             t.Append("    'Visual tree' provides a tree layer structure", Brushes.Gray);
             t.Append("    'Visual mode ...' changes the mode of the layer tree structure", Brushes.Gray);
+            t.Append("      <ModeCommand> in: type, entity, oddeven or demo.", Brushes.Gray);
+            
             
             t.AppendFormat("- clear [on|off]");
 
