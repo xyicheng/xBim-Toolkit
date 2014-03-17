@@ -639,7 +639,8 @@ namespace Xbim.Presentation
         public enum SelectionHighlightModes
         {
             WholeMesh,
-            Normals
+            Normals,
+            WireFrame
         }
         public SelectionHighlightModes SelectionHighlightMode = SelectionHighlightModes.WholeMesh;
 
@@ -801,7 +802,7 @@ namespace Xbim.Presentation
                 // Highlighted is defined in the XAML of drawingcontrol3d
                 Highlighted.Mesh = new Mesh3D(ps, m.TriangleIndices);
             }
-            else
+            else if (SelectionHighlightMode == SelectionHighlightModes.Normals)
             {
                 // prepares the normals to faces (or points)
                 var axesMeshBuilder = new MeshBuilder();
@@ -822,6 +823,52 @@ namespace Xbim.Presentation
                         CreateNormal(m.Positions[p2], m.Normals[p2], axesMeshBuilder);
                         CreateNormal(m.Positions[p3], m.Normals[p3], axesMeshBuilder);
                     }
+                }
+                Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
+            }
+            else
+            {
+                var axesMeshBuilder = new MeshBuilder();
+                if (newVal != null)
+                {
+                    XbimRect3D box = XbimRect3D.Empty;
+                    for (int i = 0; i < m.TriangleIndices.Count; i += 3)
+                    {
+                        int p1 = m.TriangleIndices[i];
+                        int p2 = m.TriangleIndices[i + 1];
+                        int p3 = m.TriangleIndices[i + 2];
+
+                        // box evaluation
+                        box.Union(new XbimPoint3D(m.Positions[p1].X, m.Positions[p1].Y, m.Positions[p1].Z));
+                        box.Union(new XbimPoint3D(m.Positions[p2].X, m.Positions[p2].Y, m.Positions[p2].Z));
+                        box.Union(new XbimPoint3D(m.Positions[p3].X, m.Positions[p3].Y, m.Positions[p3].Z));
+                    }
+
+                    double bl = box.Length();
+                    double LineThickness = bl / 1000; // 0.01;
+
+                    for (int i = 0; i < m.TriangleIndices.Count; i += 3)
+                    {
+                        int p1 = m.TriangleIndices[i];
+                        int p2 = m.TriangleIndices[i + 1];
+                        int p3 = m.TriangleIndices[i + 2];
+                        
+
+                        List<Point3D> path = new List<Point3D>();
+                        path.Add(new Point3D(m.Positions[p1].X, m.Positions[p1].Y, m.Positions[p1].Z));
+                        path.Add(new Point3D(m.Positions[p2].X, m.Positions[p2].Y, m.Positions[p2].Z));
+                        path.Add(new Point3D(m.Positions[p3].X, m.Positions[p3].Y, m.Positions[p3].Z));
+
+                        
+                        axesMeshBuilder.AddTube(path, LineThickness, 9, true);
+
+                    }
+                    
+                    HideAll();
+                }
+                else
+                {
+                    ShowAll();
                 }
                 Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
             }
@@ -1610,12 +1657,16 @@ namespace Xbim.Presentation
 
         public void ShowAll()
         {
-            //scene.ShowAll();
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                    layer.ShowAll();
         }
 
         public void HideAll()
         {
-            //scene.HideAll();
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                    layer.HideAll();
         }
 
         public void ViewHome()

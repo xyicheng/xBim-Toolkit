@@ -1,4 +1,5 @@
 ﻿<Window x:Class="XbimXplorer.XplorerMainWindow"
+    xmlns:System="clr-namespace:System;assembly=mscorlib"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ifc="http://schemas.Xbim.com/ifc"
@@ -98,7 +99,6 @@
                 <MenuItem Header="_Edit" Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" />
                 
             </MenuItem>
-                
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>

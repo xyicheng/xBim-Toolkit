@@ -230,7 +230,7 @@ namespace XbimXplorer.Querying
                     }
 
                     // SelectionHighlighting [WholeMesh|Normals]
-                    m = Regex.Match(cmd, @"^(SelectionHighlighting|sh) (?<mode>(wholemesh|normals))+", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(SelectionHighlighting|sh) (?<mode>(wholemesh|normals|wireframe))+", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string mode = m.Groups["mode"].Value.ToLowerInvariant();
@@ -239,10 +239,15 @@ namespace XbimXplorer.Querying
                             ReportAdd("Selection visual style set to 'Normals'");
                             ParentWindow.DrawingControl.SelectionHighlightMode = DrawingControl3D.SelectionHighlightModes.Normals;
                         }
-                        else
+                        else if (mode == "wholemesh")
                         {
                             ReportAdd("Selection visual style set to 'WholeMesh'");
                             ParentWindow.DrawingControl.SelectionHighlightMode = DrawingControl3D.SelectionHighlightModes.WholeMesh;
+                        }
+                        else if (mode == "wireframe")
+                        {
+                            ReportAdd("Selection visual style set to 'WireFrame'");
+                            ParentWindow.DrawingControl.SelectionHighlightMode = DrawingControl3D.SelectionHighlightModes.WireFrame;
                         }
                         continue;
                     }
