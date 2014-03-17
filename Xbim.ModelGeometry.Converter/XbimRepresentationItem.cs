@@ -74,7 +74,7 @@ namespace Xbim.ModelGeometry.Converter
             throw new NotImplementedException();
         }
 
-        XbimMeshFragment IXbimGeometryModel.MeshTo(IXbimMeshGeometry3D mesh3D, Ifc2x3.Kernel.IfcProduct product, Common.Geometry.XbimMatrix3D transform, double deflection)
+        XbimMeshFragment IXbimGeometryModel.MeshTo(IXbimMeshGeometry3D mesh3D, Ifc2x3.Kernel.IfcProduct product, Common.Geometry.XbimMatrix3D transform, double deflection, short modelid)
         {
             throw new NotImplementedException();
         }

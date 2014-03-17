@@ -585,7 +585,7 @@ namespace Xbim
 					FTol.SetTolerance(wireSeg, mf->Precision, TopAbs_WIRE);		
 					wire.Add(wireSeg);				
 					if(!wire.IsDone() ) 
-					{				
+					{			
 						FTol.SetTolerance(wireSeg, mf->OneMilliMetre, TopAbs_WIRE);	//go for courser tolerance
 						wire.Add(wireSeg);
 						if(!wire.IsDone())
@@ -863,6 +863,7 @@ namespace Xbim
 
 		TopoDS_Wire XbimFaceBound::Build(IfcPolyline ^ pLine, bool% hasCurves)
 		{
+			
 			int total = pLine->Points->Count;
 			if(total<2)
 			{

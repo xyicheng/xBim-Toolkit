@@ -17,6 +17,7 @@ namespace Xbim.ModelGeometry.Scene
     /// </summary>
     public class XbimMeshGeometry3D : IXbimMeshGeometry3D
     {
+        object meshLock = new object();
         const int defaultSize = 0x4000;
         public List<XbimPoint3D> Positions;
         public List<XbimVector3D> Normals;
@@ -504,10 +505,10 @@ namespace Xbim.ModelGeometry.Scene
         #endregion
 
         //adds the content of the toAdd to this, it is added as a single mesh fragment, any meshes in toAdd are lost
-        public void Add(IXbimMeshGeometry3D toAdd, int entityLabel, Type ifcType)
+        public void Add(IXbimMeshGeometry3D toAdd, int entityLabel, Type ifcType, short modelId)
         {
             int startPosition = Positions.Count;
-            XbimMeshFragment fragment = new XbimMeshFragment(startPosition, TriangleIndexCount);
+            XbimMeshFragment fragment = new XbimMeshFragment(startPosition, TriangleIndexCount, modelId);
             Positions.AddRange(toAdd.Positions);
             Normals.AddRange(toAdd.Normals);
             foreach (var idx in toAdd.TriangleIndices)
@@ -563,7 +564,7 @@ namespace Xbim.ModelGeometry.Scene
         /// Appends a geometry data object to the Mesh, returns false if the mesh would become too big and needs splitting
         /// </summary>
         /// <param name="geometryMeshData"></param>
-        public bool Add(XbimGeometryData geometryMeshData)
+        public bool Add(XbimGeometryData geometryMeshData, short modelId)
         {
             XbimMatrix3D transform = XbimMatrix3D.FromArray(geometryMeshData.DataArray2);
             if (geometryMeshData.GeometryType == XbimGeometryType.TriangulatedMesh)
@@ -582,7 +583,7 @@ namespace Xbim.ModelGeometry.Scene
             else if (geometryMeshData.GeometryType == XbimGeometryType.BoundingBox)
             {
                 XbimRect3D r3d = XbimRect3D.FromArray(geometryMeshData.ShapeData);
-                this.Add(XbimMeshGeometry3D.MakeBoundingBox(r3d, transform), geometryMeshData.IfcProductLabel, IfcMetaData.GetType(geometryMeshData.IfcTypeId));
+                this.Add(XbimMeshGeometry3D.MakeBoundingBox(r3d, transform), geometryMeshData.IfcProductLabel, IfcMetaData.GetType(geometryMeshData.IfcTypeId), modelId);
             }
             else
                 throw new XbimException("Illegal geometry type found");
@@ -710,20 +711,23 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="product">The product the geometry represents (this may be a partial representation)</param>
         /// <param name="transform">Transform the geometry to a new location or rotation</param>
         /// <param name="deflection">Deflection for triangulating curves, if null default defelction for the model is used</param>
-        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null)
+        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null, short modelId=0)
         {
             return geometryModel.MeshTo(this,product,transform,deflection??product.ModelOf.ModelFactors.DeflectionTolerance);
         }
 
 
 
-        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform)
+        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform, short modelId)
         {
-            XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel);
-            Read(mesh, transform);
-            frag.EndPosition = PositionCount - 1;
-            frag.EndTriangleIndex = TriangleIndexCount - 1;
-            meshes.Add(frag);
+            lock (meshLock)
+            {
+                XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel, modelId);
+                Read(mesh, transform);
+                frag.EndPosition = PositionCount - 1;
+                frag.EndTriangleIndex = TriangleIndexCount - 1;
+                meshes.Add(frag);
+            }
 
         }
 

@@ -120,7 +120,7 @@ namespace Xbim
 				void WritePly(String^ fileName, bool ascii);
 				void WriteObj(String^ fileName);
 				void WriteVtk(String^ fileName);
-				virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
+				virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId) override;
 				
 			};
 		}

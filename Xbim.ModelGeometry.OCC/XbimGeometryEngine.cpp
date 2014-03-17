@@ -141,7 +141,7 @@ namespace Xbim
 							try
 							{
 								//srl optimisation openings and projectionss cannot have openings or projection so don't check for them
-								if(/*CutOpenings(product, lod) && */!dynamic_cast<IfcFeatureElement^>(product ))
+								if(/*CutOpenings(product, lod) &&*/ !dynamic_cast<IfcFeatureElement^>(product ))
 								{
 
 									XbimGeometryModelCollection^ projectionSolids = gcnew XbimGeometryModelCollection();
@@ -423,8 +423,9 @@ namespace Xbim
 			IfcBooleanOperand^ fOp= repItem->FirstOperand;
 			IfcBooleanOperand^ sOp= repItem->SecondOperand;
 			XbimGeometryModel^ shape1;
-			XbimGeometryModel^ shape2;
 
+			XbimGeometryModel^ shape2;
+			
 			if(dynamic_cast<IfcBooleanResult^>(fOp))
 				shape1 = Build((IfcBooleanResult^)fOp, maps);
 			else if(dynamic_cast<IfcSolidModel^>(fOp))

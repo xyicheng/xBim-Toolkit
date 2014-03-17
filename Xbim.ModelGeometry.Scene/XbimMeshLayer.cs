@@ -159,6 +159,10 @@ namespace Xbim.ModelGeometry.Scene
             Style = new XbimTexture().CreateTexture(style);
            
         }
+        public XbimMeshLayer(XbimTexture xbimTexture)
+        {
+            Style = xbimTexture;
+        }
 
         public XbimMeshLayer(XbimModel m, XbimTexture xbimTexture)
         {
@@ -221,9 +225,9 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="product">The product the geometry represents (this may be a partial representation)</param>
         /// <param name="transform">Transform the geometry to a new location or rotation</param>
         /// <param name="deflection">Deflection for triangulating curves, if null default defelction for the model is used</param>
-        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null)
+        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection = null, short modelId=0)
         {
-            return Hidden.Add(geometryModel, product, transform, deflection);
+            return Hidden.Add(geometryModel, product, transform, deflection, modelId);
         }
 
         /// <summary>
@@ -354,7 +358,7 @@ namespace Xbim.ModelGeometry.Scene
             return false;          
         }
 
-        public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(int entityLabel)
+        public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(int entityLabel, short modelId)
         {
             IEnumerable<XbimMeshFragment> fragments = GetMeshFragments(entityLabel); //get all the fragments for this entity in the visible layer
             int maxSize = fragments.Sum(f => f.PositionCount);
@@ -362,7 +366,7 @@ namespace Xbim.ModelGeometry.Scene
             foreach (var fragment in fragments)
             {
                 IXbimMeshGeometry3D geom = Visible.GetMeshGeometry3D(fragment);
-                geometry.Add(geom, fragment.EntityLabel, fragment.EntityType);
+                geometry.Add(geom, fragment.EntityLabel, fragment.EntityType, modelId);
             } 
             return geometry;
         }
@@ -419,9 +423,9 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public void Add(String mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null)
+        public void Add(String mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId=0)
         {
-            Hidden.Add(mesh, productType, productLabel, geometryLabel, transform);
+            Hidden.Add(mesh, productType, productLabel, geometryLabel, transform, modelId);
         }
     }
 }

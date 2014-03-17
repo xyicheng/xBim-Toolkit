@@ -104,12 +104,12 @@ namespace Xbim
 				return theMesh;
 			}
 
-			XbimMeshFragment XbimMap::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			XbimMeshFragment XbimMap::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
 			{				
 				Monitor::Enter(_mappedItem);
 				try
 				{
-					return _mappedItem->MeshTo(mesh3D,  product, transform, deflection);	
+					return _mappedItem->MeshTo(mesh3D,  product, transform, deflection, modelId);	
 				}
 				finally
 				{

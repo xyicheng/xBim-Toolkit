@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.Presentation.LayerStyling
@@ -54,7 +55,7 @@ namespace Xbim.Presentation.LayerStyling
             }
         }
 
-        public ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer(ModelGeometry.Converter.XbimShape shape, ModelGeometry.Converter.XbimProductShape productShape)
+        public ModelGeometry.Scene.XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer( XbimModel model, ModelGeometry.Converter.XbimShape shape, ModelGeometry.Converter.XbimProductShape productShape)
         {
             return _CurrentLayer;
         }

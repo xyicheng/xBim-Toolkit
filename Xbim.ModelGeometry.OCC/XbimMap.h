@@ -27,7 +27,7 @@ namespace Xbim
 #if USE_CARVE
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
 			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
-			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
+			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId) override;
 #endif
 			~XbimMap()
 			{

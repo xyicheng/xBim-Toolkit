@@ -66,9 +66,9 @@ namespace Xbim
 				return ToPolyHedron(deflection,  precision, precisionMax);
 				
 			}
-			XbimMeshFragment XbimFeaturedShape::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			XbimMeshFragment XbimFeaturedShape::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
 			{
-				return mResultShape->MeshTo(mesh3D,product,transform,deflection);
+				return mResultShape->MeshTo(mesh3D,product,transform,deflection, modelId);
 			}
 			//divides the openings into a list of list of non-intersecting shapes
 			XbimGeometryModelCollection^ XbimFeaturedShape::PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax)
@@ -239,12 +239,13 @@ namespace Xbim
 						for each (XbimGeometryModel^ nonClashing in preparedOpenings) //do the least number first for performance
 						{
 							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax);
+							/*nextResult->WritePly("Opening" + o + ".Ply",true);
+								o++;*/
 TryCutPolyhedron:						
 							try
 							{
 								XbimPolyhedron^ nextResult = csg->Subtract(polyResult,polyOpenings);
-								/*nextResult->WritePly("Opening" + o + ".Ply",true);
-								o++;*/
+								
 								if(nextResult->IsValid)
 									polyResult = nextResult;
 							}

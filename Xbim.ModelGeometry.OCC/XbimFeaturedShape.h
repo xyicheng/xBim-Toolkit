@@ -108,7 +108,7 @@ namespace Xbim
 				}
 			}
 			virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override {return mResultShape->Mesh(deflection);};
-			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection) override;
+			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId) override;
 			virtual XbimRect3D GetBoundingBox() override {return mResultShape->GetBoundingBox();};
 			virtual void ToSolid(double precision, double maxPrecision) override; 
 			

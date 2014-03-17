@@ -178,7 +178,8 @@ namespace Xbim.IO
         /// <returns></returns>
         public int AddGeometry(int prodLabel, XbimGeometryType type, short ifcType, byte[] transform, byte[] shapeData, short subPart = 0, int styleLabel = 0, int? geometryHash = null)
         {
-            int mainId;
+            
+            int mainId=-1;
                 using (var update = new Update(sesid, table, JET_prep.Insert))
                 {
                     _colValProductLabel.Value = prodLabel;
@@ -193,10 +194,18 @@ namespace Xbim.IO
                    // else
                    //     _colValStyleLabel.Value = -ifcType; //use the negative type id as a style for object that have no render material
                     Api.SetColumns(sesid, table, _colValues);
-                    UpdateCount(1);
-                    int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy);
-                    update.Save(); 
-                mainId = geomId.Value;
+                   
+                   try
+                   {
+                        mainId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
+                        update.Save();                                               
+                        UpdateCount(1);
+                    }
+                    catch (Exception )
+                    {
+                        
+                       //Console.WriteLine(prodLabel);
+                    }               
             }
 #if CREATEGEOMHASH
             if (type == XbimGeometryType.TriangulatedMesh && shapeData.Length > 0)
@@ -309,7 +318,7 @@ namespace Xbim.IO
                     {
 
                         Api.RetrieveColumns(sesid, table, _colValues);
-                        System.Diagnostics.Debug.Assert((byte)geomType == _colValGeomType.Value);
+                       // System.Diagnostics.Debug.Assert((byte)geomType == _colValGeomType.Value);
                         _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
                         yield return new XbimGeometryData(_colValGeometryLabel.Value.Value, posLabel, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
 
@@ -513,8 +522,8 @@ namespace Xbim.IO
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
             {
                 Api.RetrieveColumns(sesid, table, _colValues);
-                _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
-                return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+              //  _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel); //unnecessary call
+                return new XbimGeometryData(geomLabel, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
 
             }
             else

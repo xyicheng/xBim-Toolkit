@@ -36,7 +36,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="transform">Tranforms all point before writing to the meshs</param>
         /// <param name="deflection">The tangental deflection to use for curved surfaces</param>
         /// <returns>The fragment of the mesh that has been added</returns>
-        XbimMeshFragment MeshTo(IXbimMeshGeometry3D mesh3D, IfcProduct product, XbimMatrix3D transform, double deflection);
+        XbimMeshFragment MeshTo(IXbimMeshGeometry3D mesh3D, IfcProduct product, XbimMatrix3D transform, double deflection, short modelId=0);
         /// <summary>
         /// Returns a string containing the geometry in PLY format
         /// </summary>

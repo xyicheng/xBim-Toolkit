@@ -92,17 +92,17 @@ namespace XbimConvert
                                 {
                                     m3d.CreateContext(progDelegate);
                                     
-                                    StringWriter sw = new StringWriter();
-                                    foreach (var productShape in m3d.ProductShapes)
-                                    {
-                                        productShape.WriteMetaData(sw);
-                                        foreach (var shape in productShape.Shapes)
-                                        {
-                                            shape.WriteToStream(sw);
-                                        }
-                                    }
-                                    string result = sw.ToString();
-                                    Console.WriteLine(result);
+                                    //StringWriter sw = new StringWriter();
+                                    //foreach (var productShape in m3d.ProductShapes)
+                                    //{
+                                    //    productShape.WriteMetaData(sw);
+                                    //    foreach (var shape in productShape.Shapes)
+                                    //    {
+                                    //        shape.WriteToStream(sw);
+                                    //    }
+                                    //}
+                                    //string result = sw.ToString();
+                                    //Console.WriteLine(result);
                                   // string maps =  m3d.MappedShapes();
                                   // m3d.WriteShapesToStream(maps);
                                 }

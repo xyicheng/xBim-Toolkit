@@ -61,8 +61,18 @@ namespace Xbim.IO
         
         const string refDocument = "XbimReferencedModel";
         private XbimReferencedModelCollection _referencedModels = new XbimReferencedModelCollection();
-       
+        private short _userDefinedId;
 
+        /// <summary>
+        /// An identifier that an application can use to identify this model uniquely
+        /// </summary>
+        public short UserDefinedId
+        {
+            get { return _userDefinedId; }
+            set { _userDefinedId = value; }
+        }
+
+       
         #endregion
 
         //Object that manages geometry conversion etc

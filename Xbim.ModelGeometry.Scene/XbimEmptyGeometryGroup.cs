@@ -39,7 +39,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
        
-        public XbimMeshFragment MeshTo(IXbimMeshGeometry3D mesh3D, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double deflection)
+        public XbimMeshFragment MeshTo(IXbimMeshGeometry3D mesh3D, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double deflection, short modelId)
         {
             return default(XbimMeshFragment);
         }

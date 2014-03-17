@@ -449,7 +449,7 @@ namespace Xbim
 			}
 
 
-			XbimMeshFragment XbimFacetedShell::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			XbimMeshFragment XbimFacetedShell::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
 			{	
 				IfcRepresentationItem^ faceSet = (IfcRepresentationItem^)_faceSet->ModelOf->Instances[_faceSet->EntityLabel];
 				XbimTriangulatedModelCollection^ list = gcnew XbimTriangulatedModelCollection();
@@ -476,14 +476,14 @@ namespace Xbim
 							list->Add(TriangulateFaceSet(((IfcOpenShell^)sbsmFaces)->CfsFaces));
 					}
 				}
-				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount);
+				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount, modelId);
                 fragment.EntityLabel = product->EntityLabel;
                 fragment.EntityType = product->GetType();
 				
 				for each (XbimTriangulatedModel^ tm in list) //add each mesh to the collective mesh
 				{
 					XbimTriangulatedModelStream^ streamer = gcnew XbimTriangulatedModelStream(tm->Triangles);
-					XbimMeshFragment f = streamer->BuildWithNormals<IXbimTriangulatesToPositionsNormalsIndices^>((IXbimTriangulatesToPositionsNormalsIndices^)mesh3D,transform);
+					XbimMeshFragment f = streamer->BuildWithNormals<IXbimTriangulatesToPositionsNormalsIndices^>((IXbimTriangulatesToPositionsNormalsIndices^)mesh3D,transform, modelId);
 				}
 
 				fragment.EndPosition = mesh3D->PositionCount-1;

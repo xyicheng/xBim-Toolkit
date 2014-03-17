@@ -6,6 +6,7 @@ using System.Text;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.IO;
+using Xbim.ModelGeometry.Converter;
 using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.Presentation.LayerStyling 
@@ -29,34 +30,32 @@ namespace Xbim.Presentation.LayerStyling
 
         private XbimColourMap _colourMap;
 
-        XbimModel _model;
-
-        private XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> _typeLayer;
-
-        public void NewProduct(ModelGeometry.Converter.XbimProductShape productShape, XbimModel model)
-        {
-            _model = model;
-            Type productType = productShape.ProductType;
-            XbimTexture texture = new XbimTexture().CreateTexture(_colourMap[productType.Name]); //get the colour to use
-            _typeLayer = _Layers.GetOrAdd(texture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, texture));
-        }
-
-        public XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer(ModelGeometry.Converter.XbimShape shape, ModelGeometry.Converter.XbimProductShape productShape)
+        public XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer(XbimModel model, XbimShape shape, XbimProductShape productShape)
         {
             XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> shapeLayer;
             //get the style of the shape if it has one and create or find a layer to use
             if (shape.HasStyle)
             {
-                IfcSurfaceStyle ifcStyle = _model.Instances[shape.StyleLabel] as IfcSurfaceStyle;
+                IfcSurfaceStyle ifcStyle = model.Instances[shape.StyleLabel] as IfcSurfaceStyle;
                 XbimTexture shapeTexture = new XbimTexture().CreateTexture(ifcStyle);
-                shapeLayer = _Layers.GetOrAdd(shapeTexture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(_model, shapeTexture));
+                shapeLayer = _Layers.GetOrAdd(shapeTexture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(shapeTexture));
             }
             else
-                shapeLayer = _typeLayer; //use the type layer as default
-            //work out all transformations required
+            {
+                Type productType = productShape.ProductType;
+                XbimTexture texture = new XbimTexture().CreateTexture(_colourMap[productType.Name]); //get the colour to use
+                shapeLayer = _Layers.GetOrAdd(texture, new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(texture));
+            }
+
             return shapeLayer;
         }
 
 
+
+
+        public void NewProduct(XbimProductShape productShape, XbimModel model)
+        {
+           //do nothing
+        }
     }
 }

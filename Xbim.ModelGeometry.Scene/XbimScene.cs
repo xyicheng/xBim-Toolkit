@@ -105,7 +105,8 @@ namespace Xbim.ModelGeometry.Scene
         {
             if (string.IsNullOrEmpty(layer.Name)) //ensure a layer has a unique name if the user has not defined one
                 layer.Name = "Layer " + layers.Count();
-            layers.Add(layer);
+            if(!layers.Contains(layer))
+                layers.Add(layer);
         }
 
 
@@ -145,7 +146,7 @@ namespace Xbim.ModelGeometry.Scene
         /// Gets the geometry of an entity building it up from layers.
         /// </summary>
         /// <param name="entity">The entity instance</param>
-        public IXbimMeshGeometry3D GetMeshGeometry3D(IPersistIfcEntity entity)
+        public IXbimMeshGeometry3D GetMeshGeometry3D(IPersistIfcEntity entity, short modelId)
         {
             XbimMeshGeometry3D geometry = new XbimMeshGeometry3D();
             IModel m = entity.ModelOf;
@@ -153,7 +154,7 @@ namespace Xbim.ModelGeometry.Scene
             {
                 // an entity model could be spread across many layers (e.g. in case of different materials)
                 if(layer.Model == m)
-                    geometry.Add(layer.GetVisibleMeshGeometry3D(Math.Abs(entity.EntityLabel)));
+                    geometry.Add(layer.GetVisibleMeshGeometry3D(Math.Abs(entity.EntityLabel), modelId));
             }
             return geometry;
         }

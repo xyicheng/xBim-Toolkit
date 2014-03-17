@@ -30,6 +30,7 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcIShapeProfileDef)profile).GetGeometryHashCode();
             else
             {
+                return profile.GetHashCode();
                 throw new XbimGeometryException("Unsupported solid geometry type " + profile.GetType().Name);
             }
         }

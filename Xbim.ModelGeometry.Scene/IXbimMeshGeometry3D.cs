@@ -15,8 +15,8 @@ namespace Xbim.ModelGeometry.Scene
         IList<Int32> TriangleIndices { get; set; }
         XbimMeshFragmentCollection Meshes { get; set; }
         
-        bool Add(XbimGeometryData geometryMeshData);
-        XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection);
+        bool Add(XbimGeometryData geometryMeshData, short modelId=0);
+        XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection, short modelId = 0);
         void MoveTo(IXbimMeshGeometry3D toMesh);
         void BeginUpdate();
         void EndUpdate();
@@ -29,6 +29,6 @@ namespace Xbim.ModelGeometry.Scene
         IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag);
         XbimRect3D GetBounds();
 
-        void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null);
+        void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId=0);
     }
 }

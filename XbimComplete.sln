@@ -89,11 +89,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial.Tests", "Xbim.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BQLConsole", "BQLConsole\BQLConsole.csproj", "{A0F06F91-D6FE-436C-A0B1-730027361443}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.WebXplorer", "Xbim.WebXplorer\Xbim.WebXplorer.csproj", "{1B2049BE-5697-426E-AF73-5E6B450975BA}"
-EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 26
+		SccNumberOfProjects = 25
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -179,10 +177,6 @@ Global
 		SccProjectTopLevelParentUniqueName24 = XbimComplete.sln
 		SccProjectName24 = BQLConsole
 		SccLocalPath24 = BQLConsole
-		SccProjectUniqueName25 = Xbim.WebXplorer\\Xbim.WebXplorer.csproj
-		SccProjectTopLevelParentUniqueName25 = XbimComplete.sln
-		SccProjectName25 = Xbim.WebXplorer
-		SccLocalPath25 = Xbim.WebXplorer
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -253,11 +247,9 @@ Global
 		{89F98E53-DE4E-4427-8244-D5934AD08849}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89F98E53-DE4E-4427-8244-D5934AD08849}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug|Any CPU.Build.0 = Debug|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.ActiveCfg = Release|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.Build.0 = Release|x64
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.Build.0 = Debug|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.ActiveCfg = Release|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.Build.0 = Release|Win32
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -288,10 +280,6 @@ Global
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0F06F91-D6FE-436C-A0B1-730027361443}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B2049BE-5697-426E-AF73-5E6B450975BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -304,7 +292,6 @@ Global
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{A0F06F91-D6FE-436C-A0B1-730027361443} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{1B2049BE-5697-426E-AF73-5E6B450975BA} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{B0EBA5AF-9911-4487-B4F6-3187087723CC} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}

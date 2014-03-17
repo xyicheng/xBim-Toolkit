@@ -42,6 +42,7 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcSurfaceCurveSweptAreaSolid)solid).GetGeometryHashCode();
             else
             {
+                return 0;
                 throw new XbimGeometryException("Unsupported solid geometry tpype " + solid.GetType().Name);
             }
         }
@@ -66,6 +67,7 @@ namespace Xbim.ModelGeometry.Converter
                 return ((IfcSurfaceCurveSweptAreaSolid)a).GeometricEquals(b);
             else
             {
+                return false;
                 throw new XbimGeometryException("Unsupported solid geometry tpype " + a.GetType().Name);
             }
         }

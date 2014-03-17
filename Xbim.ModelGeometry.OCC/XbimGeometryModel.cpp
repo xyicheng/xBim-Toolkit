@@ -333,7 +333,7 @@ TryCutSolid:
 						}
 						else //if not try and fix it
 						{
-
+						
 							currentTolerance*=10; //try courser;
 							warnPrecision=true;
 							if(currentTolerance<=maxPrecision)
@@ -372,14 +372,18 @@ TryCutSolid:
 								if(!solid.IsNull()) builder.Add(solids,TopoDS::Solid(solid));
 							}
 							if(warnPrecision)
+							{
+								
+
 								Logger->WarnFormat("Precision adjusted to {0}, declared {1}", currentTolerance,precision);
+							}
 							return gcnew XbimSolid(solids, hasCurves,_representationLabel,_surfaceStyleLabel);
 						}
 					}
 					else
-					{
-						/*BRepTools::Write(*Handle,"b");
-						BRepTools::Write(*(shape->Handle),"h");*/
+					{/*
+						BRepTools::Write(*Handle, "a");
+								BRepTools::Write(*(shape->Handle), "b");*/
 						if(boolOp.ErrorStatus()>8) //errors below this are just errors in the input model, precision will not help
 						{
 							currentTolerance*=10; //try courser;
@@ -533,14 +537,14 @@ TryIntersectSolid:
 				return this;//stick with what we started with
 			}
 
-			XbimMeshFragment XbimGeometryModel::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			XbimMeshFragment XbimGeometryModel::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
 			{
 				
 				
 				bool doTranform = !transform.IsIdentity;
 				IXbimTriangulatesToPositionsIndices^ theMesh = dynamic_cast<IXbimTriangulatesToPositionsIndices^>(mesh3D);
 				theMesh->BeginBuild();
-                XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount);
+                XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount, modelId);
                 fragment.EntityLabel = product->EntityLabel;
                 fragment.EntityType = product->GetType();
 
@@ -734,16 +738,26 @@ TryIntersectSolid:
 							loc.Transformation().Transforms(p);	
 							if(!planar) //need to calculate the exact normals
 							{
-								GeomAPI_ProjectPointOnSurf projpnta(p, surf);
-								double au, av; //the u- and v-coordinates of the projected point
-								projpnta.LowerDistanceParameters(au, av); //get the nearest projection
-								gp_Pnt centre;
-								gp_Vec normalDir;
-								gprop.Normal(au,av,centre,normalDir);	
-								normalDir.Normalize();
-								normals.push_back(normalDir.X());
-								normals.push_back(normalDir.Y());
-								normals.push_back(normalDir.Z());
+								GeomAPI_ProjectPointOnSurf projpnta(p, surf,precision);
+								if(projpnta.IsDone())
+								{
+									double au, av; //the u- and v-coordinates of the projected point
+									projpnta.LowerDistanceParameters(au, av); //get the nearest projection
+									gp_Pnt centre;
+									gp_Vec normalDir;
+									gprop.Normal(au,av,centre,normalDir);	
+									normalDir.Normalize();
+									normals.push_back(normalDir.X());
+									normals.push_back(normalDir.Y());
+									normals.push_back(normalDir.Z());
+								}
+								else
+								{
+									normals.push_back(0);
+									normals.push_back(0);
+									normals.push_back(1);
+								}
+
 							}
 							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z(),precision); 
 							//p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision

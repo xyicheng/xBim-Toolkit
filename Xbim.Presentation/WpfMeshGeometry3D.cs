@@ -126,7 +126,7 @@ namespace Xbim.Presentation
         /// Do not use this rather create a XbimMeshGeometry3D first and construct this from it, appending WPF collections is slow
         /// </summary>
         /// <param name="geometryMeshData"></param>
-        public bool Add(XbimGeometryData geometryMeshData)
+        public bool Add(XbimGeometryData geometryMeshData, short modelId)
         {
             throw new NotImplementedException();
         }
@@ -232,7 +232,7 @@ namespace Xbim.Presentation
                 {
                     m3d.TriangleIndices.Add(m.TriangleIndices[i] - frag.StartPosition);
                 }
-                m3d.Meshes.Add(new XbimMeshFragment(0, 0)
+                m3d.Meshes.Add(new XbimMeshFragment(0, 0,0)
                 {
                     EndPosition = m3d.PositionCount - 1,
                     StartTriangleIndex = frag.StartTriangleIndex - m3d.PositionCount - 1,
@@ -272,9 +272,9 @@ namespace Xbim.Presentation
             get { return Mesh.TriangleIndices.Count; }
         }
 
-        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double? deflection = null)
+        public XbimMeshFragment Add(IXbimGeometryModel geometryModel, Ifc2x3.Kernel.IfcProduct product, XbimMatrix3D transform, double? deflection = null, short modelId=0)
         {
-            return geometryModel.MeshTo(this, product, transform, deflection ?? product.ModelOf.ModelFactors.DeflectionTolerance);
+            return geometryModel.MeshTo(this, product, transform, deflection ?? product.ModelOf.ModelFactors.DeflectionTolerance, modelId);
         }
 
         public void BeginBuild()
@@ -386,9 +386,9 @@ namespace Xbim.Presentation
         }
 
 
-        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null)
+        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null,short modelId=0)
         {
-            XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel);
+            XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel, modelId);
             Read(mesh, transform);
             frag.EndPosition = PositionCount - 1;
             frag.EndTriangleIndex = TriangleIndexCount - 1;

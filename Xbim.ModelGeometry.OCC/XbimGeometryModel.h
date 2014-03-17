@@ -164,7 +164,7 @@ private:
 			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision);
 			virtual XbimGeometryModel^ CopyTo(	IfcAxis2Placement^ placement) abstract;
 			virtual void ToSolid(double precision, double maxPrecision) abstract;
-			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection);
+			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId);
 			
 #if USE_CARVE
 			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) abstract ;

@@ -162,7 +162,7 @@ namespace Xbim
 				array<Char>^ comma = gcnew array<Char>{','};
 				array<Char>^ slash = gcnew array<Char>{'/'};
 				XbimVector3D normal; //the current Normal
-				List<XbimVector3D>^ normals; //al ormals defined in this string
+				//List<XbimVector3D>^ normals; //al ormals defined in this string
 				carve::input::PolyhedronData polyData;
 				while( l!=nullptr)
 				{
@@ -559,17 +559,17 @@ namespace Xbim
 				return _meshSet->getAABB().intersects(poly->MeshSet->getAABB());
 			}
 
-			XbimMeshFragment XbimPolyhedron::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection)
+			XbimMeshFragment XbimPolyhedron::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
 			{
 				XbimTriangulatedModelCollection^ triangles = Mesh(deflection);
-				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount);
+				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount, modelId);
                 fragment.EntityLabel = product->EntityLabel;
                 fragment.EntityType = product->GetType();
 				
 				for each (XbimTriangulatedModel^ tm in triangles) //add each mesh to the collective mesh
 				{
 					XbimTriangulatedModelStream^ streamer = gcnew XbimTriangulatedModelStream(tm->Triangles);
-					XbimMeshFragment f = streamer->BuildWithNormals<IXbimTriangulatesToPositionsNormalsIndices^>((IXbimTriangulatesToPositionsNormalsIndices^)mesh3D,transform);
+					XbimMeshFragment f = streamer->BuildWithNormals<IXbimTriangulatesToPositionsNormalsIndices^>((IXbimTriangulatesToPositionsNormalsIndices^)mesh3D,transform,modelId);
 				}
 
 				fragment.EndPosition = mesh3D->PositionCount-1;

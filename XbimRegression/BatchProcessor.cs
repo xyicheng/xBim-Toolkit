@@ -104,9 +104,9 @@ namespace XbimRegression
                             context.CreateContext();
                         }
                         geomTime = watch.ElapsedMilliseconds - parseTime;
-                        XbimSceneBuilder sb = new XbimSceneBuilder();
+                        //XbimSceneBuilder sb = new XbimSceneBuilder();
                         string xbimSceneName = BuildFileName(ifcFile, ".xbimScene");
-                        sb.BuildGlobalScene(model, xbimSceneName);
+                        //sb.BuildGlobalScene(model, xbimSceneName);
                         sceneTime = watch.ElapsedMilliseconds - geomTime;
                         IIfcFileHeader header = model.Header;
                         watch.Stop();

@@ -6,6 +6,7 @@ using System.Text;
 using Xbim.Common.Geometry;
 using Xbim.IO;
 using Xbim.IO.GroupingAndStyling;
+using Xbim.ModelGeometry.Converter;
 using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.Presentation.LayerStyling
@@ -14,7 +15,7 @@ namespace Xbim.Presentation.LayerStyling
     {
         void Init();
         ConcurrentDictionary<XbimTexture, XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>> Layers { get; }
-        void NewProduct(ModelGeometry.Converter.XbimProductShape productShape, XbimModel model);
-        XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer(ModelGeometry.Converter.XbimShape shape, ModelGeometry.Converter.XbimProductShape productShape);
+        void NewProduct(XbimProductShape productShape, XbimModel model);
+        XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> GetLayer( XbimModel model, XbimShape shape, XbimProductShape productShape);
     }
 }
