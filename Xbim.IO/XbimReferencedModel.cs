@@ -78,6 +78,7 @@ namespace Xbim.IO
             }
         }
 
+        // todo: this looks like nonsense to me (CB), if anything this returns owner role
         public string OwnerName
         {
             get
