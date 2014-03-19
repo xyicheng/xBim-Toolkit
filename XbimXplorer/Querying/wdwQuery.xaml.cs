@@ -561,25 +561,25 @@ namespace XbimXplorer.Querying
                             {
                                 ReportAdd("Visual mode set to EntityType.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyle();
-                                ParentWindow.DrawingControl.ReloadModel();
+                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
                             }
                             else if (t == "entity")
                             {
                                 ReportAdd("Visual mode set to EntityLabel.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerPerEntity();
-                                ParentWindow.DrawingControl.ReloadModel();
+                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
                             }
                             else if (t == "oddeven")
                             {
                                 ReportAdd("Visual mode set to Odd/Even.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerEvenOdd();
-                                ParentWindow.DrawingControl.ReloadModel();
+                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
                             }
                             else if (t == "demo")
                             {
                                 ReportAdd("Visual mode set to Demo.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyleExtended();
-                                ParentWindow.DrawingControl.ReloadModel();
+                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
                             }
                             else
                                 ReportAdd(string.Format("mode not understood: {0}.", t));

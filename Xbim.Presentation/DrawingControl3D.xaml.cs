@@ -63,7 +63,7 @@ namespace Xbim.Presentation
             Canvas.MouseDown += Canvas_MouseDown;
             this.Loaded += DrawingControl3D_Loaded;
             federationColours = new XbimColourMap(StandardColourMaps.Federation);
-            Viewport.CameraChanged += Viewport_CameraChanged;
+            Viewport.CameraChanged += UpdatefrustumPlanes;
             ClearGraphics();
             MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
@@ -203,7 +203,7 @@ namespace Xbim.Presentation
                 _UserModeledDimPoints.Points = UserModeledDimension.VisualPoints;
         }
 
-        void Viewport_CameraChanged(object sender, RoutedEventArgs e)
+        void UpdatefrustumPlanes(object sender, RoutedEventArgs e)
         {
             HelixViewport3D snd = sender as HelixViewport3D;
             if (snd == null)
@@ -221,21 +221,19 @@ namespace Xbim.Presentation
             {
                 diag = viewBounds.Length();
             }
-            double FarPlane = CentralDistance + 1.5 * diag;
-            double NearPlane = CentralDistance - 1.5 * diag;
+            double FarPlaneDistance = CentralDistance + 1.5 * diag;
+            double NearPlaneDistance = CentralDistance - 1.5 * diag;
 
             const double nearLimit = 0.125;
-            if (NearPlane < nearLimit)
+            NearPlaneDistance = Math.Max(NearPlaneDistance, nearLimit);
+
+            if (snd.Camera.NearPlaneDistance != NearPlaneDistance)
             {
-                NearPlane = nearLimit;
+                snd.Camera.NearPlaneDistance = NearPlaneDistance;  // Debug.WriteLine("Near: " + NearPlane);
             }
-            if (Viewport.Camera.NearPlaneDistance != NearPlane)
+            if (snd.Camera.FarPlaneDistance != FarPlaneDistance)
             {
-                Viewport.Camera.NearPlaneDistance = NearPlane;  // Debug.WriteLine("Near: " + NearPlane);
-            }
-            if (Viewport.Camera.FarPlaneDistance != FarPlane)
-            {
-                Viewport.Camera.FarPlaneDistance = FarPlane;    // Debug.WriteLine("Far: " + FarPlane);
+                snd.Camera.FarPlaneDistance = FarPlaneDistance;    // Debug.WriteLine("Far: " + FarPlane);
             }
 
         }
@@ -274,8 +272,14 @@ namespace Xbim.Presentation
         }
 
         public void SetCutPlane(double PosX, double PosY, double PosZ, double NrmX, double NrmY, double NrmZ)
-        {   
-            object p = this.FindName("cuttingGroup");
+        {
+            SetNamedCutPlane(PosX, PosY, PosZ, NrmX, NrmY, NrmZ, "cuttingGroup");
+            SetNamedCutPlane(PosX, PosY, PosZ, NrmX, NrmY, NrmZ, "cuttingGroupT");
+        }
+
+        private void SetNamedCutPlane(double PosX, double PosY, double PosZ, double NrmX, double NrmY, double NrmZ, string cuttingGroupName)
+        {
+            object p = this.FindName(cuttingGroupName);
             XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
             if (cpg != null)
             {
@@ -292,7 +296,13 @@ namespace Xbim.Presentation
 
         public void ClearCutPlane()
         {
-            object p = this.FindName("cuttingGroup");
+            ClearNamedCutPlane("cuttingGroup");
+            ClearNamedCutPlane("cuttingGroupT");
+        }
+
+        private void ClearNamedCutPlane(string name)
+        {
+            object p = this.FindName(name);
             XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
             if (cpg != null)
             {
@@ -574,9 +584,12 @@ namespace Xbim.Presentation
             }
         }
 
-        public void ReloadModel()
+        public void ReloadModel(bool ResetCameraPosition = true)
         {
-            LoadGeometry((XbimModel)this.GetValue(ModelProperty));
+            LoadGeometry(
+                model: (XbimModel)this.GetValue(ModelProperty),
+                ResetCameraPosition: ResetCameraPosition
+                );
             SetValue(LayerSetProperty, LayerSetRefresh());
         }
 
@@ -1039,7 +1052,7 @@ namespace Xbim.Presentation
         private XbimVector3D _modelTranslation;
         public XbimMatrix3D wcsTransform;
 
-        private void ClearGraphics()
+        private void ClearGraphics(bool ResetCamera = true)
         {
             PercentageLoaded = 0;
             Selection = new EntitySelection();
@@ -1057,7 +1070,8 @@ namespace Xbim.Presentation
             modelBounds = XbimRect3D.Empty;
             viewBounds = new XbimRect3D(0, 0, 0, 10, 10, 5);    
             scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
-            Viewport.ResetCamera();
+            if (ResetCamera)
+                Viewport.ResetCamera();
             Highlighted.Mesh = null;
         }
 
@@ -1081,13 +1095,13 @@ namespace Xbim.Presentation
         /// Clears the current graphics and initiates the cascade of events that result in viewing the scene.
         /// </summary>
         /// <param name="EntityLabels">If null loads the whole model, otherwise only elements listed in the enumerable</param>
-        public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null)
+        public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null, bool ResetCameraPosition = true)
         {
             // AddLayerToDrawingControl is the function that actually populates the geometry in the viewer.
             // AddLayerToDrawingControl is triggered by BuildRefModelScene and BuildScene below here when layers get ready.
 
             //reset all the visuals
-            ClearGraphics();
+            ClearGraphics(ResetCameraPosition);
             
             if (model == null) 
                 return; //nothing to show
@@ -1121,7 +1135,8 @@ namespace Xbim.Presentation
                 scenes.Add(BuildRefModelScene(refModel.Model, refModel.DocumentInformation));
             }
             ShowSpaces = false;
-            RecalculateView(model);
+            if (ResetCameraPosition)
+                RecalculateView(model);
         }
 
         private XbimRegion GetLargestRegion(XbimModel model)
@@ -1147,7 +1162,7 @@ namespace Xbim.Presentation
           
             // Assumes a NearPlaneDistance of 1/8 of meter.
             //all models are now in metres
-            Viewport_CameraChanged(null, null);
+            UpdatefrustumPlanes(null, null);
 
             //get bounding box for the whole scene and adapt gridlines to the model units
             //
@@ -1452,12 +1467,16 @@ namespace Xbim.Presentation
 
         public void ShowAll()
         {
-            //scene.ShowAll();
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) 
+                    layer.ShowAll();
         }
 
         public void HideAll()
         {
-            //scene.HideAll();
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) 
+                    layer.HideAll();
         }
 
         public void ViewHome()
