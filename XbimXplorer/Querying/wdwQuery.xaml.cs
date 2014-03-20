@@ -561,25 +561,25 @@ namespace XbimXplorer.Querying
                             {
                                 ReportAdd("Visual mode set to EntityType.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyle();
-                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
+                                ParentWindow.DrawingControl.ReloadModel(Options: DrawingControl3D.ModelRefreshOptions.ViewPreserveAll);
                             }
                             else if (t == "entity")
                             {
                                 ReportAdd("Visual mode set to EntityLabel.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerPerEntity();
-                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
+                                ParentWindow.DrawingControl.ReloadModel(Options: DrawingControl3D.ModelRefreshOptions.ViewPreserveAll);
                             }
                             else if (t == "oddeven")
                             {
                                 ReportAdd("Visual mode set to Odd/Even.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerEvenOdd();
-                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
+                                ParentWindow.DrawingControl.ReloadModel(Options: DrawingControl3D.ModelRefreshOptions.ViewPreserveAll);
                             }
                             else if (t == "demo")
                             {
                                 ReportAdd("Visual mode set to Demo.");
                                 ParentWindow.DrawingControl.LayerStyler = new Xbim.Presentation.LayerStyling.LayerStylerTypeAndIFCStyleExtended();
-                                ParentWindow.DrawingControl.ReloadModel(ResetCameraPosition: false);
+                                ParentWindow.DrawingControl.ReloadModel(Options: DrawingControl3D.ModelRefreshOptions.ViewPreserveAll);
                             }
                             else
                                 ReportAdd(string.Format("mode not understood: {0}.", t));
@@ -631,7 +631,7 @@ namespace XbimXplorer.Querying
 
         int[] tointarray(string value, char sep)
         {
-            string[] sa = value.Split(new char[] { sep}, StringSplitOptions.RemoveEmptyEntries);
+            string[] sa = value.Split(new char[] { sep }, StringSplitOptions.RemoveEmptyEntries);
             List<int> ia = new List<int>();
             for (int i = 0; i < sa.Length; ++i)
             {
@@ -642,8 +642,8 @@ namespace XbimXplorer.Querying
                     {
                         int iS, iT;
                         if (
-                            int.TryParse(v[0], out iS) && 
-                            int.TryParse(v[1], out iT) 
+                            int.TryParse(v[0], out iS) &&
+                            int.TryParse(v[1], out iT)
                             )
                         {
                             if (iT >= iS)
@@ -656,14 +656,14 @@ namespace XbimXplorer.Querying
                         }
                     }
                 }
-                else 
+                else
                 {
-                int j;
-                if (int.TryParse(sa[i], out j))
-                {
-                    ia.Add(j);
+                    int j;
+                    if (int.TryParse(sa[i], out j))
+                    {
+                        ia.Add(j);
+                    }
                 }
-            }
             }
             return ia.ToArray();
         }

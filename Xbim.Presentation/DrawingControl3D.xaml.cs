@@ -584,11 +584,11 @@ namespace Xbim.Presentation
             }
         }
 
-        public void ReloadModel(bool ResetCameraPosition = true)
+        public void ReloadModel(ModelRefreshOptions Options = ModelRefreshOptions.None)
         {
             LoadGeometry(
                 model: (XbimModel)this.GetValue(ModelProperty),
-                ResetCameraPosition: ResetCameraPosition
+                Options: Options
                 );
             SetValue(LayerSetProperty, LayerSetRefresh());
         }
@@ -1052,10 +1052,17 @@ namespace Xbim.Presentation
         private XbimVector3D _modelTranslation;
         public XbimMatrix3D wcsTransform;
 
-        private void ClearGraphics(bool ResetCamera = true)
+
+        private void ClearGraphics(ModelRefreshOptions options = ModelRefreshOptions.None)
         {
             PercentageLoaded = 0;
-            Selection = new EntitySelection();
+
+            if (!((options & ModelRefreshOptions.ViewPreserveSelection) == ModelRefreshOptions.ViewPreserveSelection))
+            {
+                Selection = new EntitySelection();
+                Highlighted.Mesh = null;
+            }
+            
             UserModeledDimension.Clear();
 
             _materials.Clear();
@@ -1065,14 +1072,14 @@ namespace Xbim.Presentation
             Transparents.Children.Clear();
             Extras.Children.Clear();
 
-            this.ClearCutPlane();
+            if (!((options & ModelRefreshOptions.ViewPreserveCuttingPlane) == ModelRefreshOptions.ViewPreserveCuttingPlane))
+                this.ClearCutPlane();
 
             modelBounds = XbimRect3D.Empty;
             viewBounds = new XbimRect3D(0, 0, 0, 10, 10, 5);    
             scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
-            if (ResetCamera)
+            if (!((options & ModelRefreshOptions.ViewPreserveCameraPosition) == ModelRefreshOptions.ViewPreserveCameraPosition))
                 Viewport.ResetCamera();
-            Highlighted.Mesh = null;
         }
 
         private XbimRect3D GetModelBounds(XbimModel model)
@@ -1091,17 +1098,27 @@ namespace Xbim.Presentation
             return box;
         }
 
+        [Flags]
+        public enum ModelRefreshOptions
+        {
+            None = 0,
+            ViewPreserveCameraPosition = 1,
+            ViewPreserveSelection = 2,
+            ViewPreserveCuttingPlane = 4,
+            ViewPreserveAll = 7
+        }
+
         /// <summary>
         /// Clears the current graphics and initiates the cascade of events that result in viewing the scene.
         /// </summary>
         /// <param name="EntityLabels">If null loads the whole model, otherwise only elements listed in the enumerable</param>
-        public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null, bool ResetCameraPosition = true)
+        public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null, ModelRefreshOptions Options = ModelRefreshOptions.None)
         {
             // AddLayerToDrawingControl is the function that actually populates the geometry in the viewer.
             // AddLayerToDrawingControl is triggered by BuildRefModelScene and BuildScene below here when layers get ready.
 
             //reset all the visuals
-            ClearGraphics(ResetCameraPosition);
+            ClearGraphics(Options);
             
             if (model == null) 
                 return; //nothing to show
@@ -1135,8 +1152,7 @@ namespace Xbim.Presentation
                 scenes.Add(BuildRefModelScene(refModel.Model, refModel.DocumentInformation));
             }
             ShowSpaces = false;
-            if (ResetCameraPosition)
-                RecalculateView(model);
+            RecalculateView(model, Options);
         }
 
         private XbimRegion GetLargestRegion(XbimModel model)
@@ -1155,7 +1171,7 @@ namespace Xbim.Presentation
                 return null;
         }
 
-        private void RecalculateView(XbimModel model)
+        private void RecalculateView(XbimModel model, ModelRefreshOptions options = ModelRefreshOptions.None)
         {
             if (!modelBounds.IsEmpty) //we have  geometry so create view box
                 viewBounds = modelBounds;
@@ -1184,7 +1200,8 @@ namespace Xbim.Presentation
             this.GridLines.Transform = t3d;
            
             //make sure whole scene is visible
-            ViewHome();   
+            if (!((options & ModelRefreshOptions.ViewPreserveCameraPosition) == ModelRefreshOptions.ViewPreserveCameraPosition))
+                ViewHome();   
         }
 
         void RefencedModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
