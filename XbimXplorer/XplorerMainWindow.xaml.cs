@@ -540,7 +540,7 @@ namespace XbimXplorer
             else
             {
                 dlg.DefaultExt = "ifc";
-                filter = "Ifc File (*.ifc)|*.ifc|" +  filter + "|xBIM Federation file (*.xBIMF)|*.xbimf|" ;
+                filter = "Ifc File (*.ifc)|*.ifc|" +  filter + "|xBIM Federation file (*.xBIMF)|*.xbimf" ;
             }
 
             dlg.Filter = filter;// Filter files by extension 
