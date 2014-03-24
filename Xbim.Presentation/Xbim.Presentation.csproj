@@ -103,6 +103,8 @@
     <Compile Include="DynamicProductSelectionControl.xaml.cs">
       <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\ObservableMeshVisual3D.cs" />
+    <Compile Include="Extensions\Utility\PropertyHelper.cs" />
     <Compile Include="FederatedModel\FederatedModelDialog.xaml.cs">
       <DependentUpon>FederatedModelDialog.xaml</DependentUpon>
     </Compile>

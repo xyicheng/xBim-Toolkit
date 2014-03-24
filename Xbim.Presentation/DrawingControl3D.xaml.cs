@@ -59,6 +59,7 @@ namespace Xbim.Presentation
         public DrawingControl3D()
         {
             InitializeComponent();
+            Highlighted.PropertyChanged += Highlighted_PropertyChanged;
             Viewport = Canvas;
             Canvas.MouseDown += Canvas_MouseDown;
             this.Loaded += DrawingControl3D_Loaded;
@@ -68,6 +69,16 @@ namespace Xbim.Presentation
             MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
             MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);            
+        }
+
+        /// <summary>
+        /// this method keeps meshes for TransHighlighted and Highlighted items in sync.
+        /// </summary>
+        void Highlighted_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var pInfo = typeof(MeshVisual3D).GetProperty(e.PropertyName);
+            var sourceValue = pInfo.GetValue(Highlighted, null);
+            pInfo.SetValue(TransHighlighted, sourceValue, null);
         }
 
         CombinedManipulator ClipHandler = null;
