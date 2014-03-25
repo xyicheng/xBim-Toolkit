@@ -58,45 +58,53 @@ namespace Xbim.COBie.Data
             {
                 ProgressIndicator.IncrementAndUpdate();
                 // create zone for each space found
+                Dictionary<String, COBieZoneRow> ExistingZones = new Dictionary<string, COBieZoneRow>();
                 IEnumerable<IfcSpace> spaces = (zn.IsGroupedBy == null) ? Enumerable.Empty<IfcSpace>() : zn.IsGroupedBy.RelatedObjects.OfType<IfcSpace>();
                 foreach (IfcSpace sp in spaces)
                 {
-                    
-
-                    COBieZoneRow zone = new COBieZoneRow(zones);
-
-                    //set allPropertyValues to this element
-                    allPropertyValues.SetAllPropertyValues(zn); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
-                
-                    zone.Name = zn.Name.ToString();
-
-                    string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
-                    zone.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(zn.OwnerHistory);
-                    string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
-                    zone.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(zn.OwnerHistory);
-
-                    zone.Category = GetCategory(zn);
-
-                    zone.SpaceNames = sp.Name;
-
-                    string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
-                    zone.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(zn);
-                    zone.ExtObject = zn.GetType().Name;
-                    zone.ExtIdentifier = zn.GlobalId;
-                    string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
-                    if (ValidateString(extSystem))
-                        zone.Description = extSystem;
+                    COBieZoneRow zone;
+                    if (ExistingZones.ContainsKey(zn.Name.ToString()))
+                    {
+                        zone = ExistingZones[zn.Name.ToString()];
+                        zone.SpaceNames += ","+sp.Name.ToString();
+                    }
                     else
-                        zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
-                    zones.AddRow(zone);
-                    
-                    //fill in the attribute information
-                    attributeBuilder.RowParameters["Name"] = zone.Name;
-                    attributeBuilder.RowParameters["CreatedBy"] = zone.CreatedBy;
-                    attributeBuilder.RowParameters["CreatedOn"] = zone.CreatedOn;
-                    attributeBuilder.RowParameters["ExtSystem"] = zone.ExtSystem;
-                    attributeBuilder.PopulateAttributesRows(zn); //fill attribute sheet rows//pass data from this sheet info as Dictionary
-                
+                    {
+                        zone = new COBieZoneRow(zones);
+                        ExistingZones[zn.Name.ToString()] = zone;
+
+                        //set allPropertyValues to this element
+                        allPropertyValues.SetAllPropertyValues(zn); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+
+                        zone.Name = zn.Name.ToString();
+
+                        string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                        zone.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(zn.OwnerHistory);
+                        string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                        zone.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(zn.OwnerHistory);
+
+                        zone.Category = GetCategory(zn);
+
+                        zone.SpaceNames = sp.Name;
+
+                        string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                        zone.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(zn);
+                        zone.ExtObject = zn.GetType().Name;
+                        zone.ExtIdentifier = zn.GlobalId;
+                        string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                        if (ValidateString(extSystem))
+                            zone.Description = extSystem;
+                        else
+                            zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
+                        zones.AddRow(zone);
+
+                        //fill in the attribute information
+                        attributeBuilder.RowParameters["Name"] = zone.Name;
+                        attributeBuilder.RowParameters["CreatedBy"] = zone.CreatedBy;
+                        attributeBuilder.RowParameters["CreatedOn"] = zone.CreatedOn;
+                        attributeBuilder.RowParameters["ExtSystem"] = zone.ExtSystem;
+                        attributeBuilder.PopulateAttributesRows(zn); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                    }
                 }
 
             }
@@ -120,32 +128,36 @@ namespace Xbim.COBie.Data
                         spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
                     }
 
+                    Dictionary<String, COBieZoneRow> ExistingZones = new Dictionary<string, COBieZoneRow>();
                     foreach (IfcPropertySingleValue spProp in spProperties)
                     {
-                        COBieZoneRow zone = new COBieZoneRow(zones);
-                        zone.Name = spProp.NominalValue.ToString();
+                        COBieZoneRow zone;
+                        if (ExistingZones.ContainsKey(spProp.NominalValue.ToString()))
+                        {
+                            zone = ExistingZones[spProp.NominalValue.ToString()];
+                            zone.SpaceNames += "," + sp.Name;
+                        } else {
+                            zone = new COBieZoneRow(zones);
+                            zone.Name = spProp.NominalValue.ToString();
+                            ExistingZones[spProp.NominalValue.ToString()] = zone;
 
-                        zone.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
-                        zone.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory);
+                            zone.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
+                            zone.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory);
 
-                        zone.Category = spProp.Name;
-                        zone.SpaceNames = sp.Name;
+                            zone.Category = spProp.Name;
+                            zone.SpaceNames = sp.Name;
 
-                        zone.ExtSystem = GetExternalSystem(pset);
-                        zone.ExtObject = spProp.GetType().Name;
-                        zone.ExtIdentifier = pset.GlobalId.ToString(); //IfcPropertySingleValue has no GlobalId so set to the holding IfcPropertySet
+                            zone.ExtSystem = GetExternalSystem(pset);
+                            zone.ExtObject = spProp.GetType().Name;
+                            zone.ExtIdentifier = pset.GlobalId.ToString(); //IfcPropertySingleValue has no GlobalId so set to the holding IfcPropertySet
                             
-                        zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
+                            zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
 
-                        zones.AddRow(zone);
-                        
+                            zones.AddRow(zone);
+                        }
                     }
                 }
-
-                //TODO: COBieResponsibilityMatrix-v07 states that Zone - "Repeated names consolidated", have to implemented as not clear on what is required
-                //spProperties = spProperties.OrderBy(p => p.Name.ToString(), new CompareString()); //consolidate test, Concat as looping spaces then sort then dump to COBieZoneRow foreach
-
-                
+                //spProperties = spProperties.OrderBy(p => p.Name.ToString(), new CompareString()); //consolidate test, Concat as looping spaces then sort then dump to COBieZoneRow foreach   
             }
 
             ProgressIndicator.Finalise();
