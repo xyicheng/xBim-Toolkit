@@ -42,5 +42,10 @@ namespace Xbim.Presentation.LayerStyling
         {
             get { return false; }
         }
+
+        public bool IsVisibleLayer(string key)
+        {
+            return true;
+        }
     }
 }

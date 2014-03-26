@@ -28,5 +28,12 @@ namespace Xbim.Presentation.LayerStyling
         /// Determines whether the engine creates sublayers depending on IFC styles in the model.
         /// </summary>
         bool UseIfcSubStyles { get; }
+
+        /// <summary>
+        /// Returns a bool determining the visibility of a layer.
+        /// </summary>
+        /// <param name="key">Similar to layerkey in GetLayer</param>
+        /// <returns></returns>
+        bool IsVisibleLayer(string key);
     }
 }

@@ -178,5 +178,10 @@ namespace Xbim.Presentation.LayerStyling
             }
             return sb.ToString();
         }
+
+        public bool IsVisibleLayer(string key)
+        {
+            return true;
+        }
     }
 }

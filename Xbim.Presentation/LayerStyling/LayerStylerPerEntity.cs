@@ -40,5 +40,10 @@ namespace Xbim.Presentation.LayerStyling
         }
 
         public bool UseIfcSubStyles { get; set; }
+
+        public bool IsVisibleLayer(string key)
+        {
+            return true;
+        }
     }
 }

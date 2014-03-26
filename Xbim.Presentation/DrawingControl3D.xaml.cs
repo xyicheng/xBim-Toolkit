@@ -1321,6 +1321,7 @@ namespace Xbim.Presentation
             {
                 XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = LayerStyler.GetLayer(LayerName, model, scene);
                 IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(GroupedHandlers[LayerName]);
+                bool IsLayerVisible = LayerStyler.IsVisibleLayer(LayerName);
 
                 // initially add all content into the hidden field (underlying geometry info)
                 // it will later be moved to the visible WPF implementation
@@ -1336,7 +1337,7 @@ namespace Xbim.Presentation
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
 
-                this.Dispatcher.BeginInvoke(new Action(() => { AddLayerToDrawingControl(layer); }), System.Windows.Threading.DispatcherPriority.Background);
+                this.Dispatcher.BeginInvoke(new Action(() => { AddLayerToDrawingControl(layer, IsLayerVisible); }), System.Windows.Threading.DispatcherPriority.Background);
                 lock (scene)
                 {
                     scene.Add(layer);
@@ -1354,12 +1355,12 @@ namespace Xbim.Presentation
         /// <summary>
         /// function that actually populates the geometry from the layer into the viewer meshes.
         /// </summary>
-        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerely called DrawLayer
+        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer, bool Visible = true) // Formerely called DrawLayer
         {
             // move it to the visual element
             // 
-            layer.Show();
-
+            if (Visible)
+                layer.Show();
 
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
             m3d.SetValue(TagProperty, layer);
@@ -1381,7 +1382,7 @@ namespace Xbim.Presentation
                 Opaques.Children.Add(mv);
 
             foreach (var subLayer in layer.SubLayers)
-                AddLayerToDrawingControl(subLayer);
+                AddLayerToDrawingControl(subLayer, Visible);
         }
 
         /// <summary>
