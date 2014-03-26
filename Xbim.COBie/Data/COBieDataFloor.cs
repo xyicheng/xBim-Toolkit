@@ -106,6 +106,9 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(ifcBuildingStorey); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
+
+            floors.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
 
             return floors;

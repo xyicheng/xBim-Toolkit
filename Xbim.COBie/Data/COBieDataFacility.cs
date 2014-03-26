@@ -127,6 +127,9 @@ namespace Xbim.COBie.Data
                     attributeBuilder.PopulateAttributesRows(ifcObject); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 }
             }
+
+            facilities.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
             return facilities;
         }

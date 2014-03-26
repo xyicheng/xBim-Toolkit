@@ -137,6 +137,9 @@ namespace Xbim.COBie.Data
 
                 ids++;
             }
+
+            connections.OrderBy(s => s.Name);
+            
             ProgressIndicator.Finalise();
 
             return connections;

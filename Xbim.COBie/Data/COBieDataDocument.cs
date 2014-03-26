@@ -102,6 +102,8 @@ namespace Xbim.COBie.Data
                 documents.AddRow(doc);
             }
 
+            documents.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
             return documents;
         }

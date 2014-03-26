@@ -150,6 +150,9 @@ namespace Xbim.COBie.Data
                 contacts.AddRow(contact);
             }
             ProgressIndicator.Finalise();
+
+            contacts.OrderBy(s => s.Email);
+
             return contacts;
         }
 

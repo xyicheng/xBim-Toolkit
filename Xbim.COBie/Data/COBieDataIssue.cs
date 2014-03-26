@@ -123,6 +123,8 @@ namespace Xbim.COBie.Data
                 issues.AddRow(issue);
             }
 
+            issues.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
             return issues;
         }

@@ -184,6 +184,9 @@ namespace Xbim.COBie.Data
                     }
                 }
             }
+
+            systems.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
             return systems;
         }

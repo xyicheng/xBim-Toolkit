@@ -57,6 +57,9 @@ namespace Xbim.COBie.Data
 
                 resources.AddRow(resource);
             }
+
+            resources.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
             return resources;
         }

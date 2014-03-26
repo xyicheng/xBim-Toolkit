@@ -138,6 +138,8 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(el); //fill attribute sheet rows
             }
 
+            components.OrderBy(s=>s.Name);
+
             ProgressIndicator.Finalise();
 #if DEBUG
             timer.Stop();

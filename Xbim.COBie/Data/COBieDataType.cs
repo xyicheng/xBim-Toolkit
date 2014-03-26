@@ -231,6 +231,9 @@ namespace Xbim.COBie.Data
                     rowHolderChildNames.Add(name.ToLower());
                 }
             }
+
+            types.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
 
 #if DEBUG

@@ -177,7 +177,12 @@ namespace Xbim.COBie.Data
                         coordinates.AddRow(coordinateUpper);
                     }
                 }
-                ProgressIndicator.Finalise();
+
+            coordinates.OrderBy(s => s.Name);
+            
+            ProgressIndicator.Finalise();
+                
+
             return coordinates;
         }
 

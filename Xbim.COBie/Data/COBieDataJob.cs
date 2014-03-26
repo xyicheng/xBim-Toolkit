@@ -94,6 +94,8 @@ namespace Xbim.COBie.Data
                 jobs.AddRow(job);
             }
 
+            jobs.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
             return jobs;
         }

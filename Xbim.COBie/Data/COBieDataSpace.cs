@@ -106,7 +106,9 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(ifcSpace); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
-            
+
+            spaces.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
 #if DEBUG
             timer.Stop();

@@ -843,7 +843,12 @@ namespace Xbim.COBie
         }
         #endregion
 
-       
+
+
+        internal void OrderBy(Func<T, String> func)
+        {
+            Rows = Rows.OrderBy(func).ToList();
+        }
     } 
 
 }

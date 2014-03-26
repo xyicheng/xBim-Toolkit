@@ -160,6 +160,8 @@ namespace Xbim.COBie.Data
                 //spProperties = spProperties.OrderBy(p => p.Name.ToString(), new CompareString()); //consolidate test, Concat as looping spaces then sort then dump to COBieZoneRow foreach   
             }
 
+            zones.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
 
             return zones;

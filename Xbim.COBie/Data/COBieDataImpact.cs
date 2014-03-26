@@ -85,6 +85,9 @@ namespace Xbim.COBie.Data
 
                 impacts.AddRow(impact);
             }
+
+            impacts.OrderBy(s => s.Name);
+
             ProgressIndicator.Finalise();
 
             return impacts;

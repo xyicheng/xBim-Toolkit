@@ -130,7 +130,11 @@ namespace Xbim.COBie.Data
                 if (childNames.Count > 0)
                     AddChildRows(assemblies, assembly, childNames);
             }
+
+            assemblies.OrderBy(s => s.Name);
+            
             ProgressIndicator.Finalise();
+
             return assemblies;
         }
 
