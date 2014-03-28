@@ -72,7 +72,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(19, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_Information, "JobType", 255, COBieAllowedType.AlphaNumeric)]
         public string JobType { get; set; }
 
-        [COBieAttributes(20, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_PrimaryKey, "ObjAttribute", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(20, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_PrimaryKey_IfSpecified, "ObjAttribute", 255, COBieAllowedType.AlphaNumeric)]
         public string ObjAttribute { get; set; }
 
         [COBieAttributes(21, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_System, "ObjAttributeType", 255, COBieAllowedType.AlphaNumeric)]
@@ -102,7 +102,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(29, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_System, "ObjIssue", 255, COBieAllowedType.AlphaNumeric)]
         public string ObjIssue { get; set; }
 
-        [COBieAttributes(30, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_PrimaryKey, "ObjJob", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(30, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_PrimaryKey_IfSpecified, "ObjJob", 255, COBieAllowedType.AlphaNumeric)]
         public string ObjJob { get; set; }
 
         [COBieAttributes(31, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required_System, "ObjProject", 255, COBieAllowedType.AlphaNumeric)]

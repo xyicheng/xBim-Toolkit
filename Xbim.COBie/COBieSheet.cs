@@ -28,7 +28,17 @@ namespace Xbim.COBie
         #region Properties
         public string SheetName { get; private set; }
         public List<T> Rows { get; private set; }
-        public List<T> RowsRemoved { get; private set; } //rows removed by merge rules
+        public List<T> RowsRemoved { //rows removed by merge rules
+            get {
+                if (_RowsRemoved == null) { _RowsRemoved = new List<T>(); }
+                return _RowsRemoved; 
+            } 
+            private set { 
+                _RowsRemoved = value; 
+            } 
+        } 
+        private List<T> _RowsRemoved; //rows removed by merge rules
+
         public Dictionary<int, COBieColumn> Columns { get { return _columns; } }
         public Dictionary<string, HashSet<string>> Indices 
         {  
@@ -443,7 +453,7 @@ namespace Xbim.COBie
             {
                 foreach (COBieColumn foreignKeyColumn in ForeignKeyColumns)
                 {
-                    // TODO: COBieColumn chould own the relationship rather than creating a new one each time.
+                    // TODO: COBieColumn should own the relationship rather than creating a new one each time.
                     COBieColumnRelationship cobieReference = new COBieColumnRelationship(workbook, foreignKeyColumn);
 
                     if (!string.IsNullOrEmpty(foreignKeyColumn.ReferenceColumnName))
@@ -652,6 +662,7 @@ namespace Xbim.COBie
                 {
                     case COBieAttributeState.Required_PrimaryKey:
                     case COBieAttributeState.Required_CompoundKeyPart:
+                    case COBieAttributeState.Required_PrimaryKey_IfSpecified:
                         err.ErrorDescription = ErrorDescription.PrimaryKey_Violation;
                         err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
                         err.ErrorLevel = COBieError.ErrorLevels.Error;
@@ -697,6 +708,7 @@ namespace Xbim.COBie
                         break;
                     case COBieAttributeState.Required_IfSpecified:
                     case COBieAttributeState.Required_System:
+                    case COBieAttributeState.Required_System_IfSpecified:
                         if (cell.CellValue == Constants.DEFAULT_STRING)
                             return null; //if a required value but marked as n/a then do not class as error
                         break;
@@ -731,7 +743,8 @@ namespace Xbim.COBie
             COBieAttributeState state = cell.COBieColumn.AttributeState;
             
             if ((state == COBieAttributeState.Required_IfSpecified) ||
-                (state == COBieAttributeState.Required_System)
+                (state == COBieAttributeState.Required_System) ||
+                (state == COBieAttributeState.Required_System_IfSpecified)
                 ) //if a required value but marked as n/a then do not class as error
             {
                 if (cell.CellValue == Constants.DEFAULT_STRING)
@@ -835,6 +848,8 @@ namespace Xbim.COBie
                     return COBieError.ErrorLevels.Error;
                 case COBieAttributeState.Required_System:
                 case COBieAttributeState.Required_IfSpecified:
+                case COBieAttributeState.Required_System_IfSpecified:
+                case COBieAttributeState.Required_PrimaryKey_IfSpecified:
                     return COBieError.ErrorLevels.Warning;
                 default:
                     break;
@@ -848,6 +863,10 @@ namespace Xbim.COBie
         internal void OrderBy(Func<T, String> func)
         {
             Rows = Rows.OrderBy(func).ToList();
+            for (var i = 0; i < Rows.Count(); i++)
+            {
+                Rows[i].RowNumber = i + 1;
+            }
         }
     } 
 

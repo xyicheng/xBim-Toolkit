@@ -18,7 +18,11 @@ namespace Xbim.COBie
 
         Required_System = 6,                // RA
 
-        Required_IfSpecified = 7            // RS (again)
+        Required_IfSpecified = 7,           // RS (again)
+
+        Required_System_IfSpecified = 8, //External system field, but optional eg ExtIdentifier
+        Required_PrimaryKey_IfSpecified = 9, //for optional primary keys
+        Required_Multi_PrimaryKey = 10 //for fields which have multiple primary keys, comma separated
     }
 
     public enum COBieAllowedType

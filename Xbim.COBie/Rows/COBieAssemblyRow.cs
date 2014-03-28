@@ -41,7 +41,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.Required_System, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtObject { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required_IfSpecified, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required_System_IfSpecified, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtIdentifier { get; set; }
 
         [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.Required_IfSpecified, "Description", 255, COBieAllowedType.AlphaNumeric)]

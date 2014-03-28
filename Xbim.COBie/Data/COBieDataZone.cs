@@ -110,11 +110,14 @@ namespace Xbim.COBie.Data
             }
 
             COBieDataPropertySetValues allSpacePropertyValues = new COBieDataPropertySetValues(); //get all property sets and associated properties in one go
+
+            Dictionary<String, COBieZoneRow> myExistingZones = new Dictionary<string, COBieZoneRow>();
+
             foreach (IfcSpace sp in ifcSpaces)
             {
                 ProgressIndicator.IncrementAndUpdate();
                 allSpacePropertyValues.SetAllPropertyValues(sp); //set the space as the current object for the properties get glass
-                
+
                 IEnumerable<IfcPropertySingleValue> spProperties = Enumerable.Empty<IfcPropertySingleValue>();
                 foreach (KeyValuePair<IfcPropertySet, IEnumerable<IfcSimpleProperty>> item in allSpacePropertyValues.MapPsetToProps)
                 {
@@ -128,18 +131,17 @@ namespace Xbim.COBie.Data
                         spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
                     }
 
-                    Dictionary<String, COBieZoneRow> ExistingZones = new Dictionary<string, COBieZoneRow>();
                     foreach (IfcPropertySingleValue spProp in spProperties)
                     {
                         COBieZoneRow zone;
-                        if (ExistingZones.ContainsKey(spProp.NominalValue.ToString()))
+                        if (myExistingZones.ContainsKey(spProp.NominalValue.ToString()))
                         {
-                            zone = ExistingZones[spProp.NominalValue.ToString()];
+                            zone = myExistingZones[spProp.NominalValue.ToString()];
                             zone.SpaceNames += "," + sp.Name;
                         } else {
                             zone = new COBieZoneRow(zones);
                             zone.Name = spProp.NominalValue.ToString();
-                            ExistingZones[spProp.NominalValue.ToString()] = zone;
+                            myExistingZones[spProp.NominalValue.ToString()] = zone;
 
                             zone.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
                             zone.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory);
