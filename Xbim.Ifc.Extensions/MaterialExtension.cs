@@ -106,8 +106,7 @@ namespace Xbim.Ifc2x3.Extensions
         /// THis Saves on processing time which can be very slow when looping.
         /// </summary>
         /// <returns></returns>
-        public static IfcValue GetExtendedPropertyNominalValue(this IfcMaterial material, IModel model,
-                                                                    IfcExtendedMaterialProperties pSet, string propertyName)
+        public static IfcValue GetExtendedPropertyNominalValue(this IfcMaterial material, IModel model, IfcExtendedMaterialProperties pSet, string propertyName)
         {
             if (pSet == null) return null;
 
