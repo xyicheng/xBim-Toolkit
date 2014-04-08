@@ -1353,14 +1353,22 @@ namespace Xbim.Presentation
         }
 
         /// <summary>
+        /// Function that actually populates the geometry from the layer into the viewer meshes.
+        /// If the <paramref name="isLayerVisible"/> is set to false layer becomes hidden.
+        /// </summary>
+        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer, bool isLayerVisible)
+        {
+            AddLayerToDrawingControl(layer);
+            if (!isLayerVisible)
+                layer.HideAll();
+        }
+
+        /// <summary>
         /// function that actually populates the geometry from the layer into the viewer meshes.
         /// </summary>
-        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer, bool Visible = true) // Formerely called DrawLayer
+        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerely called DrawLayer
         {
-            // move it to the visual element
-            // 
-            if (Visible)
-                layer.Show();
+            layer.Show();
 
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
             m3d.SetValue(TagProperty, layer);
@@ -1382,7 +1390,7 @@ namespace Xbim.Presentation
                 Opaques.Children.Add(mv);
 
             foreach (var subLayer in layer.SubLayers)
-                AddLayerToDrawingControl(subLayer, Visible);
+                AddLayerToDrawingControl(subLayer);
         }
 
         /// <summary>
