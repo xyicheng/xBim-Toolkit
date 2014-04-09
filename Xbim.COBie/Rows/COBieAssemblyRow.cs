@@ -20,7 +20,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required_Reference_ForeignKey, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
-        [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required_Information, "CreatedOn", 19, COBieAllowedType.ISODateTime)]
+        [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required_Information, "CreatedOn", 255, COBieAllowedType.ISODateTime)]
         public string CreatedOn { get; set; }
 
         [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.AssemblyType", COBieAttributeState.Required_Reference_PickList, "AssemblyType", 255, COBieAllowedType.AlphaNumeric)]
