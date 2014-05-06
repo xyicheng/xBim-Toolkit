@@ -179,7 +179,7 @@ namespace Xbim.Ifc2x3.MeasureResource
                     _elements.Add((IfcDerivedUnitElement) value.EntityVal);
                     break;
                 case 1:
-                    _unitType = (IfcDerivedUnitEnum) Enum.Parse(typeof (IfcDerivedUnitEnum), value.EnumVal);
+                    _unitType = (IfcDerivedUnitEnum) Enum.Parse(typeof (IfcDerivedUnitEnum), value.EnumVal.ToUpper());
                     break;
                 case 2:
                     _userDefinedType = value.StringVal;
