@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcReal(string val)
         {
-            _theValue = Convert.ToDouble(val);
+            _theValue = ToDouble(val);
         }
 
         #region ExpressType Members

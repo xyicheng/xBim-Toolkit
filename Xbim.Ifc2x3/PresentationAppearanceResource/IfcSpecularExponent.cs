@@ -74,7 +74,7 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
 
         public IfcSpecularExponent(string val)
         {
-            _theValue = Convert.ToDouble(val);
+            _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcSpecularExponent(double? value)

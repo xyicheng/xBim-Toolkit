@@ -70,7 +70,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcCountMeasure(string val)
         {
-            _theValue = Convert.ToDouble(val);
+           _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcCountMeasure(double? value)

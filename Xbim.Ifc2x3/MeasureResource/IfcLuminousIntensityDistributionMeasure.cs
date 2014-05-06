@@ -73,7 +73,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcLuminousIntensityDistributionMeasure(string val)
         {
-            _theValue = Convert.ToDouble(val);
+            _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcLuminousIntensityDistributionMeasure(double? value)

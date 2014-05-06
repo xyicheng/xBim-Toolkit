@@ -73,7 +73,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcMoistureDiffusivityMeasure(string val)
         {
-            _theValue = Convert.ToDouble(val);
+            _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcMoistureDiffusivityMeasure(double? value)

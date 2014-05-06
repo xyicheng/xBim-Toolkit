@@ -70,7 +70,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcAbsorbedDoseMeasure(string val)
         {
-            _theValue = Convert.ToDouble(val);
+           _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcAbsorbedDoseMeasure(double? value)

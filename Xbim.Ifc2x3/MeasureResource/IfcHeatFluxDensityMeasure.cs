@@ -73,7 +73,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcHeatFluxDensityMeasure(string val)
         {
-            _theValue = Convert.ToDouble(val);
+           _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcHeatFluxDensityMeasure(double? value)

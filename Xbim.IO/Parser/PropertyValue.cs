@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions.SelectTypes;
+using System.Globalization;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.IO.Parser
 {
@@ -110,7 +112,7 @@ namespace Xbim.IO.Parser
             get
             {
                 if (_ifcParserType == IfcParserType.Integer
-                    || _ifcParserType == IfcParserType.Real) return Convert.ToDouble(_strVal);
+                    || _ifcParserType == IfcParserType.Real) return IfcReal.ToDouble(_strVal);
                 else if (_ifcParserType == IfcParserType.HexaDecimal)
                     return Convert.ToDouble(Convert.ToInt64(_strVal, 16));
                 else
@@ -125,10 +127,8 @@ namespace Xbim.IO.Parser
             {
                 if (_ifcParserType == IfcParserType.Real || _ifcParserType == IfcParserType.Integer)
                 {
-                    //if (_ifcParserType != IfcParserType.Real)
-                    //    Debug.WriteLine(
-                    //        "A Real parameter has been illegally written into the Ifc File as an Integer, it has been converted to a Real without loss of data");
-                    return Convert.ToDouble(_strVal);
+
+                    return IfcReal.ToDouble(_strVal);
                 }
                 else if (_ifcParserType == IfcParserType.Entity && _entityVal is ExpressType && typeof(double).IsAssignableFrom(((ExpressType)_entityVal).UnderlyingSystemType))
                     return (double)(((ExpressType)_entityVal).Value);
