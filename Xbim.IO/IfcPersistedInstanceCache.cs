@@ -408,7 +408,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
-        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
+        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false, int codePageOverride = -1)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -419,7 +419,7 @@ namespace Xbim.IO
                 {
                     using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
                     {
-                        using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
+                       using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction, codePageOverride))
                         {
                             if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                             part21Parser.Parse();
@@ -446,7 +446,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="toImportFilename"></param>
         /// <param name="progressHandler"></param>
-        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
+        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false, int codePageOverride = -1)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -474,7 +474,7 @@ namespace Xbim.IO
                                     {
                                         using (Stream reader = zipFile.GetInputStream(entry))
                                         {
-                                            using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
+                                            using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction, codePageOverride))
                                             {
                                                 if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                                                 part21Parser.Parse();

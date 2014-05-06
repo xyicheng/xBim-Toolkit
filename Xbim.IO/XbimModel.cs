@@ -52,6 +52,7 @@ namespace Xbim.IO
         private XbimInstanceCollection instances;
         private XbimEntityCursor editTransactionEntityCursor;
         private bool _deleteOnClose;
+        private int _codePageOverrideForIfcFiles = -1;
         
        
         const string refDocument = "XbimReferencedModel";
@@ -71,7 +72,19 @@ namespace Xbim.IO
         {
             get { return cache.DatabaseName; }
         }
-
+        /// <summary>
+        /// Some applications do not comply with the standard and used the Windows codepage for text. This property gives the possibility to override the character encoding when reading ifc.
+        /// default value = -1 - by standart http://www.buildingsmart-tech.org/implementation/get-started/string-encoding/string-encoding-decoding-summary
+        /// </summary>
+        /// <example>
+        /// model.CodePageOverride = Encoding.Default.WindowsCodePage;
+        /// </example>
+        public int CodePageOverride
+        {
+           get { return _codePageOverrideForIfcFiles; }
+           set { _codePageOverrideForIfcFiles = value; }
+        }
+         
         static public int ModelOpenCount
         {
             get
@@ -79,6 +92,7 @@ namespace Xbim.IO
                 return IfcPersistedInstanceCache.ModelOpenCount;
             }
         }
+
 
         public IXbimInstanceCollection InstancesLocal
         {
@@ -360,10 +374,10 @@ namespace Xbim.IO
                     cache.ImportIfcXml(xbimDbName, importFrom, progDelegate, keepOpen);
                     break;
                 case XbimStorageType.IFC:
-                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen, _codePageOverrideForIfcFiles);
                     break;
                 case XbimStorageType.IFCZIP:
-                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen, _codePageOverrideForIfcFiles);
                     break;
                 case XbimStorageType.XBIM:
                     cache.ImportXbim(importFrom, progDelegate);

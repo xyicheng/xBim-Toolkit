@@ -40,9 +40,9 @@ namespace Xbim.IO.Parser
         Encoding OneByteDecoder;
        
 
-        public string Unescape(string value)
+        public string Unescape(string value, int codePageOverride = -1)
         {
-            Initialize(value);
+           Initialize(value, codePageOverride);
             while (!eof)
             {
                 if (At(SingleApostrophToken))
@@ -109,7 +109,7 @@ namespace Xbim.IO.Parser
             MovePast(Hex8Token);
             if (eof || !HasLength(2)) throw new XbimP21EofException();
             byte[] byteval = GetHexLength(2);
-            builder.Append(Encoding.GetEncoding("iso-8859-1").GetChars(byteval));
+            builder.Append(OneByteDecoder.GetChars(byteval));
         }
 
         private byte[] GetHexLength(int StringLenght)
@@ -164,9 +164,12 @@ namespace Xbim.IO.Parser
             return p21[iCurChar];
         }
 
-        private void Initialize(string value)
+        private void Initialize(string value, int codePageOverride = -1)
         {
-            OneByteDecoder = Encoding.GetEncoding("iso-8859-1");
+            if (codePageOverride == -1)
+               OneByteDecoder = Encoding.GetEncoding("iso-8859-1");
+            else
+               OneByteDecoder = Encoding.GetEncoding(codePageOverride);
             builder = new StringBuilder();
             p21 = value;
             eof = (p21.Length == 0);

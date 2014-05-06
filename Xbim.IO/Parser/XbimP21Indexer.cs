@@ -81,13 +81,15 @@ namespace Xbim.IO.Parser
         private XbimLazyDBTransaction transaction;
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
+        private int _codePageOverride = -1;
+
 
         public int EntityCount
         {
             get { return _entityCount; }
         }
         
-        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table, XbimLazyDBTransaction transaction)
+        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table, XbimLazyDBTransaction transaction, int codePageOverride = -1)
             : base(inputP21)
         {
            
@@ -96,6 +98,7 @@ namespace Xbim.IO.Parser
             _entityCount = 0;
             if (inputP21.CanSeek)
                 _streamSize = inputP21.Length;
+            this._codePageOverride = codePageOverride;
         }
 
         internal override void SetErrorMessage()
@@ -329,7 +332,7 @@ namespace Xbim.IO.Parser
                 if (ret.Contains("\\") || ret.Contains("''"))
                 {
                     XbimP21StringDecoder d = new XbimP21StringDecoder();
-                    ret = d.Unescape(ret);
+                    ret = d.Unescape(ret, _codePageOverride);
                 }
                 _binaryWriter.Write(ret);
             }
