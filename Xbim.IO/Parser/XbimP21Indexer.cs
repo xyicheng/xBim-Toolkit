@@ -88,6 +88,7 @@ namespace Xbim.IO.Parser
         private IfcPersistedInstanceCache modelCache;
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
+        private int _codePageOverride = -1;
 
         public int EntityCount
         {
@@ -96,7 +97,7 @@ namespace Xbim.IO.Parser
 
         
         
-        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table,  IfcPersistedInstanceCache cache)
+        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table,  IfcPersistedInstanceCache cache, int codePageOverride = -1)
             : base(inputP21)
         {
            
@@ -106,6 +107,7 @@ namespace Xbim.IO.Parser
             _entityCount = 0;
             if (inputP21.CanSeek)
                 _streamSize = inputP21.Length;
+            _codePageOverride = codePageOverride;
         }
 
         internal override void SetErrorMessage()
@@ -404,7 +406,7 @@ namespace Xbim.IO.Parser
                 if (ret.Contains("\\") || ret.Contains("'")) //"''" added to remove extra ' added in IfcText Escape() method
                 {
                     XbimP21StringDecoder d = new XbimP21StringDecoder();
-                    ret = d.Unescape(ret);
+                    ret = d.Unescape(ret, _codePageOverride);
                 }
                 _binaryWriter.Write(ret);
             }
