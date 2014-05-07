@@ -760,7 +760,10 @@ namespace Xbim.IO
                             if (typeof(ExpressType).IsAssignableFrom(t) && !(typeof(ExpressComplexType).IsAssignableFrom(t) ))
                             {
                                 ExpressType et = (ExpressType)(Activator.CreateInstance(t));
-                                parserType = primitives[et.UnderlyingSystemType.Name];
+                                if (et.GetType() == typeof(IfcLogical))
+                                    parserType = IfcParserType.Boolean;
+                                else
+                                    parserType = primitives[et.UnderlyingSystemType.Name];
                             }
                             else if (t.IsEnum)
                             {
