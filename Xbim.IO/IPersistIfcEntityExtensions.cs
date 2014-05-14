@@ -336,8 +336,13 @@ namespace Xbim.IO
                 entityWriter.Write(string.Format(".{0}.", pVal.ToString().ToUpper()));
             else if (pInfoType == typeof(Boolean))
             {
-                bool b = (bool)pVal;
-                entityWriter.Write(string.Format(".{0}.", b ? "T" : "F"));
+                bool b = false;
+
+                if (pVal != null)
+                {
+                    b = (bool)pVal;
+                    entityWriter.Write(string.Format(".{0}.", b ? "T" : "F"));
+                }
             }
             else if (pInfoType == typeof(DateTime)) //convert  TimeStamp
                 entityWriter.Write(string.Format(new Part21Formatter(), "{0:T}", pVal));
