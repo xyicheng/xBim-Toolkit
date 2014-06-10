@@ -898,6 +898,7 @@ carve::triangulate::incorporateHolesIntoPolygon(
 		  continue;
 	  }
 	  //test the candidate does not intersect with itself
+	  //SRL fix suggested to Carve Csg repository
 	  carve::geom2d::LineSegment2 lineConnect(hole_min, pvert(poly, result[curr]));
 
 	  const size_t hsize =  poly[hole_i].size();
@@ -920,6 +921,7 @@ carve::triangulate::incorporateHolesIntoPolygon(
 	  }
 
 	  if(selfIntersecting) continue; //look for another
+	  //end SRL fix
 	  attachment_point = curr;
 	  break;
 	}

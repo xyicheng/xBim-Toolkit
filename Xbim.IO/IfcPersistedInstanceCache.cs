@@ -64,7 +64,7 @@ namespace Xbim.IO
         /// </summary>
         private readonly object _lockObject;
         private readonly XbimEntityCursor[] _entityTables;
-        private readonly XbimGeometryCursor[] _geometryTables;
+        private readonly XbimCursor[] _geometryTables;
         private XbimDBAccess _accessMode;
         private string _systemPath;
 
@@ -116,7 +116,7 @@ namespace Xbim.IO
             this._lockObject = new Object();
             _model = model;
             _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
-            _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
+            _geometryTables = new XbimCursor[MaxCachedGeometryTables];
         }
 
         public XbimDBAccess AccessMode
@@ -140,6 +140,8 @@ namespace Xbim.IO
                     XbimEntityCursor.CreateTable(session, dbid);
                     XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
                     XbimGeometryCursor.CreateTable(session, dbid);
+                    XbimShapeGeometryCursor.CreateTable(session, dbid);
+                    XbimShapeInstanceCursor.CreateTable(session, dbid);
                 }
                 catch (Exception e)
                 {
@@ -255,11 +257,11 @@ namespace Xbim.IO
             {
                 for (int i = 0; i < this._geometryTables.Length; ++i)
                 {
-                    if (null != this._geometryTables[i])
+                    if (null != this._geometryTables[i] && this._geometryTables[i] is XbimGeometryCursor)
                     {
                         var table = this._geometryTables[i];
                         this._geometryTables[i] = null;
-                        return table;
+                        return (XbimGeometryCursor)table;
                     }
                 }
             }
@@ -298,6 +300,56 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="table">The cursor to free.</param>
         public void FreeTable(XbimGeometryCursor table)
+        {
+            Debug.Assert(null != table, "Freeing a null table");
+
+            lock (this._lockObject)
+            {
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null == this._geometryTables[i])
+                    {
+                        this._geometryTables[i] = table;
+                        return;
+                    }
+                }
+            }
+
+            // Didn't find a slot to cache the cursor in, throw it away
+            table.Dispose();
+        }
+
+        /// <summary>
+        /// Free a table. This will cache the table if the cache isn't full
+        /// and dispose of it otherwise.
+        /// </summary>
+        /// <param name="table">The cursor to free.</param>
+        public void FreeTable(XbimShapeGeometryCursor table)
+        {
+            Debug.Assert(null != table, "Freeing a null table");
+
+            lock (this._lockObject)
+            {
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null == this._geometryTables[i])
+                    {
+                        this._geometryTables[i] = table;
+                        return;
+                    }
+                }
+            }
+
+            // Didn't find a slot to cache the cursor in, throw it away
+            table.Dispose();
+        }
+
+        /// <summary>
+        /// Free a table. This will cache the table if the cache isn't full
+        /// and dispose of it otherwise.
+        /// </summary>
+        /// <param name="table">The cursor to free.</param>
+        public void FreeTable(XbimShapeInstanceCursor table)
         {
             Debug.Assert(null != table, "Freeing a null table");
 
@@ -1671,13 +1723,20 @@ namespace Xbim.IO
             }
         }
 
-        internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses) where T : IPersistIfcEntity
+        internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, XbimReadWriteTransaction txn, bool includeInverses) where T : IPersistIfcEntity
         {
+            //check if the transaction needs pulsing
+            
             XbimInstanceHandle toCopyHandle=toCopy.GetHandle();
+          
             XbimInstanceHandle copyHandle;
             if (mappings.TryGetValue(toCopyHandle, out copyHandle))
-                return (T)this.GetInstance(copyHandle);
-           
+            {
+                var v = this.GetInstance(copyHandle);
+                Debug.Assert(v!=null);
+                return (T)v;
+            }
+            txn.Pulse();
             IfcType ifcType = IfcMetaData.IfcType(toCopy);
             int copyLabel = Math.Abs(toCopy.EntityLabel);
             copyHandle = InsertNew(ifcType.Type);
@@ -1687,12 +1746,16 @@ namespace Xbim.IO
                 IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });      
                 v.Bind(_model, copyHandle.EntityLabel);
                 v.Activate(true);
+                read.TryAdd(copyHandle.EntityLabel, v);
+                createdNew.TryAdd(copyHandle.EntityLabel, v);
                 return (T)v;
             }
             else
             {        
                 IPersistIfcEntity theCopy = (IPersistIfcEntity)Activator.CreateInstance(copyHandle.EntityType);
                 theCopy.Bind(_model, copyHandle.EntityLabel);
+                read.TryAdd(copyHandle.EntityLabel, theCopy);
+                createdNew.TryAdd(copyHandle.EntityLabel, theCopy);
                 IfcRoot rt = theCopy as IfcRoot;
                 IEnumerable<IfcMetaProperty> props = ifcType.IfcProperties.Values.Where(p => !p.IfcAttribute.IsDerivedOverride);
                 if (includeInverses)
@@ -1715,7 +1778,7 @@ namespace Xbim.IO
                         //else 
                         else if (!isInverse && typeof(IPersistIfcEntity).IsAssignableFrom(theType))
                         {
-                            prop.PropertyInfo.SetValue(theCopy, InsertCopy((IPersistIfcEntity)value, mappings, includeInverses), null);
+                            prop.PropertyInfo.SetValue(theCopy, InsertCopy((IPersistIfcEntity)value, mappings, txn, includeInverses), null);
                         }
                         else if (!isInverse && typeof(ExpressEnumerable).IsAssignableFrom(theType))
                         {
@@ -1737,7 +1800,10 @@ namespace Xbim.IO
                                 if (actualItemType.IsValueType || typeof(ExpressType).IsAssignableFrom(actualItemType))
                                     copyColl.Add(item);
                                 else if (typeof(IPersistIfcEntity).IsAssignableFrom(actualItemType))
-                                    copyColl.Add(InsertCopy((IPersistIfcEntity)item, mappings, includeInverses));
+                                {
+                                    var cpy = InsertCopy((IPersistIfcEntity)item, mappings, txn, includeInverses);
+                                    copyColl.Add(cpy);
+                                }
                                 else
                                     throw new XbimException(string.Format("Unexpected collection item type ({0}) found", itemType.Name));
                             }
@@ -1745,10 +1811,10 @@ namespace Xbim.IO
                         else if (isInverse && value is IEnumerable<IPersistIfcEntity>) //just an enumeration of IPersistIfcEntity
                         {
                             foreach (var ent in (IEnumerable<IPersistIfcEntity>)value)
-                                InsertCopy(ent, mappings, includeInverses);
+                                InsertCopy(ent, mappings, txn, includeInverses);
                         }
                         else if (isInverse && value is IPersistIfcEntity) //it is an inverse and has a single value
-                            InsertCopy((IPersistIfcEntity)value, mappings, includeInverses);
+                            InsertCopy((IPersistIfcEntity)value, mappings, txn, includeInverses);
                         else
                             throw new XbimException(string.Format("Unexpected item type ({0})  found", theType.Name));
                     }
@@ -2014,6 +2080,44 @@ namespace Xbim.IO
             {
                 FreeTable(geometryTable);
             }
+        }
+
+        internal XbimShapeGeometryCursor GetShapeGeometryTable()
+        {
+            Debug.Assert(!string.IsNullOrEmpty(_databaseName));
+            lock (this._lockObject)
+            {
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null != this._geometryTables[i] && this._geometryTables[i] is XbimShapeGeometryCursor)
+                    {
+                        var table = this._geometryTables[i];
+                        this._geometryTables[i] = null;
+                        return (XbimShapeGeometryCursor)table;
+                    }
+                }
+            }
+            OpenDatabaseGrbit openMode = AttachedDatabase();
+            return new XbimShapeGeometryCursor(this._model, _databaseName, openMode);
+        }
+
+        internal XbimShapeInstanceCursor GetShapeInstanceTable()
+        {
+            Debug.Assert(!string.IsNullOrEmpty(_databaseName));
+            lock (this._lockObject)
+            {
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null != this._geometryTables[i] && this._geometryTables[i] is XbimShapeInstanceCursor)
+                    {
+                        var table = this._geometryTables[i];
+                        this._geometryTables[i] = null;
+                        return (XbimShapeInstanceCursor)table;
+                    }
+                }
+            }
+            OpenDatabaseGrbit openMode = AttachedDatabase();
+            return new XbimShapeInstanceCursor(this._model, _databaseName, openMode);
         }
     }
 }

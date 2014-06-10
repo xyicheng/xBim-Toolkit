@@ -10,6 +10,7 @@
 #include <TopoDS_Compound.hxx>
 #include <TopTools_DataMapOfShapeInteger.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+#include <functional>
 
 #pragma unmanaged
 
@@ -22,29 +23,30 @@ namespace Xbim
 		namespace OCC
 		{
 
-			// suporting structs
-			struct Float3D
-			{
-				float Dim1;
-				float Dim2;
-				float Dim3;
-				double Precision2;
+	
 
-				Float3D(float D1,	float D2,	float D3)
-					:Dim1(D1),Dim2(D2),Dim3(D3), Precision2(1e-5*1e-5)
+			struct Double3D
+			{
+				double Dim1;
+				double Dim2;
+				double Dim3;
+				double Precision2;	
+				float rounding10P;
+				
+			    Double3D(double D1,	double D2,	double D3)
+					:Dim1(D1),Dim2(D2),Dim3(D3), Precision2(1e-10), rounding10P(1.0F)
 				{
 
 				}
 
-				Float3D(float D1,	float D2,	float D3, double precision)
-					:Dim1(D1),Dim2(D2),Dim3(D3), Precision2(precision*precision)
+				Double3D(double D1,	double D2,	double D3, double precision, unsigned int roundPlaces)
+					:Dim1(D1),Dim2(D2),Dim3(D3), Precision2(precision*precision), rounding10P(std::pow(10, (float)roundPlaces))
 				{
 
 				}
 
 				void Round(float roundPlaces)
 				{
-					float rounding10P = std::pow(10, roundPlaces);
 					Dim1 = (long)(Dim1 * rounding10P) / rounding10P;
 					Dim2 = (long)(Dim2 * rounding10P) / rounding10P;
 					Dim3 = (long)(Dim3 * rounding10P) / rounding10P;
@@ -53,23 +55,23 @@ namespace Xbim
 				operator size_t () const
 				{
 					
-					std::hash<float> h; 
-					return h(Dim1)^
-						   h(Dim2)^
-						   h(Dim3); 
+					return long((Dim1 * rounding10P)+0.5)^
+						   long((Dim2 * rounding10P)+0.5)^
+						   long((Dim3 * rounding10P)+0.5); 
 				}
-
-				bool operator==(const Float3D& b) const
+				
+				bool operator==(const Double3D& b) const
 				{
 					double d = 0, dd;
 					double x1 = Dim1, y1 = Dim2, z1=Dim3, x2=b.Dim1, y2=b.Dim2, z2=b.Dim3;
 					dd = x1; dd -= x2; dd *= dd; d += dd;
 					dd = y1; dd -= y2; dd *= dd; d += dd;
 					dd = z1; dd -= z2; dd *= dd; d += dd;
+
 					return d <= Precision2;	
 				}
 
-				bool operator<(const Float3D& A) const
+				bool operator<(const Double3D& A) const
 				{
 					if (Dim1 != A.Dim1)
 						return Dim1 < A.Dim1;
@@ -108,7 +110,7 @@ namespace Xbim
 				int IndexCount;
 			};
 
-			typedef std::pair <Float3D,size_t> Float3DUInt_Pair;
+			typedef std::pair <Double3D,size_t> Double3DUInt_Pair;
 			// Class to receive the calls that create the memory stream of the geometry cache files. (CB)
 			//
 			public class XbimTriangularMeshStreamer
@@ -136,11 +138,11 @@ namespace Xbim
 				size_t _currentNormalIndex;
 				size_t _facePointIndex;
 
-				std::unordered_map<Float3D,size_t> _pointsMap;
-				std::list<Float3D> _points;
+				std::unordered_map<Double3D,size_t> _pointsMap;
+				std::list<Double3D> _points;
 
-				std::unordered_map<Float3D,size_t> _normalsMap;
-				std::list<Float3D> _normals;
+				std::unordered_map<Double3D,size_t> _normalsMap;
+				std::list<Double3D> _normals;
 
 				std::unordered_map<UIntegerPair,size_t> _uniquePNMap;
 				std::list<UIntegerPair> _uniquePN;	// unique point and normal combination

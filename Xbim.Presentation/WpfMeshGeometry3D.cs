@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Xbim.Common.Geometry;
+using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
 
@@ -385,18 +386,23 @@ namespace Xbim.Presentation
             
         }
 
-
-        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null,short modelId=0)
+        public void Add(string mesh, short productTypeId, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId = 0)
         {
-            XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel, modelId);
+            XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productTypeId, productLabel, geometryLabel, modelId);
             Read(mesh, transform);
             frag.EndPosition = PositionCount - 1;
             frag.EndTriangleIndex = TriangleIndexCount - 1;
             meshes.Add(frag);
         }
 
+        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null,short modelId=0)
+        {
+            Add(mesh, IfcMetaData.IfcTypeId(productType), productLabel, geometryLabel, transform, modelId);
+        }
+
         public bool Read(String data, XbimMatrix3D? tr = null)
         {
+           
             using (StringReader sr = new StringReader(data))
             {
                 Matrix3D? m3d = null;

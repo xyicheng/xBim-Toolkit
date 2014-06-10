@@ -24,6 +24,7 @@
 #include <iostream>
 #include <deque>
 
+
 namespace carve {
   namespace mesh {
 
@@ -58,6 +59,7 @@ namespace carve {
 
         int idx() const { return pos; }
       };
+
     }
 
 
@@ -509,29 +511,103 @@ namespace carve {
 
 
     namespace detail {
-      template<typename iter_t>
-      void FaceStitcher::initEdges(iter_t begin,
-                                   iter_t end) {
-        size_t c = 0;
-        for (iter_t i = begin; i != end; ++i) {
-          face_t *face = *i;
-          CARVE_ASSERT(face->mesh == NULL); // for the moment, can only insert a face into a mesh once.
+	
+	  template<typename iter_t> 
+	  void FaceStitcher::initEdges(iter_t begin,  iter_t end, double EPSILON2, bool flipBadFaces ) 
+	  {
 
-          face->id = c++;
-          edge_t *e = face->edge;
-          do {
-            edges[vpair_t(e->v1(), e->v2())].push_back(e);
-            e = e->next;
-            if (e->rev) { e->rev->rev = NULL; e->rev = NULL; }
-          } while (e != face->edge);
-        }
-        face_groups.init(c);
-        is_open.clear();
-        is_open.resize(c, false);
-      }
+		  size_t c = 0;
+		  if(flipBadFaces) //processes faces by connectivity to allow faces to be flipped when incorrectly defined
+		  {
+			  //build a connectivity map between the vertices and the faces
+			  std::unordered_map<vertex_t*,std::vector<edge_t*>> vertexMap;
+			  std::unordered_set<face_t*> processed;
+			  std::vector<face_t*> processOrder;
+			  size_t totalFaces=0;
+			  for (iter_t i = begin; i != end; ++i) 
+			  {
+				  totalFaces++;
+				  face_t *face = *i;	
+				  face->id=0;
+				  edge_t *e = face->edge;
+				  do 
+				  {
+					  vertexMap[e->vert].push_back(e);
+					  vertexMap[e->vert].push_back(e->prev);
+					  e = e->next;	
+				  } while (e != face->edge);
+			  }
+			  //now sort the faces into a list that allows processing by connectivity
+			  size_t toInvert = 0;
+			  for (iter_t i = begin; i != end; ++i) 
+			  {
+				  face_t *face = (*i);
+				  std::unordered_set<face_t*>::iterator inserted =  processed.find(face);
+				  if(inserted==processed.end()) //not done yet
+				  {
+					  face->id=2;//this is a seed face, 2 = seed, 0=untouched, 1 = invert
+					  std::unordered_set<face_t*> nextFaces;
+					  nextFaces.insert(face);
+					  while(processConnectivity(totalFaces, toInvert, vertexMap, processed, processOrder, nextFaces, EPSILON2))
+					  {
+					  };
+					  if(processed.size() == totalFaces) //we are done
+						  break;
+				  }
+			  }
+			  //check if there are any open edges that intersect with one of the vertises, is so split them
 
-      template<typename iter_t>
-      void FaceStitcher::build(iter_t begin,
+			  //invert the one requiring least changes
+			  bool invertFaceIdEqualsOne = (toInvert < (totalFaces/2));
+
+			  for (std::vector<face_t*>::iterator i = processOrder.begin(); i != processOrder.end(); ++i) 
+			  {
+				  face_t *face = *i;
+				  CARVE_ASSERT(face->mesh == NULL); // for the moment, can only insert a face into a mesh once.
+				  if(invertFaceIdEqualsOne && face->id==1)
+					  face->invert();
+				  else if(!invertFaceIdEqualsOne && face->id!=1)
+					  face->invert();
+				  face->id = c++;
+				  edge_t *e = face->edge;
+				  do {
+
+					  edges[vpair_t(e->v1(), e->v2())].push_back(e);
+					  e = e->next;
+					  if (e->rev) 
+					  {
+						  e->rev->rev = NULL; e->rev = NULL; 
+					  }
+				  } while (e != face->edge);
+			  }
+		  }
+		  else
+		  {
+			  
+			  for (iter_t i = begin; i != end; ++i) 
+			  {
+				  face_t *face = *i;
+				  CARVE_ASSERT(face->mesh == NULL); // for the moment, can only insert a face into a mesh once.
+				  face->id = c++;
+				  edge_t *e = face->edge;
+				  do {
+
+					  edges[vpair_t(e->v1(), e->v2())].push_back(e);
+					  e = e->next;
+					  if (e->rev) 
+					  {
+						  e->rev->rev = NULL; e->rev = NULL; 
+					  }
+				  } while (e != face->edge);
+			  }
+		  }
+		  face_groups.init(c);
+		  is_open.clear();
+		  is_open.resize(c, false);
+	  }
+
+	  template<typename iter_t>
+	  void FaceStitcher::build(iter_t begin,
                                iter_t end,
                                std::vector<Mesh<3> *> &meshes) {
         // work out what set each face belongs to, and then construct
@@ -561,8 +637,8 @@ namespace carve {
       template<typename iter_t>
       void FaceStitcher::create(iter_t begin,
                                 iter_t end,
-                                std::vector<Mesh<3> *> &meshes) {
-        initEdges(begin, end);
+                                std::vector<Mesh<3> *> &meshes, double EPSILON2=1e-10, bool flipBadFaces = false) {
+        initEdges(begin, end, EPSILON2, flipBadFaces);
         construct();
         build(begin, end, meshes);
       }
@@ -674,7 +750,7 @@ namespace carve {
 
     template<unsigned ndim>
     template<typename iter_t>
-    void Mesh<ndim>::create(iter_t begin, iter_t end, std::vector<Mesh<ndim> *> &meshes, const MeshOptions &opts) {
+    void Mesh<ndim>::create(iter_t begin, iter_t end, std::vector<Mesh<ndim> *> &meshes, const MeshOptions &opts, double EPSILON2, bool flipBadFaces ) {
       meshes.clear();
     }
 
@@ -682,8 +758,8 @@ namespace carve {
 
     template<>
     template<typename iter_t>
-    void Mesh<3>::create(iter_t begin, iter_t end, std::vector<Mesh<3> *> &meshes, const MeshOptions &opts) {
-      detail::FaceStitcher(opts).create(begin, end, meshes);
+    void Mesh<3>::create(iter_t begin, iter_t end, std::vector<Mesh<3> *> &meshes, const MeshOptions &opts, double EPSILON2, bool flipBadFaces ) {
+      detail::FaceStitcher(opts).create(begin, end, meshes, EPSILON2, flipBadFaces );
     }
 
 
@@ -734,7 +810,7 @@ namespace carve {
     MeshSet<ndim>::MeshSet(const std::vector<typename MeshSet<ndim>::vertex_t::vector_t> &points,
                            size_t n_faces,
                            const std::vector<int> &face_indices,
-                           const MeshOptions &opts) {
+                           const MeshOptions &opts, double EPSILON2, bool flipBadFaces ) {
       vertex_storage.reserve(points.size());
       std::vector<face_t *> faces;
       faces.reserve(n_faces);
@@ -754,7 +830,7 @@ namespace carve {
         faces.push_back(new face_t(v.begin(), v.end()));
       }
       CARVE_ASSERT(p == face_indices.size());
-      mesh_t::create(faces.begin(), faces.end(), meshes, opts);
+      mesh_t::create(faces.begin(), faces.end(), meshes,opts, EPSILON2, flipBadFaces);
 
       for (size_t i = 0; i < meshes.size(); ++i) {
         meshes[i]->meshset = this;

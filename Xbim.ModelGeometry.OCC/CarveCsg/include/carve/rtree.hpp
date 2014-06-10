@@ -96,12 +96,24 @@ namespace carve {
 
       // Search the rtree for objects that intersect obj (generally an aabb).
       // The aabb class must provide a method intersects(obj_t).
-      template<typename obj_t, typename out_iter_t>
-      void search(const obj_t &obj, out_iter_t out) const {
-        if (!bbox.intersects(obj)) return;
+      //template<typename obj_t, typename out_iter_t>
+      //void search(const obj_t &obj, out_iter_t out) const {
+      //  if (!bbox.intersects(obj)) return;
+      //  if (child) {
+      //    for (node_t *node = child; node; node = node->sibling) {
+      //      node->search(obj, out);
+      //    }
+      //  } else {
+      //    std::copy(data.begin(), data.end(), out);
+      //  }
+      //}
+	  //SRL take a tolerant approach
+	   template<typename obj_t, typename out_iter_t>
+      void search(const obj_t &obj, out_iter_t out, double EPSILON) const {
+        if (!bbox.intersects(obj,EPSILON)) return;
         if (child) {
           for (node_t *node = child; node; node = node->sibling) {
-            node->search(obj, out);
+            node->search(obj, out, EPSILON);
           }
         } else {
           std::copy(data.begin(), data.end(), out);
@@ -111,15 +123,15 @@ namespace carve {
       // update the bounding box extents of nodes that intersect obj (generally an aabb).
       // The aabb class must provide a method intersects(obj_t).
       template<typename obj_t>
-      void updateExtents(const obj_t &obj) {
-        if (!bbox.intersects(obj)) return;
+      void updateExtents(const obj_t &obj, double EPSILON) {
+        if (!bbox.intersects(obj, EPSILON)) return;
 
         if (child) {
           node_t *node = child;
-          node->updateExtents(obj);
+          node->updateExtents(obj,EPSILON);
           bbox = node->bbox;
           for (node = node->sibling; node; node = node->sibling) {
-            node->updateExtents(obj);
+            node->updateExtents(obj,EPSILON);
             bbox.unionAABB(node->bbox);
           }
         } else {
@@ -129,16 +141,16 @@ namespace carve {
 
       // update the bounding box extents of nodes that intersect obj (generally an aabb).
       // The aabb class must provide a method intersects(obj_t).
-      bool remove(const data_t &val, const aabb_t &val_aabb) {
-        if (!bbox.intersects(val_aabb)) return false;
+      bool remove(const data_t &val, const aabb_t &val_aabb, double EPSILON) {
+        if (!bbox.intersects(val_aabb, EPSILON)) return false;
 
         if (child) {
           node_t *node = child;
-          node->remove(val, val_aabb);
+          node->remove(val, val_aabb, EPSILON);
           bbox = node->bbox;
           bool removed = false;
           for (node = node->sibling; node; node = node->sibling) {
-            if (!removed) removed = node->remove(val, val_aabb);
+            if (!removed) removed = node->remove(val, val_aabb,EPSILON);
             bbox.unionAABB(node->bbox);
           }
           return removed;

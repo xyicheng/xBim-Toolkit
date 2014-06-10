@@ -17,6 +17,8 @@
 #include <Geom_Plane.hxx>
 #include <Handle_Geom_Plane.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <BRepTopAdaptor_FClass2d.hxx>
+#include <carve/geom2d.hpp>
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -248,7 +250,7 @@ namespace Xbim
 			//Builds a face from a ArbitraryProfileDefWithVoids
 			TopoDS_Face XbimFace::Build(IfcArbitraryProfileDefWithVoids ^ profile, bool% hasCurves)
 			{
-				
+			//	std::cerr<<"Here we are "<<std::endl;
 				double tolerance = profile->ModelOf->ModelFactors->Precision;
 				double toleranceMax = profile->ModelOf->ModelFactors->PrecisionMax;
 				ShapeFix_ShapeTolerance FTol;
@@ -270,17 +272,68 @@ TryBuildFace:
 					Logger->ErrorFormat("Invalid bound, {0}. Found in IfcArbitraryClosedProfileDefWithVoids = #{1}, face discarded",errMsg, profile->EntityLabel);
 					return TopoDS_Face();
 				}
-				
-				face= faceMaker.Face();
 
+				face= faceMaker.Face();
 				gp_Vec tn = XbimFace::TopoNormal(face);
-				
 				
 				for each( IfcCurve^ curve in profile->InnerCurves)
 				{
+
 					TopoDS_Wire innerWire = XbimFaceBound::Build(curve, hasCurves);
 					if(!innerWire.IsNull() && innerWire.Closed()==Standard_True) //if the loop is not closed it is not a bound
 					{
+	
+	///*		gp_Pnt bl(85663.9,14895.9,0.);
+	//		gp_Pnt br(103241.,14895.9,0.);
+	//		gp_Pnt tr(103241.,66508.8,0.);
+	//////		gp_Pnt tl(85663.9,66508.8,0.);*/
+	////		gp_Pnt bl(-1,-1,0.);
+	////		gp_Pnt br(1,-1,0.);
+	////		gp_Pnt tr(1,1,0.);
+	////		gp_Pnt tl(-1,1,0.);
+	////		BRep_Builder builder;
+	////		TopoDS_Vertex vbl,vbr,vtr,vtl;
+	////		builder.MakeVertex(vbl,bl,tolerance);
+	////		builder.MakeVertex(vbr,br,tolerance);
+	////		builder.MakeVertex(vtr,tr,tolerance);
+	////		builder.MakeVertex(vtl,tl,tolerance);
+	////		TopoDS_Wire wr;
+	////		builder.MakeWire(wr);
+	////		builder.Add(wr, BRepBuilderAPI_MakeEdge(vbl,vbr));
+	////		builder.Add(wr, BRepBuilderAPI_MakeEdge(vbr,vtr));
+	////		builder.Add(wr, BRepBuilderAPI_MakeEdge(vtr,vtl));
+	////		builder.Add(wr, BRepBuilderAPI_MakeEdge(vtl,vbl));
+	////BRepBuilderAPI_MakeFace fm(wr, true);
+	////					//BRepTools_WireExplorer wEx(innerWire);
+
+	////					BRepTopAdaptor_FClass2d aClassifier (fm.Face(), toleranceMax) ;
+	////					gp_Pnt2d p2(0.1,0.1); //the points are required to be 2D in the schema
+	////					TopAbs_State state = aClassifier.Perform(p2);
+	//////					//	
+	////					std::cerr<<state<<" "<<TopAbs_IN<<"  "<<TopAbs_OUT <<"  "<<TopAbs_INTERNAL<<std::endl;
+			
+						//bool isInternal = true; //assume it is in
+						////check if at least one of the points is outside the face
+						//
+						//for( ;wEx.More();wEx.Next())
+						//{
+						//	const TopoDS_Vertex& vertex=  wEx.CurrentVertex();
+						//	gp_Pnt p3 = BRep_Tool::Pnt(vertex);
+						//	gp_Pnt2d p2(94401.5,39635.6); //the points are required to be 2D in the schema
+						//	TopAbs_State state = aClassifier.Perform(p2);
+						//	
+						//	std::cerr<<state<<" "<<TopAbs_IN<<"  "<<TopAbs_OUT <<std::endl;
+						//	if(state!=TopAbs_IN)
+						//	{
+						//		isInternal=false;
+						//		//break;
+						//	}
+						//}
+						//if(!isInternal)
+						//{
+						//	Logger->WarnFormat("IfcArbitraryProfileDefWithVoids error. Inner face loop is not contained in outer face loop.\n The geometry has been incorrectly defined in entity #{0}, the inner loop #{1} has been ignored" ,profile->EntityLabel, curve->EntityLabel);					
+						//	continue;
+						//}
 						gp_Vec n = XbimFaceBound::NewellsNormal(innerWire);
 						if ( n.Dot(tn) > 0 ) //inner wire should be reverse of outer wire
 							innerWire.Reverse();
@@ -296,7 +349,7 @@ TryBuildLoop:
 								FTol.SetTolerance(innerWire, currentloopTolerance , TopAbs_WIRE);
 								goto TryBuildLoop;
 							}
-							
+
 							String^ errMsg = XbimFace::GetBuildFaceErrorMessage(loopErr);
 							Logger->WarnFormat("Invalid void, {0}. IfcCurve #(1) could not be added to IfcArbitraryClosedProfileDefWithVoids = #{2}. Inner Bound ignored",errMsg, curve->EntityLabel, profile->EntityLabel);
 						}

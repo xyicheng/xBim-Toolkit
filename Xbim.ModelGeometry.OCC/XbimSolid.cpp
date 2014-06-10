@@ -503,7 +503,10 @@ namespace Xbim
 				gp_Vec direction = hs->AgreementFlag ? -pln.Axis().Direction() : pln.Axis().Direction();
 				const gp_Pnt pnt = pln.Location().Translated(direction );
 				if(shift)
-					pln.SetLocation(pln.Location().Translated(direction * 10 * -BRepBuilderAPI::Precision())); //shift a little to avoid covergent faces
+				{
+					double shiftAmount = surface->ModelOf->ModelFactors->OneMilliMetre/100;
+					pln.SetLocation(pln.Location().Translated(direction * -shiftAmount)); //shift a little to avoid covergent faces
+				}
 				return BRepPrimAPI_MakeHalfSpace(BRepBuilderAPI_MakeFace(pln),pnt).Solid();
 
 			}
@@ -532,7 +535,7 @@ namespace Xbim
 				TopoDS_Face face = makeFace.Face();
 				if(face.IsNull()) 
 				{
-					Logger->WarnFormat("The IfcPolygonalBoundedHalfSpace #{0} has an icorrectly defined PolygonalBoundary #{1}, it has been ignored",pbhs->EntityLabel,pbhs->PolygonalBoundary->EntityLabel);
+					Logger->WarnFormat("The IfcPolygonalBoundedHalfSpace #{0} has an incorrectly defined PolygonalBoundary #{1}, it has been ignored",pbhs->EntityLabel,pbhs->PolygonalBoundary->EntityLabel);
 					return TopoDS_Solid(); //the face is illegal
 				}
 
@@ -657,9 +660,9 @@ namespace Xbim
 
 			
 
-			IXbimGeometryModelGroup^ XbimSolid::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimSolid::ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
-				return ToPolyHedron(deflection,  precision, precisionMax);
+				return ToPolyHedron(deflection,  precision, precisionMax, rounding);
 			}
 		}
 	}

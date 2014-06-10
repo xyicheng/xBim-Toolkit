@@ -37,7 +37,8 @@ namespace Xbim
 				XbimPolyhedron^ Union(XbimPolyhedron^ a, XbimPolyhedron^ b);
 				//in a or b, but not both
 			    XbimPolyhedron^ SymetricDifference(XbimPolyhedron^ a, XbimPolyhedron^ b);
-				
+				//Intersection of A with B
+				XbimPolyhedron^ Intersection(XbimPolyhedron^ a, XbimPolyhedron^ b);
 			};
 		}
 	}

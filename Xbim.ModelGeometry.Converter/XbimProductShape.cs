@@ -24,7 +24,12 @@ namespace Xbim.ModelGeometry.Converter
        
         public int MaterialLabel;
 
-        private int[] _shapeGeomLabels;
+        readonly private int[] _shapeGeomLabels;
+
+        public int[] ShapeLabels
+        {
+            get { return _shapeGeomLabels; } 
+        }
         private XbimShapeGroup _shapeGroup;
         private Xbim3DModelContext _context;
         /// <summary>
@@ -97,13 +102,15 @@ namespace Xbim.ModelGeometry.Converter
             
             string shapeDataString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
             String[] labelStrings = shapeDataString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-            Debug.Assert(labelStrings.Length > 1);
+          //  Debug.Assert(labelStrings.Length > 1);
             //The first part is the placement string
             Placement = XbimMatrix3D.FromString(labelStrings[0]);
             _shapeGeomLabels = new int[labelStrings.Length - 1];
             for (int i = 1; i < labelStrings.Length; i++)
             {
+                
                 _shapeGeomLabels[i - 1] = Convert.ToInt32(labelStrings[i]);
+                Debug.Assert(_shapeGeomLabels[i - 1] != 0);
             }
             
             MaterialLabel = data.StyleLabel;
@@ -129,15 +136,16 @@ namespace Xbim.ModelGeometry.Converter
                     foreach (var geomLabel in _shapeGeomLabels)
                     {
                         XbimGeometryData data = geomTable.GetGeometryData(geomLabel);
-                        if (data.GeometryType == XbimGeometryType.PolyhedronMap)
-                        {
-                            string mapString = System.Text.Encoding.ASCII.GetString(data.ShapeData);     
-                            tw.WriteLine("M " + mapString); //write the transform matrix
-                        }
-                        else //it must be a shape
-                        {
-                            shapeString += ("," + geomLabel);
-                        }
+                        //srl this entire class should go
+                        //if (data.GeometryType == XbimGeometryType.PolyhedronMap)
+                        //{
+                        //    string mapString = System.Text.Encoding.ASCII.GetString(data.ShapeData);     
+                        //    tw.WriteLine("M " + mapString); //write the transform matrix
+                        //}
+                        //else //it must be a shape
+                        //{
+                        //    shapeString += ("," + geomLabel);
+                        //}
                     }
                     if (shapeString.Length > 3) //we have soem shapes
                         tw.WriteLine(shapeString);
@@ -163,22 +171,23 @@ namespace Xbim.ModelGeometry.Converter
                     foreach (var geomLabel in _shapeGeomLabels)
                     {
                         XbimGeometryData data = geomTable.GetGeometryData(geomLabel);
-                        if (data.GeometryType == XbimGeometryType.PolyhedronMap)
-                        {
-                            string mapString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
-                            string[] itms = mapString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                            //XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
-                            var ShapeMapCollection = new List<Int32>();
-                                for (int i = 1; i < itms.Length; i++)
-                                {
-                                    ShapeMapCollection.Add(Int32.Parse(itms[i]));
-                                }
-                                ShapeMaps.Add(new {MapID=geomLabel, Transform=itms[0], Items=ShapeMapCollection});
-                        }
-                        else //it must be a shape
-                        {
-                            ShapeCollection.Add(geomLabel);
-                        }
+                        //srl this entire class should go
+                        //if (data.GeometryType == XbimGeometryType.PolyhedronMap)
+                        //{
+                        //    string mapString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
+                        //    string[] itms = mapString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                        //    //XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
+                        //    var ShapeMapCollection = new List<Int32>();
+                        //        for (int i = 1; i < itms.Length; i++)
+                        //        {
+                        //            ShapeMapCollection.Add(Int32.Parse(itms[i]));
+                        //        }
+                        //        ShapeMaps.Add(new {MapID=geomLabel, Transform=itms[0], Items=ShapeMapCollection});
+                        //}
+                        //else //it must be a shape
+                        //{
+                        //    ShapeCollection.Add(geomLabel);
+                        //}
                     }                   
                 }
             }

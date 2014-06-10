@@ -53,7 +53,7 @@ namespace Xbim
 				static TopoDS_Shape Build(IfcConnectedFaceSet^ faceSet, bool% hasCurves);
 
 				virtual void ToSolid(double precision, double maxPrecision) override; 
-				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
 
 			};
 		}

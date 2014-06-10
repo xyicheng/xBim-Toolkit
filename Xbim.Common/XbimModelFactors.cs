@@ -8,6 +8,15 @@ namespace Xbim.Common
     public class XbimModelFactors
     {
         /// <summary>
+        /// If this number is greater than 0, any faceted meshes will be simplified if the number of faces exceeds the threshhold
+        /// </summary>
+        public int SimplifyFaceCountThreshHold = 0;
+
+        /// <summary>
+        /// If the SimplifyFaceCountThreshHold is greater than 0, this is the minimum length of any edge in a face in millimetres, default is 10mm
+        /// </summary>
+        public double ShortestEdgeLength;
+        /// <summary>
         /// Precision used for Boolean solid geometry operations, default 0.001mm
         /// </summary>
         readonly public double PrecisionBoolean;
@@ -47,7 +56,7 @@ namespace Xbim.Common
         /// </summary>
         readonly public double PrecisionMax;
         /// <summary>
-        /// The number of decimal places to round a number to in order to truncate to the model precision
+        /// The number of decimal places to round a number to in order to truncate distances, not to be confused with precision, this is mostly for hashing and reporting, precision determins if two points are the same. NB this must be less that the precision for booleans
         /// </summary>
         readonly public int Rounding;
         readonly public double OneMetre;
@@ -74,20 +83,25 @@ namespace Xbim.Common
            
             OneMetre = 1/lenToMeter;
             OneMilliMetre = OneMetre / 1000;
-            DeflectionTolerance = OneMilliMetre*10; //10mm chord deflection
+            DeflectionTolerance = OneMilliMetre*5; //5mm chord deflection
             VertexPointDiameter = OneMilliMetre * 10; //1 cm
+            //if (precision.HasValue)
+            //    Precision = Math.Min(precision.Value,OneMilliMetre / 1000);
+            //else
+            //    Precision = Math.Max(1e-5, OneMilliMetre / 1000);
             if (precision.HasValue)
-                Precision = Math.Min(precision.Value,OneMilliMetre / 1000);
+                Precision = precision.Value;
             else
-                Precision = OneMilliMetre / 1000;
+                Precision = 1e-5;
             PrecisionMax = OneMilliMetre / 10;
             MaxBRepSewFaceCount = 1024;
-            PrecisionBoolean = OneMilliMetre / 100;
-            PrecisionBooleanMax = OneMilliMetre *10;
-            Rounding = Math.Abs((int)Math.Log10(Precision));
+            PrecisionBoolean = Math.Max(OneMilliMetre / 100, Precision); //make it courser than point precision if precision is very fine
+            PrecisionBooleanMax = OneMilliMetre *100;
+            Rounding = Math.Abs((int)Math.Log10(PrecisionBoolean*10)); //default round all points to 100th millimetre
 
             var exp = Math.Floor(Math.Log10(Math.Abs(OneMilliMetre / 10d))); //get exponent of first significant digit
             _significantOrder = exp > 0 ? 0 : (int)Math.Abs(exp);
+            ShortestEdgeLength = 10 * OneMilliMetre;
         }
     }
 }

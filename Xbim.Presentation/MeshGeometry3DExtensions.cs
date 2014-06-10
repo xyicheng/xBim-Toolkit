@@ -1,97 +1,160 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.ModelGeometry.Scene;
+using Xbim.Common.Geometry;
 
 namespace Xbim.Presentation
 {
     public static class MeshGeometry3DExtensions
     {
-        /// <summary>
-        /// Returns the Mesh Position, Normal, Indices data in a XbimMeshGeometry3D for the specified fragment
-        /// </summary>
-        /// <param name="sourceMesh"></param>
-        /// <param name="fragment"></param>
-        /// <returns></returns>
-        public static XbimMeshGeometry3D GetMeshGeometry3D(this MeshGeometry3D sourceMesh, XbimMeshFragment fragment)
-        {
-            XbimMeshGeometry3D mesh = new XbimMeshGeometry3D(fragment.PositionCount);
-            for (int i = fragment.StartPosition; i <= fragment.EndPosition; i++)
-            {
-                mesh.Positions.Add(sourceMesh.Positions[i]);
-                mesh.Normals.Add(sourceMesh.Normals[i]);
-            }
-            for (int i = fragment.StartTriangleIndex; i <= fragment.EndTriangleIndex; i++)
-            {
-                mesh.TriangleIndices.Add(sourceMesh.TriangleIndices[i] - fragment.StartPosition);
-            }
-            return mesh;
-        }
 
-        /// <summary>
-        /// Remove the specified fragments from the mesh
-        /// </summary>
-        /// <param name="sourceMesh"></param>
-        /// <param name="fragments">The fragments to include in the copy</param>
-        /// <param name="notCopied">List of mesh geometries removed from the geometry mesh</param>
-        /// <returns></returns>
-        public static XbimMeshGeometry3D Copy(this MeshGeometry3D sourceMesh, IList<XbimMeshFragment> fragments, out List<XbimMeshGeometry3D> notCopied)
+        public static void Read(this MeshGeometry3D m3d, string shapeData, XbimMatrix3D? transform = null)
         {
-            XbimMeshGeometry3D mesh = new XbimMeshGeometry3D(sourceMesh.Positions.Count);
-            notCopied = new List<XbimMeshGeometry3D>();
-            foreach (var fragment in fragments)
+            
+            RotateTransform3D qrd = new RotateTransform3D();
+            Matrix3D? matrix3D = null;
+            if (transform.HasValue)
             {
-                int meshStartPosition = mesh.PositionCount;
-                for (int i = fragment.StartPosition; i <= fragment.EndPosition; i++)
+                XbimQuaternion xq = transform.Value.GetRotationQuaternion();
+                qrd.Rotation = new QuaternionRotation3D(new Quaternion(xq.X, xq.Y, xq.Z, xq.W));
+                matrix3D = transform.Value.ToMatrix3D();
+            }
+            
+            using (StringReader sr = new StringReader(shapeData))
+            {
+
+                List<Point3D> vertexList = new List<Point3D>(512); //holds the actual unique positions of the vertices in this data set in the mesh
+                List<Vector3D> normalList = new List<Vector3D>(512); //holds the actual unique normals of the vertices in this data set in the mesh
+
+                List<Point3D> positions = new List<Point3D>(1024); //holds the actual positions of the vertices in this data set in the mesh
+                List<Vector3D> normals = new List<Vector3D>(1024); //holds the actual normals of the vertices in this data set in the mesh
+                List<int> triangleIndices = new List<int>(2048);
+                String line;
+                // Read and display lines from the data until the end of
+                // the data is reached.
+
+                while ((line = sr.ReadLine()) != null)
                 {
-                    mesh.Positions.Add(sourceMesh.Positions[i]);
-                    mesh.Normals.Add(sourceMesh.Normals[i]);
+
+                    string[] tokens = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (tokens.Length > 0) //we need a command
+                    {
+                        string command = tokens[0].Trim().ToUpper();
+                        switch (command)
+                        {
+                            case "P":
+                                vertexList = new List<Point3D>(512);
+                                normalList = new List<Vector3D>(512);
+                                break;
+                            case "V": //process vertices
+                                for (int i = 1; i < tokens.Length; i++)
+                                {
+                                    string[] xyz = tokens[i].Split(',');
+                                    Point3D p = new Point3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                                                      Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
+                                                                      Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
+                                    if (matrix3D.HasValue)
+                                        p = matrix3D.Value.Transform(p);
+                                    vertexList.Add(p);
+                                }
+                                break;
+                            case "N": //processes normals
+                                for (int i = 1; i < tokens.Length; i++)
+                                {
+                                    string[] xyz = tokens[i].Split(',');
+                                    Vector3D v = new Vector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
+                                                                       Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
+                                                                       Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
+                                    normalList.Add(v);
+                                }
+                                break;
+                            case "T": //process triangulated meshes
+                                Vector3D currentNormal = new Vector3D(0,0,0);
+                                //each time we start a new mesh face we have to duplicate the vertices to ensure that we get correct shading of planar and non planar faces
+                                Dictionary<int, int> writtenVertices = new Dictionary<int, int>();
+
+                                for (int i = 1; i < tokens.Length; i++)
+                                {
+                                    string[] indices = tokens[i].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (indices.Length != 3) throw new Exception("Invalid triangle definition");
+                                    for (int t = 0; t < 3; t++)
+                                    {
+                                        string[] indexNormalPair = indices[t].Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                                        if (indexNormalPair.Length > 1) //we have a normal defined
+                                        {
+                                            string normalStr = indexNormalPair[1].Trim();
+                                            switch (normalStr)
+                                            {
+                                                case "F": //Front
+                                                    currentNormal = new Vector3D(0, -1, 0);
+                                                    break;
+                                                case "B": //Back
+                                                    currentNormal = new Vector3D(0, 1, 0);
+                                                    break;
+                                                case "L": //Left
+                                                    currentNormal = new Vector3D(-1, 0, 0);
+                                                    break;
+                                                case "R": //Right
+                                                    currentNormal = new Vector3D(1, 0, 0);
+                                                    break;
+                                                case "U": //Up
+                                                    currentNormal = new Vector3D(0, 0, 1);
+                                                    break;
+                                                case "D": //Down
+                                                    currentNormal = new Vector3D(0, 0, -1);
+                                                    break;
+                                                default: //it is an index number
+                                                    int normalIndex = int.Parse(indexNormalPair[1]);
+                                                    currentNormal = normalList[normalIndex];
+                                                    break;
+                                            }
+                                            if (matrix3D.HasValue)
+                                            { 
+                                                currentNormal = qrd.Transform(currentNormal);
+                                            }
+                                        }
+
+                                        //now add the index
+                                        int index = int.Parse(indexNormalPair[0]);
+
+                                        int alreadyWrittenAt = index; //in case it is the first mesh
+                                        if (!writtenVertices.TryGetValue(index, out alreadyWrittenAt)) //if we haven't  written it in this mesh pass, add it again unless it is the first one which we know has been written
+                                        {
+                                            //all vertices will be unique and have only one normal
+                                            writtenVertices.Add(index, positions.Count);
+                                            triangleIndices.Add(positions.Count + m3d.TriangleIndices.Count);
+                                            positions.Add(vertexList[index]);
+                                            normals.Add(currentNormal);
+                                        }
+                                        else //just add the index reference
+                                        {
+                                            triangleIndices.Add(alreadyWrittenAt);
+                                        }
+                                    }
+                                }
+
+                                break;
+                            case "F": //skip faces for now, can be used to draw edges
+                                break;
+                            default:
+                                throw new Exception("Invalid Geometry Command");
+
+                        }
+                    }
+                   
                 }
                 
-                for (int i = fragment.StartTriangleIndex; i <= fragment.EndTriangleIndex; i++)
-                {
-                    mesh.TriangleIndices.Add(sourceMesh.TriangleIndices[i] - fragment.StartPosition + meshStartPosition);
-                }
+                m3d.Positions = new Point3DCollection(m3d.Positions.Concat(positions)); //we do this for wpf performance issues
+                m3d.Normals = new Vector3DCollection(m3d.Normals.Concat(normals)); //we do this for wpf performance issues
+                m3d.TriangleIndices = new Int32Collection(m3d.TriangleIndices.Concat(triangleIndices)); //we do this for wpf performance issues
             }
             
-            return mesh;
         }
-        /// <summary>
-        /// Adds the mesh to the current mesh and returns a new mesh containing both
-        /// </summary>
-        /// <param name="sourceMesh">The mesh to add the new content to</param>
-        /// <param name="toAdd">The mesh to add</param>
-        /// <returns></returns>
-        public static Geometry3D Append(this Geometry3D sourceMesh, MeshGeometry3D toAdd)
-        {
-            
-            MeshGeometry3D addTo = sourceMesh as MeshGeometry3D;
-            Debug.Assert(addTo!=null);
-
-            MeshGeometry3D m3d = new MeshGeometry3D();
-
-            
-            m3d.Positions = new Point3DCollection(addTo.Positions.Count + toAdd.Positions.Count);
-            foreach (var pt in addTo.Positions) m3d.Positions.Add(pt);
-            foreach (var pt in toAdd.Positions) m3d.Positions.Add(pt);
-
-
-            m3d.Normals = new Vector3DCollection(addTo.Normals.Count + toAdd.Normals.Count);
-            foreach (var v in addTo.Normals) m3d.Normals.Add(v);
-            foreach (var v in toAdd.Normals) m3d.Normals.Add(v);
-
-            int maxIndices = addTo.Positions.Count; //we need to increment all indices by this amount
-            m3d.TriangleIndices = new Int32Collection(addTo.TriangleIndices.Count + toAdd.TriangleIndices.Count);
-            foreach (var i in addTo.TriangleIndices) m3d.TriangleIndices.Add(i);
-            foreach (var i in toAdd.TriangleIndices) m3d.TriangleIndices.Add(i + maxIndices);
-           // m3d.Freeze();
-            return m3d;
-        }   
-
-       
     }
 }

@@ -60,6 +60,15 @@
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excluding Binary Geometry|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Excluding Binary Geometry\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="HelixToolkit.Wpf, Version=2013.1.10.1, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
       <HintPath>..\packages\HelixToolkit.2013.1.10.1\lib\NET40\HelixToolkit.Wpf.dll</HintPath>
@@ -110,6 +119,9 @@
     <Compile Include="LayerStyling\LayerStylerTypeAndIFCStyle.cs" />
     <Compile Include="LayerStyling\LayerStylerV2CustomGroups.cs" />
     <Compile Include="LayerStyling\LayerStylerV2TypeAndStyle.cs" />
+    <Compile Include="Rect3DExtensions.cs" />
+    <Compile Include="XbimMatrix3DExtensions.cs" />
+    <Compile Include="MeshGeometry3DExtensions.cs" />
     <Compile Include="SynchronizedView.xaml.cs">
       <DependentUpon>SynchronizedView.xaml</DependentUpon>
     </Compile>

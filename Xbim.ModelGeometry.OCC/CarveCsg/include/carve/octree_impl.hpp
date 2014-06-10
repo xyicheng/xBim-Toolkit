@@ -24,21 +24,21 @@ namespace carve {
                              Node *node,
                              std::vector<const carve::poly::Geometry<3>::edge_t *> &out,
                              unsigned depth,
-                             filter_t filter) const {
+                             filter_t filter, double EPSILON) const {
       if (node == NULL) {
         return;
       }
 
-      if (node->aabb.intersects(f.aabb) && node->aabb.intersects(f.plane_eqn)) {
+      if (node->aabb.intersects(f.aabb,EPSILON) && node->aabb.intersects(f.plane_eqn)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindEdges(f, node->children[i], out, depth + 1, filter);
+            doFindEdges(f, node->children[i], out, depth + 1, filter, EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->edges.size() > EDGE_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindEdges(f, node->children[i], out, depth + 1, filter);
+                doFindEdges(f, node->children[i], out, depth + 1, filter, EPSILON);
               }
               return;
             }
@@ -55,9 +55,9 @@ namespace carve {
     }
 
     template<typename filter_t>
-    void Octree::findEdgesNear(const carve::poly::Geometry<3>::face_t &f, std::vector<const carve::poly::Geometry<3>::edge_t *> &out, filter_t filter) const {
+    void Octree::findEdgesNear(const carve::poly::Geometry<3>::face_t &f, std::vector<const carve::poly::Geometry<3>::edge_t *> &out, filter_t filter, double EPSILON) const {
       tagable::tag_begin();
-      doFindEdges(f, root, out, 0, filter);
+      doFindEdges(f, root, out, 0, filter, EPSILON);
     }
 
     template <typename func_t>

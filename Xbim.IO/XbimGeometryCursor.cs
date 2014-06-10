@@ -6,7 +6,7 @@ using Microsoft.Isam.Esent.Interop;
 using Xbim.Common.Exceptions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
-using Microsoft.Isam.Esent.Interop.Windows7;
+
 using System.Threading;
 using System.Diagnostics;
 #if CREATEGEOMHASH
@@ -96,8 +96,8 @@ namespace Xbim.IO
                 Api.JetAddColumn(sesid, tableid, colNameTransformMatrix, columndef, null, 0, out columnid);
                
                 columndef.coltyp = JET_coltyp.LongBinary;
-                if (EsentVersion.SupportsWindows7Features)
-                    columndef.grbit |= Windows7Grbits.ColumnCompressed;
+                //if (EsentVersion.SupportsWindows7Features)
+                //    columndef.grbit |= Windows7Grbits.ColumnCompressed;
                 Api.JetAddColumn(sesid, tableid, colNameShapeData, columndef, null, 0, out columnid);
 
                 columndef.coltyp = JET_coltyp.Long;

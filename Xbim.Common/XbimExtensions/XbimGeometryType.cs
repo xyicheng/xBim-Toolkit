@@ -32,21 +32,9 @@ namespace Xbim.XbimExtensions
         /// </summary>
         Polyhedron = 0x7,
         /// <summary>
-        /// A map, or reference to one or more Polyhedron shapes
+        /// A triangulated Polyhedron mesh
         /// </summary> = 
-        PolyhedronMap = 0x8,
-        /// <summary>
-        /// The map of polyhedron that represent this product
-        /// </summary>
-        ProductPolyhedronMap = 0x9,
-        /// <summary>
-        /// The Polyhedron that represents this product after openings and additions have been applied
-        /// </summary>
-        NetProductPolyhedronMap = 0xA,
-        /// <summary>
-        /// A boundary representation using the OpenCascade model
-        /// </summary>
-        BRep = 0xE,
-        
+        TriangulatedPolyhedron = 0x8,
+
     }
 }

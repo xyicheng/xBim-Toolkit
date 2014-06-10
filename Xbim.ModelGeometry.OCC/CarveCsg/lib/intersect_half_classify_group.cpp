@@ -47,7 +47,7 @@ namespace carve {
         virtual ~GroupPoly() {
         }
 
-        virtual void collect(FaceLoopGroup *grp, CSG::Hooks & /* hooks */) {
+        virtual void collect(FaceLoopGroup *grp, CSG::Hooks & /* hooks */, double /*EPSILON*/, double /*EPSILON2*/) {
           if (grp->face_loops.head->orig_face->mesh->meshset != want_groups_from) return;
 
           std::list<ClassificationInfo> &cinfo = (grp->classification);
@@ -100,9 +100,9 @@ namespace carve {
                             FLGroupList &b_loops_grouped,
                             VertexClassification & /* vclass */,
                             carve::mesh::MeshSet<3> *poly_a,
-                            carve::mesh::MeshSet<3> *poly_b) const {
+                            carve::mesh::MeshSet<3> *poly_b, double EPSILON, double EPSILON2) const {
           GroupPoly group_poly(poly_b, b_out);
-          performClassifySimpleOnFaceGroups(a_loops_grouped, b_loops_grouped, poly_a, poly_b, group_poly, hooks);
+          performClassifySimpleOnFaceGroups(a_loops_grouped, b_loops_grouped, poly_a, poly_b, group_poly, hooks, EPSILON, EPSILON2);
 #if defined(CARVE_DEBUG)
           std::cerr << "after removal of simple on groups: " << b_loops_grouped.size() << " b groups" << std::endl;
 #endif

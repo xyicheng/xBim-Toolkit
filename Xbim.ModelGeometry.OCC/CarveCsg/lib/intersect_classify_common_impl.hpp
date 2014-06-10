@@ -46,7 +46,7 @@ namespace carve {
                                                   carve::mesh::MeshSet<3> *poly_a,
                                                   carve::mesh::MeshSet<3> *poly_b,
                                                   CSG::Collector &collector,
-                                                  CSG::Hooks &hooks) {
+                                                  CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
       // Simple ON faces groups are face groups that consist of a single
       // face, and which have copy in both inputs. These are trivially ON.
       // This has the side effect of short circuiting the case where the
@@ -98,8 +98,8 @@ namespace carve {
             (*a).classification.push_back(ClassificationInfo(NULL, fc));
             (*b).classification.push_back(ClassificationInfo(NULL, fc));
 
-            collector.collect(&*a, hooks);
-            collector.collect(&*b, hooks);
+            collector.collect(&*a, hooks, EPSILON, EPSILON2);
+            collector.collect(&*b, hooks, EPSILON, EPSILON2);
 
             a_groups.erase(a);
             b_groups.erase(b);
@@ -148,7 +148,7 @@ namespace carve {
         continue;
       accept: {
           grp.classification.push_back(ClassificationInfo(NULL, fc));
-          collector.collect(&grp, hooks);
+          collector.collect(&grp, hooks, EPSILON, EPSILON2);
           i = group.erase(i);
         }
       }
@@ -162,6 +162,7 @@ namespace carve {
                                               const CLASSIFIER & /* classifier */,
                                               CSG::Collector &collector,
                                               CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
+												  
       for (FLGroupList::iterator
              i = group.begin(); i != group.end();) {
         int n_in = 0, n_out = 0, n_on = 0;
@@ -171,25 +172,48 @@ namespace carve {
         FaceClass fc =FACE_UNCLASSIFIED;
 
         for (FaceLoop *f = curr.head; f; f = f->next) {
-          carve::mesh::MeshSet<3>::vertex_t *v1, *v2;
-          v1 = f->vertices.back();
-          for (size_t j = 0; j < f->vertices.size(); ++j) {
-            v2 = f->vertices[j];
-            if (v1 < v2 && perim.find(std::make_pair(v1, v2)) == perim.end()) {
-              carve::geom3d::Vector c = (v1->v + v2->v) / 2.0;
+			carve::mesh::MeshSet<3>::vertex_t *v1, *v2;
+			v1 = f->vertices.back();
+			/*if(f->vertices.size()==5)
+				{
 
-              PointClass pc = carve::mesh::classifyPoint(poly_a, poly_a_rtree, c, EPSILON, EPSILON2);
+					std::cerr<<v1->v.asStr()<<std::endl;
+					
+				}*/
+			for (size_t j = 0; j < f->vertices.size(); ++j) {
+				v2 = f->vertices[j];
+				/*if(f->vertices.size()==5)
+				{
+					
+					if((v1 < v2))
+					{
+						std::cerr<<v1->v.asStr()<<" - "<<v2->v.asStr()<<" - "<<(v1 < v2)<<std::endl;
+						std::cerr<< (v1->v < v2->v)<<std::endl;
+						for (unsigned i = 0; i < 3; ++i) 
+						{
+							std::cerr<< i<<" = "; 
+							if (v1->v[i] < v2->v[i]) std::cerr<<"v1<v2"; 
+							else if (v1->v[i] > v2->v[i]) std::cerr<<"v1>v2"; 
+							else std::cerr<<"v1=v2"; 
+							std::cerr<<std::endl;
+						}
+					}
+				}*/
+				if (v1 < v2 && perim.find(std::make_pair(v1, v2)) == perim.end()) {
+					carve::geom3d::Vector c = (v1->v + v2->v) / 2.0;
 
-              switch (pc) {
-              case POINT_IN: n_in++; break;
-              case POINT_OUT: n_out++; break;
-              case POINT_ON: n_on++; break;
-              default: break; // does not happen.
-              }
-            }
-            v1 = v2;
-          }
-        }
+					PointClass pc = carve::mesh::classifyPoint(poly_a, poly_a_rtree, c, EPSILON, EPSILON2);
+
+					switch (pc) {
+					case POINT_IN: n_in++; break;
+					case POINT_OUT: n_out++; break;
+					case POINT_ON: n_on++;break; //SRL if a point is on a face it should be included as well
+					default: break; // does not happen.
+					}
+				}
+				v1 = v2;
+			}
+		}
 
 #if defined(CARVE_DEBUG)
         std::cerr << ">>> n_in: " << n_in << " n_on: " << n_on << " n_out: " << n_out << std::endl;
@@ -204,7 +228,7 @@ namespace carve {
         if (n_out) fc = FACE_OUT;
 
         grp.classification.push_back(ClassificationInfo(NULL, fc));
-        collector.collect(&grp, hooks);
+        collector.collect(&grp, hooks, EPSILON, EPSILON2);
         i = group.erase(i);
       }
     }
@@ -236,12 +260,18 @@ namespace carve {
         proj.reserve(loop.size());
         for (unsigned j = 0; j < loop.size(); ++j) {
           proj.push_back(f->project(loop[j]->v));
-        }
-        carve::geom2d::P2 pv;
-        if (!carve::geom2d::pickContainedPoint(proj, pv,EPSILON)) {
-          CARVE_FAIL("Failed, could not find a point in an opening");
-        }
-        carve::geom3d::Vector v = f->unproject(pv, f->plane);
+		}
+		carve::geom2d::P2 pv;
+		if (!carve::geom2d::pickContainedPoint(proj, pv,EPSILON)) {
+			{
+				//srl fix to reolve empty triangles
+				i = b_loops_grouped.erase(i); //throw it away
+				/*++i;*/
+				continue;
+				CARVE_FAIL("Failed, could not find a point in an opening");
+			}
+		}
+		carve::geom3d::Vector v = f->unproject(pv, f->plane);
 
         const carve::mesh::MeshSet<3>::face_t *hit_face;
         PointClass pc = carve::mesh::classifyPoint(poly_a, poly_a_rtree, v,  EPSILON,  EPSILON2, false, NULL, &hit_face);
@@ -253,7 +283,7 @@ namespace carve {
 #if defined(CARVE_DEBUG)
           std::cerr << "d = " << d << std::endl;
 #endif
-          fc = d < 0 ? FACE_IN : FACE_OUT;
+          fc = d < EPSILON ? FACE_IN : FACE_OUT; //SRL change to apply tolerance to faces
           break;
         }
 	default:
@@ -262,9 +292,9 @@ namespace carve {
 #if defined(CARVE_DEBUG)
         std::cerr << "CLASS: " << (fc == FACE_IN ? "FACE_IN" : "FACE_OUT" ) << std::endl;
 #endif
-
+		
         (*i).classification.push_back(ClassificationInfo(NULL, fc));
-        collector.collect(&*i, hooks);
+        collector.collect(&*i, hooks, EPSILON, EPSILON2);
         i = b_loops_grouped.erase(i);
       }
 
@@ -282,7 +312,7 @@ namespace carve {
                                    CSG::Collector &collector,
                                    CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
 
-      classifier.classifySimple(a_loops_grouped, b_loops_grouped, vclass, poly_a, poly_b);
+      classifier.classifySimple(a_loops_grouped, b_loops_grouped, vclass, poly_a, poly_b,  EPSILON,  EPSILON2);
       classifier.classifyEasy(a_loops_grouped, b_loops_grouped, vclass, poly_a, poly_a_rtree, poly_b, poly_b_rtree,  EPSILON,  EPSILON2);
       classifier.classifyHard(a_loops_grouped, b_loops_grouped, vclass, poly_a, poly_a_rtree, poly_b, poly_b_rtree,  EPSILON,  EPSILON2);
 
@@ -342,8 +372,8 @@ namespace carve {
             (*i).classification.push_back(ClassificationInfo(NULL, fc));
             (*j).classification.push_back(ClassificationInfo(NULL, fc));
 
-            collector.collect(&*i, hooks);
-            collector.collect(&*j, hooks);
+            collector.collect(&*i, hooks, EPSILON, EPSILON2);
+            collector.collect(&*j, hooks, EPSILON, EPSILON2);
 
             j = a_loops_grouped.erase(j);
             i = b_loops_grouped.erase(i);

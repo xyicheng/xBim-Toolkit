@@ -151,7 +151,15 @@ namespace Xbim.IO
         {
             get { return _model.InstancesLocal[label]; }
         }
-
+        /// <summary>
+        /// returns the local instance with the given label
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        public IPersistIfcEntity this[uint label]
+        {
+            get { return _model.InstancesLocal[label]; }
+        }
         /// <summary>
         /// Returns the instance that corresponds to this handle
         /// </summary>

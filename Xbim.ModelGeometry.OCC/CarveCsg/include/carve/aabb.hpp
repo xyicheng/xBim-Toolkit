@@ -64,8 +64,8 @@ namespace carve {
       void expand(double pad);
 
       bool completelyContains(const aabb<ndim> &other) const;
-
-      bool containsPoint(const vector_t &v) const;
+	  bool contains(const aabb<ndim> &other, double EPSILON) const;
+      bool containsPoint(const vector_t &v, double EPSILON) const;
 
       bool intersectsLineSegment(const vector_t &v1, const vector_t &v2) const;
 
@@ -74,13 +74,20 @@ namespace carve {
       double maxAxisSeparation(const aabb<ndim> &other) const;
 
       bool intersects(const aabb<ndim> &other) const;
+	 
       bool intersects(const sphere<ndim> &s) const;
       bool intersects(const plane<ndim> &plane) const;
       bool intersects(const ray<ndim> &ray) const;
       bool intersects(tri<ndim> tri) const;
       bool intersects(const linesegment<ndim> &ls) const;
 
-      std::pair<double, double> rangeInDirection(const carve::geom::vector<ndim> &v) const;
+	  //with tolereance
+	  bool intersects(const aabb<ndim> &other, double EPSILON) const;
+	  bool intersects(const plane<ndim> &plane, double EPSILON) const;
+	  bool intersects(const sphere<ndim> &s, double EPSILON) const;
+	  bool intersects(const linesegment<ndim> &ls, double EPSILON) const;
+
+	  std::pair<double, double> rangeInDirection(const carve::geom::vector<ndim> &v) const;
 
       vector_t min() const;
       vector_t mid() const;

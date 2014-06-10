@@ -44,7 +44,7 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager', 'observ
                 yaw: 30,
                 pitch: -25,
                 zoomSensitivity: 3.0,
-                zoom: 50,
+                zoom: 100,
                 id: "camera",
                 nodes: [
                     { 
@@ -55,7 +55,23 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager', 'observ
                                    0, 0, 0, 1],
                         nodes: [
                             {
-                                type: "flags", id: "flags", flags: { transparent: false, picking: true, backfaces: true }
+                                type: "flags", id: "flags", flags: {
+                                    transparent: true, picking: true, backfaces: true 
+                                },
+                                nodes: [{
+                                        type: "matrix",
+                                        id: "modeltransform",
+                                        elements: [1, 0, 0, 0,
+                                                   0, 1, 0, 0,
+                                                   0, 0, 1, 0,
+                                                   0, 0, 0, 1],
+                                        nodes: [{
+                                            type: "material",
+                                            id: "DefaultMaterial",
+                                            color: { r: 1, g: 0, b: 0 },
+                                            alpha:0.3,
+                                            }]
+                                    }]
                             }
                 ]
             }
@@ -112,6 +128,32 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager', 'observ
                         positions: Geometry.Positions,
                         normals: Geometry.Normals,
                         indices: Geometry.Indices
+                    }]
+                });
+            });
+        } catch (exception) { console.log(exception); }
+    });
+
+    eventmanager.RegisterCallback("Box", function (geom) {
+        try {
+            scene.getNode("DefaultMaterial", function (MaterialNode) {
+                MaterialNode.addNode({
+                    type: "name",
+                    id: geom.IfcProductLabel + "_" + geom.ShapeLabel + "_name",
+                    nodes: [{
+
+                        type: "matrix",
+                        elements: geom.Transformation,
+                        nodes: [ {
+
+                            type: "prims/box",
+                            id: geom.IfcProductLabel + "_" + geom.ShapeLabel,
+                            data: { product: geom.IfcProductLabel },
+                            xSize: geom.BoundingBox.SizeX,
+                            ySize: geom.BoundingBox.SizeY,
+                            zSize: geom.BoundingBox.SizeZ,
+                        } ]
+
                     }]
                 });
             });

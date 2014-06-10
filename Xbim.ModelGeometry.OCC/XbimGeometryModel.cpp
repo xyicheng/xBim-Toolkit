@@ -33,13 +33,14 @@
 #include <GeomLProp_SLProps.hxx>
 #include <BRepLib.hxx>
 #include <Poly.hxx>
+#include <Geom_Plane.hxx>
 #include <BRepBuilderAPI.hxx>
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <ShapeFix_ShapeTolerance.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <carve/triangulator.hpp>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
-
+#include <carve/mesh_simplify.hpp>
 using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace Xbim::Ifc2x3::SharedComponentElements;
@@ -47,6 +48,7 @@ using namespace System::Linq;
 using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::ModelGeometry::Scene;
+using namespace  System;
 using namespace  System::Threading;
 using namespace  System::Text;
 
@@ -304,13 +306,121 @@ namespace Xbim
 			}
 
 			//boolean operations
-			
+			IXbimGeometryModel^ XbimGeometryModel::Cut(IXbimGeometryModel^ shape, XbimModelFactors^ factors)
+			{
+				if(dynamic_cast<XbimGeometryModel^>(shape))
+				{
+					return this->Cut((XbimGeometryModel^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimPolyhedron^>(shape))
+				{
+					return this->Cut((XbimPolyhedron^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimFeaturedShape^>(shape))
+				{
+					return this->Cut((XbimFeaturedShape^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				Logger->ErrorFormat("Unsupported geometry type ({0}) used in boolean operation", shape->GetType()->Name);
+				return this;
+			}
 
+			//boolean operations
+			IXbimGeometryModel^ XbimGeometryModel::Union(IXbimGeometryModel^ shape, XbimModelFactors^ factors)
+			{
+				if(dynamic_cast<XbimGeometryModel^>(shape))
+				{
+					return this->Union((XbimGeometryModel^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimPolyhedron^>(shape))
+				{
+					return this->Union((XbimPolyhedron^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimFeaturedShape^>(shape))
+				{
+					return this->Union((XbimFeaturedShape^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				Logger->ErrorFormat("Unsupported geometry type ({0}) used in boolean operation", shape->GetType()->Name);
+				return this;
+			}
 
-			XbimGeometryModel^ XbimGeometryModel::Cut(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			//boolean operations
+			IXbimGeometryModel^ XbimGeometryModel::Intersection(IXbimGeometryModel^ shape, XbimModelFactors^ factors)
+			{
+				if(dynamic_cast<XbimGeometryModel^>(shape))
+				{
+					return this->Intersection((XbimGeometryModel^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimPolyhedron^>(shape))
+				{
+					return this->Intersection((XbimPolyhedron^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimFeaturedShape^>(shape))
+				{
+					return this->Intersection((XbimFeaturedShape^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				Logger->ErrorFormat("Unsupported geometry type ({0}) used in boolean operation", shape->GetType()->Name);
+				return this;
+			}
+
+			IXbimGeometryModel^ XbimGeometryModel::Combine(IXbimGeometryModel^ shape, XbimModelFactors^ factors)
+			{
+				if(dynamic_cast<XbimGeometryModel^>(shape))
+				{
+					return this->Combine((XbimGeometryModel^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimPolyhedron^>(shape))
+				{
+					return this->Combine((XbimPolyhedron^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				else if(dynamic_cast<XbimFeaturedShape^>(shape))
+				{
+					return this->Combine((XbimFeaturedShape^) shape,factors->DeflectionTolerance,factors->PrecisionBoolean,factors->PrecisionBooleanMax,factors->Rounding);
+				}
+				Logger->ErrorFormat("Unsupported geometry type ({0}) used in boolean operation", shape->GetType()->Name);
+				return this;
+			}
+
+			XbimGeometryModel^ XbimGeometryModel::Cut(XbimGeometryModel^ shape,  double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
 				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
+#if defined USE_CARVE
 				
+				if(hasCurves && !dynamic_cast<XbimPolyhedron^>(shape)) //try opencascade first for curvce shapes, this is faster and more accurate than meshing and triangulation
+				{
+					ShapeFix_ShapeTolerance fTol;
+					fTol.SetTolerance(*Handle, precision);
+					fTol.SetTolerance(*(shape->Handle),precision);
+					BRepAlgoAPI_Cut boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
+					if(boolOp.ErrorStatus() == 0)
+					{
+						return  gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+					}
+				}
+				//if planar shape or opencascade failed then use polygonal geometry
+				
+				XbimPolyhedron^ shapeA = this->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				XbimPolyhedron^ shapeB = shape->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				
+				XbimPolyhedron^ result = (XbimPolyhedron^)shapeA->Cut(shapeB,deflection, precision, maxPrecision, rounding);
+				if(!result->IsClosed()) //if we have not got a closed manifold, see if opencascade can do better (sometimes does if curves are involved
+				{		
+					ShapeFix_ShapeTolerance fTol;
+					double currentTolerance = precision;
+					fTol.SetTolerance(*Handle, currentTolerance);
+					fTol.SetTolerance(*(shape->Handle),currentTolerance);
+					BRepAlgoAPI_Cut boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
+					if(boolOp.ErrorStatus() == 0)
+					{
+						return  gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						
+					}
+					Logger->WarnFormat("A closed manifold solid shape could not be created the subtraction of object #{0} from #{1}", shape->RepresentationLabel,this->RepresentationLabel );
+				}
+				return result; //else take what we have
+#else
+
 				ShapeFix_ShapeTolerance fTol;
 				double currentTolerance = precision;
 				fTol.SetTolerance(*Handle, currentTolerance);
@@ -333,6 +443,7 @@ TryCutSolid:
 						}
 						else //if not try and fix it
 						{
+							return this;
 						
 							currentTolerance*=10; //try courser;
 							warnPrecision=true;
@@ -409,12 +520,47 @@ TryCutSolid:
 				}		
 				
 				return this;//stick with what we started with
+#endif
 			}
 
-			XbimGeometryModel^ XbimGeometryModel::Union(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			XbimGeometryModel^ XbimGeometryModel::Union(XbimGeometryModel^ shape,double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
 				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
+#if defined USE_CARVE
+								if(hasCurves && !dynamic_cast<XbimPolyhedron^>(shape)) //try opencascade first for curvce shapes, this is faster and more accurate than meshing and triangulation
+				{
+					ShapeFix_ShapeTolerance fTol;
+					fTol.SetTolerance(*Handle, precision);
+					fTol.SetTolerance(*(shape->Handle),precision);
+					BRepAlgoAPI_Fuse boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
+					if(boolOp.ErrorStatus() == 0)
+					{
+						return  gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+					}
+				}
+				//if planar shape or opencascade failed then use polygonal geometry
 				
+				XbimPolyhedron^ shapeA = this->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				XbimPolyhedron^ shapeB = shape->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				
+				XbimPolyhedron^ result = (XbimPolyhedron^)shapeA->Union(shapeB,deflection, precision, maxPrecision, rounding);
+				if(!result->IsClosed()) //if we have not got a closed manifold, see if opencascade can do better (sometimes does if curves are involved
+				{		
+					ShapeFix_ShapeTolerance fTol;
+					double currentTolerance = precision;
+					fTol.SetTolerance(*Handle, currentTolerance);
+					fTol.SetTolerance(*(shape->Handle),currentTolerance);
+					BRepAlgoAPI_Fuse boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
+					if(boolOp.ErrorStatus() == 0)
+					{
+						return  gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+					}
+					Logger->WarnFormat("A closed manifold solid shape could not be created from the union of object #{0} and #{1}", shape->RepresentationLabel,this->RepresentationLabel );
+				}
+				return result; //else take what we have
+#else
 				ShapeFix_ShapeTolerance fTol;
 				double currentTolerance = precision;
 				fTol.SetTolerance(*Handle, currentTolerance);
@@ -473,11 +619,50 @@ TryUnionSolid:
 					
 				}	
 				return this;//stick with what we started with
+#endif
 			}
-			XbimGeometryModel^ XbimGeometryModel::Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision)
+
+
+			XbimGeometryModel^ XbimGeometryModel::Intersection(XbimGeometryModel^ shape,double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
 				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
-
+#if defined USE_CARVE
+				
+				if(hasCurves && !dynamic_cast<XbimPolyhedron^>(shape)) //try opencascade first for curvce shapes, this is faster and more accurate than meshing and triangulation
+				{
+					ShapeFix_ShapeTolerance fTol;
+					fTol.SetTolerance(*Handle, precision);
+					fTol.SetTolerance(*(shape->Handle),precision);
+					BRepAlgoAPI_Common boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
+					if(boolOp.ErrorStatus() == 0)
+					{
+						return  gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+					}
+				}
+				//if planar shape or opencascade failed then use polygonal geometry
+				
+				XbimPolyhedron^ shapeA = this->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				XbimPolyhedron^ shapeB = shape->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				
+				XbimPolyhedron^ result = (XbimPolyhedron^)shapeA->Intersection(shapeB,deflection, precision, maxPrecision, rounding);
+				if(!result->IsClosed()) //if we have not got a closed manifold, see if opencascade can do better (sometimes does if curves are involved
+				{		
+					ShapeFix_ShapeTolerance fTol;
+					double currentTolerance = precision;
+					fTol.SetTolerance(*Handle, currentTolerance);
+					fTol.SetTolerance(*(shape->Handle),currentTolerance);
+					BRepAlgoAPI_Common boolOp(*Handle,*(shape->Handle));
+					GC::KeepAlive(shape);
+					if(boolOp.ErrorStatus() == 0)
+					{
+						return  gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						
+					}
+					Logger->WarnFormat("A closed manifold solid shape could not be created the intersection of object #{0} and #{1}", shape->RepresentationLabel,this->RepresentationLabel );
+				}
+				return result; //else take what we have
+#else
 				ShapeFix_ShapeTolerance fTol;
 				double currentTolerance = precision;
 				fTol.SetTolerance(*Handle, currentTolerance);
@@ -535,6 +720,7 @@ TryIntersectSolid:
 					
 				}
 				return this;//stick with what we started with
+#endif
 			}
 
 			XbimMeshFragment XbimGeometryModel::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
@@ -546,7 +732,7 @@ TryIntersectSolid:
 				theMesh->BeginBuild();
                 XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount, modelId);
                 fragment.EntityLabel = product->EntityLabel;
-                fragment.EntityType = product->GetType();
+                fragment.EntityTypeId = IfcMetaData::IfcTypeId(product->GetType());
 
 				TopoDS_Shape shape = *(this->Handle);
 				Monitor::Enter(this);
@@ -559,7 +745,7 @@ TryIntersectSolid:
 				{
 					Monitor::Exit(this);
 				}
-				std::unordered_map<Float3D, size_t> vertexMap;
+				std::unordered_map<Double3D, size_t> vertexMap;
 				int offset=-1; //opencascade indexes are 1 based, so we need to move back 1 index
 				for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
 				{		
@@ -581,20 +767,11 @@ TryIntersectSolid:
 						{
 							gp_XYZ p = points(nd).XYZ();
 							loc.Transformation().Transforms(p);			 
-							//Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z()); 
-							//std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
-							//if(hit==vertexMap.end()) //not found add it in
-							//{	
-								//posMap.insert(std::make_pair(nd,mesh3D->PositionCount));
-								//vertexMap.insert(std::make_pair(p3D,mesh3D->PositionCount));
-								if(doTranform)
-									theMesh->AddPosition(transform.Transform(XbimPoint3D(p.X(),p.Y(),p.Z())));
-								else
-									theMesh->AddPosition(XbimPoint3D(p.X(),p.Y(),p.Z()));
-								
-							/*}
+
+							if(doTranform)
+								theMesh->AddPosition(transform.Transform(XbimPoint3D(p.X(),p.Y(),p.Z())));
 							else
-								posMap.insert(std::make_pair(nd,hit->second));*/
+								theMesh->AddPosition(XbimPoint3D(p.X(),p.Y(),p.Z()));
 						}
 		
 						const Poly_Array1OfTriangle& triangles = facing->Triangles();
@@ -684,13 +861,123 @@ TryIntersectSolid:
 				return list;
 			};
 
-		
+			XbimGeometryModel^ XbimGeometryModel::Combine(XbimGeometryModel^ shape,double deflection, double precision, double maxPrecision, unsigned int rounding)
+			{
+				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
+#if defined USE_CARVE
+				
+				//if planar shape or opencascade failed then use polygonal geometry
+
+				XbimPolyhedron^ shapeA = this->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				XbimPolyhedron^ shapeB = shape->ToPolyHedron(deflection, precision, maxPrecision, rounding);
+				XbimPolyhedron^ result = (XbimPolyhedron^)shapeA->Combine(shapeB,deflection, precision, maxPrecision, rounding);
+				return result; //else take what we have
+#else
+				ShapeFix_ShapeTolerance fTol;
+				double currentTolerance = precision;
+				fTol.SetTolerance(*Handle, currentTolerance);
+				fTol.SetTolerance(*(shape->Handle),currentTolerance);
+TryCombineSolid:		
+				try
+				{
+					
+					BRepAlgoAPI_Fuse boolOp(*Handle,*(shape->Handle));
+					if(boolOp.ErrorStatus() == 0)
+					{
+						//make sure it is a valid geometry
+						if( BRepCheck_Analyzer(boolOp.Shape(), Standard_True).IsValid() == Standard_True) 
+							return gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						else //if not try and fix it
+						{
+
+							currentTolerance*=10; //try courser;
+							if(currentTolerance<=maxPrecision)
+							{
+								fTol.SetTolerance(*Handle, currentTolerance);
+								fTol.SetTolerance(*(shape->Handle),currentTolerance);
+								goto TryCombineSolid;
+							}
+							ShapeFix_Shape sfs(boolOp.Shape());
+							sfs.SetPrecision(precision);
+							sfs.SetMinTolerance(precision);
+							sfs.SetMaxTolerance(maxPrecision);
+							sfs.Perform();
+#ifdef _DEBUG
+							if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_False) //in release builds except the geometry is not compliant
+								Logger->ErrorFormat("Unable to create valid shape when performing boolean union operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+					
+#endif // _DEBUG
+								return gcnew XbimSolid(sfs.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						}
+					}
+					else
+					{
+						currentTolerance*=10; //try courser;
+						if(currentTolerance<=maxPrecision)
+						{
+							fTol.SetTolerance(*Handle, currentTolerance);
+							fTol.SetTolerance(*(shape->Handle),currentTolerance);
+							goto TryCombineSolid;
+						}
+						//it isn't working
+						Logger->ErrorFormat("Unable to perform boolean union operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+						return this;
+					}
+				}
+				catch(Standard_Failure e)
+				{
+					String^ err = gcnew String(e.GetMessageString());
+					Logger->ErrorFormat("Boolean  error {0} on shape #{1} with shape #{2}. Discarded", err, RepresentationLabel,shape->RepresentationLabel );
+					
+				}	
+				return this;//stick with what we started with
+#endif
+			}
+
+			bool XbimGeometryModel::Write(String^ fileName,XbimModelFactors^ modelFactors)
+			{
+				try	
+				{
+					XbimPolyhedron^ poly = this->ToPolyHedron(
+						modelFactors->DeflectionTolerance,
+						modelFactors->Precision,
+						modelFactors->PrecisionMax,
+						modelFactors->Rounding);
+					return poly->Write(fileName,modelFactors);
+				}
+				catch(Exception^ )
+				{
+					return false;
+				}
+			}
+
+			void XbimGeometryModel::TransformBy(XbimMatrix3D t)
+			{
+
+				if(Handle!=nullptr)
+				{
+					TopoDS_Shape temp = *(Handle);
+					nativeHandle = new TopoDS_Shape();
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(t));
+					*nativeHandle =gTran.Shape();
+				}
+			}
+
+			IXbimPolyhedron^ XbimGeometryModel::ToPolyhedron(XbimModelFactors^ modelFactors)
+			{
+				return this->ToPolyHedron(modelFactors->DeflectionTolerance,modelFactors->PrecisionBoolean,modelFactors->PrecisionBooleanMax,modelFactors->Rounding);
+			}
 
 			String^ XbimGeometryModel::WriteAsString(XbimModelFactors^ modelFactors)
 			{
+				
 				double deflection = modelFactors->DeflectionTolerance;
 				double precision = modelFactors->Precision;
+				double precisionMax = modelFactors->PrecisionMax;
 				int rounding =  modelFactors->Rounding;
+#if USE_CARVE
+				return this->ToPolyHedron(deflection,precision,precisionMax,rounding)->WriteAsString(modelFactors);
+#else
 				StringBuilder^ sb = gcnew StringBuilder();
 				TopoDS_Shape shape = *(this->Handle);
 				Monitor::Enter(this);
@@ -702,7 +989,7 @@ TryIntersectSolid:
 				{
 					Monitor::Exit(this);
 				}
-				std::unordered_map<Float3D, size_t> vertexMap;
+				std::unordered_map<Double3D, size_t> vertexMap;
 				
 				int normalsOffset = -1; //corrects for 1 based arrays in open cascade
 				for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
@@ -759,9 +1046,9 @@ TryIntersectSolid:
 								}
 
 							}
-							Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z(),precision); 
+							Double3D p3D(p.X(),p.Y(),p.Z(),precision,rounding); 
 							//p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
-							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+							std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
 							if(hit==vertexMap.end()) //not found add it in
 							{	size_t idx = vertexMap.size();
 								vertexMap.insert(std::make_pair(p3D,idx));
@@ -856,6 +1143,7 @@ TryIntersectSolid:
 				}
 				GC::KeepAlive(this);
 				return sb->ToString();
+#endif
 			}
 
 			
@@ -880,12 +1168,12 @@ TryIntersectSolid:
 				return _bounds;
 			};
 
-			IXbimGeometryModelGroup^ XbimGeometryModel::AsPolyhedron(double deflection, double precision,double precisionMax) 
+			IXbimGeometryModelGroup^ XbimGeometryModel::AsPolyhedron(double deflection, double precision,double precisionMax, unsigned int rounding) 
 			{
-				return ToPolyHedronCollection(deflection, precision, precisionMax);
+				return ToPolyHedronCollection(deflection, precision, precisionMax,rounding);
 			} 
 		
-			XbimPolyhedron^ XbimGeometryModel::ToPolyHedron(double deflection, double precision,double precisionMax)
+			XbimPolyhedron^ XbimGeometryModel::ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{	
 				TopoDS_Shape shape = *(this->Handle);
 				std::vector<vertex_t> vertexStore; //vertices in the polyhedron
@@ -893,12 +1181,15 @@ TryIntersectSolid:
 				vertexStore.reserve(2048);
 				faces.reserve(1024);
 				TopTools_DataMapOfShapeInteger vertexMap;
-
+				bool warned=false;
 				std::vector<mesh_t*> meshes;
 
 				if(!HasCurvedEdges)
 				{
-					
+					bool hasUnboundedFace = false; //use this to check if we have a half space solid
+					gp_Pln halfSpacePlane;
+					gp_Pnt tl,bl,tr,br; //the four points of the bounding plane
+					gp_Pnt tlm,blm,trm,brm; //the four points of the bounding plane
 					for (TopExp_Explorer vEx(shape,TopAbs_VERTEX) ; vEx.More(); vEx.Next()) //gather all the points
 					{
 						const TopoDS_Vertex& curVert=TopoDS::Vertex(vEx.Current());
@@ -906,6 +1197,7 @@ TryIntersectSolid:
 						{
 							vertexMap.Bind(curVert,(Standard_Integer)vertexStore.size());
 							gp_Pnt p = BRep_Tool::Pnt(curVert);
+							
 							vertexStore.push_back(carve::geom::VECTOR(p.X(), p.Y(), p.Z()));
 						}
 					}
@@ -915,10 +1207,73 @@ TryIntersectSolid:
 						//go over each face and gets its loop
 						for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
 						{
-							const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
-							if(face.IsNull()) continue; //nothing here				
-							TopoDS_Wire outerWire = BRepTools::OuterWire(face);//get the outer loop
-							if(outerWire.IsNull()) continue; //nothing here
+							const TopoDS_Face& occFace = TopoDS::Face(faceEx.Current());
+							TopAbs_Orientation orientation = occFace.Orientation();
+							bool reversed = orientation==TopAbs_REVERSED;
+							if(occFace.IsNull()) continue; //nothing here				
+							TopoDS_Wire outerWire = BRepTools::OuterWire(occFace);//get the outer loop
+							if(outerWire.IsNull()) //check if this is a half space
+							{
+								
+								Handle(Geom_Surface) surface = BRep_Tool::Surface(occFace);
+								if (surface->IsKind(STANDARD_TYPE(Geom_Plane))) 
+								{
+									hasUnboundedFace=true; 
+									Handle(Geom_Plane) pl = Handle(Geom_Plane)::DownCast(surface);
+									halfSpacePlane = pl->Pln();
+									Standard_Real U1,  U2,  V1,  V2;
+									pl->Bounds (U1, U2, V1, V2);
+									U1/=1e90;U2/=1e90;V1/=1e90;V2/=1e90;
+									pl->D0(U1,V1,bl);
+									pl->D0(U1,V2,tl);
+									pl->D0(U2,V1,br);
+									pl->D0(U2,V2,tr);
+									
+
+									carve::input::PolyhedronData data;
+									gp_Vec dir = halfSpacePlane.Axis().Direction();
+									tlm=tl;trm=tr;blm=bl;brm=br;
+									if( occFace.Orientation() == TopAbs_FORWARD )
+									{
+										dir *= -1.e+10;
+										tl.Translate(dir);
+										tr.Translate(dir);
+										bl.Translate(dir);
+										br.Translate(dir);
+									}
+									else
+									{
+										dir *= 1.e+10;
+										tlm.Translate(dir);
+										trm.Translate(dir);
+										blm.Translate(dir);
+										brm.Translate(dir);
+									}
+
+
+									data.addVertex(carve::geom::VECTOR(tlm.X(), tlm.Y(), tlm.Z()));
+									data.addVertex(carve::geom::VECTOR(blm.X(), blm.Y(), blm.Z()));
+									data.addVertex(carve::geom::VECTOR(brm.X(), brm.Y(), brm.Z()));
+									data.addVertex(carve::geom::VECTOR(trm.X(), trm.Y(), trm.Z()));
+									data.addVertex(carve::geom::VECTOR(tl.X(), tl.Y(), tl.Z()));
+									data.addVertex(carve::geom::VECTOR(bl.X(), bl.Y(), bl.Z()));
+									data.addVertex(carve::geom::VECTOR(br.X(), br.Y(), br.Z()));
+									data.addVertex(carve::geom::VECTOR(tr.X(), tr.Y(), tr.Z()));
+
+
+									data.addFace(0, 1, 2, 3);
+									data.addFace(7, 6, 5, 4);
+									data.addFace(0, 4, 5, 1);
+									data.addFace(1, 5, 6, 2);
+									data.addFace(2, 6, 7, 3);
+									data.addFace(3, 7, 4, 0);
+
+									carve::csg::CSG::meshset_t* m = data.createMesh( carve::input::Options());
+									return  gcnew XbimPolyhedron(m, RepresentationLabel, SurfaceStyleLabel);
+
+								}
+								continue;
+							}; //nothing here
 							std::vector<vertex_t *> initialFaceLoop;//first get the outer loop
 							for(BRepTools_WireExplorer outerWireEx(outerWire);outerWireEx.More();outerWireEx.Next())
 							{
@@ -930,7 +1285,7 @@ TryIntersectSolid:
 								Logger->InfoFormat("A face with {0} edges found in IfcRepresentationItem #{1}, 3 is minimum. Ignored",initialFaceLoop.size(), RepresentationLabel );
 								continue;
 							}
-							TopExp_Explorer wireEx(face,TopAbs_WIRE);
+							TopExp_Explorer wireEx(occFace,TopAbs_WIRE);
 							wireEx.Next();
 							if(wireEx.More()) //we have more than one wire
 							{
@@ -942,7 +1297,9 @@ TryIntersectSolid:
 									if(holeWire.IsEqual(outerWire)) 
 										continue; //skip the outer wire
 
-									BRepTools_WireExplorer wEx(holeWire, face);
+									BRepTools_WireExplorer wEx(holeWire, occFace);
+
+
 									if(wEx.More())
 									{
 										holes.push_back(std::vector<vertex_t *>());
@@ -973,17 +1330,36 @@ TryIntersectSolid:
 										projected_poly[j+1].push_back(face.project(holes[j][k]->v));
 									}
 								}
-								std::vector<std::pair<size_t, size_t> > result = carve::triangulate::incorporateHolesIntoPolygon(projected_poly);
-								faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
-								std::vector<carve::mesh::MeshSet<3>::vertex_t *> &out = faces.back();
-								out.reserve(result.size());
-								for (size_t j = 0; j < result.size(); ++j) 
+								try
 								{
-									if (result[j].first == 0) 
-										out.push_back(initialFaceLoop[result[j].second]);
-									else 
-										out.push_back(holes[result[j].first-1][result[j].second]);
-								}			
+									std::vector<std::pair<size_t, size_t> > result = carve::triangulate::incorporateHolesIntoPolygon(projected_poly);
+									faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
+									std::vector<carve::mesh::MeshSet<3>::vertex_t *> &out = faces.back();
+									out.reserve(result.size());
+									for (size_t j = 0; j < result.size(); ++j) 
+									{
+										if (result[j].first == 0) 
+											out.push_back(initialFaceLoop[result[j].second]);
+										else 
+											out.push_back(holes[result[j].first-1][result[j].second]);
+									}	
+								}
+								catch(...) //in case hole punching fails
+								{
+									if(!warned)
+									{
+										warned=true;
+										Logger->WarnFormat("Face error. Inner face loop is not contained in outer face loop. The geometry has been incorrectly defined in entity #{0}, the inner loop has been ignored" ,this->RepresentationLabel);				
+
+									}
+									faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
+									std::vector<carve::mesh::MeshSet<3>::vertex_t *> &out = faces.back();
+									out.reserve(initialFaceLoop.size());
+									for (size_t i = 0; i < initialFaceLoop.size(); i++)
+									{
+										out.push_back(initialFaceLoop[i]);
+									}	
+								}
 							}
 							else //solid face, no holes
 							{
@@ -1001,13 +1377,14 @@ TryIntersectSolid:
 						for (size_t i = 0; i < faces.size(); ++i) 
 							faceList.push_back(new face_t(faces[i].begin(), faces[i].end()));
 						std::vector<mesh_t*> theseMeshes;
-						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions());
+						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions(),precision*precision, false);
 						for (size_t i = 0; i < theseMeshes.size(); i++)
 						{
 							meshes.push_back(theseMeshes[i]);
 						}
-						
+
 					}
+					
 				}
 				else //triangulate the faces
 				{
@@ -1021,7 +1398,20 @@ TryIntersectSolid:
 					{
 						Monitor::Exit(this);
 					}
-					std::unordered_map<Float3D, size_t> vertexMap;
+
+					std::unordered_map<Double3D, size_t> vertexMap;
+					for (TopExp_Explorer vEx(shape,TopAbs_VERTEX) ; vEx.More(); vEx.Next()) //gather all the points
+					{
+						const TopoDS_Vertex& curVert=TopoDS::Vertex(vEx.Current());
+						gp_Pnt p = BRep_Tool::Pnt(curVert);
+						Double3D p3D(p.X(),p.Y(),p.Z(),precision,rounding);
+						std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+						if(hit==vertexMap.end())
+						{
+							vertexMap.insert(std::make_pair(p3D,vertexStore.size()));	
+							vertexStore.push_back(carve::geom::VECTOR(p.X(), p.Y(), p.Z()));
+						}
+					}
 					for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
 					{
 						faces.clear();
@@ -1042,12 +1432,12 @@ TryIntersectSolid:
 							{
 								gp_XYZ p = points(nd).XYZ();
 								loc.Transformation().Transforms(p);			 
-								Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z());
-								std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+								Double3D p3D(p.X(),p.Y(),p.Z(),precision,rounding);
+								std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
 								if(hit==vertexMap.end()) //not found add it in
 								{	
 									posMap.insert(std::make_pair(nd,vertexStore.size()));
-									vertexMap.insert(std::make_pair(p3D,vertexStore.size()));
+									vertexMap.insert(std::make_pair(p3D,vertexStore.size()));									
 									vertexStore.push_back(carve::geom::VECTOR(p.X(),p.Y(),p.Z()));
 								}
 								else
@@ -1078,20 +1468,33 @@ TryIntersectSolid:
 						std::vector<face_t *> faceList;
 						faceList.reserve(faces.size());
 						for (size_t i = 0; i < faces.size(); ++i) 
+						{
 							faceList.push_back(new face_t(faces[i].begin(), faces[i].end()));
+						}
 						std::vector<mesh_t*> theseMeshes;
-						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions());
+						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions(), false);
 						for (size_t i = 0; i < theseMeshes.size(); i++)
 						{
+							if(theseMeshes[i]!=nullptr && theseMeshes[i]->isClosed()) //if we have not got a closed manifold, remove any open manifolds
+					    {
 							meshes.push_back(theseMeshes[i]);
 						}
+							else
+							{
+								meshes.push_back(theseMeshes[i]);
+							}
+							
+						}
+						
 					}
 
 				}
 				//Make the Polyhedron 
-
 				meshset_t *mesh = new meshset_t(vertexStore, meshes);
-				return  gcnew XbimPolyhedron(mesh, RepresentationLabel, SurfaceStyleLabel);
+				XbimPolyhedron^ p =  gcnew XbimPolyhedron(mesh, RepresentationLabel, SurfaceStyleLabel);
+			//	p->WritePly("s",true);
+				return p;
+
 			}
 
 			bool XbimGeometryModel::Intersects(XbimGeometryModel^ other)

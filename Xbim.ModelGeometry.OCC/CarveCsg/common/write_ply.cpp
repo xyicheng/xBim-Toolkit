@@ -280,6 +280,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writePLY(out, poly, ascii);
+		out.close();
 	}
 
 	void writePLY(std::ostream &out, const carve::poly::Polyhedron *poly, bool ascii) {
@@ -293,6 +294,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writePLY(out, poly, ascii);
+		out.close();
 	}
 
 	void writePLY(std::ostream &out, const carve::line::PolylineSet *lines, bool ascii) {
@@ -307,6 +309,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writePLY(out, lines, ascii);
+		out.close();
 	}
 
 	void writePLY(std::ostream &out, const carve::point::PointSet *points, bool ascii) {
@@ -321,6 +324,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writePLY(out, points, ascii);
+		out.close();
 	}
 
 
@@ -335,6 +339,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writeOBJ(out, poly);
+		out.close();
 	}
 
 	void writeOBJ(std::ostream &out, const carve::poly::Polyhedron *poly) {
@@ -347,6 +352,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writeOBJ(out, poly);
+		out.close();
 	}
 
 	void writeOBJ(std::ostream &out, const carve::line::PolylineSet *lines) {
@@ -359,6 +365,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writeOBJ(out, lines);
+		out.close();
 	}
 
 
@@ -373,6 +380,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writeVTK(out, poly);
+		out.close();
 	}
 
 	void writeVTK(std::ostream &out, const carve::poly::Polyhedron *poly) {
@@ -385,6 +393,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writeVTK(out, poly);
+		out.close();
 	}
 
 	void writeVTK(std::ostream &out, const carve::line::PolylineSet *lines) {
@@ -397,6 +406,7 @@ namespace carve {
 		std::ofstream out(out_file.c_str(), std::ios_base::binary);
 		if (!out.is_open()) { std::cerr << "File '" <<  out_file << "' could not be opened." << std::endl; return; }
 		writeVTK(out, lines);
+		out.close();
 	}
 
 }

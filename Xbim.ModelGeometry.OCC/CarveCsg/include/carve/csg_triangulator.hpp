@@ -36,7 +36,7 @@ namespace carve {
 
         virtual void processOutputFace(std::vector<carve::mesh::MeshSet<3>::face_t *> &faces,
                                        const carve::mesh::MeshSet<3>::face_t *orig,
-                                       bool flipped) {
+                                       bool flipped, double EPSILON, double EPSILON2) {
           std::vector<carve::mesh::MeshSet<3>::face_t *> out_faces;
 
           size_t n_tris = 0;
@@ -63,14 +63,14 @@ namespace carve {
             triangulate::triangulate(
                 carve::mesh::MeshSet<3>::face_t::projection_mapping(face->project),
                 vloop,
-                result);
+                result, EPSILON, EPSILON2);
 
             if (with_improvement) {
               triangulate::improve(
                   carve::mesh::MeshSet<3>::face_t::projection_mapping(face->project),
                   vloop,
                   carve::mesh::vertex_distance(),
-                  result);
+                  result, EPSILON, EPSILON2);
             }
 
             std::vector<carve::mesh::MeshSet<3>::vertex_t *> fv;
@@ -101,7 +101,7 @@ namespace carve {
 
       virtual void processOutputFace(std::vector<carve::mesh::MeshSet<3>::face_t *> &faces,
                                      const carve::mesh::MeshSet<3>::face_t *orig,
-                                     bool flipped) {
+                                     bool flipped, double EPSILON, double EPSILON2) {
         if (faces.size() == 1) return;
 
         // doing improvement as a separate hook is much messier than
@@ -146,7 +146,7 @@ namespace carve {
           verts[(*i).second] = (*i).first;
         }
  
-        triangulate::improve(projector, verts, carve::mesh::vertex_distance(), result);
+        triangulate::improve(projector, verts, carve::mesh::vertex_distance(), result,EPSILON, EPSILON2);
 
         std::vector<carve::mesh::MeshSet<3>::vertex_t *> fv;
         fv.resize(3);
@@ -194,7 +194,7 @@ namespace carve {
 
       virtual void processOutputFace(std::vector<carve::mesh::MeshSet<3>::face_t *> &faces,
                                      const carve::mesh::MeshSet<3>::face_t *orig,
-                                     bool flipped) {
+                                     bool flipped,double EPSILON,double EPSILON2) {
         if (faces.size() == 1) return;
 
         std::vector<carve::mesh::MeshSet<3>::face_t *> out_faces;
@@ -344,7 +344,7 @@ namespace carve {
 
       virtual void processOutputFace(std::vector<carve::mesh::MeshSet<3>::face_t *> &faces,
                                      const carve::mesh::MeshSet<3>::face_t *orig,
-                                     bool flipped) {
+                                     bool flipped,double EPSILON,double EPSILON2) {
         std::vector<carve::mesh::MeshSet<3>::face_t *> out_faces;
 
         for (size_t f = 0; f < faces.size(); ++f) {
@@ -368,7 +368,7 @@ namespace carve {
           triangulate::triangulate(
               carve::mesh::MeshSet<3>::face_t::projection_mapping(face->project),
               vloop,
-              result);
+              result, EPSILON, EPSILON2);
 
           std::map<std::pair<size_t, size_t>, size_t> tri_edge;
           for (size_t i = 0; i < result.size(); ++i) {

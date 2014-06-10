@@ -166,10 +166,18 @@ namespace carve {
       return true;
     }
 
-    template<unsigned ndim>
-    bool aabb<ndim>::containsPoint(const vector_t &v) const {
+	 template<unsigned ndim>
+    bool aabb<ndim>::contains(const aabb<ndim> &other, double EPSILON) const {
       for (unsigned i = 0; i < ndim; ++i) {
-        if (fabs(v.v[i] - pos.v[i]) > extent.v[i]) return false;
+        if (fabs(other.pos.v[i] - pos.v[i]) + other.extent.v[i] > extent.v[i]+EPSILON) return false;
+      }
+      return true;
+    }
+    template<unsigned ndim>
+    bool aabb<ndim>::containsPoint(const vector_t &v, double EPSILON) const {
+      for (unsigned i = 0; i < ndim; ++i) {
+        if (fabs(v.v[i] - pos.v[i]) > extent.v[i]+EPSILON) 
+			return false; 
       }
       return true;
     }
@@ -187,12 +195,13 @@ namespace carve {
       }
       return m;
     }
-
+	
     template<unsigned ndim>
     bool aabb<ndim>::intersects(const aabb<ndim> &other) const {
       return maxAxisSeparation(other) <= 0.0;
     }
  
+
     template<unsigned ndim>
     bool aabb<ndim>::intersects(const sphere<ndim> &s) const {
       double r = 0.0;
@@ -205,7 +214,7 @@ namespace carve {
     template<unsigned ndim>
     bool aabb<ndim>::intersects(const plane<ndim> &plane) const {
       double d1 = fabs(distance(plane, pos));
-      double d2 = dot(abs(plane.N), extent);
+      double d2 = dot(abs(plane.N), extent); 
       return d1 <= d2;
     }
 
@@ -213,7 +222,33 @@ namespace carve {
     bool aabb<ndim>::intersects(const linesegment<ndim> &ls) const {
       return intersectsLineSegment(ls.v1, ls.v2);
     }
+///the following are versions to allow different tolerances
+	 template<unsigned ndim>
+    bool aabb<ndim>::intersects(const aabb<ndim> &other, double EPSILON) const {
+      return maxAxisSeparation(other) <= EPSILON;
+    }
+	//the intersects below have not been completed and do not consider the tolerance that is passed
+	  template<unsigned ndim>
+    bool aabb<ndim>::intersects(const sphere<ndim> &s, double EPSILON) const {
+      double r = 0.0;
+      for (unsigned i = 0; i < ndim; ++i) {
+        double t = fabs(s.C[i] - pos[i]) - extent[i]; if (t > 0.0) r += t*t;
+      }
+      return r <= s.r*s.r;
+    }
 
+    template<unsigned ndim>
+    bool aabb<ndim>::intersects(const plane<ndim> &plane, double EPSILON) const {
+      double d1 = fabs(distance(plane, pos));
+      double d2 = dot(abs(plane.N), extent);
+      return d1 <= d2;
+    }
+
+    template<unsigned ndim>
+    bool aabb<ndim>::intersects(const linesegment<ndim> &ls, double EPSILON) const {
+      return intersectsLineSegment(ls.v1, ls.v2);
+    }
+	//end of tolerance changes
     template<unsigned ndim>
     std::pair<double, double> aabb<ndim>::rangeInDirection(const carve::geom::vector<ndim> &v) const {
       double d1 = dot(v, pos);

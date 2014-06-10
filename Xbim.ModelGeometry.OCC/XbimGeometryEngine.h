@@ -31,8 +31,9 @@ namespace Xbim
 				Standard::SetReentrant(Standard_True);
 				_cache = gcnew ConcurrentDictionary<int, Object^>();
 				_deflection=model->ModelFactors->DeflectionTolerance;
-				_precision = model->ModelFactors->Precision;
-				_precisionMax = model->ModelFactors->PrecisionMax;
+				_precision = model->ModelFactors->PrecisionBoolean;
+				_precisionMax = model->ModelFactors->PrecisionBooleanMax;
+				_rounding = (unsigned int) model->ModelFactors->Rounding;
 				_caching=false;
 			}
 			virtual property bool Caching
@@ -62,6 +63,7 @@ namespace Xbim
 			double _deflection;
 			double _precisionMax;
 			double _precision;
+			unsigned int _rounding;
 			bool _caching;
 			ConcurrentDictionary<int, Object^>^ _cache;
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);

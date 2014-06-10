@@ -27,51 +27,58 @@
 namespace carve {
   namespace csg {
 
-    Octree::Node::Node(const carve::geom3d::Vector &newMin, const carve::geom3d::Vector &newMax) :
-      parent(NULL), is_leaf(true), min(newMin), max(newMax) {
-      for (int i = 0; i < 8; ++i) children[i] = NULL;
-      aabb = Octree::makeAABB(this);
-    }
+	  Octree::Node::Node(const carve::geom3d::Vector &newMin, const carve::geom3d::Vector &newMax) :
+		  parent(NULL), is_leaf(true), min(newMin), max(newMax) 
+	  {
+		
+		  for (int i = 0; i < 8; ++i) children[i] = NULL;
+		  aabb = Octree::makeAABB(this);
 
-    Octree::Node::Node(Node *p, double x1, double y1, double z1, double x2, double y2, double z2) :
-      parent(p), is_leaf(true), min(carve::geom::VECTOR(x1, y1, z1)), max(carve::geom::VECTOR(x2, y2, z2)) {
-      for (int i = 0; i < 8; ++i) children[i] = NULL;
-      aabb = Octree::makeAABB(this);
-    }
+	  }
 
-    Octree::Node::~Node() {
-      for (int i = 0; i < 8; ++i) {
-        if (children[i] != NULL) {
-          (*children[i]).~Node();
-        }
-      }
+	  Octree::Node::Node(Node *p, double x1, double y1, double z1, double x2, double y2, double z2) :
+		  parent(p), is_leaf(true), min(carve::geom::VECTOR(x1, y1, z1)), max(carve::geom::VECTOR(x2, y2, z2))
+	  {
+		 
+		  for (int i = 0; i < 8; ++i) children[i] = NULL;
+
+		  aabb = Octree::makeAABB(this);
+
+	  }
+
+	  Octree::Node::~Node() {
+		  for (int i = 0; i < 8; ++i) {
+			  if (children[i] != NULL) {
+				  (*children[i]).~Node();
+			  }
+		  }
       if (children[0] != NULL) {
         char *ptr = (char*)children[0];
         delete[] ptr;
       }
     }
 
-    bool Octree::Node::mightContain(const carve::poly::Face<3> &face) {
+    bool Octree::Node::mightContain(const carve::poly::Face<3> &face, double EPSILON) {
       if (face.nVertices() == 3) {
         return aabb.intersects(carve::geom::tri<3>(face.vertex(0)->v, face.vertex(1)->v, face.vertex(2)->v));
       } else {
-        return aabb.intersects(face.aabb) && aabb.intersects(face.plane_eqn);
+        return aabb.intersects(face.aabb,EPSILON) && aabb.intersects(face.plane_eqn);
       }
     }
 
-    bool Octree::Node::mightContain(const carve::poly::Edge<3> &edge) {
+    bool Octree::Node::mightContain(const carve::poly::Edge<3> &edge, double EPSILON) {
       return aabb.intersectsLineSegment(edge.v1->v, edge.v2->v);
     }
 
-    bool Octree::Node::mightContain(const carve::poly::Vertex<3> &p) {
-      return aabb.containsPoint(p.v);
+    bool Octree::Node::mightContain(const carve::poly::Vertex<3> &p, double EPSILON) {
+      return aabb.containsPoint(p.v, EPSILON);
     }
 
     bool Octree::Node::hasChildren() {
       return !is_leaf;
     }
 
-    bool Octree::Node::split() {
+    bool Octree::Node::split(double EPSILON) {
       if (is_leaf && hasGeometry()) {
 
         carve::geom3d::Vector mid = 0.5 * (min + max);
@@ -86,9 +93,9 @@ namespace carve {
         children[7] = new (ptr + sizeof(Node) * 7) Node(this, mid.x, mid.y, mid.z, max.x, max.y, max.z);
 
         for (int i = 0; i < 8; ++i) {
-          putInside(faces, children[i], children[i]->faces);
-          putInside(edges, children[i], children[i]->edges);
-          putInside(vertices, children[i], children[i]->vertices);
+          putInside(faces, children[i], children[i]->faces,EPSILON);
+          putInside(edges, children[i], children[i]->edges,EPSILON);
+          putInside(vertices, children[i], children[i]->vertices,EPSILON);
         }
 
         faces.clear();
@@ -100,9 +107,9 @@ namespace carve {
     }
 
     template <class T>
-    void Octree::Node::putInside(const T &input, Node *child, T &output) {
+    void Octree::Node::putInside(const T &input, Node *child, T &output, double EPSILON) {
       for (typename T::const_iterator it = input.begin(), e = input.end(); it != e; ++it) {
-        if (child->mightContain(**it)) {
+        if (child->mightContain(**it,EPSILON)) {
           output.push_back(*it);
         }
       }
@@ -158,21 +165,21 @@ namespace carve {
     void Octree::doFindEdges(const carve::geom::aabb<3> &aabb,
                              Node *node,
                              std::vector<const carve::poly::Edge<3> *> &out,
-                             unsigned depth) const {
+                             unsigned depth, double EPSILON) const {
       if (node == NULL) {
         return;
       }
 
-      if (node->aabb.intersects(aabb)) {
+      if (node->aabb.intersects(aabb,EPSILON)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindEdges(aabb, node->children[i], out, depth + 1);
+            doFindEdges(aabb, node->children[i], out, depth + 1,EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->edges.size() > EDGE_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindEdges(aabb, node->children[i], out, depth + 1);
+                doFindEdges(aabb, node->children[i], out, depth + 1,EPSILON);
               }
               return;
             }
@@ -189,7 +196,7 @@ namespace carve {
     void Octree::doFindEdges(const carve::geom3d::LineSegment &l,
                              Node *node,
                              std::vector<const carve::poly::Edge<3> *> &out,
-                             unsigned depth) const {
+                             unsigned depth, double EPSILON) const {
       if (node == NULL) {
         return;
       }
@@ -197,13 +204,13 @@ namespace carve {
       if (node->aabb.intersectsLineSegment(l.v1, l.v2)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindEdges(l, node->children[i], out, depth + 1);
+            doFindEdges(l, node->children[i], out, depth + 1,EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->edges.size() > EDGE_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindEdges(l, node->children[i], out, depth + 1);
+                doFindEdges(l, node->children[i], out, depth + 1,EPSILON);
               }
               return;
             }
@@ -220,21 +227,22 @@ namespace carve {
     void Octree::doFindEdges(const carve::geom3d::Vector &v,
                              Node *node,
                              std::vector<const carve::poly::Edge<3> *> &out,
-                             unsigned depth) const {
+                             unsigned depth,
+							 double EPSILON) const {
       if (node == NULL) {
         return;
       }
 
-      if (node->aabb.containsPoint(v)) {
+      if (node->aabb.containsPoint(v, EPSILON)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindEdges(v, node->children[i], out, depth + 1);
+            doFindEdges(v, node->children[i], out, depth + 1, EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->edges.size() > EDGE_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindEdges(v, node->children[i], out, depth + 1);
+                doFindEdges(v, node->children[i], out, depth + 1, EPSILON);
               }
               return;
             }
@@ -252,21 +260,21 @@ namespace carve {
     void Octree::doFindFaces(const carve::geom::aabb<3> &aabb,
                              Node *node,
                              std::vector<const carve::poly::Face<3>*> &out,
-                             unsigned depth) const {
+                             unsigned depth, double EPSILON) const {
       if (node == NULL) {
         return;
       }
 
-      if (node->aabb.intersects(aabb)) {
+      if (node->aabb.intersects(aabb,EPSILON)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindFaces(aabb, node->children[i], out, depth + 1);
+            doFindFaces(aabb, node->children[i], out, depth + 1,EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->faces.size() > FACE_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindFaces(aabb, node->children[i], out, depth + 1);
+                doFindFaces(aabb, node->children[i], out, depth + 1,EPSILON);
               }
               return;
             }
@@ -283,7 +291,7 @@ namespace carve {
     void Octree::doFindFaces(const carve::geom3d::LineSegment &l,
                              Node *node,
                              std::vector<const carve::poly::Face<3>*> &out,
-                             unsigned depth) const {
+                             unsigned depth, double EPSILON) const {
       if (node == NULL) {
         return;
       }
@@ -291,13 +299,13 @@ namespace carve {
       if (node->aabb.intersectsLineSegment(l.v1, l.v2)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindFaces(l, node->children[i], out, depth + 1);
+			  doFindFaces(l, node->children[i], out, depth + 1,EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->faces.size() > FACE_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindFaces(l, node->children[i], out, depth + 1);
+                doFindFaces(l, node->children[i], out, depth + 1,EPSILON);
               }
               return;
             }
@@ -311,21 +319,21 @@ namespace carve {
       }
     }
 
-    void Octree::doFindVerticesAllowDupes(const carve::geom3d::Vector &v, Node *node, std::vector<const carve::poly::Vertex<3> *> &out, unsigned depth) const {
+    void Octree::doFindVerticesAllowDupes(const carve::geom3d::Vector &v, Node *node, std::vector<const carve::poly::Vertex<3> *> &out, unsigned depth, double EPSILON) const {
       if (node == NULL) {
         return;
       }
 
-      if (node->aabb.containsPoint(v)) {
+      if (node->aabb.containsPoint(v, EPSILON)) {
         if (node->hasChildren()) {
           for (int i = 0; i < 8; ++i) {
-            doFindVerticesAllowDupes(v, node->children[i], out, depth + 1);
+            doFindVerticesAllowDupes(v, node->children[i], out, depth + 1,EPSILON);
           }
         } else {
           if (depth < MAX_SPLIT_DEPTH && node->vertices.size() > POINT_SPLIT_THRESHOLD) {
-            if (!node->split()) {
+            if (!node->split(EPSILON)) {
               for (int i = 0; i < 8; ++i) {
-                doFindVerticesAllowDupes(v, node->children[i], out, depth + 1);
+                doFindVerticesAllowDupes(v, node->children[i], out, depth + 1,EPSILON);
               }
               return;
             }
@@ -337,62 +345,66 @@ namespace carve {
       }
     }
 
-    void Octree::findEdgesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Edge<3>*> &out) const {
+    void Octree::findEdgesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Edge<3>*> &out,
+					   double EPSILON) const {
       tagable::tag_begin();
-      doFindEdges(aabb, root, out, 0);
+      doFindEdges(aabb, root, out, 0,EPSILON);
     }
 
-    void Octree::findEdgesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Edge<3>*> &out) const {
+    void Octree::findEdgesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Edge<3>*> &out,
+					   double EPSILON) const {
       tagable::tag_begin();
-      doFindEdges(l, root, out, 0);
+      doFindEdges(l, root, out, 0,EPSILON);
     }
 
-    void Octree::findEdgesNear(const carve::poly::Edge<3> &e, std::vector<const carve::poly::Edge<3>*> &out) const {
+    void Octree::findEdgesNear(const carve::poly::Edge<3> &e, std::vector<const carve::poly::Edge<3>*> &out,
+					   double EPSILON) const {
       tagable::tag_begin();
-      doFindEdges(carve::geom3d::LineSegment(e.v1->v, e.v2->v), root, out, 0);
+      doFindEdges(carve::geom3d::LineSegment(e.v1->v, e.v2->v), root, out, 0,EPSILON);
     }
 
-    void Octree::findEdgesNear(const carve::geom3d::Vector &v, std::vector<const carve::poly::Edge<3>*> &out) const {
+    void Octree::findEdgesNear(const carve::geom3d::Vector &v, std::vector<const carve::poly::Edge<3>*> &out,
+					   double EPSILON) const {
       tagable::tag_begin();
-      doFindEdges(v, root, out, 0);
+      doFindEdges(v, root, out, 0,EPSILON);
     }
 
-    void Octree::findFacesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Face<3>*> &out) const {
+    void Octree::findFacesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Face<3>*> &out, double EPSILON) const {
       tagable::tag_begin();
-      doFindFaces(aabb, root, out, 0);
+      doFindFaces(aabb, root, out, 0, EPSILON);
     }
 
-    void Octree::findFacesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Face<3>*> &out) const {
+    void Octree::findFacesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Face<3>*> &out,double EPSILON) const {
       tagable::tag_begin();
-      doFindFaces(l, root, out, 0);
+      doFindFaces(l, root, out, 0, EPSILON);
     }
 
-    void Octree::findFacesNear(const carve::poly::Edge<3> &e, std::vector<const carve::poly::Face<3>*> &out) const {
+    void Octree::findFacesNear(const carve::poly::Edge<3> &e, std::vector<const carve::poly::Face<3>*> &out, double EPSILON) const {
       tagable::tag_begin();
-      doFindFaces(carve::geom3d::LineSegment(e.v1->v, e.v2->v), root, out, 0);
+      doFindFaces(carve::geom3d::LineSegment(e.v1->v, e.v2->v), root, out, 0,EPSILON);
     }
 
-    void Octree::findVerticesNearAllowDupes(const carve::geom3d::Vector &v, std::vector<const carve::poly::Vertex<3> *> &out) const {
+    void Octree::findVerticesNearAllowDupes(const carve::geom3d::Vector &v, std::vector<const carve::poly::Vertex<3> *> &out, double EPSILON) const {
       tagable::tag_begin();
-      doFindVerticesAllowDupes(v, root, out, 0);
+      doFindVerticesAllowDupes(v, root, out, 0,EPSILON);
     }
 
-    void Octree::doSplit(int maxSplit, Node *node) {
+    void Octree::doSplit(int maxSplit, Node *node, double EPSILON) {
       // Don't split down any further than 4 levels.
       if (maxSplit <= 0 || (node->edges.size() < 5 && node->faces.size() < 5)) {
         return;
       }
 
-      if (!node->split()) {
+      if (!node->split(EPSILON)) {
         for (int i = 0; i < 8; ++i) {
-          doSplit(maxSplit - 1, node->children[i]);
+          doSplit(maxSplit - 1, node->children[i],EPSILON);
         }
       }
     }
 
-    void Octree::splitTree() {
+    void Octree::splitTree(double EPSILON) {
       // initially split 4 levels
-      doSplit(0, root);
+      doSplit(0, root, EPSILON);
     }
 
   }

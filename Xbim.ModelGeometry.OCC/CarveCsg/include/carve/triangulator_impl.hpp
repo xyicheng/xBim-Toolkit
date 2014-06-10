@@ -477,13 +477,13 @@ namespace carve {
         size_t getInternalEdges(const project_t &project,
                                 const std::vector<vert_t> &poly,
                                 distance_calc_t dist,
-                                std::vector<tri_pair_t *> &edges) {
+                                std::vector<tri_pair_t *> &edges, double EPSILON, double EPSILON2) {
           size_t count = 0;
 
           for (storage_t::iterator i = storage.begin(); i != storage.end();) {
             tri_pair_t *tp = (*i).second;
             if (tp->a && tp->b) {
-              tp->calc(project, poly, dist);
+              tp->calc(project, poly, dist, EPSILON, EPSILON2);
               count++;
 #if defined(CARVE_DEBUG)
               std::cerr << "internal edge: " << (*i).first.first << "," << (*i).first.second << " -> " << tp << " " << tp->score << std::endl;
@@ -726,7 +726,7 @@ namespace carve {
     template<typename project_t, typename vert_t>
     void triangulate(const project_t &project,
                      const std::vector<vert_t> &poly,
-                     std::vector<tri_idx> &result) {
+                     std::vector<tri_idx> &result,double EPSILON,double EPSILON2) {
       std::vector<detail::vertex_info *> vinfo;
       const size_t N = poly.size();
 
@@ -763,7 +763,7 @@ namespace carve {
       detail::vertex_info *begin = vinfo[0];
 
       removeDegeneracies(begin, result);
-      doTriangulate(begin, result);
+      doTriangulate(begin, result, EPSILON);
     }
 
 
@@ -796,7 +796,7 @@ namespace carve {
       }
 
       std::vector<detail::tri_pair_t *> edges;
-      size_t n = tri_pairs.getInternalEdges(project, poly, dist, edges);
+      size_t n = tri_pairs.getInternalEdges(project, poly, dist, edges, EPSILON, EPSILON2);
       for (size_t i = 0; i < n; ++i) {
         edges[i]->idx = i;
       }

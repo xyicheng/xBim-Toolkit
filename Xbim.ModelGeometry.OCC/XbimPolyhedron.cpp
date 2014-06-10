@@ -4,20 +4,23 @@
 #include <stdio.h>
 #include <iomanip>
 #include <istream>
+#include <algorithm>
 #include "XbimPolyhedron.h"
+#include "XbimCsg.h"
 #include "XbimTriangularMeshStreamer.h"
 #include <carve/mesh.hpp>
 #include <carve/csg.hpp>
 #include <carve/input.hpp>
 #include <carve/triangulator.hpp>
 #include <carve/geom.hpp>
+#include <carve/mesh_simplify.hpp>
 #include "CartesianTransform.h"
-
+#include "XbimGeometryModelCollection.h"
 
 using namespace  System::Threading;
 
 using namespace  System::Text;
-
+using namespace Xbim::IO;
 using System::Runtime::InteropServices::Marshal;
 namespace Xbim
 {
@@ -89,7 +92,7 @@ namespace Xbim
 				/*size_t fC = polyData.getFaceCount();
 				size_t vC = polyData.getVertexCount();*/
 
-				return polyData.createMesh(carve::input::Options());
+				return polyData.createMesh(carve::input::Options(),0.0);
 			}
 
 			void XbimPolyhedronMeshStreamer::WriteTriangleIndex(size_t idxPtr)
@@ -153,16 +156,59 @@ namespace Xbim
 				_bounds=XbimRect3D::Empty;
 			}
 
-			//Constructs geometry based on PLY ascii data
-			XbimPolyhedron::XbimPolyhedron(String^ plyData)
+			size_t XbimPolyhedron::Improve(
+								double min_colinearity,
+								double min_delta_v,
+								double min_normal_angle,
+								double min_length,
+								double EPSILON)
+			{			
+				carve::mesh::MeshSimplifier simplifier;
+				size_t mods = simplifier.improveMesh_conservative(_meshSet, EPSILON);	
+				GC::KeepAlive(this);
+				return mods;
+			}
+			
+
+			size_t XbimPolyhedron::EliminateShortEdges(double minLength, double EPSILON)
+			{
+				carve::mesh::MeshSimplifier simplifier;
+				return simplifier.eliminateShortEdges(_meshSet,minLength,EPSILON);
+			}
+
+			size_t XbimPolyhedron::RemoveFins()
+			{
+				carve::mesh::MeshSimplifier simplifier;
+				 return simplifier.removeFins(_meshSet);
+			}  
+
+
+			size_t XbimPolyhedron::Simplify(double min_colinearity,
+				double min_delta_v,
+											double min_normal_angle,
+											double min_length,
+											double EPSILON)
+			{
+				carve::mesh::MeshSimplifier simplifier;
+				size_t mods = simplifier.simplify(_meshSet,min_colinearity, min_delta_v,min_normal_angle,min_length, EPSILON);	
+				GC::KeepAlive(this);
+				return mods;
+			}
+
+
+			
+
+
+			//Constructs geometry based on  ascii data, if asTriangulation is true the triangulated mesh is created else a polyhedron mesh is created
+			XbimPolyhedron::XbimPolyhedron(String^ strData, bool asTriangulation)
 			{	
-				StringReader^ sr = gcnew StringReader(plyData);
+				StringReader^ sr = gcnew StringReader(strData);
 				String^ l = sr->ReadLine(); 
 				array<Char>^ space = gcnew array<Char>{' '};
 				array<Char>^ comma = gcnew array<Char>{','};
 				array<Char>^ slash = gcnew array<Char>{'/'};
 				XbimVector3D normal; //the current Normal
-				//List<XbimVector3D>^ normals; //al ormals defined in this string
+				
 				carve::input::PolyhedronData polyData;
 				while( l!=nullptr)
 				{
@@ -172,30 +218,52 @@ namespace Xbim
 					String^ cmd = toks[0]->ToUpperInvariant();
 					if(cmd=="V")
 					{
-						polyData.reserveVertices(toks->Length-1);
 						for (int i = 1; i < toks->Length; i++)
 						{
 							array<String^>^ coords = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
 							polyData.addVertex(carve::geom::VECTOR(Double::Parse(coords[0]),Double::Parse(coords[1]),Double::Parse(coords[2])));
 						}
 					}
-					else if(cmd == "T")
+					else if( cmd == "T")
 					{
-						
-						for (int i = 1; i < toks->Length; i++)
+						if(asTriangulation)
 						{
-							array<String^>^ indices = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
-							std::vector<int> triangle;
-							for (int t = 0; t < 3; t++)
+							for (int i = 1; i < toks->Length; i++)
 							{
-								array<String^>^ indiceTokens = indices[t]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
-								if(indiceTokens->Length>1) //we have a normal
+								array<String^>^ indices = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
+								std::vector<int> triangle;
+								for (int t = 0; t < 3; t++)
 								{
+									array<String^>^ indiceTokens = indices[t]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
+									triangle.push_back(Int32::Parse(indiceTokens[0]));
 								}
-								triangle.push_back(Int32::Parse(indiceTokens[0]));
+								polyData.addFace(triangle.begin(),triangle.end());
 							}
-							polyData.addFace(triangle.begin(),triangle.end());
 						}
+					}
+					else if(cmd == "F") //initialise the face data
+					{
+						if(!asTriangulation)
+						{
+							std::vector<int> fIndices;
+							for (int i = 1; i < toks->Length; i++)
+							{
+								fIndices.push_back(Int32::Parse(toks[i]));
+							}
+							polyData.addFace(fIndices.begin(), fIndices.end());
+						}
+					}
+					else if(cmd == "P") //initialise the polyData
+					{
+						String^ version = toks[1];
+						int vCount = Int32::Parse(toks[2]);
+						int fCount = Int32::Parse(toks[3]);
+						int tCount = Int32::Parse(toks[4]);
+						polyData.reserveVertices(vCount);
+						if(asTriangulation)
+							polyData.reserveVertices(tCount);
+						else
+							polyData.reserveVertices(fCount);
 					}
 					else if(cmd == "N")
 					{
@@ -205,9 +273,11 @@ namespace Xbim
 						Logger->WarnFormat("Illegal Polygon command format '{0}' has been ignored");
 					l = sr->ReadLine(); //get the next line
 				}
-				carve::csg::CSG::meshset_t* mesh = polyData.createMesh(carve::input::Options());
-				_meshSet=mesh;
+				_meshSet =  polyData.createMesh(carve::input::Options(),0.0);
+				//this->WritePly("p",true);
 			}
+
+			
 
 			XbimPolyhedron::XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel)
 			{
@@ -218,25 +288,579 @@ namespace Xbim
 
 			}
 
+			XbimPolyhedron::XbimPolyhedron(int representationLabel, int styleLabel)
+			{
+				_bounds=XbimRect3D::Empty;
+				_meshSet=nullptr;
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+
+			}
+			  
+			XbimPolyhedron::XbimPolyhedron(XbimModelFactors^ modelFactors, IEnumerable<IfcFace^>^ faces, int representationLabel, int styleLabel, bool makeSolid)	
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				std::vector<vertex_t> vertices;
+				std::vector<mesh_t*> meshes;
+				AddFaces(vertices,meshes, modelFactors->Precision,modelFactors->Rounding, faces, makeSolid);	
+				 	///invert any manifolds that are negative
+				for (size_t i = 0; i < meshes.size(); i++)
+				{
+					if(meshes[i]->isNegative())
+							meshes[i]->invert();
+				}
+				_meshSet = new meshset_t(vertices, meshes);
+			//	System::Diagnostics::Debug::Assert(_meshSet->isClosed());	
+				
+			//	this->WritePly("f",true);
+			//	Console::WriteLine(this->Volume);
+			}
+
+			XbimPolyhedron::XbimPolyhedron(IfcShell^ shell, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				AddFaces(shell,precision,rounding,orientate);
+			}
+
+			XbimPolyhedron::XbimPolyhedron(IfcOpenShell^ shell, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				AddFaces(shell,precision,rounding,orientate);
+			}
+
+			XbimPolyhedron::XbimPolyhedron(IfcFacetedBrep^ brep, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				//A facetted BRep is intended to be a closed manifold
+				AddFaces(brep->Outer,precision,rounding,orientate);
+
+			}
+
+
+			XbimPolyhedron::XbimPolyhedron(IfcClosedShell^ shell, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				AddFaces(shell,precision,rounding,orientate);
+				
+			}
+
+			XbimPolyhedron::XbimPolyhedron(IfcFaceBasedSurfaceModel^ fbsm, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				AddFaces(fbsm,precision,rounding,orientate);
+				//this->WritePly("f",true);
+			}
+
+			XbimPolyhedron::XbimPolyhedron(IfcShellBasedSurfaceModel^ sbsm, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				AddFaces(sbsm,precision,rounding,orientate);
+			}
+
+			XbimPolyhedron::XbimPolyhedron(IfcConnectedFaceSet^ faces, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
+			{
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				AddFaces(faces,precision,rounding,orientate);
+			}
+
+			bool IsClockwiseFace(std::vector<carve::geom2d::P2> points)
+			{
+				const size_t SZ = points.size();
+				double n = 0;
+				for (size_t i = 0; i <SZ; i++)
+				{
+					carve::geom2d::P2 a = points[i];
+					carve::geom2d::P2 b = points[(i+1) % SZ];
+					n += (b.x-a.x) * (b.y+a.y);
+				}
+				return n > 0;
+			}
+
+			void XbimPolyhedron::AddFaces(IfcShellBasedSurfaceModel^ sbsm, double precision, unsigned int rounding, bool orientate)
+			{
+				int allPointsTally = IfcShellBasedSurfaceModelGeometricExtensions::NumberOfPointsMax(sbsm);
+				if(_meshSet==nullptr)
+				{
+					std::vector<vertex_t> vertices;
+					vertices.reserve(allPointsTally);
+					std::vector<mesh_t*> meshes;
+					for each (IfcShell^ shell in sbsm->SbsmBoundary)
+					{
+						if(dynamic_cast<IfcClosedShell^>(shell))
+						{
+							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+							if(!this->IsClosed()) Logger->WarnFormat("IfcClosedShell #{0} is not ccorrectly closed",shell->EntityLabel);
+						}
+						else if(dynamic_cast<IfcOpenShell^>(shell))
+						{
+							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+						}
+						else
+							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
+					}
+					_meshSet = new meshset_t(vertices, meshes);
+				}
+				else
+				{
+					ResizeVertexStore(allPointsTally +_meshSet->vertex_storage.size());
+					for each (IfcShell^ shell in sbsm->SbsmBoundary)
+					{
+						if(dynamic_cast<IfcClosedShell^>(shell))
+						{
+							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+							if(!this->IsClosed()) Logger->WarnFormat("IfcClosedShell #{0} is not ccorrectly closed",shell->EntityLabel);
+						}
+						else if(dynamic_cast<IfcOpenShell^>(shell))
+						{
+							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+						}
+						else
+							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
+					}
+				}
+
+			}
+
+			void XbimPolyhedron::ResizeVertexStore(size_t newSize)
+			{
+				if(_meshSet!=nullptr && _meshSet->vertex_storage.size()<newSize)
+				{
+					//need to grow the vertex store
+					std::unordered_map<vertex_t *, size_t> vert_idx;
+					for (size_t m = 0; m < _meshSet->meshes.size(); ++m) {
+						mesh_t *mesh = _meshSet->meshes[m];
+
+						for (size_t f = 0; f < mesh->faces.size(); ++f) {
+							face_t *face = mesh->faces[f];
+							edge_t *edge = face->edge;
+							do {
+								vert_idx[edge->vert] = 0;
+								edge = edge->next;
+							} while (edge != face->edge);
+						}
+					}
+
+					std::vector<vertex_t> new_vertex_storage;
+					new_vertex_storage.reserve(newSize);
+					for (std::unordered_map<vertex_t *, size_t>::iterator
+						i = vert_idx.begin(); i != vert_idx.end(); ++i) {
+							(*i).second = new_vertex_storage.size();
+							new_vertex_storage.push_back(*(*i).first);
+					}
+
+					for (size_t m = 0; m < _meshSet->meshes.size(); ++m) {
+						mesh_t *mesh = _meshSet->meshes[m];
+						for (size_t f = 0; f < mesh->faces.size(); ++f) {
+							face_t *face = mesh->faces[f];
+							edge_t *edge = face->edge;
+							do {
+								size_t i = vert_idx[edge->vert];
+								edge->vert = &new_vertex_storage[i];
+								edge = edge->next;
+							} while (edge != face->edge);
+						}
+					}
+					std::swap(_meshSet->vertex_storage, new_vertex_storage);
+				}
+			}
+
+			void XbimPolyhedron::AddFaces( IfcFaceBasedSurfaceModel^ fbsm,double precision, unsigned int rounding, bool orientate)
+			{
+				int allPointsTally = IfcFaceBasedSurfaceModelGeometricExtensions::NumberOfPointsMax(fbsm);
+				if(_meshSet==nullptr)
+				{
+					std::vector<vertex_t> vertices;
+					vertices.reserve(allPointsTally);
+					std::vector<mesh_t*> meshes;
+					for each (IfcConnectedFaceSet^ faces in fbsm->FbsmFaces)
+						AddFaces(vertices,meshes,precision,rounding, faces->CfsFaces, orientate);
+					_meshSet = new meshset_t(vertices, meshes);
+				}
+				else
+				{
+					ResizeVertexStore(allPointsTally +_meshSet->vertex_storage.size());
+					for each (IfcConnectedFaceSet^ faces in fbsm->FbsmFaces)
+					{
+						orientate = faces->ModelOf->ModelFactors->MaxBRepSewFaceCount>=allPointsTally ;
+						AddFaces(_meshSet->vertex_storage,_meshSet->meshes,precision,rounding, faces->CfsFaces, orientate);
+					}
+				}
+				
+			}
+
+			void XbimPolyhedron::AddFaces(IfcOpenShell^ shell, double precision, unsigned int rounding,  bool orientate)
+			{
+				AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+			}
+
+			void XbimPolyhedron::AddFaces(IfcClosedShell^ shell, double precision, unsigned int rounding,  bool orientate)
+			{
+				AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+				
+			}
+
+
+			void XbimPolyhedron::AddFaces(IfcShell^ shell, double precision, unsigned int rounding,  bool orientate)
+			{
+				if(dynamic_cast<IfcClosedShell^>(shell))
+				{
+					AddFaces((IfcClosedShell^)shell,precision, rounding,  orientate);
+				}
+				else if(dynamic_cast<IfcOpenShell^>(shell))
+				{
+					AddFaces((IfcOpenShell^)shell,precision, rounding,  orientate);
+				}
+				else
+					throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
+			}
+
+			void XbimPolyhedron::AddFaces(IfcFacetedBrep^ brep, double precision, unsigned int rounding,  bool orientate)
+			{
+			    AddFaces(brep->Outer, precision,rounding, orientate);				
+			}
+
+			void XbimPolyhedron::AddFaces(IfcConnectedFaceSet^ faces, double precision, unsigned int rounding,  bool orientate)
+			{
+				int allPointsTally = IfcConnectedFaceSetGeometricExtensions::NumberOfPointsMax(faces);
+				if(_meshSet==nullptr)
+				{
+					std::vector<vertex_t> vertices;
+					vertices.reserve(allPointsTally);
+					std::vector<mesh_t*> meshes;
+					if(faces->ModelOf->ModelFactors->MaxBRepSewFaceCount<allPointsTally) orientate = false;
+					AddFaces(vertices,meshes,precision,rounding,  faces->CfsFaces, orientate);
+					_meshSet = new meshset_t(vertices, meshes);
+				}
+				else
+				{
+					ResizeVertexStore(allPointsTally+_meshSet->vertex_storage.size());
+					if(faces->ModelOf->ModelFactors->MaxBRepSewFaceCount<allPointsTally) orientate = false;
+					AddFaces(_meshSet->vertex_storage,_meshSet->meshes,precision,rounding,  faces->CfsFaces, orientate);
+				}
+			}
+
+			void XbimPolyhedron::AddFaces(std::vector<vertex_t>& vertices, std::vector<mesh_t*>& meshes, double precision, unsigned int rounding, IEnumerable<IfcFace^>^ faces, bool orientate)
+			{
+
+				//first of all get all the points						
+				_bounds=XbimRect3D::Empty;
+				std::unordered_map<Double3D, size_t> vertexMap;		
+				std::vector<std::vector<size_t>> csgFaces; //faces on the polyhedron
+				csgFaces.reserve(Enumerable::Count(faces));
+				for each (IfcFace^ fc in  faces)
+				{
+					bool outerBoundDefined;
+					IfcFaceBound^ outerBound = Enumerable::FirstOrDefault(Enumerable::OfType<IfcFaceOuterBound^>(fc->Bounds)); //get the outer bound
+					if(outerBound == nullptr)
+					{
+						outerBound = Enumerable::FirstOrDefault(fc->Bounds); //if one not defined explicitly use first found
+						outerBoundDefined=false;
+					}
+					else
+						outerBoundDefined=true;
+					if(outerBound == nullptr || !dynamic_cast<IfcPolyLoop^>(outerBound->Bound)|| ((IfcPolyLoop^)(outerBound->Bound))->Polygon->Count<3) 
+						continue; //invalid polygonal face
+					XbimVector3D n = PolyLoopExtensions::NewellsNormal((IfcPolyLoop^)(outerBound->Bound));
+					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
+					if(n.IsInvalid()) 
+						continue;
+					std::vector<size_t> outerLoopPoints;
+
+					std::vector<std::vector<size_t>> holes;
+					
+					for each (IfcFaceBound^ bound in fc->Bounds)
+					{
+						IfcPolyLoop^ polyLoop=(IfcPolyLoop^)bound->Bound;
+						int loopPointCount = polyLoop->Polygon->Count;
+						if(polyLoop->Polygon->Count < 3) 
+						{
+							Logger->WarnFormat("Invalid bound #{0}, less than 3 points",bound->EntityLabel);
+							continue;
+						}
+						IEnumerable<IfcCartesianPoint^>^ pts = polyLoop->Polygon;
+						if(!bound->Orientation)
+							pts = Enumerable::Reverse(pts);
+						//add all the points into shell point map
+						if(bound==outerBound)
+						{
+							outerLoopPoints.reserve(loopPointCount);
+							for each(IfcCartesianPoint^ p in pts)
+							{
+								size_t index;
+								Double3D p3D(p->X,p->Y,p->Z,precision,rounding); 
+								
+								std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+								if(hit==vertexMap.end()) //not found add it in
+								{	
+									index = vertices.size();
+									vertexMap.insert(std::make_pair(p3D,index));
+									vertices.push_back(carve::geom::VECTOR(p->X, p->Y, p->Z));
+								}
+								else
+									index = hit->second;
+								if(outerLoopPoints.size()==0 || index!= outerLoopPoints.back()) 
+									outerLoopPoints.push_back(index);  //don't add the same point twice
+								else
+									Logger->InfoFormat("Duplicate vertex found in IfcPolyloop #{0}, it has been ignored",bound->EntityLabel);
+								
+							}
+							if(outerLoopPoints.size()>1 && outerLoopPoints.front() == outerLoopPoints.back()) // too many points specified, some tools duplicate the last point to close
+							{
+								outerLoopPoints.pop_back();
+								Logger->InfoFormat("Duplicate vertex found in IfcPolyloop #{0} (start point duplicated, it has been ignored",bound->EntityLabel);
+							}
+							if(outerLoopPoints.size()<3)
+							{
+								Logger->InfoFormat("Small face #{0}, less than 3 points, it has been ignored",bound->EntityLabel);
+								break; //quite and go to next face
+							}
+						}
+						else
+						{
+							//get a hole loop
+							holes.push_back(std::vector<size_t>());
+							std::vector<size_t> & holeLoop = holes.back();	
+							holeLoop.reserve(loopPointCount);
+							for each(IfcCartesianPoint^ p in pts)
+							{
+								size_t index;
+								Double3D p3D(p->X,p->Y,p->Z,precision,rounding); 
+								std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+								if(hit==vertexMap.end()) //not found add it in
+								{	
+									index = vertices.size();
+									vertexMap.insert(std::make_pair(p3D,index));
+									vertices.push_back(carve::geom::VECTOR(p->X, p->Y, p->Z));
+
+								}
+								else
+									index = hit->second;
+								if(holeLoop.size() ==0 || index!= holeLoop.back())
+									holeLoop.push_back(index); //don't add the same point twice
+								else
+									Logger->InfoFormat("Duplicate vertex found in IfcPolyloop #{0}, it has been ignored",bound->EntityLabel);
+							}
+							if(holeLoop.size()>1 && holeLoop.front() == holeLoop.back()) // too many points specified, some tools duplicate the last point to close
+							{
+								holeLoop.pop_back();
+								Logger->InfoFormat("Duplicate vertex found in IfcPolyloop #{0} (start point duplicated, it has been ignored",bound->EntityLabel);
+							}
+							if(holeLoop.size()<3)
+							{
+									Logger->WarnFormat("Small inner bound #{0}, with less than 3 points, it has been ignored",bound->EntityLabel);
+									holes.pop_back();
+							}
+						}
+						
+					}
+					//if we have holes then incorporate them in the face
+					if(holes.size())
+					{
+						bool warnFixApplied=false;
+						//reserve slots for each bound, including the outer bound
+IncorporateHoles:	
+						std::vector<std::vector<carve::geom2d::P2> > projected_poly;
+						projected_poly.resize(holes.size() + 1);
+						projected_poly[0].reserve(outerLoopPoints.size());
+						
+						try
+						{
+							if(!outerBoundDefined) //check and correct as necessary
+							{
+								//find the outer loop
+								
+								//get a bounding box for each wire and check containment
+								std::vector<aabb_t> bboxes;
+								bboxes.reserve(holes.size()+1);
+								std::vector<vector_t> outerVectors; outerVectors.reserve(outerLoopPoints.size());
+								for (size_t j = 0; j < outerLoopPoints.size(); ++j) 
+								{
+									outerVectors.push_back(vertices[outerLoopPoints[j]].v);
+								}
+								aabb_t outerLoopbb(outerVectors.begin(),outerVectors.end());
+								
+								//project the holes
+								for (size_t j = 0; j < holes.size(); ++j)
+								{
+									std::vector<vector_t> vectors; vectors.reserve( holes[j].size());
+									for (size_t k = 0; k < holes[j].size(); ++k)
+									{
+										vectors.push_back(vertices[holes[j][k]].v);
+									}
+									aabb_t innerLoopbb(vectors.begin(),vectors.end());
+									if(innerLoopbb.contains(outerLoopbb,precision)) ////check if the outerbound is the correct one
+									{
+										std::swap(holes[j],outerLoopPoints);
+										outerLoopbb=innerLoopbb;	
+									}
+								}
+								//create a face that fits the outer bound to project points on to
+								std::vector<vertex_t *> v; 
+								size_t sizeOuter = outerLoopPoints.size();
+								v.reserve(sizeOuter);
+								for (size_t i = 0; i < sizeOuter; ++i) 
+									v.push_back(&vertices[outerLoopPoints[i]]);
+								face_t projectionFace(v.begin(), v.end());
+								//project all the points of the outerbound onto the 2D face
+								for (size_t j = 0; j < outerLoopPoints.size(); ++j) 
+								{
+									projected_poly[0].push_back(projectionFace.project(vertices[outerLoopPoints[j]].v));
+								}
+								//project the holes
+								for (size_t j = 0; j < holes.size(); ++j)
+								{
+									projected_poly[j+1].reserve(holes[j].size());									
+									for (size_t k = 0; k < holes[j].size(); ++k)
+									{
+										projected_poly[j+1].push_back(projectionFace.project(vertices[holes[j][k]].v));									
+									}
+								}
+								
+
+							}
+							else
+							{	
+								//create a face that fits the outer bound to project points on to
+								std::vector<vertex_t *> v; 
+								size_t sizeOuter = outerLoopPoints.size();
+								v.reserve(sizeOuter);
+								for (size_t i = 0; i < sizeOuter; ++i) 
+									v.push_back(&vertices[outerLoopPoints[i]]);
+								face_t projectionFace(v.begin(), v.end());
+								//project all the points of the outerbound onto the 2D face
+
+								for (size_t j = 0; j < outerLoopPoints.size(); ++j) 
+								{
+									projected_poly[0].push_back(projectionFace.project(vertices[outerLoopPoints[j]].v));
+								}
+								//project the holes
+								for (size_t j = 0; j < holes.size(); ++j)
+								{
+									projected_poly[j+1].reserve(holes[j].size());
+									for (size_t k = 0; k < holes[j].size(); ++k)
+									{
+										projected_poly[j+1].push_back(projectionFace.project(vertices[holes[j][k]].v));
+									}
+								}
+							}
+							//fix the orientation
+							bool outerClockwise = IsClockwiseFace(projected_poly[0]);
+							if(outerClockwise) 
+								std::reverse(projected_poly[0].begin(),projected_poly[0].end());
+							for (size_t i = 1; i < projected_poly.size(); i++)
+							{
+								bool innerClockwise = IsClockwiseFace(projected_poly[i]);
+								if(!innerClockwise) 
+									std::reverse(projected_poly[i].begin(),projected_poly[i].end());
+							}
+							
+							std::vector<std::pair<size_t, size_t> > result = carve::triangulate::incorporateHolesIntoPolygon(projected_poly);
+							csgFaces.push_back(std::vector<size_t>());
+							std::vector<size_t> &out = csgFaces.back();
+							out.reserve(result.size());
+							for (size_t j = 0; j < result.size(); ++j) 
+							{
+								if (result[j].first == 0) 
+									out.push_back(outerLoopPoints[result[j].second]);
+								else 
+									out.push_back(holes[result[j].first-1][result[j].second]);
+							}		
+						}
+						catch(...)
+						{
+							if(outerBoundDefined)
+							{
+								outerBoundDefined=false; //try again
+								warnFixApplied = true;
+								goto IncorporateHoles;
+							}
+							if(outerLoopPoints.size()>2)
+							{
+								csgFaces.push_back(std::vector<size_t>()); //add the outer loop in
+								std::vector<size_t> &out = csgFaces.back();
+								std::swap(out,outerLoopPoints);		
+							}
+						}
+						if(warnFixApplied)
+							Logger->InfoFormat("Face error. Inner face loop is not contained in face #{0}. The error has been corrected" ,fc->EntityLabel);					
+
+					}
+					else //add the face, there are no holes
+					{
+						if(outerLoopPoints.size()>2)
+						{
+							csgFaces.push_back(std::vector<size_t>());
+							std::vector<size_t> &out = csgFaces.back();
+							std::swap(out,outerLoopPoints);	
+						}
+					}
+				}
+
+				//convert the faces and vertices to a mesh set
+				std::vector<face_t *> faceList;
+				faceList.reserve(csgFaces.size());
+				std::vector<vertex_t *> vf; 
+				for (size_t i = 0; i < csgFaces.size(); ++i) 
+				{
+					size_t sizeInner = csgFaces[i].size();
+					vf.clear();
+					vf.reserve(sizeInner);
+					for (size_t j = 0; j < sizeInner; ++j)
+					{
+						vf.push_back(&vertices[csgFaces[i][j]]);
+					}					 
+					faceList.push_back(new face_t(vf.begin(),vf.end()));
+				}
+				std::vector<mesh_t*> newMeshes;
+			    mesh_t::create(faceList.begin(), faceList.end(), newMeshes, carve::mesh::MeshOptions().avoid_cavities(true),precision*precision,orientate);
+				for (size_t i = 0; i < newMeshes.size(); i++)
+				{
+					if(newMeshes[i]->isNegative())
+						newMeshes[i]->invert();
+					meshes.push_back(newMeshes[i]);
+					newMeshes[i]->meshset=_meshSet;
+				}
+				newMeshes.clear();
+			}
+
 			double XbimPolyhedron::Volume::get()  
 			{
 				if (_meshSet==nullptr) return 0.0;
 				double vol = 0.0;
-				meshset_t::face_iter begin = _meshSet->faceBegin();
-				begin++;
-				meshset_t::face_iter end = _meshSet->faceBegin();
-				if(begin==end) //no faces
-					return 0.0;
-				vertex_t::vector_t origin = (*begin)->edge->vert->v;
-				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) 
+				for (size_t i = 0; i < _meshSet->meshes.size(); ++i) 
 				{
-					face_t *face = *i;
-					edge_t *e1 = face->edge;
-					for (edge_t *e2 = e1->next ;e2->next != e1; e2 = e2->next) {
-						vol += carve::geom3d::tetrahedronVolume(e1->vert->v, e2->vert->v, e2->next->vert->v, origin);
-					}
+					vol+=_meshSet->meshes[i]->volume();
 				}
-				return vol;
+				return vol;				
+			}
+
+			int XbimPolyhedron::FaceCount::get()  
+			{
+				if (_meshSet==nullptr) return 0;
+				else
+				{
+					int tally = 0;
+					for (size_t i = 0; i < _meshSet->meshes.size(); i++)
+					{
+						tally+=_meshSet->meshes[i]->faces.size();
+					}
+					return tally;
+				}
+			}
+
+			int XbimPolyhedron::VertexCount::get()  
+			{
+				if (_meshSet==nullptr) return 0;
+				else
+					return _meshSet->vertex_storage.size();
 			}
 
 			void XbimPolyhedron::InstanceCleanup()
@@ -251,31 +875,7 @@ namespace Xbim
 				XbimGeometryModel::InstanceCleanup();
 			}
 
-			void XbimPolyhedron::MakeCube(double x, double y, double z)
-			{
-				const carve::math::Matrix &t = carve::math::Matrix::SCALE(x,y,z);
-				carve::input::PolyhedronData data;
-
-				data.addVertex(t * carve::geom::VECTOR(+1.0, +1.0, +1.0));
-				data.addVertex(t * carve::geom::VECTOR(-1.0, +1.0, +1.0));
-				data.addVertex(t * carve::geom::VECTOR(-1.0, -1.0, +1.0));
-				data.addVertex(t * carve::geom::VECTOR(+1.0, -1.0, +1.0));
-				data.addVertex(t * carve::geom::VECTOR(+1.0, +1.0, -1.0));
-				data.addVertex(t * carve::geom::VECTOR(-1.0, +1.0, -1.0));
-				data.addVertex(t * carve::geom::VECTOR(-1.0, -1.0, -1.0));
-				data.addVertex(t * carve::geom::VECTOR(+1.0, -1.0, -1.0));
-				data.addFace(0, 1, 2, 3);
-				data.addFace(7, 6, 5, 4);
-				data.addFace(0, 4, 5, 1);
-				data.addFace(1, 5, 6, 2);
-				data.addFace(2, 6, 7, 3);
-				data.addFace(3, 7, 4, 0);
-
-				carve::csg::CSG::meshset_t* mesh = data.createMesh(carve::input::Options());
-				DeletePolyhedron();
-				_meshSet=mesh;
-			}
-
+			
 			void XbimPolyhedron::DeletePolyhedron(void)
 			{
 				if(_meshSet!=nullptr)
@@ -284,15 +884,16 @@ namespace Xbim
 			}
 
 			//Transforms the polyhedron by the specified matrix
-			void XbimPolyhedron::Transform(XbimMatrix3D t)
+			void XbimPolyhedron::TransformBy(XbimMatrix3D t)
 			{
-				carve::math::Matrix m(t.M11,t.M12,t.M13,t.M14,
-					t.M21,t.M22,t.M23,t.M24,
-					t.M31,t.M32,t.M33,t.M34,
-					t.OffsetX,t.OffsetY,t.OffsetZ,t.M44);
+				carve::math::Matrix m(t.M11,t.M21,t.M31,t.OffsetX,
+					t.M12,t.M22,t.M32,t.OffsetY,
+					t.M13,t.M23,t.M33,t.OffsetZ,
+					t.M14,t.M24,t.M34,t.M44);
 				carve::math::matrix_transformation mt(m);
 				_meshSet->transform(mt);
 			}
+
 
 			//returns true if the Polyhedron is not Valid or if it has a manifold shape that is empty
 			bool XbimPolyhedron::IsEmpty::get()
@@ -394,26 +995,40 @@ namespace Xbim
 				std::string stdString = chars;
 				carve::common::writeVTK(stdString,_meshSet);
 				Marshal::FreeHGlobal(IntPtr((void*)chars));
-				
+
 			}
+
+		
+
+			bool XbimPolyhedron::Write(String^ fileName,XbimModelFactors^ modelFactors)
+			{
+				try
+				{
+					StreamWriter^ sw = gcnew StreamWriter(fileName);
+					sw->Write(WriteAsString(modelFactors));
+					sw->Close();
+					return true;
+				}
+				catch(Exception^)
+				{
+					return false;
+				}
+			}
+			//If model factors is a nullptr the default precision of 1e-5 is used
 			String^ XbimPolyhedron::WriteAsString(XbimModelFactors^ modelFactors)
 			{
-				double deflection = modelFactors->DeflectionTolerance;
-				double precision = modelFactors->Precision;
-				int rounding =  modelFactors->Rounding;
+				
+				double precision = modelFactors==nullptr?1e-5:modelFactors->Precision;
 				StringBuilder^ sw = gcnew StringBuilder();
 				size_t normalsOffset=-1;
-				double rounding10P = Math::Pow(10, rounding);
-					
+				int vCount=0, fCount=0, tCount=0, nCount=0;
 				if(_meshSet==nullptr || _meshSet->vertex_storage.size() ==0) return "";
 				sw->Append("V");
 				for (std::vector<meshset_t::vertex_t>::const_iterator 
 					i = _meshSet->vertex_storage.begin(); i!=_meshSet->vertex_storage.end(); ++i)
 				{
+					vCount++;
 					vertex_t vt = *i;
-					//vt.v.x = (long)(vt.v.x * rounding10P) / rounding10P;
-					//vt.v.y = (long)(vt.v.y * rounding10P) / rounding10P;
-					//vt.v.z = (long)(vt.v.z * rounding10P) / rounding10P;
 					sw->Append(String::Format(" {0},{1},{2}",vt.v.x,vt.v.y,vt.v.z));
 				}
 				sw->AppendLine();
@@ -439,10 +1054,10 @@ namespace Xbim
 							if(abs(normal.X())<precision) normal.SetX(0.);
 							if(abs(normal.Y())<precision) normal.SetY(0.);
 							if(abs(normal.Z())<precision) normal.SetZ(0.);
-							sw->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z());	
+							sw->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z()); nCount++;
 							sw->AppendLine();
 							normalsOffset++;//we will have written out this number of normals
-						}
+						} 
 
 						std::vector<carve::geom::vector<2> > projectedVerts;
 						face->getProjectedVertices(projectedVerts);
@@ -452,9 +1067,10 @@ namespace Xbim
 						carve::triangulate::triangulate(projectedVerts,result,precision);
 
 						bool firstTime=true;
-						sw->Append("T");
+						sw->Append("T"); 
 						for (size_t i = 0; i < result.size(); i++)
 						{
+							tCount++;
 							ptrdiff_t a = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].a]);
 							ptrdiff_t b = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].b]);
 							ptrdiff_t c = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].c]);
@@ -469,20 +1085,28 @@ namespace Xbim
 							else
 								sw->AppendFormat(" {0},{1},{2}", a,b,c, f);
 						}	
-
+						sw->AppendLine();
+						sw->Append("F"); fCount++; //write out the face boundaries
+						for (size_t i = 0; i < verts.size(); i++)
+						{
+							ptrdiff_t a = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[i]);
+							sw->Append(" ");
+							sw->Append(a);
+						}	
 						sw->AppendLine();
 					}
-					
 				}
-				return sw->ToString();
+				//Polyhedron header =  Version | Vertices Count | Face Count | Trianngle Count
+				String^ def = String::Format("P {0} {1} {2} {3} {4}\n", 1, vCount, fCount, tCount, nCount );
+				return def + sw->ToString();
 			}
 			
-			XbimPolyhedron^ XbimPolyhedron::ToPolyHedron(double deflection, double precision,double precisionMax)
+			XbimPolyhedron^ XbimPolyhedron::ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
 				return this;
 			}
 
-			IXbimGeometryModelGroup^ XbimPolyhedron::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimPolyhedron::ToPolyHedronCollection(double deflection, double precision,double precisionMax,unsigned int rounding)
 			{
 				return this;
 			}
@@ -556,7 +1180,7 @@ namespace Xbim
 			bool  XbimPolyhedron::Intersects(XbimPolyhedron^ poly)
 			{
 				if(_meshSet==nullptr || poly->MeshSet==nullptr) return false;
-				return _meshSet->getAABB().intersects(poly->MeshSet->getAABB());
+				return _meshSet->getAABB().intersects(poly->MeshSet->getAABB(),0);
 			}
 
 			XbimMeshFragment XbimPolyhedron::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
@@ -564,7 +1188,7 @@ namespace Xbim
 				XbimTriangulatedModelCollection^ triangles = Mesh(deflection);
 				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount, modelId);
                 fragment.EntityLabel = product->EntityLabel;
-                fragment.EntityType = product->GetType();
+                fragment.EntityTypeId = IfcMetaData::IfcTypeId(product->GetType());
 				
 				for each (XbimTriangulatedModel^ tm in triangles) //add each mesh to the collective mesh
 				{
@@ -658,21 +1282,104 @@ namespace Xbim
 				return list;
 			}
 
-			XbimGeometryModel^ XbimPolyhedron::Cut(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			XbimGeometryModel^ XbimPolyhedron::Cut(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
-				Logger->Error("Mixed polyhedron and occ not supported. Failed to form difference between two shapes");
-				return nullptr;
-			}
-			XbimGeometryModel^ XbimPolyhedron::Union(XbimGeometryModel^ shape, double precision, double maxPrecision)
-			{				
-				Logger->Error("Mixed polyhedron and occ not supported. Failed to form union between two shapes");
-				return nullptr;
+				if(this->IsEmpty) return this; //nothing to do
+				XbimPolyhedron^ toCut = dynamic_cast<XbimPolyhedron^>(shape);
+				if(toCut==nullptr) //we can cut one polyhedron from another
+					toCut = shape->ToPolyHedron(deflection,precision,maxPrecision, rounding);
+				if(toCut->IsEmpty) return this; //nothing to do
+				XbimCsg^ csg = gcnew XbimCsg(precision);						
+				try
+				{				
+					XbimPolyhedron^ result = csg->Subtract(this,toCut);
+					
+					if(result->IsValid)
+						return result;
+					else
+						throw gcnew Exception("Boolean result invalid");
+				}
+				catch (XbimGeometryException^ ex) 
+				{
+					Logger->ErrorFormat("Failed to cut opening, exception: {0}.\n Body is #{1}, Cut is #{2}.\nCut ignored. This should not happen.", ex->Message, RepresentationLabel, shape->RepresentationLabel);
+				}	
+				return this;
 			}
 
-			XbimGeometryModel^ XbimPolyhedron::Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			XbimGeometryModel^ XbimPolyhedron::Combine(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
+			{
+				if(this->IsEmpty) return this; //nothing to do
+				XbimPolyhedron^ toCombine = dynamic_cast<XbimPolyhedron^>(shape);
+				if(toCombine==nullptr) //we can cut one polyhedron from another
+					toCombine = shape->ToPolyHedron(deflection,precision,maxPrecision, rounding);
+				if(toCombine->IsEmpty) return this; //nothing to do			
+				XbimCsg^ csg = gcnew XbimCsg(precision);					
+				try
+				{				
+					XbimPolyhedron^ result = csg->Combine(this,toCombine);
+					if(result->IsValid)
+						return result;
+					else
+						throw gcnew Exception("Boolean result invalid");
+				}
+				catch (XbimGeometryException^ ex) 
+				{
+					Logger->ErrorFormat("Failed to combine two shapes, exception: {0}.\n Body is #{1}, Addition is #{2}.\nCombination ignored. This should not happen.", ex->Message, RepresentationLabel, shape->RepresentationLabel);
+				}	
+				return this;
+			}
+
+			XbimGeometryModel^ XbimPolyhedron::Union(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
+			{	
+				if(this->IsEmpty) return shape; //nothing to do
+				XbimPolyhedron^ polyToUnion = dynamic_cast<XbimPolyhedron^>(shape);
+				if(polyToUnion==nullptr) //we can cut one polyhedron from another
+					polyToUnion = shape->ToPolyHedron(deflection,precision,maxPrecision, rounding);
+				if(polyToUnion->IsEmpty) return this; //nothing to do
+				XbimCsg^ csg = gcnew XbimCsg(precision);					
+				try
+				{				
+					XbimPolyhedron^ result = csg->Union(this,polyToUnion);
+					
+					if(result->IsValid)
+						return result;
+					else
+						throw gcnew Exception("Boolean result invalid");
+				}
+				catch (XbimGeometryException^ ex) 
+				{
+					Logger->ErrorFormat("Failed to union shapes, exception: {0}.\n Body is #{1}, Union is #{2}.\nUnion ignored. This should not happen.", ex->Message, RepresentationLabel, shape->RepresentationLabel);
+				}	
+				return this;
+			}
+
+			XbimGeometryModel^ XbimPolyhedron::Intersection(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{		
-				Logger->Error("Mixed polyhedron and occ not supported. Failed to form Intersection between two shapes");
-				return nullptr;
+
+				if(this->IsEmpty) return shape; //nothing to do
+				XbimPolyhedron^ polyToIntersect = dynamic_cast<XbimPolyhedron^>(shape);			
+				if(polyToIntersect==nullptr) //we can cut one polyhedron from another
+					polyToIntersect = shape->ToPolyHedron(deflection,precision,maxPrecision, rounding);
+				if(polyToIntersect->IsEmpty) return this; //nothing to do
+				XbimCsg^ csg = gcnew XbimCsg(precision);					
+				try
+				{				
+					XbimPolyhedron^ result = csg->Intersection(this,polyToIntersect);
+					if(result->IsValid)
+						return result;
+					else
+						throw gcnew Exception("Boolean result invalid");
+				}
+				catch (XbimGeometryException^ ex) 
+				{
+					
+					Logger->ErrorFormat("Failed to intersect shapes, exception: {0}.\n Body is #{1}, Intersect is #{2}.\nIntersection ignored. This should not happen.", ex->Message, RepresentationLabel, shape->RepresentationLabel);
+				}	
+				return this;
+			}
+			bool XbimPolyhedron::IsClosed()
+			{		
+				return _meshSet!=nullptr && _meshSet->isClosed();
 			}
 		}
 

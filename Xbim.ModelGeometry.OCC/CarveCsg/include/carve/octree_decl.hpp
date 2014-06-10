@@ -46,7 +46,6 @@ namespace carve {
         Node *parent;
         Node *children[8];
         bool is_leaf;
-
         carve::geom3d::Vector min;
         carve::geom3d::Vector max;
 
@@ -63,23 +62,21 @@ namespace carve {
 
         ~Node();
 
-        bool mightContain(const carve::poly::Geometry<3>::face_t &face);
-        bool mightContain(const carve::poly::Geometry<3>::edge_t &edge);
-        bool mightContain(const carve::poly::Geometry<3>::vertex_t &p);
+        bool mightContain(const carve::poly::Geometry<3>::face_t &face, double EPSILON);
+        bool mightContain(const carve::poly::Geometry<3>::edge_t &edge, double EPSILON);
+        bool mightContain(const carve::poly::Geometry<3>::vertex_t &p, double EPSILON);
         bool hasChildren();
         bool hasGeometry();
 
         template <class T>
-        void putInside(const T &input, Node *child, T &output);
+        void putInside(const T &input, Node *child, T &output, double EPSILON);
 
-        bool split();
+        bool split(double EPSILON);
       };
 
 
 
       Node *root;
-
-
 
       struct no_filter {
         bool operator()(const carve::poly::Geometry<3>::edge_t *) { return true; }
@@ -112,33 +109,39 @@ namespace carve {
       void doFindEdges(const carve::geom::aabb<3> &aabb,
                        Node *node,
                        std::vector<const carve::poly::Geometry<3>::edge_t *> &out,
-                       unsigned depth) const;
+                       unsigned depth,
+					   double EPSILON) const;
       void doFindEdges(const carve::geom3d::LineSegment &l,
                        Node *node,
                        std::vector<const carve::poly::Geometry<3>::edge_t *> &out,
-                       unsigned depth) const;
+                       unsigned depth,
+					   double EPSILON) const;
       void doFindEdges(const carve::geom3d::Vector &v,
                        Node *node,
                        std::vector<const carve::poly::Geometry<3>::edge_t *> &out,
-                       unsigned depth) const;
+                       unsigned depth,
+					   double EPSILON) const;
       void doFindFaces(const carve::geom::aabb<3> &aabb,
                        Node *node,
                        std::vector<const carve::poly::Geometry<3>::face_t *> &out,
-                       unsigned depth) const;
+                       unsigned depth,
+					   double EPSILON) const;
       void doFindFaces(const carve::geom3d::LineSegment &l,
                        Node *node,
                        std::vector<const carve::poly::Geometry<3>::face_t *> &out,
-                       unsigned depth) const;
+                       unsigned depth,
+					   double EPSILON) const;
 
 
 
       void doFindVerticesAllowDupes(const carve::geom3d::Vector &v,
                                     Node *node,
                                     std::vector<const carve::poly::Geometry<3>::vertex_t *> &out,
-                                    unsigned depth) const;
+                                    unsigned depth,
+									double EPSILON) const;
 
       void findVerticesNearAllowDupes(const carve::geom3d::Vector &v,
-                                      std::vector<const carve::poly::Geometry<3>::vertex_t *> &out) const;
+                                      std::vector<const carve::poly::Geometry<3>::vertex_t *> &out, double EPSILON) const;
 
 
 
@@ -146,34 +149,34 @@ namespace carve {
       void doFindEdges(const carve::poly::Geometry<3>::face_t &f, Node *node,
                        std::vector<const carve::poly::Geometry<3>::edge_t *> &out,
                        unsigned depth,
-                       filter_t filter) const;
+                       filter_t filter, double EPSILON) const;
 
       template<typename filter_t>
       void findEdgesNear(const carve::poly::Geometry<3>::face_t &f,
                          std::vector<const carve::poly::Geometry<3>::edge_t *> &out,
-                         filter_t filter) const;
+                         filter_t filter, double EPSILON) const;
 
       void findEdgesNear(const carve::poly::Geometry<3>::face_t &f,
-                         std::vector<const carve::poly::Geometry<3>::edge_t *> &out) const {
-        return findEdgesNear(f, out, no_filter());
+                         std::vector<const carve::poly::Geometry<3>::edge_t *> &out, double EPSILON) const {
+        return findEdgesNear(f, out, no_filter(), EPSILON);
       }
 
 
 
-      void findEdgesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Geometry<3>::edge_t *> &out) const;
-      void findEdgesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Geometry<3>::edge_t *> &out) const;
-      void findEdgesNear(const carve::poly::Geometry<3>::edge_t &e, std::vector<const carve::poly::Geometry<3>::edge_t *> &out) const;
-      void findEdgesNear(const carve::geom3d::Vector &v, std::vector<const carve::poly::Geometry<3>::edge_t *> &out) const;
+      void findEdgesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Geometry<3>::edge_t *> &out, double EPSILON) const;
+      void findEdgesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Geometry<3>::edge_t *> &out, double EPSILON) const;
+      void findEdgesNear(const carve::poly::Geometry<3>::edge_t &e, std::vector<const carve::poly::Geometry<3>::edge_t *> &out, double EPSILON) const;
+      void findEdgesNear(const carve::geom3d::Vector &v, std::vector<const carve::poly::Geometry<3>::edge_t *> &out, double EPSILON) const;
 
 
 
-      void findFacesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Geometry<3>::face_t *> &out) const;
-      void findFacesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Geometry<3>::face_t *> &out) const;
-      void findFacesNear(const carve::poly::Geometry<3>::edge_t &e, std::vector<const carve::poly::Geometry<3>::face_t *> &out) const;
+      void findFacesNear(const carve::geom::aabb<3> &aabb, std::vector<const carve::poly::Geometry<3>::face_t *> &out, double EPSILON) const;
+      void findFacesNear(const carve::geom3d::LineSegment &l, std::vector<const carve::poly::Geometry<3>::face_t *> &out, double EPSILON) const;
+      void findFacesNear(const carve::poly::Geometry<3>::edge_t &e, std::vector<const carve::poly::Geometry<3>::face_t *> &out, double EPSILON) const;
 
 
 
-      static void doSplit(int maxSplit, Node *node);
+      static void doSplit(int maxSplit, Node *node, double EPSILON);
 
 
 
@@ -185,7 +188,7 @@ namespace carve {
 
 
 
-      void splitTree();
+      void splitTree(double EPSILON);
 
     };
 

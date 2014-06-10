@@ -113,11 +113,11 @@ namespace carve {
                             FLGroupList &b_loops_grouped,
                             VertexClassification & /* vclass */,
                             carve::mesh::MeshSet<3> *poly_a,
-                            carve::mesh::MeshSet<3> *poly_b) const {
+                            carve::mesh::MeshSet<3> *poly_b, double EPSILON, double EPSILON2) const {
           if (a_loops_grouped.size() < b_loops_grouped.size()) {
-            performClassifySimpleOnFaceGroups(a_loops_grouped, b_loops_grouped, poly_a, poly_b, collector, hooks);
+            performClassifySimpleOnFaceGroups(a_loops_grouped, b_loops_grouped, poly_a, poly_b, collector, hooks, EPSILON, EPSILON2);
           } else {
-            performClassifySimpleOnFaceGroups(b_loops_grouped, a_loops_grouped, poly_b, poly_a, collector, hooks);
+            performClassifySimpleOnFaceGroups(b_loops_grouped, a_loops_grouped, poly_b, poly_a, collector, hooks, EPSILON, EPSILON2);
           }
 #if defined(CARVE_DEBUG)
           std::cerr << "after removal of simple on groups: " << a_loops_grouped.size() << " a groups" << std::endl;

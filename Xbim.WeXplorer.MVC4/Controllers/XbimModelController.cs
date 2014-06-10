@@ -64,8 +64,8 @@ namespace Xbim.WeXplorer.MVC4.Controllers
                     {
                         tmpModel.CreateFrom(fileName,null,null,true); //it is created and open
                         //now create the geometry
-                        Xbim3DModelContext ctxt = new Xbim3DModelContext(tmpModel);
-                        ctxt.CreateContext();
+                        //Xbim3DModelContext ctxt = new Xbim3DModelContext(tmpModel);
+                        //ctxt.CreateContext();
                         tmpModel.Close();
                     }
                     return new XbimGeometryModel(xbimFileName);
@@ -75,6 +75,25 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             {
                 throw new Exception(string.Format("Unable to access {0}\n{1}", name, e.Message));
             }
+        }
+
+        public JsonResult GetBoundsInstances(string name, string ext)
+        {
+            JsonResult json = new JsonResult();
+            json.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
+            json.MaxJsonLength = Int32.MaxValue;
+            try
+            {
+                using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
+                {
+                    json.Data = model.GetInstances();
+                }
+            }
+            catch (Exception e)
+            {
+                json.Data = new { Model = name, Error = e.Message };
+            }
+            return json;
         }
 
         public JsonResult Summary(string name, string ext)

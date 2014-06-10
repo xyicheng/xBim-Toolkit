@@ -65,11 +65,11 @@ namespace carve {
                  carve::geom3d::Vector /* normal */,
                  bool /* poly_a */,
                  FaceClass face_class,
-                 CSG::Hooks &hooks) {
+                 CSG::Hooks &hooks, double  EPSILON, double EPSILON2 ) {
           std::vector<carve::mesh::MeshSet<3>::face_t *> new_faces;
           new_faces.reserve(1);
           new_faces.push_back(orig_face->create(vertices.begin(), vertices.end(), false));
-          hooks.processOutputFace(new_faces, orig_face, false);
+          hooks.processOutputFace(new_faces, orig_face, false, EPSILON, EPSILON2);
           for (size_t i = 0; i < new_faces.size(); ++i) {
             faces.push_back(face_data_t(new_faces[i], orig_face, false));
           }
@@ -86,12 +86,12 @@ namespace carve {
                  carve::geom3d::Vector /* normal */,
                  bool /* poly_a */,
                  FaceClass face_class,
-                 CSG::Hooks &hooks) {
+                 CSG::Hooks &hooks, double  EPSILON, double EPSILON2 ) {
           // normal = -normal;
           std::vector<carve::mesh::MeshSet<3>::face_t *> new_faces;
           new_faces.reserve(1);
           new_faces.push_back(orig_face->create(vertices.begin(), vertices.end(), true));
-          hooks.processOutputFace(new_faces, orig_face, true);
+          hooks.processOutputFace(new_faces, orig_face, true, EPSILON, EPSILON2);
           for (size_t i = 0; i < new_faces.size(); ++i) {
             faces.push_back(face_data_t(new_faces[i], orig_face, true));
           }
@@ -108,9 +108,9 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) =0;
+                             CSG::Hooks &hooks, double, double) =0;
 
-        virtual void collect(FaceLoopGroup *grp, CSG::Hooks &hooks) {
+        virtual void collect(FaceLoopGroup *grp, CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           std::list<ClassificationInfo> &cinfo = (grp->classification);
 
           if (cinfo.size() == 0) {
@@ -194,7 +194,7 @@ namespace carve {
           bool is_poly_a = grp->src == src_a;
 
           for (FaceLoop *f = grp->face_loops.head; f; f = f->next) {
-            collect(f->orig_face, f->vertices, f->orig_face->plane.N, is_poly_a, fc, hooks);
+            collect(f->orig_face, f->vertices, f->orig_face->plane.N, is_poly_a, fc, hooks, EPSILON, EPSILON2);
           }
         }
 
@@ -226,9 +226,9 @@ namespace carve {
         }
         virtual ~AllCollector() {
         }
-        virtual void collect(FaceLoopGroup *grp, CSG::Hooks &hooks) {
+        virtual void collect(FaceLoopGroup *grp, CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           for (FaceLoop *f = grp->face_loops.head; f; f = f->next) {
-            FWD(f->orig_face, f->vertices, f->orig_face->plane.N, f->orig_face->mesh->meshset == src_a, FACE_OUT, hooks);
+            FWD(f->orig_face, f->vertices, f->orig_face->plane.N, f->orig_face->mesh->meshset == src_a, FACE_OUT, hooks, EPSILON, EPSILON2);
           }
         }
         virtual void collect(const carve::mesh::MeshSet<3>::face_t *orig_face,
@@ -236,8 +236,8 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) {
-          FWD(orig_face, vertices, normal, poly_a, face_class, hooks);
+                             CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
+          FWD(orig_face, vertices, normal, poly_a, face_class, hooks, EPSILON, EPSILON2);
         }
       };
 
@@ -255,9 +255,9 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) {
+                             CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           if (face_class == FACE_OUT || (poly_a && face_class == FACE_ON_ORIENT_OUT)) {
-            FWD(orig_face, vertices, normal, poly_a, face_class, hooks);
+            FWD(orig_face, vertices, normal, poly_a, face_class, hooks,  EPSILON,  EPSILON2);
           }
         }
       };
@@ -276,9 +276,9 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) {
+                             CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           if (face_class == FACE_IN || (poly_a && face_class == FACE_ON_ORIENT_OUT)) {
-            FWD(orig_face, vertices, normal, poly_a, face_class, hooks);
+            FWD(orig_face, vertices, normal, poly_a, face_class, hooks,  EPSILON,  EPSILON2);
           }
         }
       };
@@ -297,11 +297,11 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) {
+                             CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           if (face_class == FACE_OUT) {
-            FWD(orig_face, vertices, normal, poly_a, face_class, hooks);
+            FWD(orig_face, vertices, normal, poly_a, face_class, hooks,  EPSILON,  EPSILON2);
           } else if (face_class == FACE_IN) {
-            REV(orig_face, vertices, normal, poly_a, face_class, hooks);
+            REV(orig_face, vertices, normal, poly_a, face_class, hooks,  EPSILON,  EPSILON2);
           }
         }
       };
@@ -320,11 +320,11 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) {
+                             CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           if ((face_class == FACE_OUT || face_class == FACE_ON_ORIENT_IN) && poly_a) {
-            FWD(orig_face, vertices, normal, poly_a, face_class, hooks);
+            FWD(orig_face, vertices, normal, poly_a, face_class, hooks,  EPSILON,  EPSILON2);
           } else if (face_class == FACE_IN && !poly_a) {
-            REV(orig_face, vertices, normal, poly_a, face_class, hooks);
+            REV(orig_face, vertices, normal, poly_a, face_class, hooks,  EPSILON,  EPSILON2);
           }
         }
       };
@@ -343,11 +343,11 @@ namespace carve {
                              carve::geom3d::Vector normal,
                              bool poly_a,
                              FaceClass face_class,
-                             CSG::Hooks &hooks) {
+                             CSG::Hooks &hooks, double EPSILON, double EPSILON2) {
           if ((face_class == FACE_OUT || face_class == FACE_ON_ORIENT_IN) && !poly_a) {
-            FWD(orig_face, vertices, normal, poly_a, face_class, hooks);
+            FWD(orig_face, vertices, normal, poly_a, face_class, hooks, EPSILON, EPSILON2);
           } else if (face_class == FACE_IN && poly_a) {
-            REV(orig_face, vertices, normal, poly_a, face_class, hooks);
+            REV(orig_face, vertices, normal, poly_a, face_class, hooks, EPSILON, EPSILON2);
           }
         }
       };

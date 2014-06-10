@@ -201,17 +201,35 @@ namespace Xbim.Common.Geometry
             MemoryStream ms = new MemoryStream(array);
             BinaryReader bw = new BinaryReader(ms);
             XbimRect3D rect = new XbimRect3D();
-            float srXmin = (float)bw.ReadDouble(); //legacy when using windows rect3d and doubles
-            float srYmin = (float)bw.ReadDouble();
-            float srZmin = (float)bw.ReadDouble();
-            rect.Location = new XbimPoint3D(srXmin, srYmin, srZmin);
+            if (array.Length == 6 * sizeof(float)) //it is in floats
+            {
+                float srXmin = bw.ReadSingle(); 
+                float srYmin = bw.ReadSingle();
+                float srZmin = bw.ReadSingle();
+                rect.Location = new XbimPoint3D(srXmin, srYmin, srZmin);
 
-            float srXSz = (float)bw.ReadDouble(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
-            float srYSz = (float)bw.ReadDouble();
-            float srZSz = (float)bw.ReadDouble();
-            rect.SizeX = srXSz;
-            rect.SizeY = srYSz;
-            rect.SizeZ = srZSz;
+                float srXSz = bw.ReadSingle(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
+                float srYSz = bw.ReadSingle();
+                float srZSz = bw.ReadSingle();
+                rect.SizeX = srXSz;
+                rect.SizeY = srYSz;
+                rect.SizeZ = srZSz;
+            }
+            else //go for doubles
+            {
+                float srXmin = (float)bw.ReadDouble(); 
+                float srYmin = (float)bw.ReadDouble();
+                float srZmin = (float)bw.ReadDouble();
+                rect.Location = new XbimPoint3D(srXmin, srYmin, srZmin);
+
+                float srXSz = (float)bw.ReadDouble(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
+                float srYSz = (float)bw.ReadDouble();
+                float srZSz = (float)bw.ReadDouble();
+                rect.SizeX = srXSz;
+                rect.SizeY = srYSz;
+                rect.SizeZ = srZSz;
+            }
+           
 
             return rect;
         }

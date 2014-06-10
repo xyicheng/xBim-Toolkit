@@ -60,6 +60,15 @@
     </DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excluding Binary Geometry|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Excluding Binary Geometry\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -629,6 +638,45 @@
     <Compile Include="GeometryResourceExtensions.cs" />
     <Compile Include="GroupExtension.cs" />
     <Compile Include="ClassificationExtensions.cs" />
+    <Compile Include="IfcArbitraryClosedProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcAxis1PlacementGeometricExtensions.cs" />
+    <Compile Include="IfcAxis2Placement2DGeometricExtensions.cs" />
+    <Compile Include="IfcAxis2Placement3DGeometricExtensions.cs" />
+    <Compile Include="IfcBooleanResultGeometricExtensions.cs" />
+    <Compile Include="IfcCartesianPointGeometricExtensions.cs" />
+    <Compile Include="IfcCartesianTransformationOperator2DGeometricExtensions.cs" />
+    <Compile Include="IfcCircleHollowProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcCircleProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcConnectedFaceSetGeometricExtensions.cs" />
+    <Compile Include="IfcCsgSolidGeometricExtensions.cs" />
+    <Compile Include="IfcCurveGeometricExtensions.cs" />
+    <Compile Include="IfcDerivedProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcDirectionGeometricExtensions.cs" />
+    <Compile Include="IfcEdgeLoopGeometricExtensions.cs" />
+    <Compile Include="IfcExtrudedAreaSolidGeometryExtensions.cs" />
+    <Compile Include="IfcFaceBasedSurfaceModelGeometricExtensions.cs" />
+    <Compile Include="IfcFaceBoundGeometricExtensions.cs" />
+    <Compile Include="IfcFaceGeometricExtensions.cs" />
+    <Compile Include="IfcIShapeProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcLoopGeometricExtensions.cs" />
+    <Compile Include="IfcLShapeProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcManifoldSolidBrepGeometricExtensions.cs" />
+    <Compile Include="IfcPlaneGeometricExtensions.cs" />
+    <Compile Include="IfcPolylineGeometricExtensions.cs" />
+    <Compile Include="IfcPolyLoopGeometricExtensions.cs" />
+    <Compile Include="IfcProductGeometryExtensions.cs" />
+    <Compile Include="IfcProductRepresentationGeometryExtensions.cs" />
+    <Compile Include="IfcProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcRectangleProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcRectangularHollowProfileDefGeometricExtensions.cs" />
+    <Compile Include="IfcRepresentationGeometryExtensions.cs" />
+    <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
+    <Compile Include="IfcRevolvedAreaSolidGeometricExtensions.cs" />
+    <Compile Include="IfcShellBasedSurfaceModelGeometricExtensions.cs" />
+    <Compile Include="IfcShellGeometricextensions.cs" />
+    <Compile Include="IfcSolidModelGeometryExtensions.cs" />
+    <Compile Include="IfcSurfaceCurveSweptAreaSolidGeometricExtension.cs" />
+    <Compile Include="IfcUShapeProfileDefGeometricExtensions.cs" />
     <Compile Include="ObjectReferenceSelectExtensions.cs" />
     <Compile Include="PersonExtensions.cs" />
     <Compile Include="PhysicalSimpleQuantityExtensions.cs" />

@@ -23,6 +23,15 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excluding Binary Geometry|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Excluding Binary Geometry\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DOPARALLEL</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -43,6 +52,10 @@
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Esent.Interop, Version=1.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ManagedEsent.1.9.0.1\lib\net40\Esent.Interop.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -65,50 +78,22 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AssemblyResolver.cs" />
-    <Compile Include="IfcArbitraryClosedProfileDefGeometricExtensions.cs" />
-    <Compile Include="IfcAxis1PlacementGeometricExtensions.cs" />
-    <Compile Include="IfcAxis2Placement2DGeometricExtensions.cs" />
-    <Compile Include="IfcAxis2Placement3DGeometricExtensions.cs" />
-    <Compile Include="IfcBooleanResultGeometricExtensions.cs" />
-    <Compile Include="IfcCartesianPointGeometricExtensions.cs" />
-    <Compile Include="IfcCircleHollowProfileDefGeometricExtensions.cs" />
-    <Compile Include="IfcCircleProfileDefGeometricExtensions.cs" />
-    <Compile Include="IfcConnectedFaceSetGeometricExtensions.cs" />
-    <Compile Include="IfcCsgSolidGeometricExtensions.cs" />
-    <Compile Include="IfcCurveGeometricExtensions.cs" />
-    <Compile Include="IfcDirectionGeometricExtensions.cs" />
-    <Compile Include="IfcExtrudedAreaSolidGeometryExtensions.cs" />
-    <Compile Include="IfcFaceBasedSurfaceModelGeometricExtensions.cs" />
-    <Compile Include="IfcFaceBoundGeometricExtensions.cs" />
-    <Compile Include="IfcFaceGeometricExtensions.cs" />
-    <Compile Include="IfcIShapeProfileDefGeometricExtensions.cs" />
-    <Compile Include="IfcLoopGeometricExtensions.cs" />
-    <Compile Include="IfcManifoldSolidBrepGeometricExtensions.cs" />
-    <Compile Include="IfcLShapeProfileDefGeometricExtensions.cs" />
-    <Compile Include="IfcPlaneGeometricExtensions.cs" />
-    <Compile Include="IfcPolyLoopGeometricExtensions.cs" />
     <Compile Include="IfcProductGeometryExtensions.cs" />
-    <Compile Include="IfcProductRepresentationGeometryExtensions.cs" />
-    <Compile Include="IfcProfileDefGeometricExtensions.cs" />
-    <Compile Include="IfcRectangleProfileDefGeometricExtensions.cs" />
     <Compile Include="IfcRepresentationGeometryExtensions.cs" />
     <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
-    <Compile Include="IfcRevolvedAreaSolidGeometricExtensions.cs" />
-    <Compile Include="IfcShellBasedSurfaceModelGeometricExtensions.cs" />
-    <Compile Include="IfcShellGeometricextensions.cs" />
     <Compile Include="IfcSolidModelGeometryExtensions.cs" />
-    <Compile Include="IfcSurfaceCurveSweptAreaSolidGeometricExtension.cs" />
     <Compile Include="IModelGeometryExtensions.cs" />
     <Compile Include="Xbim3DModelContext.cs" />
     <Compile Include="XbimMesher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XbimModelGeometryExtensions.cs" />
     <Compile Include="XbimProductShape.cs" />
-    <Compile Include="XbimRepresentationItem.cs" />
     <Compile Include="XbimSceneBuilder.cs" />
     <Compile Include="XbimShape.cs" />
+    <Compile Include="XbimShapeBounds.cs" />
     <Compile Include="XbimShapeGeometry.cs" />
     <Compile Include="XbimShapeGroup.cs" />
+    <Compile Include="XbimShapeInstance.cs" />
     <Compile Include="XbimShapeMap.cs" />
   </ItemGroup>
   <ItemGroup>

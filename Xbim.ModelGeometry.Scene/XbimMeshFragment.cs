@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.IO;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -24,20 +25,38 @@ namespace Xbim.ModelGeometry.Scene
         public int StartPosition;
         public int EndPosition;
         public int EntityLabel;
-        public Type EntityType;
+        private short _entityTypeId;
         public int StartTriangleIndex;
         public int EndTriangleIndex;
         public int GeometryId;
         public short ModelId;
+
+        public Type EntityType
+        {
+            get
+            {
+                return IfcMetaData.GetType(_entityTypeId);
+            }
+        }
 
         public XbimMeshFragment(int pStart, int tStart, short modelId)
         {
             StartPosition = EndPosition = pStart;
             StartTriangleIndex = EndTriangleIndex = tStart;
             EntityLabel = 0;
-            EntityType = null;
+            _entityTypeId = 0;
             GeometryId = 0;
             ModelId = modelId;
+        }
+
+        public XbimMeshFragment(int pStart, int tStart, short productTypeId, int productLabel, int geometryLabel, short modelId)
+        {
+            this.StartPosition = EndPosition = pStart;
+            this.StartTriangleIndex = EndTriangleIndex = tStart;
+            this._entityTypeId = productTypeId;
+            this.EntityLabel = productLabel;
+            this.GeometryId = geometryLabel;
+            this.ModelId = modelId;
         }
 
         public XbimMeshFragment(int pStart, int tStart, Type productType, int productLabel, int geometryLabel, short modelId)
@@ -45,7 +64,7 @@ namespace Xbim.ModelGeometry.Scene
 
             this.StartPosition = EndPosition = pStart;
             this.StartTriangleIndex = EndTriangleIndex = tStart;
-            this.EntityType = productType;
+            this._entityTypeId = IfcMetaData.IfcTypeId(productType);
             this.EntityLabel = productLabel;
             this.GeometryId = geometryLabel;
             this.ModelId = modelId;
@@ -83,6 +102,18 @@ namespace Xbim.ModelGeometry.Scene
             StartTriangleIndex += startIndex;
             EndTriangleIndex += startIndex;
 
+        }
+
+        public short EntityTypeId
+        {
+            get
+            {
+                return _entityTypeId;
+            }
+            set
+            {
+                _entityTypeId = value;
+            }
         }
     }
 }

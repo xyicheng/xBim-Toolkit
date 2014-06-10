@@ -50,7 +50,8 @@ namespace Xbim
 				
 #if USE_CARVE
 				//virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override;
-				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
+				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding) override;
 #endif
 				virtual property bool IsValid
 				{

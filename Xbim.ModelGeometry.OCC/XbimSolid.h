@@ -55,7 +55,7 @@ namespace Xbim
 				//solid operations
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 				virtual void ToSolid(double precision, double maxPrecision) override {}; //nothing to do
-				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
 
 				///static builders 
 				

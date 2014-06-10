@@ -48,6 +48,10 @@ namespace Xbim.Ifc2x3.Extensions
                     case "sectionedspine":
                     case "mappedrepresentation":
                         return true;
+                    case "geometricset":
+                    case "geometriccurveset":
+                    case "annotation2d":
+                    case  "curve2d" :
                     default:
                         return false;
                 }

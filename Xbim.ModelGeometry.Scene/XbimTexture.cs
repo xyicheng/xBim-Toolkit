@@ -15,7 +15,10 @@ namespace Xbim.ModelGeometry.Scene
     public class XbimTexture 
     {
         public XbimColourMap ColourMap = new XbimColourMap();
-        
+        /// <summary>
+        /// The object that this style defines
+        /// </summary>
+        public int DefinedObjectId;
         bool renderBothFaces = true;
         bool switchFrontAndRearFaces = false;
 
@@ -26,6 +29,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcSurfaceStyle surfaceStyle)
         {
+            DefinedObjectId = Math.Abs(surfaceStyle.EntityLabel);
             //set render one or both faces
             renderBothFaces = (surfaceStyle.Side == IfcSurfaceSide.BOTH);
             //switch if required
@@ -123,6 +127,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcColourRgb colour)
         {
+            DefinedObjectId = Math.Abs(colour.EntityLabel);
             ColourMap.Clear();
             ColourMap.Add(new XbimColour(colour));
             return this;
@@ -130,6 +135,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcSurfaceStyleRendering rendering)
         {
+            DefinedObjectId = Math.Abs(rendering.EntityLabel); 
             ColourMap.Clear();
             AddColour(rendering);
             return this;
@@ -138,6 +144,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcSurfaceStyleShading shading)
         {
+            DefinedObjectId = Math.Abs(shading.EntityLabel); 
             ColourMap.Clear();
             if (shading is IfcSurfaceStyleRendering)
                 AddColour((IfcSurfaceStyleRendering)shading);
@@ -156,6 +163,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <returns></returns>
         public XbimTexture CreateTexture(byte red = 255, byte green = 255, byte blue = 255, byte alpha = 255)
         {
+
             ColourMap.Clear();
             ColourMap.Add(new XbimColour("C1",
                 (float)red / 255,

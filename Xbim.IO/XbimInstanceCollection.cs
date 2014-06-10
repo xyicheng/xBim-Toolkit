@@ -141,6 +141,18 @@ namespace Xbim.IO
             }
         }
         /// <summary>
+        /// Returns an instance from the Model with the corresponding label
+        /// </summary>
+        /// <param name="label">entity label to retrieve</param>
+        /// <returns></returns>
+        public IPersistIfcEntity this[uint label]
+        {
+            get
+            {
+                return cache.GetInstance((int)label, true, true);
+            }
+        }
+        /// <summary>
         /// Returns the Ifc entity for a given Geometry Label
         /// </summary>
         /// <param name="geometryLabel"></param>

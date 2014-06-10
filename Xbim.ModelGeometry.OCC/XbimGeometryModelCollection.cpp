@@ -95,8 +95,6 @@ namespace Xbim
 				StringBuilder^ result = gcnew StringBuilder();
 				for each(XbimGeometryModel^ shape in shapes)
 				{
-					if(result->Length>0)
-						result->AppendLine("P");
 					result->Append( shape->WriteAsString(modelFactors));
 				}
 				return result->ToString();
@@ -133,14 +131,27 @@ namespace Xbim
 				
 			}
 
-			IXbimGeometryModelGroup^ XbimGeometryModelCollection::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimGeometryModelCollection::ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
 				XbimGeometryModelCollection^ polys = gcnew XbimGeometryModelCollection(this->_hasCurvedEdges,this->_representationLabel,this->_surfaceStyleLabel);
 				for each(XbimGeometryModel^ shape in shapes)
 				{
-					polys->Add(shape->ToPolyHedron(deflection,  precision, precisionMax));
+					polys->Add(shape->ToPolyHedron(deflection,  precision, precisionMax, rounding));
 				}
 				return polys;
+			}
+
+			XbimPolyhedron^ XbimGeometryModelCollection::ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding)
+			{	
+				XbimPolyhedron^ result = nullptr;
+				for each (XbimGeometryModel^ shape in this)
+				{
+					XbimPolyhedron^ p = shape->ToPolyHedron(deflection, precision, precisionMax, rounding);
+					if(result==nullptr) result = p;
+					else
+						result = (XbimPolyhedron^)result->Union(p,deflection, precision, precisionMax, rounding);
+				}
+				return result;
 			}
 		}
 	}

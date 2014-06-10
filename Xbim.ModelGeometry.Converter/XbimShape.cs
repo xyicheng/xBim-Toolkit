@@ -20,8 +20,8 @@ namespace Xbim.ModelGeometry.Converter
         }
         protected int geometryLabel;
 
-        public abstract String Mesh {get;}
-
+        public abstract byte[] MeshData {get;}
+        public abstract string MeshString { get; }
         public XbimMatrix3D? Transform { get { return transform; } }
 
         public int GeometryLabel

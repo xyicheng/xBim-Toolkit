@@ -133,7 +133,7 @@ private:
 			};
 		public:
 
-			virtual IXbimGeometryModelGroup^ AsPolyhedron(double deflection, double precision,double precisionMax);
+			virtual IXbimGeometryModelGroup^ AsPolyhedron(double deflection, double precision, double maxPrecision, unsigned int rounding);
 			XbimGeometryModel(){_bounds=XbimRect3D::Empty;};
 			void Init(const TopoDS_Shape&  shape, bool hasCurves,int representationLabel, int surfaceStyleLabel );
 			void Init(IfcRepresentationItem^ entity);
@@ -159,18 +159,25 @@ private:
 				};			
 			};
 			virtual XbimTriangulatedModelCollection^ Mesh(double deflection);
-			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape, double precision, double maxPrecision);
-			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape, double precision, double maxPrecision);
-			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision);
+			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape, XbimModelFactors^ factors);
+			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape, XbimModelFactors^ factors);
+			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape, XbimModelFactors^ factors);
+			virtual IXbimGeometryModel^ Combine(IXbimGeometryModel^ shape, XbimModelFactors^ factors);
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding);
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding);
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding);
+			virtual XbimGeometryModel^ Combine(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding);
+
 			virtual XbimGeometryModel^ CopyTo(	IfcAxis2Placement^ placement) abstract;
 			virtual void ToSolid(double precision, double maxPrecision) abstract;
 			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId);
 			
-#if USE_CARVE
-			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) abstract ;
-			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) ;
+			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) abstract ;
+			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding) ;
 			virtual String^ WriteAsString(XbimModelFactors^ modelFactors);
-#endif
+			virtual bool Write(String^ fileName,XbimModelFactors^ modelFactors);
+			virtual void TransformBy(XbimMatrix3D transform);
+			virtual IXbimPolyhedron^ ToPolyhedron(XbimModelFactors^ modelFactors);
 			virtual property XbimLocation ^ Location 
 			{
 				XbimLocation ^ get() 

@@ -516,7 +516,7 @@ namespace Xbim.ModelGeometry.Scene
             fragment.EndPosition = PositionCount - 1;
             fragment.EndTriangleIndex = TriangleIndexCount - 1;
             fragment.EntityLabel = entityLabel;
-            fragment.EntityType = ifcType;
+            fragment.EntityTypeId = IfcMetaData.IfcTypeId(ifcType);
             meshes.Add(fragment);
         }
 
@@ -576,7 +576,7 @@ namespace Xbim.ModelGeometry.Scene
                 else //added ok
                 {
                     fragment.EntityLabel = geometryMeshData.IfcProductLabel;
-                    fragment.EntityType = IfcMetaData.GetType(geometryMeshData.IfcTypeId);
+                    fragment.EntityTypeId = geometryMeshData.IfcTypeId;
                     meshes.Add(fragment);
                 }
             }
@@ -720,9 +720,15 @@ namespace Xbim.ModelGeometry.Scene
 
         public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform, short modelId)
         {
+            Add(mesh, IfcMetaData.IfcTypeId(productType), productLabel, geometryLabel, transform, modelId);
+
+        }
+
+        public void Add(string mesh, short productTypeId, int productLabel, int geometryLabel, XbimMatrix3D? transform, short modelId)
+        {
             lock (meshLock)
             {
-                XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productType, productLabel, geometryLabel, modelId);
+                XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productTypeId, productLabel, geometryLabel, modelId);
                 Read(mesh, transform);
                 frag.EndPosition = PositionCount - 1;
                 frag.EndTriangleIndex = TriangleIndexCount - 1;
@@ -731,6 +737,7 @@ namespace Xbim.ModelGeometry.Scene
 
         }
 
+       
       
        
     }

@@ -45,5 +45,26 @@ namespace Xbim.ModelGeometry.Scene
         double Volume { get; }
 
         XbimPoint3D CentreOfMass { get; }
+        /// <summary>
+        /// Cuts the toCut shape from this and returns the result
+        /// </summary>
+        /// <param name="openingGeom"></param>
+        /// <param name="modelFactors">Specifies the precision, and deflection factors for boolean operations, normally obtained from XbimModel.ModelFactors</param>
+        /// <returns></returns>
+        IXbimGeometryModel Cut(IXbimGeometryModel toCut, XbimModelFactors modelFactors);
+        IXbimGeometryModel Union(IXbimGeometryModel toUnion, XbimModelFactors modelFactors);
+        IXbimGeometryModel Intersection(IXbimGeometryModel toIntersect, XbimModelFactors modelFactors);
+        IXbimGeometryModel Combine(IXbimGeometryModel toCombine, XbimModelFactors modelFactors);
+        /// <summary>
+        /// <summary>
+        /// Writes the geometry in the XBIM mesh format in a text file
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        bool Write(string fileName, XbimModelFactors modelFactors);
+
+        void TransformBy(XbimMatrix3D xbimMatrix3D);
+
+        IXbimPolyhedron ToPolyhedron(XbimModelFactors modelFactors);
     }
 }

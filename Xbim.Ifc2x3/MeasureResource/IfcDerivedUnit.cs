@@ -111,7 +111,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         #region Fields
 
-        private readonly DerivedUnitElementSet _elements;
+        private DerivedUnitElementSet _elements;
         private IfcDerivedUnitEnum _unitType;
         private IfcLabel? _userDefinedType;
 
@@ -131,6 +131,11 @@ namespace Xbim.Ifc2x3.MeasureResource
             {
                 ((IPersistIfcEntity) this).Activate(false);
                 return _elements;
+            }
+            set
+            {
+                this.SetModelValue(this, ref _elements, value, v => Elements = v, "Elements");
+               
             }
         }
 

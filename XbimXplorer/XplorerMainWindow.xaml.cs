@@ -218,7 +218,7 @@ namespace XbimXplorer
                 //else
                 {
                     Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
-                    context.CreateContext(worker.ReportProgress);
+                    context.CreateContext(false, worker.ReportProgress);
                 }
                 //model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
@@ -276,7 +276,7 @@ namespace XbimXplorer
                 //else
                 {
                     Xbim3DModelContext context = new Xbim3DModelContext(model);//upgrade to new geometry represenation, uses the default 3D model
-                    context.CreateContext(worker.ReportProgress);
+                    context.CreateContext(false, worker.ReportProgress);
                 }
                 model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file

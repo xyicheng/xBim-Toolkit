@@ -14,6 +14,32 @@
             shapes: []
         };
     }
+    processor.prototype.HandleBoundsInstances = function (data)
+    {
+        if (!data) return;
+
+        for (var i = 0; i < data.instances.length; i++)
+        {
+            var geom = data.instances[i];
+            geom.Transformation = this.CreateMatrix(geom.Transformation);
+            var xform = mat4.create();
+            //mat4.multiply(transform, placement, xform);
+
+
+
+            var geopiece = {
+                id: geom.InstanceLabel,
+            //    layerid: geom.StyleLabel,
+            //    mapid: geom.MapLabel ? geom.MapLabel:0,
+            //    Positions: mesh.Positions,
+            //    Normals: mesh.Normals,
+            //    Indices: mesh.Indices,
+                data: { prod: geom.IfcProductLabel }
+            };
+
+            eventmanager.FireEvent("Box", geom);
+        }
+    }
     processor.prototype.HandleContext = function (data) {
         if (!data) return;
         if (!data.MetreFactor) return;

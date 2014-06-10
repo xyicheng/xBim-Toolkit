@@ -50,20 +50,20 @@ namespace Xbim
 				RepresentationLabel= baseShape->RepresentationLabel;
 				SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				_hasCurvedEdges = mBaseShape->HasCurvedEdges;	
-				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->Precision,product->ModelOf->ModelFactors->PrecisionBooleanMax); //openings work best at .1mm tolerance
+				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->PrecisionBoolean,product->ModelOf->ModelFactors->PrecisionBooleanMax,product->ModelOf->ModelFactors->Rounding ); //openings work best at .1mm tolerance
 				mResultShape->RepresentationLabel= baseShape->RepresentationLabel;
 				mResultShape->SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				
 			}
 
-			XbimPolyhedron^ XbimFeaturedShape::ToPolyHedron(double deflection, double precision, double precisionMax)
+			XbimPolyhedron^ XbimFeaturedShape::ToPolyHedron(double deflection, double precision, double precisionMax, unsigned int rounding)
 			{
-				return mResultShape->ToPolyHedron(deflection,  precision,  precisionMax);
+				return mResultShape->ToPolyHedron(deflection,  precision,  precisionMax, rounding);
 			}
 
-			IXbimGeometryModelGroup^ XbimFeaturedShape::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimFeaturedShape::ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
-				return ToPolyHedron(deflection,  precision, precisionMax);
+				return ToPolyHedron(deflection,  precision, precisionMax, rounding);
 				
 			}
 			XbimMeshFragment XbimFeaturedShape::MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId)
@@ -117,85 +117,12 @@ namespace Xbim
 				return prepared;
 				
 				
-				/*XbimGeometryModelCollection^ nonClashing = gcnew XbimGeometryModelCollection(features->HasCurvedEdges,features->RepresentationLabel,features->SurfaceStyleLabel);
-				return ExtractNonClashing(clashing, nonClashing, precision, precisionMax);*/
-
+				
 			}
-			///copies non clashing objects from the candidates to nonClashing and returns a list of geometries that still clash
-			XbimGeometryModelCollection^ XbimFeaturedShape::ExtractNonClashing(List<XbimGeometryModel^>^ candidates, XbimGeometryModelCollection^ nonClashing, double precision, double precisionMax)
-			{
-
-				if(!Enumerable::Any(candidates)) return nonClashing;
-				Stack<XbimGeometryModel^>^ unprocessed = gcnew Stack<XbimGeometryModel^>(candidates);
-				XbimGeometryModel^ first = unprocessed->Pop();
-				nonClashing->Add(first);
-				List<List<XbimRect3D>^>^ bounds = gcnew List<List<XbimRect3D>^>();
-				List<XbimRect3D>^ bound = gcnew List<XbimRect3D>();
-				bound->Add(first->GetBoundingBox());
-				bounds->Add(bound);
-				while(unprocessed->Count>0)
-				{
-					XbimGeometryModel^ candidate = unprocessed->Pop();
-					XbimGeometryModelCollection^ toReplace = nullptr;
-					XbimRect3D candidateBound = candidate->GetBoundingBox();
-					int foundAt;
-					List<XbimRect3D>^ shapeBound;
-					for(foundAt = 0;foundAt<nonClashing->Count;foundAt++)
-					{	
-						XbimGeometryModel^ shape = nonClashing->Shape(foundAt);
-						shapeBound = bounds[foundAt];
-						for each (XbimRect3D partBound in shapeBound)
-						{
-							if(partBound.Intersects(candidateBound)) //any part of shape intersects this one
-							{
-								//XbimGeometryModel^ join=shape->Union(candidate,precision,precisionMax); //join together and reconsider it as a clash
-
-								if(dynamic_cast<XbimGeometryModelCollection^>(shape)) toReplace = (XbimGeometryModelCollection^)shape;
-								else
-								{
-									toReplace = gcnew XbimGeometryModelCollection();
-									toReplace->Add(shape);
-								}
-								toReplace->Add(candidate);
-								shapeBound->Add(candidateBound); //increase bounds
-								//toReplace=join;
-								
-								break; //done
-							}
-						}
-						if(toReplace!=nullptr) break; //skip out
-					}
-					if(toReplace==nullptr)
-					{
-						nonClashing->Add(candidate);
-						List<XbimRect3D>^ bound = gcnew List<XbimRect3D>();
-						bound->Add(candidateBound);
-						bounds->Add(bound);
-					}
-					else
-					{
-						nonClashing->Replace(foundAt, toReplace);
-						
-					}
-
-				}	
-				for(int i=0;i<nonClashing->Count;i++)
-				{
-					XbimGeometryModel^ cluster = nonClashing->Shape(i);
-					if(dynamic_cast<XbimGeometryModelCollection^>(cluster))
-					{
-						XbimGeometryModelCollection^ group = (XbimGeometryModelCollection^)cluster;
-						XbimGeometryModel^ first = group->FirstOrDefault;
-						group->Remove(first);
-						XbimGeometryModel^ result = first->Union(group,precision,precisionMax);
-						nonClashing->Replace(i,result);
-					}
-				}
-				return nonClashing;
-			}
+			
 
 			//Cuts an  opening collection from the base shape
-			XbimGeometryModel^ XbimFeaturedShape::SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax)
+			XbimGeometryModel^ XbimFeaturedShape::SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax, unsigned int rounding)
 			{		
 
 				if(dynamic_cast<XbimGeometryModelCollection^>(base) && ((XbimGeometryModelCollection^)base)->Count>0) //it is a collection and not a single facettedshell  
@@ -203,7 +130,7 @@ namespace Xbim
 					XbimGeometryModelCollection^ result = gcnew	XbimGeometryModelCollection(base->RepresentationLabel,base->SurfaceStyleLabel);
 					for each (XbimGeometryModel^ geom in (XbimGeometryModelCollection^)base)
 					{
-						XbimGeometryModel^ cut = this->SubtractFrom(geom, openings, deflection, precision,precisionMax);
+						XbimGeometryModel^ cut = this->SubtractFrom(geom, openings, deflection, precision,precisionMax, rounding);
 						cut->RepresentationLabel = geom->RepresentationLabel;
 						cut->SurfaceStyleLabel = geom->SurfaceStyleLabel;
 						result->Add(cut);
@@ -222,15 +149,15 @@ namespace Xbim
 						XbimGeometryModel^ result = base;
 						for each (XbimGeometryModel^ var in preparedOpenings)
 						{
-							result = result->Cut(var,precision, precisionMax);
+							result = result->Cut(var,deflection, precision, precisionMax, rounding);
 						}
 						return result;
 					}
 					else //use carve for speed
 					{
 
-						XbimPolyhedron^ polyBase = base->ToPolyHedron(deflection,precision ,precisionMax);
-						//polyBase->WritePly("Base.Ply",true);
+						XbimPolyhedron^ polyBase = base->ToPolyHedron(deflection,precision ,precisionMax, rounding);
+						
 						XbimPolyhedron^ polyResult = polyBase;
 						double currentPolyhedronPrecision = precision;
 						XbimCsg^ csg = gcnew XbimCsg(currentPolyhedronPrecision);
@@ -238,9 +165,8 @@ namespace Xbim
 						//int o = 1;
 						for each (XbimGeometryModel^ nonClashing in preparedOpenings) //do the least number first for performance
 						{
-							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax);
-							/*nextResult->WritePly("Opening" + o + ".Ply",true);
-								o++;*/
+							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax, rounding);
+							
 TryCutPolyhedron:						
 							try
 							{
@@ -264,10 +190,7 @@ TryCutPolyhedron:
 							}
 						}
 						GC::KeepAlive(csg);
-					//polyResult->WritePly("Result.Ply",true);
-						/*polyResult->WritePly("Base.PlyBin",false);
-						polyResult->WriteObj("Base.Obj");
-						polyResult->WriteVtk("Base.vtk");*/
+					
 						return polyResult;
 					}
 
@@ -285,7 +208,7 @@ TryCutPolyhedron:
 				throw(gcnew XbimGeometryException("XbimFeaturedShape::ToSolid is not implemented"));
 			}
 
-			XbimGeometryModel^ XbimFeaturedShape::Cut(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			XbimGeometryModel^ XbimFeaturedShape::Cut(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
 
 				//BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),*(shape->Handle));
@@ -304,7 +227,7 @@ TryCutPolyhedron:
 				Logger->Warn("Failed to form difference between two shapes");
 				return nullptr;
 			}
-			XbimGeometryModel^ XbimFeaturedShape::Union(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			XbimGeometryModel^ XbimFeaturedShape::Union(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
 				//BRepAlgoAPI_Fuse boolOp(*(mResultShape->Handle),*(shape->Handle));
 
@@ -323,7 +246,7 @@ TryCutPolyhedron:
 				return nullptr;
 			}
 
-			XbimGeometryModel^ XbimFeaturedShape::Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			XbimGeometryModel^ XbimFeaturedShape::Intersection(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding)
 			{
 				//BRepAlgoAPI_Common boolOp(*(mResultShape->Handle),*(shape->Handle));
 

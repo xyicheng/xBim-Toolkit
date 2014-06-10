@@ -17,14 +17,14 @@ namespace Xbim
 		namespace OCC
 		{
 
-			XbimPolyhedron^ XbimMap::ToPolyHedron(double deflection, double precision, double precisionMax)
+			XbimPolyhedron^ XbimMap::ToPolyHedron(double deflection, double precision, double precisionMax, unsigned int rounding)
 			{
-				XbimPolyhedron^ poly = _mappedItem->ToPolyHedron(deflection, precision,precisionMax);
-				poly->Transform(_transform);
+				XbimPolyhedron^ poly = _mappedItem->ToPolyHedron(deflection, precision,precisionMax, rounding);
+				poly->TransformBy(_transform);
 				return poly;
 			}
 
-			IXbimGeometryModelGroup^ XbimMap::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimMap::ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
 
 				if(dynamic_cast<XbimGeometryModelCollection^>(_mappedItem)) //do each one
@@ -33,14 +33,14 @@ namespace Xbim
 					XbimGeometryModelCollection^ polys = gcnew XbimGeometryModelCollection(false,coll->RepresentationLabel,coll->SurfaceStyleLabel); //no curves after conversion
 					for each(XbimGeometryModel^ shape in (XbimGeometryModelCollection^)_mappedItem)
 					{
-						XbimPolyhedron^ poly = shape->ToPolyHedron(deflection, precision,precisionMax);
-						poly->Transform(_transform);
+						XbimPolyhedron^ poly = shape->ToPolyHedron(deflection, precision,precisionMax, rounding);
+						poly->TransformBy(_transform);
 						polys->Add(poly);
 					}
 					return polys;
 				}
 				else
-					return ToPolyHedron(deflection,  precision, precisionMax);
+					return ToPolyHedron(deflection,  precision, precisionMax, rounding);
 			}
 
 			XbimMap::XbimMap(const TopoDS_Shape& shape,XbimMap^ copy)

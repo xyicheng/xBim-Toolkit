@@ -81,7 +81,7 @@ namespace carve {
         }
         virtual void processOutputFace(std::vector<meshset_t::face_t *> & /* faces */,
                                        const meshset_t::face_t * /* orig_face */,
-                                       bool /* flipped */) {
+                                       bool /* flipped */, double EPSILON, double EPSILON2) {
         }
         virtual void resultFace(const meshset_t::face_t * /* new_face */,
                                 const meshset_t::face_t * /* orig_face */,
@@ -119,7 +119,7 @@ namespace carve {
 
         void processOutputFace(std::vector<meshset_t::face_t *> &faces,
                                const meshset_t::face_t *orig_face,
-                               bool flipped);
+                               bool flipped,double EPSILON,double EPSILON2);
 
         void resultFace(const meshset_t::face_t *new_face,
                         const meshset_t::face_t *orig_face,
@@ -146,7 +146,7 @@ namespace carve {
       protected:
 
       public:
-        virtual void collect(FaceLoopGroup *group, CSG::Hooks &) =0;
+        virtual void collect(FaceLoopGroup *group, CSG::Hooks &, double, double) =0;
         virtual meshset_t *done(CSG::Hooks &) =0;
 
         Collector() {}

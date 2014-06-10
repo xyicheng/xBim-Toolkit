@@ -39,6 +39,15 @@
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excluding Binary Geometry|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Excluding Binary Geometry\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,6 +62,7 @@
     <Compile Include="IXbimGeometryModel.cs" />
     <Compile Include="IXbimGeometryModelGroup.cs" />
     <Compile Include="IXbimMeshGeometry3D.cs" />
+    <Compile Include="IXbimPolyhedron.cs" />
     <Compile Include="IXbimRenderMaterial.cs" />
     <Compile Include="IXbimTriangulatedModelBuilder.cs" />
     <Compile Include="IXbimScene.cs" />
@@ -69,7 +79,6 @@
     <Compile Include="Clustering\XbimDBSCAN.cs" />
     <Compile Include="XbimEmptyGeometryGroup.cs" />
     <Compile Include="XbimRegion.cs" />
-    <Compile Include="XbimLOD.cs" />
     <Compile Include="XbimMeshFragment.cs" />
     <Compile Include="XbimMeshFragmentCollection.cs" />
     <Compile Include="XbimMeshGeometry3D.cs" />

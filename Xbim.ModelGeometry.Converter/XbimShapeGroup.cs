@@ -78,14 +78,15 @@ namespace Xbim.ModelGeometry.Converter
                                 _geometryHashCodes.Add(data.GeometryHash);
 
                             }
-                            else if (data.GeometryType == XbimGeometryType.PolyhedronMap)
-                            {
-                                //ADD EACH SHAPE IN THE MAP
-                                string shapeString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
-                                string[] itms = shapeString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                                XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
-                                _geometryHashCodes.Add(data.GeometryHash);
-                            }
+                                //srl this whole class should go
+                            //else if (data.GeometryType == XbimGeometryType.PolyhedronMap)
+                            //{
+                            //    //ADD EACH SHAPE IN THE MAP
+                            //    string shapeString = System.Text.Encoding.ASCII.GetString(data.ShapeData);
+                            //    string[] itms = shapeString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                            //    XbimMatrix3D transform = XbimMatrix3D.FromString(itms[0]);
+                            //    _geometryHashCodes.Add(data.GeometryHash);
+                            //}
                             else
                                 throw new XbimGeometryException("Unexpected geometry type " + Enum.GetName(typeof(XbimGeometryType), data.GeometryType));
 

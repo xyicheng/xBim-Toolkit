@@ -39,6 +39,7 @@
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <ShapeFix_Shape.hxx>
+
 using namespace System;
 using namespace System::Linq;
 using namespace Xbim::XbimExtensions;
@@ -571,41 +572,34 @@ namespace Xbim
 		//Builds a wire from a composite curve
 		TopoDS_Wire XbimFaceBound::Build(IfcCompositeCurve ^ cCurve, bool% hasCurves)
 		{
+			bool haveWarned=false;
 			BRepBuilderAPI_MakeWire wire;
 			XbimModelFactors^ mf = ((IPersistIfcEntity^)cCurve)->ModelOf->ModelFactors;
 			ShapeFix_ShapeTolerance FTol;
-			
+			double precision = mf->PrecisionBoolean; //use a courser precision for trimmed curves
+			double currentPrecision = precision;
+			double maxTolerance = mf->PrecisionBooleanMax;
 			for each(IfcCompositeCurveSegment^ seg in cCurve->Segments)
-			{			
+			{		
+
 				///TODO: Need to add support for curve segment continuity a moment only continuous supported
 				TopoDS_Wire wireSeg = Build(seg->ParentCurve, hasCurves);
 				if(!wireSeg.IsNull())
 				{
 					if(!seg->SameSense) wireSeg.Reverse();
-					FTol.SetTolerance(wireSeg, mf->Precision, TopAbs_WIRE);		
+retryAddWire:	
+					
+					FTol.SetTolerance(wireSeg, currentPrecision, TopAbs_WIRE);	
 					wire.Add(wireSeg);				
 					if(!wire.IsDone() ) 
-					{			
-						FTol.SetTolerance(wireSeg, mf->OneMilliMetre, TopAbs_WIRE);	//go for courser tolerance
-						wire.Add(wireSeg);
-						if(!wire.IsDone())
-						{	
-							FTol.SetTolerance(wireSeg, mf->OneMilliMetre*10, TopAbs_WIRE);	//go for 10mm as a working tolerance
-							wire.Add(wireSeg);
-							if(!wire.IsDone())
-							{
-								FTol.SetTolerance(wireSeg, mf->OneMilliMetre*50, TopAbs_WIRE);	//go for 50mm as a working tolerance
-								wire.Add(wireSeg);
-								if(!wire.IsDone())
-								{
-									
-									Logger->ErrorFormat("IfcCompositeCurveSegment {0} could not be added to IfcCompositeCurve #{1}. Ignored",seg->EntityLabel,cCurve->EntityLabel);
-								}
-								else
-									Logger->InfoFormat("IfcCompositeCurveSegment #{0} had to be adjusted to a 50mm tolerance to add it to IfcCompositeCurve #{1}. Fixed but this indicates the base model is not to a reasonable precision",seg->EntityLabel,cCurve->EntityLabel );
-							}
-							else
-								Logger->InfoFormat("IfcCompositeCurveSegment #{0} had to be adjusted to a 10mm tolerance to add it to IfcCompositeCurve #{1}. Fixed but this indicates the base model is not to a reasonable precision",seg->EntityLabel,cCurve->EntityLabel );
+					{
+						currentPrecision*=10;
+						if(currentPrecision <= maxTolerance)
+							goto retryAddWire;
+						else
+						{		
+							haveWarned=true;
+							Logger->WarnFormat("IfcCompositeCurveSegment {0} was not contiguous with any edges in IfcCompositeCurve #{1}. It has been ignored",seg->EntityLabel,cCurve->EntityLabel);
 						}
 					}
 				}
@@ -632,7 +626,7 @@ namespace Xbim
 					}
 				}
 			}
-			else
+			else if(!haveWarned) //don't do it twice
 			{
 				BRepBuilderAPI_WireError err = wire.Error();
 				switch (err)
@@ -652,6 +646,8 @@ namespace Xbim
 				}
 				return TopoDS_Wire();
 			}
+			else
+				return TopoDS_Wire();
 		}
 
 		//Builds a wire from a CircleProfileDef
@@ -880,6 +876,7 @@ namespace Xbim
 				total--; //skip the last point
 				if(total>2) closed = Standard_True ;//closed polyline with two points is not a valid closed shape
 			}
+			
 			TopTools_Array1OfShape vertexStore(1,pLine->Points->Count+1);
 			BRep_Builder builder;	
 			TopoDS_Wire wire;

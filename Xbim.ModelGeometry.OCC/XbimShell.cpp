@@ -412,9 +412,9 @@ TryBuildLoop:
 				return wire;
 			}
 
-			IXbimGeometryModelGroup^ XbimShell::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimShell::ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
-				return ToPolyHedron(deflection,  precision, precisionMax);
+				return ToPolyHedron(deflection,  precision, precisionMax, rounding);
 			}
 			
 		}

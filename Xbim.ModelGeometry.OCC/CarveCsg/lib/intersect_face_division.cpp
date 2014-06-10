@@ -294,10 +294,10 @@ namespace {
          i != e;
          ++i) {
       carve::mesh::MeshSet<3>::vertex_t *v1 = ((*i).first), *v2 = ((*i).second);
-#if defined(CARVE_DEBUG)
-      if (carve::geom::equal(v1->v, v2->v,EPSILON)) 
-		  std::cerr << "WARNING! " << v1->v << "==" << v2->v << std::endl;
-#endif
+//#if defined(CARVE_DEBUG)
+//      if (carve::geom::equal(v1->v, v2->v,EPSILON)) 
+//		  std::cerr << "WARNING! " << v1->v << "==" << v2->v << std::endl;
+//#endif
       graph.addEdge(v1, v2);
     }
 
@@ -699,12 +699,16 @@ namespace {
           }
 
 #if defined(CARVE_DEBUG)
-          std::cerr << "hook face " << f << " to hole " << i << "(vertex)" << std::endl;
+		  std::cerr << "hook face " << f << " to hole " << i << "(vertex)" << std::endl;
 #endif
-        } else {
-          std::cerr << "uncontained hole loop does not share vertices with any face loop!" << std::endl;
-        }
-        unassigned--;
+		} 
+		else
+		{
+#if defined(CARVE_DEBUG)
+			std::cerr << "uncontained hole loop does not share vertices with any face loop!" << std::endl;
+#endif
+		}
+		unassigned--;
       }
     }
 
@@ -1194,7 +1198,7 @@ namespace {
           test = face->project(noncross[j].path->front()->v);
         }
 
-        if (proj_aabb[i].intersects(test) &&
+        if (proj_aabb[i].intersects(test,EPSILON) &&
             carve::geom2d::pointInPoly(proj[i], test, EPSILON, EPSILON2).iclass != carve::POINT_OUT) {
           inc.push_back(noncross[j].path);
         }

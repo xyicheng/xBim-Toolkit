@@ -26,14 +26,14 @@ namespace Xbim
 			List<XbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcAxis2Placement^ location);
 			XbimGeometryModelCollection^ PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax);
-			XbimGeometryModel^ SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax);
-			XbimGeometryModelCollection^ ExtractNonClashing(List<XbimGeometryModel^>^ candidates, XbimGeometryModelCollection^ nonClashing, double precision,double precisionMax);
+			XbimGeometryModel^ SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax, unsigned int rounding);
+			
 			/*bool DoCut(const TopoDS_Shape& shape);
 			bool DoUnion(const TopoDS_Shape& shape);*/
 		public:
 #if USE_CARVE
-			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
-			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax, unsigned int rounding) override;
+			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
 #endif
 			virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
 			XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, XbimGeometryModelCollection^ openings, XbimGeometryModelCollection^ projections);
@@ -78,9 +78,9 @@ namespace Xbim
 				}
 			}
 			
-			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape, double precision, double maxPrecision) override;
-			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape, double precision, double maxPrecision) override;
-			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision) override;
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding) override;
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding) override;
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding) override;
 			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 			virtual void Move(TopLoc_Location location) override;
 

@@ -177,14 +177,14 @@ namespace carve {
         return new carve::poly::Polyhedron(points, faceCount, faceIndices);
       }
 
-      carve::mesh::MeshSet<3> *createMesh(const Options &options) const {
+      carve::mesh::MeshSet<3> *createMesh(const Options &options,double EPSILON2 = 1e-10, bool flipBadFaces=false ) const {
         Options::const_iterator i;
         carve::mesh::MeshOptions opts;
         i = options.find("avoid_cavities");
         if (i != options.end()) {
           opts.avoid_cavities(_bool((*i).second));
         }
-        return new carve::mesh::MeshSet<3>(points, faceCount, faceIndices, opts);
+        return new carve::mesh::MeshSet<3>(points, faceCount, faceIndices,opts, EPSILON2, flipBadFaces );
       }
     };
 

@@ -96,7 +96,7 @@ namespace carve {
       octree.setBounds(aabb);
       octree.addFaces(faces);
       octree.addEdges(edges);
-      octree.splitTree();
+      octree.splitTree(0.);
 
       return true;
     }
@@ -717,7 +717,7 @@ namespace carve {
 
         possible_faces.clear();
         manifold_intersections.clear();
-        octree.findFacesNear(line, possible_faces);
+        octree.findFacesNear(line, possible_faces,EPSILON);
 
         for (unsigned i = 0; !failed && i < possible_faces.size(); i++) {
           if (!manifold_is_closed[possible_faces[i]->manifold_id]) continue; // skip open manifolds
@@ -774,7 +774,7 @@ namespace carve {
       std::cerr << "{containsVertex " << v << "}" << std::endl;
 #endif
 
-      if (!aabb.containsPoint(v)) {
+      if (!aabb.containsPoint(v,EPSILON)) {
 #if defined(DEBUG_CONTAINS_VERTEX)
         std::cerr << "{final:OUT(aabb short circuit)}" << std::endl;
 #endif
@@ -827,7 +827,7 @@ namespace carve {
 
         possible_faces.clear();
         manifold_intersections.clear();
-        octree.findFacesNear(line, possible_faces);
+        octree.findFacesNear(line, possible_faces,EPSILON);
 
         for (unsigned i = 0; !failed && i < possible_faces.size(); i++) {
           if (manifold_id != -1 && manifold_id != faces[i].manifold_id) continue;
@@ -947,65 +947,65 @@ namespace carve {
 
 
     void Polyhedron::findEdgesNear(const carve::geom::aabb<3> &aabb,
-                                   std::vector<const edge_t *> &outEdges) const {
+                                   std::vector<const edge_t *> &outEdges, double EPSILON) const {
       outEdges.clear();
-      octree.findEdgesNear(aabb, outEdges);
+      octree.findEdgesNear(aabb, outEdges,EPSILON);
     }
 
 
 
     void Polyhedron::findEdgesNear(const carve::geom3d::LineSegment &line,
-                                   std::vector<const edge_t *> &outEdges) const {
+                                   std::vector<const edge_t *> &outEdges, double EPSILON) const {
       outEdges.clear();
-      octree.findEdgesNear(line, outEdges);
+      octree.findEdgesNear(line, outEdges,EPSILON);
     }
 
 
 
     void Polyhedron::findEdgesNear(const carve::geom3d::Vector &v,
-                                   std::vector<const edge_t *> &outEdges) const {
+                                   std::vector<const edge_t *> &outEdges, double EPSILON) const {
       outEdges.clear();
-      octree.findEdgesNear(v, outEdges);
+      octree.findEdgesNear(v, outEdges,EPSILON);
     }
 
 
 
     void Polyhedron::findEdgesNear(const face_t &face,
-                                   std::vector<const edge_t *> &edges) const {
+                                   std::vector<const edge_t *> &edges, double EPSILON) const {
       edges.clear();
-      octree.findEdgesNear(face, edges);
+      octree.findEdgesNear(face, edges,EPSILON);
     }
 
 
 
     void Polyhedron::findEdgesNear(const edge_t &edge,
-                                   std::vector<const edge_t *> &outEdges) const {
+                                   std::vector<const edge_t *> &outEdges, double EPSILON) const {
       outEdges.clear();
-      octree.findEdgesNear(edge, outEdges);
+      octree.findEdgesNear(edge, outEdges,EPSILON);
     }
 
 
 
     void Polyhedron::findFacesNear(const carve::geom3d::LineSegment &line,
-                                   std::vector<const face_t *> &outFaces) const {
+                                   std::vector<const face_t *> &outFaces, double EPSILON) const {
       outFaces.clear();
-      octree.findFacesNear(line, outFaces);
+      octree.findFacesNear(line, outFaces,EPSILON);
     }
 
 
 
     void Polyhedron::findFacesNear(const carve::geom::aabb<3> &aabb,
-                                   std::vector<const face_t *> &outFaces) const {
+                                   std::vector<const face_t *> &outFaces, double EPSILON) const {
       outFaces.clear();
-      octree.findFacesNear(aabb, outFaces);
+      octree.findFacesNear(aabb, outFaces,EPSILON);
     }
 
 
 
     void Polyhedron::findFacesNear(const edge_t &edge,
-                                   std::vector<const face_t *> &outFaces) const {
+                                   std::vector<const face_t *> &outFaces, double EPSILON) const {
       outFaces.clear();
-      octree.findFacesNear(edge, outFaces);
+      octree.findFacesNear(edge, outFaces,EPSILON);
     }
 
 

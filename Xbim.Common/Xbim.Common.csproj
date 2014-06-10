@@ -38,6 +38,15 @@
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excluding Binary Geometry|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Excluding Binary Geometry\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-client\log4net.dll</HintPath>
@@ -55,6 +64,8 @@
     <Compile Include="Exceptions\XbimParserException.cs" />
     <Compile Include="Geometry\IGeometryManager.cs" />
     <Compile Include="Geometry\XbimDirectionEnum.cs" />
+    <Compile Include="Geometry\XbimGeometryRepresentationType.cs" />
+    <Compile Include="Geometry\XbimLOD.cs" />
     <Compile Include="Geometry\XbimMatrix3D.cs" />
     <Compile Include="Geometry\XbimPoint3D.cs" />
     <Compile Include="Geometry\XbimQuaternion.cs" />

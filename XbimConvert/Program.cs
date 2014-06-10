@@ -90,28 +90,26 @@ namespace XbimConvert
                                 Xbim3DModelContext m3d = new Xbim3DModelContext(model);
                                 try
                                 {
-                                    m3d.CreateContext(progDelegate);
-                                    
-                                    //StringWriter sw = new StringWriter();
-                                    //foreach (var productShape in m3d.ProductShapes)
+                                    m3d.CreateContext(true, progDelegate);
+                                    //List<XbimTexture> ss = m3d.SurfaceStyles().ToList();
+                                    //foreach (var texture in ss)
                                     //{
-                                    //    productShape.WriteMetaData(sw);
-                                    //    foreach (var shape in productShape.Shapes)
+                                    //    List<XbimShapeInstance> instances = m3d.ShapeInstancesOf(texture).ToList();
+                                    //    foreach (var instance in instances)
                                     //    {
-                                    //        shape.WriteToStream(sw);
+                                    //        IXbimMeshGeometry3D mg = m3d.ShapeGeometryMeshOf(instance);
+                                           
                                     //    }
+                                       
                                     //}
-                                    //string result = sw.ToString();
-                                    //Console.WriteLine(result);
-                                  // string maps =  m3d.MappedShapes();
-                                  // m3d.WriteShapesToStream(maps);
+                                  //  m3d.ExportShapeData("Shapes.txt");
                                 }
                                 catch (Exception ce)
                                 {
                                     Console.WriteLine("Error compiling geometry\n" + ce.Message);
                                 }
                             }
-                           // 
+                           
                             geomTime = watch.ElapsedMilliseconds - parseTime;  
                             if (arguments.GenerateScene)
                             {

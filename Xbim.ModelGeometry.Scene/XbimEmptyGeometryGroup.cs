@@ -7,7 +7,7 @@ using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
 {
-    public class XbimEmptyGeometryGroup : List<IXbimGeometryModel>, IXbimGeometryModelGroup
+    public class XbimEmptyGeometryGroup : List<IXbimGeometryModel>, IXbimGeometryModelGroup, IXbimPolyhedron
     {
         static XbimEmptyGeometryGroup _empty;
         public static XbimEmptyGeometryGroup Empty { get { return _empty; } }
@@ -19,8 +19,8 @@ namespace Xbim.ModelGeometry.Scene
         {
 
         }
-        public int RepresentationLabel { get { return 0; } set { } }
-        public int SurfaceStyleLabel { get { return 0; } set { } }
+        public int RepresentationLabel { get { return -1; } set { } }
+        public int SurfaceStyleLabel { get { return -1; } set { } }
         public bool IsMap { get { return false; } }
 
         public XbimRect3D GetBoundingBox() { return XbimRect3D.Empty; }
@@ -48,6 +48,49 @@ namespace Xbim.ModelGeometry.Scene
         public XbimPoint3D CentreOfMass
         {
             get { return default(XbimPoint3D); }
+        }
+
+
+       
+
+
+        public bool Write(string fileName, XbimModelFactors modelFactors)
+        {
+            return false;
+        }
+
+
+        public void TransformBy(XbimMatrix3D xbimMatrix3D)
+        {
+            
+        }
+
+        public IXbimGeometryModel Cut(IXbimGeometryModel openingGeom, XbimModelFactors modelFactors)
+        {
+            return this;
+        }
+
+        public IXbimGeometryModel Union(IXbimGeometryModel toUnion, XbimModelFactors modelFactors)
+        {
+            return this;
+        }
+
+
+        public IXbimGeometryModel Intersection(IXbimGeometryModel toIntersect, XbimModelFactors modelFactors)
+        {
+            return this;
+        }
+
+
+        public IXbimGeometryModel Combine(IXbimGeometryModel toCombine, XbimModelFactors modelFactors)
+        {
+            return this;
+        }
+
+
+        public IXbimPolyhedron ToPolyhedron(XbimModelFactors modelFactors)
+        {
+            return this;
         }
     }
 }

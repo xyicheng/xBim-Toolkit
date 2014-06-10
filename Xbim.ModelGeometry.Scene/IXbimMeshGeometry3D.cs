@@ -17,6 +17,7 @@ namespace Xbim.ModelGeometry.Scene
         
         bool Add(XbimGeometryData geometryMeshData, short modelId=0);
         XbimMeshFragment Add(IXbimGeometryModel geometryModel, IfcProduct product, XbimMatrix3D transform, double? deflection, short modelId = 0);
+
         void MoveTo(IXbimMeshGeometry3D toMesh);
         void BeginUpdate();
         void EndUpdate();
@@ -30,5 +31,6 @@ namespace Xbim.ModelGeometry.Scene
         XbimRect3D GetBounds();
 
         void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId=0);
+        void Add(string mesh, short productTypeId, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId = 0);
     }
 }

@@ -171,9 +171,10 @@ namespace carve {
     template<unsigned ndim>
     IntersectionClass Face<ndim>::lineSegmentIntersection(const carve::geom::linesegment<ndim> &line,
                                                           vector_t &intersection, double EPSILON, double EPSILON2) const {
-      if (!line.OK(EPSILON)) return INTERSECT_NONE;
+      if (!line.OK(EPSILON)) 
+		  return INTERSECT_NONE;
 
-  
+   
       vector_t p;
       IntersectionClass intersects = carve::geom3d::lineSegmentPlaneIntersection(plane, line, p,EPSILON);
       if (intersects == INTERSECT_NONE || intersects == INTERSECT_BAD) {
@@ -245,18 +246,18 @@ namespace carve {
       bool FaceStitcher::EdgeOrderData::Cmp::operator()(const EdgeOrderData &a, const EdgeOrderData &b) const {
         int v = carve::geom3d::compareAngles(edge_dir, base_dir, a.face_dir, b.face_dir);
 
-#if defined(CARVE_DEBUG)
-        {
-          double da = carve::geom3d::antiClockwiseAngle(base_dir, a.face_dir, edge_dir);
-          double db = carve::geom3d::antiClockwiseAngle(base_dir, b.face_dir, edge_dir);
-          int v_cmp = 0;
-          if (da < db) v_cmp = -1;
-          if (db < da) v_cmp = +1;
-          if (v_cmp != v) {
-            std::cerr << "v= " << v << " v_cmp= " << v_cmp << " da= " << da << " db= " << db << "  edge_dir=" << edge_dir << " base_dir=" << base_dir << " a=" << a.face_dir << " b=" << b.face_dir << std::endl;
-          }
-        }
-#endif
+//#if defined(CARVE_DEBUG)
+//        {
+//          double da = carve::geom3d::antiClockwiseAngle(base_dir, a.face_dir, edge_dir);
+//          double db = carve::geom3d::antiClockwiseAngle(base_dir, b.face_dir, edge_dir);
+//          int v_cmp = 0;
+//          if (da < db) v_cmp = -1;
+//          if (db < da) v_cmp = +1;
+//          if (v_cmp != v) {
+//            std::cerr << "v= " << v << " v_cmp= " << v_cmp << " da= " << da << " db= " << db << "  edge_dir=" << edge_dir << " base_dir=" << base_dir << " a=" << a.face_dir << " b=" << b.face_dir << std::endl;
+//          }
+//        }
+//#endif
 
         if (v < 0) return true;
         if (v == 0) {
@@ -268,32 +269,191 @@ namespace carve {
         return false;
       }
 
+	  bool FaceStitcher::processConnectivity(size_t totalFaces, size_t& toInvert, std::unordered_map<vertex_t*,std::vector<edge_t*>>& vertexMap, 
+		  std::unordered_set<face_t*>& processed, 
+		  std::vector<face_t*>& processOrder, std::unordered_set<face_t*>& nextFaces, double EPSILON2)
+	  {
+		   std::unordered_set<face_t*>::iterator it = nextFaces.begin();
+		   if(it==nextFaces.end()) 
+			   return false; //finished
+		  
+		 
+		 
+		  try	
+		  {
+			  face_t* face = (*it);
+			  edge_t *e = face->edge;
+			   bool inputFaceIsInverted = face->id==1;
+			  //std::pair< std::unordered_set<face_t*>::iterator, bool > inserted =  processed.insert(face);
+			  //if(!inserted.second) return; //already processed					
+			 
+			  do 
+			  {
+				  //find any edges connected to this one
+				  std::unordered_map<vertex_t*,std::vector<edge_t*>>::iterator vi = vertexMap.find(e->vert);
+				  if(vi!=vertexMap.end())
+				  {
 
+					  for (std::vector<edge_t*>::iterator i = (*vi).second.begin(); i != (*vi).second.end(); ++i)
+					  {
+
+						  edge_t* next = (*i);
+						  bool sameEdge = (next->v1()==e->v1() && next->v2()==e->v2());
+						  bool sameEdgeReversed = (next->v1()==e->v2() && next->v2()==e->v1());
+						  if(next->face==face)
+						  { 
+							  if(sameEdgeReversed) //this is a self intersecting face, typical a loop into holes
+								   goto nextEdge; //skip to next edge
+							  else
+								  continue; //skip if it is the same face
+						  }
+
+						  if((inputFaceIsInverted && sameEdgeReversed) ||
+							  (!inputFaceIsInverted && sameEdge)) //they are the same
+						  {
+							  if(next->face->id==0) //not been set yet
+							  {
+								  toInvert++;
+								  next->face->id=1; //set a flag to invert
+							  }
+						  }
+						  if(sameEdgeReversed || sameEdge) //only processes edges that are the same or the same reversed
+						  {
+							  std::unordered_set<face_t*>::iterator inserted =  processed.find(next->face); 
+							  if(inserted==processed.end())  nextFaces.insert(next->face);//needs to be processed
+							  goto nextEdge; //can only be one
+
+						  }
+					  }
+					  //it might be a small edge so check for that
+					    
+					  //vertex_t* v = e->v2();
+					  //for (std::vector<edge_t*>::iterator m = vi->second.begin(); m !=vi->second.end(); ++m)
+					  //{
+						 // edge_t* em = (*m);
+						 // if(em->face==face) continue;// skip edges on this face
+						 // double a = carve::geom::cross(em->v2()->v -em->v1()->v, v->v - em->v1()->v).length2();
+						 // double b = (em->v2()->v - em->v1()->v).length2();
+						 // if (a < b * EPSILON2) //split the longer edge
+						 // {
+							//  double d1 = (em->v1()->v - v->v).length2();
+							//  double d2 = (em->v2()->v - v->v).length2();
+							//  if(d1+d2<=b) //it is a sub segment of em
+							//  {
+							//	  edge_t* toInsert = new edge_t(em->v2(),em->face);
+							//	  toInsert->next = em->next;
+							//	  toInsert->prev = em;
+							//	  em->next->prev = toInsert;
+							//	  em->next = toInsert;
+							//	  em->face->n_edges++;	
+							//	  vertexMap[em->v2()].push_back(toInsert);
+							//	  goto nextEdge;
+							//  }
+
+						 // }
+
+
+					  //}
+					  //we shoud have found a reverse edge maybe we need to split an edge
+					  //if this edge is big then see if there is a vertex that lies on this edge, if so split at this point
+					  std::map<double,vertex_t*> pointsOnEdge; //might be several points so sort on duistance from start
+					  for (std::unordered_map<vertex_t*,std::vector<edge_t*>>::iterator vm = vertexMap.begin(); vm != vertexMap.end() ; ++vm )
+					  {	
+
+						  vertex_t* v = vm->first;
+						  if(v==e->v1() || v == e->v2()) continue; //same point skip
+						 /* carve::geom3d::LineSegment ls(e->v1()->v,e->v2()->v);
+						  double distance =  distance2(ls,v->v);*/
+						  double a = carve::geom::cross(e->v2()->v - e->v1()->v, v->v - e->v1()->v).length2();
+						  double b = (e->v2()->v - e->v1()->v).length2();
+
+						  if (a < b * EPSILON2 )
+						  {
+							  
+							  double d1 = (e->v1()->v - v->v).length2();
+							  double d2 = (e->v2()->v - v->v).length2();
+							  if(d1<=EPSILON2 || d2<=EPSILON2 ) continue; //check to see if they are not in reality the same point, stops infinite looping
+							  if( d1+d2<=b)
+							  {
+								  pointsOnEdge[(v->v - e->v1()->v).length2()]=v;
+							  }
+						  }
+					  }
+					  edge_t* insertAfter = e;
+					/*  if(pointsOnEdge.size()==0)
+					  {
+						  std::cerr<<" No match found for " << std::endl;
+						  std::cerr<< e->v1()->v.asStr() << std::endl;
+						  std::cerr<< e->v2()->v.asStr() << std::endl;
+					  }*/
+					  for (std::map<double,vertex_t*>::iterator i=pointsOnEdge.begin(); i != pointsOnEdge.end(); ++i)
+					  {					  
+						  vertex_t* pe = i->second;
+						  // vertex-edge intersection, split the longer edge
+						  edge_t* toInsert = new edge_t(pe,insertAfter->face);
+						  toInsert->next = insertAfter->next;
+						  toInsert->prev = insertAfter;
+						  insertAfter->next->prev = toInsert;
+						  insertAfter->next = toInsert;
+						  insertAfter->face->n_edges++;								
+						  vertexMap[pe].push_back(toInsert);
+						  vertexMap[pe].push_back(insertAfter);
+						  insertAfter = toInsert;
+					  }
+
+
+
+				  }
+nextEdge:
+				  e = e->next;	
+			  } while (e != face->edge);
+			  processOrder.push_back(face);
+			  processed.insert(face);
+			  nextFaces.erase(face);
+		   }
+		 catch(std::exception e)
+		  {
+			  std::cerr<<e.what();
+		  }
+		 
+		 return nextFaces.size()>0; //more to do
+	  }
 
       void FaceStitcher::matchSimpleEdges() {
-        // join faces that share an edge, where no other faces are incident.
-        for (edge_map_t::iterator i = edges.begin(); i != edges.end(); ++i) {
-          const vpair_t &ev = (*i).first;
-          edge_map_t::iterator j = edges.find(vpair_t(ev.second, ev.first));
-          if (j == edges.end()) {
-            for (edgelist_t::iterator k = (*i).second.begin(); k != (*i).second.end(); ++k) {
-              is_open[ (*k)->face->id] = true;
-            }
-          } else if ((*i).second.size() != 1 || (*j).second.size() != 1) {
-            std::swap(complex_edges[(*i).first], (*i).second);
-          } else {
-            // simple edge.
-            edge_t *a = (*i).second.front();
-            edge_t *b = (*j).second.front();
-            if (a < b) {
-              // every simple edge pair is encountered twice. only merge once.
-              a->rev = b;
-              b->rev = a;
-              face_groups.merge_sets(a->face->id, b->face->id);
-            }
-          }
-        }
-      }
+       
+		  // join faces that share an edge, where no other faces are incident.
+		  for (edge_map_t::iterator i = edges.begin(); i != edges.end(); ++i) {
+			  const vpair_t &ev = (*i).first;
+			  edge_map_t::iterator j = edges.find(vpair_t(ev.second, ev.first));	 
+
+			  if (j == edges.end())
+			  {
+				  
+					  for (edgelist_t::iterator k = (*i).second.begin(); k != (*i).second.end(); ++k) 
+					  {
+						  is_open[ (*k)->face->id] = true;
+					  }
+				  
+			  } 
+			  else if ((*i).second.size() != 1 || (*j).second.size() != 1) 
+			  {
+				  std::swap(complex_edges[(*i).first], (*i).second);
+			  } 
+			  else
+			  {
+				  // simple edge.
+				  edge_t *a = (*i).second.front();
+				  edge_t *b = (*j).second.front();
+				  if (a < b) {
+					  // every simple edge pair is encountered twice. only merge once.
+					  a->rev = b;
+					  b->rev = a;
+					  face_groups.merge_sets(a->face->id, b->face->id);
+				  }
+			  }
+		  }
+	 
+	  }
 
 
 
@@ -1045,8 +1205,8 @@ carve::PointClass carve::mesh::classifyPoint(
 #if defined(DEBUG_CONTAINS_VERTEX)
   std::cerr << "{containsVertex " << v << "}" << std::endl;
 #endif
-
-  if (!face_rtree->bbox.containsPoint(v)) {
+   
+  if (!face_rtree->bbox.containsPoint(v,EPSILON)) {
 #if defined(DEBUG_CONTAINS_VERTEX)
     std::cerr << "{final:OUT(aabb short circuit)}" << std::endl;
 #endif
@@ -1057,9 +1217,9 @@ carve::PointClass carve::mesh::classifyPoint(
     }
     return POINT_OUT;
   }
-
+   
   std::vector<carve::mesh::Face<3> *> near_faces;
-  face_rtree->search(v, std::back_inserter(near_faces));
+  face_rtree->search(v, std::back_inserter(near_faces),EPSILON);
 
   for (size_t i = 0; i < near_faces.size(); i++) {
     if (mesh != NULL && mesh != near_faces[i]->mesh) continue;
@@ -1103,7 +1263,7 @@ carve::PointClass carve::mesh::classifyPoint(
 
     near_faces.clear();
     manifold_intersections.clear();
-    face_rtree->search(line, std::back_inserter(near_faces));
+    face_rtree->search(line, std::back_inserter(near_faces),EPSILON);
 
     for (unsigned i = 0; !failed && i < near_faces.size(); i++) {
       if (mesh != NULL && mesh != near_faces[i]->mesh) continue;
@@ -1111,7 +1271,8 @@ carve::PointClass carve::mesh::classifyPoint(
       if (!near_faces[i]->mesh->isClosed()) continue;
 
       switch (near_faces[i]->lineSegmentIntersection(line, intersection, EPSILON, EPSILON2)) {
-      case INTERSECT_FACE: {
+      case INTERSECT_FACE:
+	  {
 
 #if defined(DEBUG_CONTAINS_VERTEX)
         std::cerr << "{intersects face: " << near_faces[i]
@@ -1130,7 +1291,9 @@ carve::PointClass carve::mesh::classifyPoint(
         manifold_intersections.push_back(std::make_pair(near_faces[i], intersection));
         break;
       }
-      case INTERSECT_NONE: {
+      case INTERSECT_NONE:
+		  {
+			  
         break;
       }
       default: {
@@ -1146,6 +1309,7 @@ carve::PointClass carve::mesh::classifyPoint(
 
     if (!failed) {
       if (even_odd) {
+		  
         return (manifold_intersections.size() & 1) ? POINT_IN : POINT_OUT;
       }
 
@@ -1198,7 +1362,7 @@ carve::PointClass carve::mesh::classifyPoint(
 #if defined(DEBUG_CONTAINS_VERTEX)
           std::cerr << "{final:IN}" << std::endl;
 #endif
-
+		 
           return POINT_IN;
         } else if (crossings[f->mesh] > 0) {
           // outside this manifold, but it's an infinite manifold. (for instance, an inverted cube)
@@ -1206,7 +1370,7 @@ carve::PointClass carve::mesh::classifyPoint(
 #if defined(DEBUG_CONTAINS_VERTEX)
           std::cerr << "{final:OUT}" << std::endl;
 #endif
-
+		  
           return POINT_OUT;
         }
       }
@@ -1214,7 +1378,7 @@ carve::PointClass carve::mesh::classifyPoint(
 #if defined(DEBUG_CONTAINS_VERTEX)
       std::cerr << "{final:OUT(default)}" << std::endl;
 #endif
-
+	  
       return POINT_OUT;
     }
   }

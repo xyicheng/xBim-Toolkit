@@ -9,7 +9,7 @@ using namespace  System::Threading;
 namespace Xbim
 {
 	namespace ModelGeometry
-	{
+	{ 
 		namespace OCC
 		{
 			//This class is a container for various shell meshes or polyhedron
@@ -76,8 +76,8 @@ namespace Xbim
 			}
 
 #if USE_CARVE
-				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax) override;
-				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding) override;
+				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
 
 #endif
 				virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;

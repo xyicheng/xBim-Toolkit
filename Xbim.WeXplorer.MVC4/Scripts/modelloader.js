@@ -9,70 +9,74 @@
     };
     ModelLoader.prototype.StartLoading = function () {
         this.StartTime = new Date();
-        this.GetData("GeometryVersion", this.HandleGeometrySupportLevel);
+        //this.GetData("GeometryVersion", this.HandleGeometrySupportLevel);
+        this.GetData("GetBoundsInstances", this.HandleBoundsInstances);
     }
-    ModelLoader.prototype.HandleGeometrySupportLevel = function (self, data) {
-
-        //if we aren't looking at level 2, then quit out
-        self.GetData("GeometryContext", self.HandleModelContext);
+    ModelLoader.prototype.HandleBoundsInstances = function (self, data) {
+        ModelProcessor.HandleBoundsInstances(data);
     }
-    ModelLoader.prototype.HandleModelContext = function (self, data) {
-        ModelProcessor.HandleContext(data);
-        self.GetData("StyleLibrary", self.HandleLibraryStyles);
-    }
-    ModelLoader.prototype.HandleLibraryStyles = function (self, data) {
-        ModelProcessor.HandleLibraryStyles(data);
-        self.GetData("ShapeLibrary", self.HandleLibraryShapes);
-    }
-    ModelLoader.prototype.HandleLibraryShapes = function (self, data) {
-        self.MapQueue = ModelProcessor.HandleLibraryShapes(data);
-        self.GetData("ProductShapes", self.HandleProductShapes);
-    }
-    ModelLoader.prototype.HandleProductShapes = function (self, data) {
-        self.GeoQueue = ModelProcessor.HandleProductShapes(data);
-        self.HandleMapGeometry(self);
-    }
-    ModelLoader.prototype.HandleMapGeometry = function (self, data) {
+    //ModelLoader.prototype.HandleGeometrySupportLevel = function (self, data) {
 
-        //process this batch
-        if (data) { ModelProcessor.HandleMapGeometry(data); }
+    //    //if we aren't looking at level 2, then quit out
+    //    self.GetData("GeometryContext", self.HandleModelContext);
+    //}
+    //ModelLoader.prototype.HandleModelContext = function (self, data) {
+    //    ModelProcessor.HandleContext(data);
+    //    self.GetData("StyleLibrary", self.HandleLibraryStyles);
+    //}
+    //ModelLoader.prototype.HandleLibraryStyles = function (self, data) {
+    //    ModelProcessor.HandleLibraryStyles(data);
+    //    self.GetData("ShapeLibrary", self.HandleLibraryShapes);
+    //}
+    //ModelLoader.prototype.HandleLibraryShapes = function (self, data) {
+    //    self.MapQueue = ModelProcessor.HandleLibraryShapes(data);
+    //    self.GetData("ProductShapes", self.HandleProductShapes);
+    //}
+    //ModelLoader.prototype.HandleProductShapes = function (self, data) {
+    //    self.GeoQueue = ModelProcessor.HandleProductShapes(data);
+    //    self.HandleMapGeometry(self);
+    //}
+    //ModelLoader.prototype.HandleMapGeometry = function (self, data) {
 
-        //request next batch if we have still got stuff queued
+    //    //process this batch
+    //    if (data) { ModelProcessor.HandleMapGeometry(data); }
 
-        if (self.MapQueue && self.MapQueue.length > 0)
-        {
-            var geomid = [];
-            for (var i = 0; i < self.BATCHAMOUNT && self.MapQueue.length > 0; i++) {
-                geomid.push(self.MapQueue.pop());
-            }
+    //    //request next batch if we have still got stuff queued
 
-            self.GetData("Meshes", self.HandleMapGeometry, geomid.toString());
-            //otherwise start on the product shapes
-        }
-        else
-        {
-            self.HandleGeometry(self);
-        }
-    }
-    ModelLoader.prototype.HandleGeometry = function (self, data) {
-        //process this batch
-        if (data) { ModelProcessor.HandleGeometry(data); }
+    //    if (self.MapQueue && self.MapQueue.length > 0)
+    //    {
+    //        var geomid = [];
+    //        for (var i = 0; i < self.BATCHAMOUNT && self.MapQueue.length > 0; i++) {
+    //            geomid.push(self.MapQueue.pop());
+    //        }
 
-        //request next batch if we have still got stuff queued
-        if (self.GeoQueue.length > 0) {
+    //        self.GetData("Meshes", self.HandleMapGeometry, geomid.toString());
+    //        //otherwise start on the product shapes
+    //    }
+    //    else
+    //    {
+    //        self.HandleGeometry(self);
+    //    }
+    //}
+    //ModelLoader.prototype.HandleGeometry = function (self, data) {
+    //    //process this batch
+    //    if (data) { ModelProcessor.HandleGeometry(data); }
 
-            var geomid = [];
-            for (var i = 0; i < self.BATCHAMOUNT && self.GeoQueue.length > 0; i++) {
-                geomid.push(self.GeoQueue.pop());
-            }
+    //    //request next batch if we have still got stuff queued
+    //    if (self.GeoQueue.length > 0) {
 
-            self.GetData("Meshes", self.HandleGeometry, geomid.toString());
-        } else {
-            //done
-            self.EndTime = new Date();
-            console.log("finished loading in " + (self.EndTime - self.StartTime) + "ms");
-        }
-    }
+    //        var geomid = [];
+    //        for (var i = 0; i < self.BATCHAMOUNT && self.GeoQueue.length > 0; i++) {
+    //            geomid.push(self.GeoQueue.pop());
+    //        }
+
+    //        self.GetData("Meshes", self.HandleGeometry, geomid.toString());
+    //    } else {
+    //        //done
+    //        self.EndTime = new Date();
+    //        console.log("finished loading in " + (self.EndTime - self.StartTime) + "ms");
+    //    }
+    //}
     ModelLoader.prototype.GetData = function (Type, Callback, IDs) {
         var self = this;
         $.ajax({

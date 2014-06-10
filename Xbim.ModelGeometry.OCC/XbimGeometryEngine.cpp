@@ -41,7 +41,7 @@ namespace Xbim
 				{
 					if( _caching) _cache->TryAdd(id, geom);
 					if(xbimGeometryType == XbimGeometryType::Polyhedron)
-						return geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax);
+						return geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax, _rounding);
 				}
 			}
 			return XbimEmptyGeometryGroup::Empty;
@@ -69,7 +69,9 @@ namespace Xbim
 		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType)
 		{
 			if(xbimGeometryType==XbimGeometryType::Polyhedron)
-				return gcnew XbimPolyhedron(data);
+				return gcnew XbimPolyhedron(data,false);
+			else if(xbimGeometryType==XbimGeometryType::TriangulatedPolyhedron)
+				return gcnew XbimPolyhedron(data, true);
 			else //unsupported format
 				throw gcnew XbimGeometryException("Unsupported Geometry Type in XbimGeometryEngine::GetGeometry3D - Ignored");
 		}
@@ -88,7 +90,7 @@ namespace Xbim
 				{
 					if(_caching) _cache->TryAdd(id, geom);
 					if(xbimGeometryType == XbimGeometryType::Polyhedron)
-						return geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax);
+						return geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax,_rounding);
 					else
 						return geom;
 				}
@@ -108,7 +110,7 @@ namespace Xbim
 				XbimGeometryModel^ geom = CreateFrom(representation,_caching?_cache:nullptr,false,XbimLOD::LOD_Unspecified,false);
 				if(geom!=nullptr)
 				{
-					IXbimGeometryModelGroup^ polygrp = geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax);
+					IXbimGeometryModelGroup^ polygrp = geom->ToPolyHedronCollection(_deflection,_precision,_precisionMax, _rounding);
 					if(_caching) _cache->TryAdd(id, polygrp);
 					return polygrp;
 				}
@@ -141,7 +143,7 @@ namespace Xbim
 							try
 							{
 								//srl optimisation openings and projectionss cannot have openings or projection so don't check for them
-								if(/*CutOpenings(product, lod) &&*/ !dynamic_cast<IfcFeatureElement^>(product ))
+								if(CutOpenings(product, lod) && !dynamic_cast<IfcFeatureElement^>(product ))
 								{
 
 									XbimGeometryModelCollection^ projectionSolids = gcnew XbimGeometryModelCollection();
@@ -325,6 +327,8 @@ namespace Xbim
 				geomModel =  gcnew XbimSolid((IfcHalfSpaceSolid^)repItem);
 			else if(dynamic_cast<IfcCsgPrimitive3D^>(repItem))
 				geomModel =  gcnew XbimSolid((IfcCsgPrimitive3D^)repItem);
+			else if(dynamic_cast<IfcConnectedFaceSet^>(repItem)) 
+				geomModel =  gcnew XbimFacetedShell((IfcConnectedFaceSet^)repItem);
 			else if(dynamic_cast<IfcFacetedBrep^>(repItem)) 
 				geomModel =  gcnew XbimFacetedShell((IfcFacetedBrep^)repItem);
 			else if(dynamic_cast<IfcShellBasedSurfaceModel^>(repItem)) 
@@ -418,8 +422,7 @@ namespace Xbim
 
 		XbimGeometryModel^ XbimGeometryEngine::Build(IfcBooleanResult^ repItem, ConcurrentDictionary<int, Object^>^ maps)
 		{
-			double precision = repItem->ModelOf->ModelFactors->Precision;
-			double maxPrecision = repItem->ModelOf->ModelFactors->PrecisionMax;
+			
 			IfcBooleanOperand^ fOp= repItem->FirstOperand;
 			IfcBooleanOperand^ sOp= repItem->SecondOperand;
 			XbimGeometryModel^ shape1;
@@ -456,11 +459,11 @@ namespace Xbim
 				switch(repItem->Operator)
 				{
 				case IfcBooleanOperator::Union:	
-					return shape1->Union(shape2,precision,maxPrecision);	
+					return shape1->Union(shape2,_deflection, _precision,_precisionMax, _rounding);	
 				case IfcBooleanOperator::Intersection:	
-					return shape1->Intersection(shape2,precision,maxPrecision);
+					return shape1->Intersection(shape2,_deflection, _precision,_precisionMax, _rounding);	
 				case IfcBooleanOperator::Difference:					
-					return shape1->Cut(shape2,precision,maxPrecision); //need to be a bit courser for this
+					return shape1->Cut(shape2,_deflection, _precision,_precisionMax, _rounding);	
 				default:
 					throw(gcnew InvalidOperationException("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
 				}

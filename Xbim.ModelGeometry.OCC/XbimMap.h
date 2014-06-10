@@ -25,8 +25,8 @@ namespace Xbim
 			XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
 			XbimMap(const TopoDS_Shape & shape,XbimMap^ copy);
 #if USE_CARVE
-			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
-			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax) override;
+			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax, unsigned int rounding) override;
+			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
 			virtual XbimMeshFragment MeshTo(IXbimMeshGeometry3D^ mesh3D, IfcProduct^ product, XbimMatrix3D transform, double deflection, short modelId) override;
 #endif
 			~XbimMap()

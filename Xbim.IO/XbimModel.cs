@@ -226,11 +226,26 @@ namespace Xbim.IO
         /// Returns the table to the cache for reuse
         /// </summary>
         /// <param name="table"></param>
-        internal void FreeTable(XbimEntityCursor table)
+        public void FreeTable(XbimEntityCursor table)
         {
             cache.FreeTable(table);
         }
-
+        /// <summary>
+        /// Returns the table to the cache for reuse
+        /// </summary>
+        /// <param name="table"></param>
+        public void FreeTable(XbimShapeGeometryCursor table)
+        {
+            cache.FreeTable(table);
+        }
+        /// <summary>
+        /// Returns the table to the cache for reuse
+        /// </summary>
+        /// <param name="table"></param>
+        public void FreeTable(XbimShapeInstanceCursor table)
+        {
+            cache.FreeTable(table);
+        }
         //Loads the property data of an entity, if it is not already loaded
         int IModel.Activate(IPersistIfcEntity entity, bool write)
         {
@@ -1095,7 +1110,7 @@ namespace Xbim.IO
         {
             get
             {
-                if (GetGeometryData(XbimGeometryType.ProductPolyhedronMap).Any()) return 2;
+                if (GetGeometryData(XbimGeometryType.Polyhedron).Any()) return 2;
                 else if (GetGeometryData(XbimGeometryType.TriangulatedMesh).Any()) return 1;
                 else return 0;
             }
@@ -1127,9 +1142,9 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="toCopy"></param>
         /// <returns></returns>
-        public T InsertCopy<T>(T toCopy, bool includeInverses = false) where T : IPersistIfcEntity
+        public T InsertCopy<T>(T toCopy, XbimReadWriteTransaction txn, bool includeInverses = false) where T : IPersistIfcEntity
         {
-            return InsertCopy(toCopy, new XbimInstanceHandleMap(toCopy.ModelOf, this), includeInverses);
+            return InsertCopy(toCopy, new XbimInstanceHandleMap(toCopy.ModelOf, this),txn, includeInverses);
         }
 
         /// <summary>
@@ -1140,9 +1155,9 @@ namespace Xbim.IO
         /// <param name="toCopy">Instance to copy</param>
         /// <param name="mappings">Supply a dictionary of mappings if repeat copy insertions are to be made</param>
         /// <returns></returns>
-        public T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses = false) where T : IPersistIfcEntity
+        public T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, XbimReadWriteTransaction txn, bool includeInverses = false) where T : IPersistIfcEntity
         {
-            return cache.InsertCopy<T>(toCopy, mappings, includeInverses);
+            return cache.InsertCopy<T>(toCopy, mappings, txn, includeInverses);
         }
 
         internal void EndTransaction()
@@ -1384,5 +1399,15 @@ namespace Xbim.IO
         public object Tag { get; set; }
 
 
+
+        public XbimShapeGeometryCursor GetShapeGeometryTable()
+        {
+            return cache.GetShapeGeometryTable();
+        }
+
+        public XbimShapeInstanceCursor GetShapeInstanceTable()
+        {
+            return cache.GetShapeInstanceTable();
+        }
     }
 }

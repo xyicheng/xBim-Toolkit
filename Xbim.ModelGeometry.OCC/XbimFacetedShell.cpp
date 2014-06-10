@@ -3,7 +3,7 @@
 #include "XbimTriangularMeshStreamer.h"
 #include "XbimSolid.h"
 #include "XbimFacetedShell.h"
-
+#include "XbimPolyhedron.h"
 
 #include "XbimGeometryModelCollection.h"
 #include "XbimGeomPrim.h"
@@ -353,15 +353,29 @@ namespace Xbim
 				}
 			};
 
-			XbimPolyhedron^ XbimFacetedShell::ToPolyHedron(double deflection, double precision,double precisionMax)
-			{
-				ToSolid(precision,precisionMax);
-				return XbimGeometryModelCollection::ToPolyHedron(deflection,  precision, precisionMax);
-			}
+			XbimPolyhedron^ XbimFacetedShell::ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding)
+			{				
+				
+				if(dynamic_cast<IfcClosedShell^>(_faceSet))
+					return gcnew XbimPolyhedron((IfcClosedShell^)_faceSet, precision,rounding ,RepresentationLabel,SurfaceStyleLabel,true);
+				else if(dynamic_cast<IfcOpenShell^>(_faceSet))
+					return gcnew XbimPolyhedron(((IfcOpenShell^)_faceSet), precision,rounding, RepresentationLabel,SurfaceStyleLabel,true);
+				else if(dynamic_cast<IfcConnectedFaceSet^>(_faceSet))
+					return gcnew XbimPolyhedron(((IfcConnectedFaceSet^)_faceSet), precision,rounding, RepresentationLabel,SurfaceStyleLabel,true);
+				else if(dynamic_cast<IfcFacetedBrep^>(_faceSet))
+					return gcnew XbimPolyhedron(((IfcFacetedBrep^)_faceSet), precision,rounding, RepresentationLabel,SurfaceStyleLabel,true);
+				else if (dynamic_cast<IfcFaceBasedSurfaceModel^>(_faceSet))
+					return gcnew XbimPolyhedron((IfcFaceBasedSurfaceModel^)_faceSet,precision,rounding, RepresentationLabel,SurfaceStyleLabel,true);
+				else if (dynamic_cast<IfcShellBasedSurfaceModel^>(_faceSet))
+					return gcnew XbimPolyhedron((IfcShellBasedSurfaceModel^)_faceSet,precision,rounding, RepresentationLabel,SurfaceStyleLabel,true);
+				else
+					Logger->WarnFormat("Unsupported facetted object type found {0}",_faceSet->GetType()->Name);
+				return nullptr;
+			} 
 
-			IXbimGeometryModelGroup^ XbimFacetedShell::ToPolyHedronCollection(double deflection, double precision,double precisionMax)
+			IXbimGeometryModelGroup^ XbimFacetedShell::ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
-				return XbimGeometryModelCollection::ToPolyHedronCollection(deflection,  precision, precisionMax);
+				return XbimGeometryModelCollection::ToPolyHedronCollection(deflection,  precision, precisionMax, rounding);
 			}
 
 			void  XbimFacetedShell::ToSolid(double precision, double maxPrecision)
@@ -478,7 +492,7 @@ namespace Xbim
 				}
 				XbimMeshFragment fragment(mesh3D->PositionCount,mesh3D->TriangleIndexCount, modelId);
                 fragment.EntityLabel = product->EntityLabel;
-                fragment.EntityType = product->GetType();
+                fragment.EntityTypeId = IfcMetaData::IfcTypeId(product->GetType());
 				
 				for each (XbimTriangulatedModel^ tm in list) //add each mesh to the collective mesh
 				{
@@ -731,21 +745,77 @@ namespace Xbim
 #pragma managed
 			String^ XbimFacetedShell::WriteAsString(XbimModelFactors^ modelFactors)
 			{
+				XbimGeometryModel^ result=nullptr;
 				IfcRepresentationItem^ faceSet = (IfcRepresentationItem^)_faceSet->ModelOf->Instances[_faceSet->EntityLabel];
-				String^ result;
+#if USE_CARVE
 				if(dynamic_cast<IfcClosedShell^>(faceSet))
-					result = WriteAsString(modelFactors, ((IfcClosedShell^)faceSet)->CfsFaces);
+				{
+					result = gcnew XbimPolyhedron(modelFactors,((IfcClosedShell^)faceSet)->CfsFaces,RepresentationLabel,SurfaceStyleLabel,true);
+				}
 				else if(dynamic_cast<IfcOpenShell^>(faceSet))
-					result = WriteAsString(modelFactors, ((IfcOpenShell^)faceSet)->CfsFaces);
+				{
+					result = gcnew XbimPolyhedron(modelFactors, ((IfcOpenShell^)faceSet)->CfsFaces,RepresentationLabel,SurfaceStyleLabel,false);
+					
+				}
 				else if(dynamic_cast<IfcConnectedFaceSet^>(faceSet))
-					result = WriteAsString(modelFactors, ((IfcConnectedFaceSet^)faceSet)->CfsFaces);
+				{
+					result = gcnew XbimPolyhedron(modelFactors, ((IfcConnectedFaceSet^)faceSet)->CfsFaces,RepresentationLabel,SurfaceStyleLabel,true);
+				}
 				else if(dynamic_cast<IfcFacetedBrep^>(faceSet))
+				{
+					result = gcnew XbimPolyhedron(modelFactors, ((IfcFacetedBrep^)faceSet)->Outer->CfsFaces,RepresentationLabel,SurfaceStyleLabel,true);
+				}
+				else if (dynamic_cast<IfcFaceBasedSurfaceModel^>(faceSet))
+				{
+					result = gcnew XbimGeometryModelCollection(RepresentationLabel, SurfaceStyleLabel);
+					for each (IfcConnectedFaceSet^ fbsmFaces in ((IfcFaceBasedSurfaceModel^)faceSet)->FbsmFaces)
+					{
+						XbimPolyhedron^ p = gcnew XbimPolyhedron(modelFactors,fbsmFaces->CfsFaces,fbsmFaces->EntityLabel,SurfaceStyleLabel,true);
+						((XbimGeometryModelCollection^)result)->Add(p);
+					}
+				}
+				else if (dynamic_cast<IfcShellBasedSurfaceModel^>(faceSet))
+				{
+					result = gcnew XbimGeometryModelCollection(RepresentationLabel, SurfaceStyleLabel);
+					for each (IfcConnectedFaceSet^ sbsmFaces in ((IfcShellBasedSurfaceModel^)faceSet)->SbsmBoundary)
+					{
+						XbimPolyhedron^ p = gcnew XbimPolyhedron(modelFactors,sbsmFaces->CfsFaces,sbsmFaces->EntityLabel,SurfaceStyleLabel,false);
+						((XbimGeometryModelCollection^)result)->Add(p);
+					}
+					
+				}
+				else
+					Logger->WarnFormat("Unsupported facetted object type found {0}",faceSet->GetType()->Name);
+				if(result!=nullptr) return result->WriteAsString(modelFactors); else return "";
+#else
+				
+				
+				if(dynamic_cast<IfcClosedShell^>(faceSet))
+				{
+					result = WriteAsString(modelFactors, ((IfcClosedShell^)faceSet)->CfsFaces);
+					
+				}
+				else if(dynamic_cast<IfcOpenShell^>(faceSet))
+				{
+					result = WriteAsString(modelFactors, ((IfcOpenShell^)faceSet)->CfsFaces);
+					
+				}
+				else if(dynamic_cast<IfcConnectedFaceSet^>(faceSet))
+				{
+					result = WriteAsString(modelFactors, ((IfcConnectedFaceSet^)faceSet)->CfsFaces);
+				}
+				else if(dynamic_cast<IfcFacetedBrep^>(faceSet))
+				{
 					result = WriteAsString(modelFactors, ((IfcFacetedBrep^)faceSet)->Outer->CfsFaces);
+				}
 				else if (dynamic_cast<IfcFaceBasedSurfaceModel^>(faceSet))
 				{
 					List<IfcFace^>^ allFaces = gcnew List<IfcFace^>();
 					for each (IfcConnectedFaceSet^ fbsmFaces in ((IfcFaceBasedSurfaceModel^)faceSet)->FbsmFaces)
+					{
 						allFaces->AddRange(fbsmFaces->CfsFaces);
+						result = WriteAsString(modelFactors,fbsmFaces->CfsFaces);
+					}
 					result = WriteAsString(modelFactors,allFaces);
 				}
 				else if (dynamic_cast<IfcShellBasedSurfaceModel^>(faceSet))
@@ -756,16 +826,22 @@ namespace Xbim
 					result = WriteAsString(modelFactors,allFaces);
 				}
 				else
-					result = "";
+					Logger->WarnFormat("Unsupported facetted object type found {0}",faceSet->GetType()->Name);
 				return result;
+#endif				
+				
 			}
 
 			String^ XbimFacetedShell::WriteAsString(XbimModelFactors^ modelFactors, IEnumerable<IfcFace^>^ faces)
 			{
+#if USE_CARVE
+				XbimPolyhedron^ p = gcnew XbimPolyhedron(modelFactors,faces,RepresentationLabel,SurfaceStyleLabel,false);
+				return p->WriteAsString(modelFactors);
+#else
 				double deflection = modelFactors->DeflectionTolerance;
 				double precision = modelFactors->Precision;
 				int rounding =  modelFactors->Rounding;
-				
+
 				size_t normalsOffset=-1;
 				StringBuilder^ sb = gcnew StringBuilder();
 				double xmin = 0; double ymin = 0; double zmin = 0; double xmax = 0; double ymax = 0; double zmax = 0;
@@ -778,10 +854,11 @@ namespace Xbim
 				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (GLUTessCallback) TriangleIndicesStream::EndTessellate);
 				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (GLUTessCallback) TriangleIndicesStream::TessellateError);
 
-				std::unordered_map<Float3D, size_t> vertexMap;
+				std::unordered_map<Double3D, size_t> vertexMap;
 
 				for each (IfcFace^ fc in  faces)
 				{
+
 					bool vWritten = false;
 					IfcFaceBound^ outerBound = Enumerable::FirstOrDefault(Enumerable::OfType<IfcFaceOuterBound^>(fc->Bounds)); //get the outer bound
 					if(outerBound == nullptr) outerBound = Enumerable::FirstOrDefault(fc->Bounds); //if one not defined explicitly use first found
@@ -791,6 +868,7 @@ namespace Xbim
 					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
 					if(n.IsInvalid()) 
 						continue;
+
 					TriangleIndicesStream tms;
 					gluTessBeginPolygon(ActiveTss, &tms);
 					// go over each boundary
@@ -812,9 +890,9 @@ namespace Xbim
 						for each(IfcCartesianPoint^ p in pts)
 						{
 							size_t index;
-							Float3D p3D((float)p->X,(float)p->Y,(float)p->Z,precision); 
+							Double3D p3D(p->X,p->Y,p->Z,precision,rounding); 
 							//p3D.Round((float)rounding); //round the numbers to avpid numercic issues with precision
-							std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+							std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
 							if(hit==vertexMap.end()) //not found add it in
 							{	
 								index = vertexMap.size();
@@ -902,8 +980,12 @@ namespace Xbim
 				}
 				gluDeleteTess(ActiveTss);
 				_bounds = XbimRect3D((float)xmin, (float)ymin, (float)zmin, (float)(xmax-xmin),  (float)(ymax-ymin), (float)(zmax-zmin));
+
 				return sb->ToString();
+#endif						
 			}
+
 		}
+
 	}
 }

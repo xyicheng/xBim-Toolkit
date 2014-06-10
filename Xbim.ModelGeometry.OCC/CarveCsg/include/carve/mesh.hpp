@@ -584,9 +584,13 @@ namespace carve {
         void removePath(const std::vector<const vertex_t *> &path);
         void matchSimpleEdges();
         void construct();
-
+		
+		bool processConnectivity(size_t totalFaces, size_t& toInvert, std::unordered_map<vertex_t*,std::vector<edge_t*>>& vertexMap, 
+			std::unordered_set<face_t*>& processed,
+			std::vector<face_t*>& processOrder, std::unordered_set<face_t*>& nextFaces, double EPSILON2);
+		
         template<typename iter_t>
-        void initEdges(iter_t begin, iter_t end);
+        void initEdges(iter_t begin, iter_t end, double EPSILON2, bool flipBadFaces);
 
         template<typename iter_t>
         void build(iter_t begin, iter_t end, std::vector<Mesh<3> *> &meshes);
@@ -595,7 +599,7 @@ namespace carve {
         FaceStitcher(const MeshOptions &_opts);
 
         template<typename iter_t>
-        void create(iter_t begin, iter_t end, std::vector<Mesh<3> *> &meshes);
+        void create(iter_t begin, iter_t end, std::vector<Mesh<3> *> &meshes, double EPSILON2, bool flipBadFaces );
       };
     }
 
@@ -647,7 +651,7 @@ namespace carve {
       ~Mesh();
 
       template<typename iter_t>
-      static void create(iter_t begin, iter_t end, std::vector<Mesh<ndim> *> &meshes, const MeshOptions &opts);
+      static void create(iter_t begin, iter_t end, std::vector<Mesh<ndim> *> &meshes, const MeshOptions &opts, double EPSILON2 = 1e-10, bool flipBadFaces = false );
 
       aabb_t getAABB() const {
         return aabb_t(faces.begin(), faces.end());
@@ -806,7 +810,7 @@ namespace carve {
       MeshSet(const std::vector<typename vertex_t::vector_t> &points,
               size_t n_faces,
               const std::vector<int> &face_indices,
-              const MeshOptions &opts = MeshOptions());
+              const MeshOptions &opts = MeshOptions(), double EPSILON2 = 1e-10, bool flipBadFaces = false);
 
       // Construct a mesh set from a set of disconnected faces. Takes
       // posession of the face pointers.

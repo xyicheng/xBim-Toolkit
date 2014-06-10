@@ -809,11 +809,11 @@ namespace carve {
 #endif
 
       for (FLGroupList::iterator i = a_loops_grouped.begin(); i != a_loops_grouped.end(); ++i) {
-        collector.collect(&*i, hooks);
+        collector.collect(&*i, hooks, EPSILON, EPSILON2);
       }
 
       for (FLGroupList::iterator i = b_loops_grouped.begin(); i != b_loops_grouped.end(); ++i) {
-        collector.collect(&*i, hooks);
+        collector.collect(&*i, hooks, EPSILON, EPSILON2);
       }
 
       // traceIntersectionGraph(shared_edges, a_loops_grouped, b_loops_grouped, a_edge_map, b_edge_map);

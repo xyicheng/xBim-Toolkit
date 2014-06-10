@@ -62,18 +62,18 @@ namespace Xbim
 				// starts from here with new pointer type
 				float* fCoord = (float *)(iCoord);
 
-				std::list<Float3D>::iterator i;
+				std::list<Double3D>::iterator i;
 				for (i = _points.begin(); i != _points.end(); i++)
 				{
-					*fCoord++ = i->Dim1; 
-					*fCoord++ = i->Dim2; 
-					*fCoord++ = i->Dim3; 
+					*fCoord++ = (float)i->Dim1; 
+					*fCoord++ = (float)i->Dim2; 
+					*fCoord++ = (float)i->Dim3; 
 				}
 				for (i = _normals.begin(); i != _normals.end(); i++)
 				{
-					*fCoord++ = i->Dim1; 
-					*fCoord++ = i->Dim2; 
-					*fCoord++ = i->Dim3; 
+					*fCoord++ = (float)i->Dim1; 
+					*fCoord++ = (float)i->Dim2; 
+					*fCoord++ = (float)i->Dim3; 
 				}
 
 				// picks up from fCoord's address
@@ -249,9 +249,9 @@ namespace Xbim
 				// finds the index of the current normal
 				// otherwise adds it to the collection
 				//
-				Float3D f(x,y,z);
-				std::pair< std::unordered_map<Float3D,size_t>::iterator, bool > pr;
-				pr = _normalsMap.insert(Float3DUInt_Pair(f, _normals.size()));
+				Double3D f(x,y,z);
+				std::pair< std::unordered_map<Double3D,size_t>::iterator, bool > pr;
+				pr = _normalsMap.insert(Double3DUInt_Pair(f, _normals.size()));
 				if(pr.second) //element  not found and  inserted so we add it to the list
 					_normals.push_back(f);
 				_currentNormalIndex = (pr.first)->second;
@@ -260,9 +260,9 @@ namespace Xbim
 			size_t XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 			{
 
-				Float3D f(x,y,z);
-				std::pair< std::unordered_map<Float3D,size_t>::iterator, bool > pr;
-				pr = _pointsMap.insert(Float3DUInt_Pair(f, _points.size()));
+				Double3D f(x,y,z);
+				std::pair< std::unordered_map<Double3D,size_t>::iterator, bool > pr;
+				pr = _pointsMap.insert(Double3DUInt_Pair(f, _points.size()));
 				if (_useFaceIndexMap)
 					_faceIndexMap[_facePointIndex++] = (pr.first)->second;
 				if(pr.second) //element not found and inserted so we add it to the list
