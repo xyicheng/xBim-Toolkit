@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Common;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.GeometryResource;
@@ -90,5 +91,12 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <returns></returns>
         bool Caching { get; }
+
+        /// <summary>
+        /// Merges the faces of the geomtry into a single polyhedron
+        /// </summary>
+        /// <param name="toMerge">The geometries to merge</param>
+        /// <returns></returns>
+        IXbimGeometryModel Merge(IEnumerable<IXbimGeometryModel> toMerge, XbimModelFactors modelFactors);
     }
 }

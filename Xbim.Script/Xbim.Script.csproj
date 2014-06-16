@@ -232,6 +232,10 @@
     </FileAssociation>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
+      <Project>{7da8c61a-acca-45cb-b688-93a4982fa44c}</Project>
+      <Name>Xbim.COBie</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>

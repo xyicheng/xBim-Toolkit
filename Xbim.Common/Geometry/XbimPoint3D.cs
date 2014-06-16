@@ -7,9 +7,9 @@ namespace Xbim.Common.Geometry
 {
     public struct XbimPoint3D 
     {
-        public float X;
-        public float Y;
-        public float Z;
+        public double X;
+        public double Y;
+        public double Z;
 
        
         public readonly static XbimPoint3D Zero;
@@ -18,19 +18,16 @@ namespace Xbim.Common.Geometry
         {
             Zero = new XbimPoint3D(0, 0, 0);
         }
-        public XbimPoint3D(float x, float y, float z)
-        {
-            X = x; Y = y; Z = z;
-        }
+       
         /// <summary>
-        /// Rounds the coordinates from double to float, some accuracy may be lost
+        /// 
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
         public XbimPoint3D(double x, double y, double z)
         {
-            X = (float)x; Y = (float)y; Z = (float)z;
+            X = x; Y = y; Z = z;
         }
 
         
@@ -99,7 +96,7 @@ namespace Xbim.Common.Geometry
 
             if (!m.IsAffine)
             {
-                float AffineRatio = x * m.M14 + y * m.M24 + z * m.M34 + m.M44;
+                double AffineRatio = x * m.M14 + y * m.M24 + z * m.M34 + m.M44;
                 pRet.X /= AffineRatio;
                 pRet.Y /= AffineRatio;
                 pRet.Z /= AffineRatio;

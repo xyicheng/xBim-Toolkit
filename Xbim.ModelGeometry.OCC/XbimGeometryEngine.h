@@ -25,14 +25,15 @@ namespace Xbim
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcRepresentation^ representation);
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcRepresentationItem^ repItem);
 			virtual IXbimGeometryModel^      GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType);
+			virtual IXbimGeometryModel^      Merge(IEnumerable<IXbimGeometryModel^>^ toMerge, XbimModelFactors^ modelFactors);
 			virtual void Init(XbimModel^ model)
 			{
 				_model = model;
 				Standard::SetReentrant(Standard_True);
 				_cache = gcnew ConcurrentDictionary<int, Object^>();
 				_deflection=model->ModelFactors->DeflectionTolerance;
-				_precision = model->ModelFactors->PrecisionBoolean;
-				_precisionMax = model->ModelFactors->PrecisionBooleanMax;
+				_precision = model->ModelFactors->Precision;
+				_precisionMax = model->ModelFactors->PrecisionMax;
 				_rounding = (unsigned int) model->ModelFactors->Rounding;
 				_caching=false;
 			}

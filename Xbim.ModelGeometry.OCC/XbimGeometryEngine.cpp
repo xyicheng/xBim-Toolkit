@@ -486,5 +486,16 @@ namespace Xbim
 					throw gcnew NotImplementedException("Build::IfcCsgSolid is not implemented");
 		}
 
+		IXbimGeometryModel^ XbimGeometryEngine::Merge(IEnumerable<IXbimGeometryModel^>^ toMerge, XbimModelFactors^ modelFactors)
+		{
+			List<XbimPolyhedron^>^ polys = gcnew List<XbimPolyhedron^>();
+			for each (IXbimGeometryModel^ model in toMerge)
+			{
+				polys->Add((XbimPolyhedron^)model->ToPolyhedron(modelFactors));
+			}
+			XbimPolyhedron^ merged = XbimPolyhedron::Merge(polys, modelFactors);
+			return merged;
+		}
+
 	}
 }

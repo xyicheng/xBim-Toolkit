@@ -35,7 +35,7 @@ namespace Xbim.ModelGeometry.Scene
                 this.Size);
         }
 
-        internal float Diagonal()
+        internal double Diagonal()
         {
             return Size.Length;
         }

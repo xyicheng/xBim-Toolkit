@@ -23,7 +23,7 @@
 
 #include <iostream>
 #include <deque>
-
+#include <carve/mesh_ops.hpp>
 
 namespace carve {
   namespace mesh {
@@ -542,9 +542,12 @@ namespace carve {
 			  for (iter_t i = begin; i != end; ++i) 
 			  {
 				  face_t *face = (*i);
+				 
 				  std::unordered_set<face_t*>::iterator inserted =  processed.find(face);
 				  if(inserted==processed.end()) //not done yet
 				  {
+					  double loopArea = carve::mesh::detail::loopArea(face->edge,face->project);
+				      if(loopArea>0) face->invert(); //make sure we start with a counter clockwise face
 					  face->id=2;//this is a seed face, 2 = seed, 0=untouched, 1 = invert
 					  std::unordered_set<face_t*> nextFaces;
 					  nextFaces.insert(face);
@@ -558,16 +561,16 @@ namespace carve {
 			  //check if there are any open edges that intersect with one of the vertises, is so split them
 
 			  //invert the one requiring least changes
-			  bool invertFaceIdEqualsOne = (toInvert < (totalFaces/2));
+			//  bool invertFaceIdEqualsOne = (toInvert > (totalFaces/2));
 
 			  for (std::vector<face_t*>::iterator i = processOrder.begin(); i != processOrder.end(); ++i) 
 			  {
 				  face_t *face = *i;
 				  CARVE_ASSERT(face->mesh == NULL); // for the moment, can only insert a face into a mesh once.
-				  if(invertFaceIdEqualsOne && face->id==1)
+				  if(face->id==1)
 					  face->invert();
-				  else if(!invertFaceIdEqualsOne && face->id!=1)
-					  face->invert();
+				/*  else if(!invertFaceIdEqualsOne && face->id!=1)
+					  face->invert();*/
 				  face->id = c++;
 				  edge_t *e = face->edge;
 				  do {

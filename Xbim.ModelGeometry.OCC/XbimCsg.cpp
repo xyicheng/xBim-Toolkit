@@ -65,6 +65,7 @@ namespace Xbim
 				}
 				catch (carve::exception ce) 
 				{
+
 					throw gcnew XbimGeometryException("XbimCsg::Union failed due to Boolean Operation Exception");						
 				}
 				catch (System::Runtime::InteropServices::SEHException^ ) //these should never happen, raise an error
@@ -92,12 +93,10 @@ namespace Xbim
 				}
 				catch (carve::exception ce) 
 				{
-#ifdef _DEBUG
-a->WritePly("a",true);
-b->WritePly("b",true);
-#endif
-					String^ err = gcnew String(ce.str().c_str());
 
+					String^ err = gcnew String(ce.str().c_str());
+					a->WritePly("a",true);
+					b->WritePly("b",true);
 					throw gcnew XbimGeometryException("XbimCsg::Subtract error, " + err);						
 				}
 				catch (System::Runtime::InteropServices::SEHException^ ex) //these should never happen, raise an error

@@ -21,8 +21,16 @@ namespace XbimInterpret
 
             if (args.Count() > 0)
             {
-                Stream reader = File.Open(args[0], FileMode.Open, FileAccess.Read);
-                parser.Parse(reader);
+                
+                if (args[0].ToLower().StartsWith("batch"))
+                {
+                    Stream reader = File.Open(args[0], FileMode.Open, FileAccess.Read);
+                    parser.Parse(reader);
+                }
+                else
+                {
+                    parser.Parse(args[0]); //try and parse the comands
+                }
 
                 if (parser.Errors.Count() == 0)
                     Console.WriteLine("Input file processed");

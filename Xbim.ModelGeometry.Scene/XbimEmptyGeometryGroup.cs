@@ -92,5 +92,10 @@ namespace Xbim.ModelGeometry.Scene
         {
             return this;
         }
+
+        public bool WritePly(string fileName, bool ascii = true)
+        {
+            return false;
+        }
     }
 }

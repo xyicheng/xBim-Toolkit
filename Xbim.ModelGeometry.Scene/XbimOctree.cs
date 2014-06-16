@@ -256,7 +256,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="bBox"></param>
         public XbimOctree<T> Add(T o, XbimRect3D bBox)
         {
-            float radius = bBox.Radius();
+            double radius = bBox.Radius();
             XbimPoint3D centre = bBox.Centroid();
             if (this.bounds.Contains(bBox))
             {
@@ -273,7 +273,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="centre">The object's centre coordinates.</param>
         /// <param name="radius">The object's radius.</param>
         /// <returns></returns>
-        private XbimOctree<T> Add(T o, XbimRect3D b, XbimPoint3D centre, float radius)
+        private XbimOctree<T> Add(T o, XbimRect3D b, XbimPoint3D centre, double radius)
         {
             lock (this.objects)
             {

@@ -15,6 +15,7 @@ namespace Xbim.Presentation
     {
         Material Material;
         string _Description;
+        public bool IsTransparent;
         
         public static implicit operator Material(WpfMaterial wpfMaterial)
         {
@@ -27,18 +28,22 @@ namespace Xbim.Presentation
             if (texture.ColourMap.Count > 1)
             {
                 Material = new MaterialGroup();
-                _Description = "Texture" ;
+                _Description = "Texture" ; 
+                bool transparent = true;
                 foreach (var colour in texture.ColourMap)
                 {
+                    if (!colour.IsTransparent) transparent = false; //only transparent if everything is transparent
                     _Description += " " + colour.ToString();
                     ((MaterialGroup)Material).Children.Add(CreateMaterial(colour));
                 }
+                IsTransparent = transparent;
             }
             else if(texture.ColourMap.Count == 1)
             {
                 XbimColour colour = texture.ColourMap[0];
                 Material = CreateMaterial(colour);
                 _Description = "Texture " + colour.ToString();
+                IsTransparent = colour.IsTransparent;
             }
         }
 
@@ -46,6 +51,7 @@ namespace Xbim.Presentation
         {
             _Description = "Colour " + colour.ToString();
             Color col = Color.FromScRgb(colour.Alpha, colour.Red, colour.Green, colour.Blue);
+            
             Brush brush = new SolidColorBrush(col);
             if (colour.SpecularFactor > 0)
                 return new SpecularMaterial(brush, colour.SpecularFactor * 100);

@@ -10,13 +10,13 @@ namespace Xbim.Common.Geometry
         #region members
 
         private static readonly XbimQuaternion _identity;
-        private float _x;
-        private float _y;
-        private float _z;
-        private float _w;
+        private double _x;
+        private double _y;
+        private double _z;
+        private double _w;
         private bool _isNotDefaultInitialised;
 
-        public float X
+        public double X
         {
             get
             {
@@ -29,7 +29,7 @@ namespace Xbim.Common.Geometry
                 this._x = value;
             }
         }
-        public float Y
+        public double Y
         {
             get
             {
@@ -42,7 +42,7 @@ namespace Xbim.Common.Geometry
                 this._y = value;
             }
         }
-        public float Z
+        public double Z
         {
             get
             {
@@ -55,7 +55,7 @@ namespace Xbim.Common.Geometry
                 this._z = value;
             }
         }
-        public float W
+        public double W
         {
             get
             {
@@ -76,21 +76,13 @@ namespace Xbim.Common.Geometry
             _identity._isNotDefaultInitialised = true;
         }
 
-        public XbimQuaternion(Single x, Single y, Single z, Single w)
+       
+        public XbimQuaternion(double x, double y, double z, double w)
         {
             this._x = x;
             this._y = y;
             this._z = z;
             this._w = w;
-            this._isNotDefaultInitialised = false;
-        }
-
-        public XbimQuaternion(double x, double y, double z, double w)
-        {
-            this._x = (float)x;
-            this._y = (float)y;
-            this._z = (float)z;
-            this._w = (float)w;
             this._isNotDefaultInitialised = false;
         }
 
@@ -102,14 +94,14 @@ namespace Xbim.Common.Geometry
         /// <param name="result">When the method completes, contains the newly created quaternion.</param>
         public static void RotationMatrix(ref XbimMatrix3D matrix, out XbimQuaternion result)
         {
-            float sqrt;
-            float half;
-            float scale = matrix.M11 + matrix.M22 + matrix.M33;
+            double sqrt;
+            double half;
+            double scale = matrix.M11 + matrix.M22 + matrix.M33;
             result = new XbimQuaternion();
 
             if (scale > 0.0f)
             {
-                sqrt = (float)Math.Sqrt(scale + 1.0f);
+                sqrt = Math.Sqrt(scale + 1.0f);
                 result.W = sqrt * 0.5f;
                 sqrt = 0.5f / sqrt;
 
@@ -119,7 +111,7 @@ namespace Xbim.Common.Geometry
             }
             else if ((matrix.M11 >= matrix.M22) && (matrix.M11 >= matrix.M33))
             {
-                sqrt = (float)Math.Sqrt(1.0f + matrix.M11 - matrix.M22 - matrix.M33);
+                sqrt = Math.Sqrt(1.0f + matrix.M11 - matrix.M22 - matrix.M33);
                 half = 0.5f / sqrt;
 
                 result.X = 0.5f * sqrt;
@@ -129,7 +121,7 @@ namespace Xbim.Common.Geometry
             }
             else if (matrix.M22 > matrix.M33)
             {
-                sqrt = (float)Math.Sqrt(1.0f + matrix.M22 - matrix.M11 - matrix.M33);
+                sqrt = Math.Sqrt(1.0f + matrix.M22 - matrix.M11 - matrix.M33);
                 half = 0.5f / sqrt;
 
                 result.X = (matrix.M21 + matrix.M12) * half;
@@ -139,7 +131,7 @@ namespace Xbim.Common.Geometry
             }
             else
             {
-                sqrt = (float)Math.Sqrt(1.0f + matrix.M33 - matrix.M11 - matrix.M22);
+                sqrt = Math.Sqrt(1.0f + matrix.M33 - matrix.M11 - matrix.M22);
                 half = 0.5f / sqrt;
 
                 result.X = (matrix.M31 + matrix.M13) * half;
@@ -157,18 +149,18 @@ namespace Xbim.Common.Geometry
         /// <param name="result">When the method completes, contains the transformed <see cref="SharpDX.Vector4"/>.</param>
         public static void Transform(ref XbimVector3D vector, ref XbimQuaternion rotation, out XbimVector3D result)
         {
-            float x = rotation.X + rotation.X;
-            float y = rotation.Y + rotation.Y;
-            float z = rotation.Z + rotation.Z;
-            float wx = rotation.W * x;
-            float wy = rotation.W * y;
-            float wz = rotation.W * z;
-            float xx = rotation.X * x;
-            float xy = rotation.X * y;
-            float xz = rotation.X * z;
-            float yy = rotation.Y * y;
-            float yz = rotation.Y * z;
-            float zz = rotation.Z * z;
+            double x = rotation.X + rotation.X;
+            double y = rotation.Y + rotation.Y;
+            double z = rotation.Z + rotation.Z;
+            double wx = rotation.W * x;
+            double wy = rotation.W * y;
+            double wz = rotation.W * z;
+            double xx = rotation.X * x;
+            double xy = rotation.X * y;
+            double xz = rotation.X * z;
+            double yy = rotation.Y * y;
+            double yz = rotation.Y * z;
+            double zz = rotation.Z * z;
 
             result = new XbimVector3D(
                 ((vector.X * ((1.0f - yy) - zz)) + (vector.Y * (xy - wz))) + (vector.Z * (xz + wy)),

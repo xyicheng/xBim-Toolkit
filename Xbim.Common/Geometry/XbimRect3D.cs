@@ -17,27 +17,27 @@ namespace Xbim.Common.Geometry
         } 
 
         #region Underlying Coordinate properties
-        private float _x;
-        private float _y;
-        private float _z;
-        private float _sizeX;
-        private float _sizeY;
-        private float _sizeZ;
-       
-        public float SizeX
+        private double _x;
+        private double _y;
+        private double _z;
+        private double _sizeX;
+        private double _sizeY;
+        private double _sizeZ;
+
+        public double SizeX
         {
             get { return _sizeX; }
             set { _sizeX = value; }
         }
 
 
-        public float SizeY
+        public double SizeY
         {
             get { return _sizeY; }
             set { _sizeY = value; }
         }
-        
-        public float SizeZ
+
+        public double SizeZ
         {
             get { return _sizeZ; }
             set { _sizeZ = value; }
@@ -57,9 +57,9 @@ namespace Xbim.Common.Geometry
                 this._z = value.Z;
             }
         }
-        
-        
-        public float X
+
+
+        public double X
         {
             get
             {
@@ -70,7 +70,7 @@ namespace Xbim.Common.Geometry
                 _x = value;
             }
         }
-        public float Y
+        public double Y
         {
             get
             {
@@ -81,7 +81,7 @@ namespace Xbim.Common.Geometry
                 _y = value;
             }
         }
-        public float Z
+        public double Z
         {
             get
             {
@@ -103,7 +103,7 @@ namespace Xbim.Common.Geometry
         #endregion
 
         #region Constructors
-        public XbimRect3D(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
+        public XbimRect3D(double x, double y, double z, double sizeX, double sizeY, double sizeZ)
         {
             _x = x;
             _y = y;
@@ -135,7 +135,7 @@ namespace Xbim.Common.Geometry
 
         static  XbimRect3D()
         {
-            _empty = new XbimRect3D { _x = float.PositiveInfinity, _y = float.PositiveInfinity, _z = float.PositiveInfinity, _sizeX = float.NegativeInfinity, _sizeY = float.NegativeInfinity, _sizeZ = float.NegativeInfinity };
+            _empty = new XbimRect3D { _x = double.PositiveInfinity, _y = double.PositiveInfinity, _z = double.PositiveInfinity, _sizeX = double.NegativeInfinity, _sizeY = double.NegativeInfinity, _sizeZ = double.NegativeInfinity };
         }
 
         public XbimRect3D(XbimPoint3D highpt)
@@ -143,9 +143,9 @@ namespace Xbim.Common.Geometry
             _x = highpt.X;
             _y = highpt.Y;
             _z = highpt.Z;
-            _sizeX = (float)0.0;
-            _sizeY = (float)0.0;
-            _sizeZ = (float)0.0;
+            _sizeX = 0.0;
+            _sizeY = 0.0;
+            _sizeZ = 0.0;
         }
 
         public XbimRect3D(XbimVector3D vMin, XbimVector3D vMax)
@@ -203,28 +203,28 @@ namespace Xbim.Common.Geometry
             XbimRect3D rect = new XbimRect3D();
             if (array.Length == 6 * sizeof(float)) //it is in floats
             {
-                float srXmin = bw.ReadSingle(); 
-                float srYmin = bw.ReadSingle();
-                float srZmin = bw.ReadSingle();
+                double srXmin = bw.ReadSingle();
+                double srYmin = bw.ReadSingle();
+                double srZmin = bw.ReadSingle();
                 rect.Location = new XbimPoint3D(srXmin, srYmin, srZmin);
 
-                float srXSz = bw.ReadSingle(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
-                float srYSz = bw.ReadSingle();
-                float srZSz = bw.ReadSingle();
+                double srXSz = bw.ReadSingle(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
+                double srYSz = bw.ReadSingle();
+                double srZSz = bw.ReadSingle();
                 rect.SizeX = srXSz;
                 rect.SizeY = srYSz;
                 rect.SizeZ = srZSz;
             }
             else //go for doubles
             {
-                float srXmin = (float)bw.ReadDouble(); 
-                float srYmin = (float)bw.ReadDouble();
-                float srZmin = (float)bw.ReadDouble();
+                double srXmin = bw.ReadDouble();
+                double srYmin = bw.ReadDouble();
+                double srZmin = bw.ReadDouble();
                 rect.Location = new XbimPoint3D(srXmin, srYmin, srZmin);
 
-                float srXSz = (float)bw.ReadDouble(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
-                float srYSz = (float)bw.ReadDouble();
-                float srZSz = (float)bw.ReadDouble();
+                double srXSz = bw.ReadDouble(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
+                double srYSz = bw.ReadDouble();
+                double srZSz = bw.ReadDouble();
                 rect.SizeX = srXSz;
                 rect.SizeY = srYSz;
                 rect.SizeZ = srZSz;
@@ -242,12 +242,12 @@ namespace Xbim.Common.Geometry
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
-            bw.Write((double)_x);
-            bw.Write((double)_y);
-            bw.Write((double)_z);
-            bw.Write((double)_sizeX);
-            bw.Write((double)_sizeY);
-            bw.Write((double)_sizeZ);
+            bw.Write(_x);
+            bw.Write(_y);
+            bw.Write(_z);
+            bw.Write(_sizeX);
+            bw.Write(_sizeY);
+            bw.Write(_sizeZ);
             bw.Close();
             return ms.ToArray();
         }
@@ -260,12 +260,12 @@ namespace Xbim.Common.Geometry
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
-            bw.Write(_x);
-            bw.Write(_y);
-            bw.Write(_z);
-            bw.Write(_sizeX);
-            bw.Write(_sizeY);
-            bw.Write(_sizeZ);
+            bw.Write((float)_x);
+            bw.Write((float)_y);
+            bw.Write((float)_z);
+            bw.Write((float)_sizeX);
+            bw.Write((float)_sizeY);
+            bw.Write((float)_sizeZ);
             bw.Close();
             return ms.ToArray();
         }
@@ -301,12 +301,12 @@ namespace Xbim.Common.Geometry
         {
             string[] itms = Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             Debug.Assert(itms.Length == 6);
-            return new XbimRect3D(Convert.ToSingle(itms[0], System.Globalization.CultureInfo.InvariantCulture),
-                                  Convert.ToSingle(itms[1], System.Globalization.CultureInfo.InvariantCulture),
-                                  Convert.ToSingle(itms[2], System.Globalization.CultureInfo.InvariantCulture),
-                                  Convert.ToSingle(itms[3], System.Globalization.CultureInfo.InvariantCulture),
-                                  Convert.ToSingle(itms[4], System.Globalization.CultureInfo.InvariantCulture),
-                                  Convert.ToSingle(itms[5], System.Globalization.CultureInfo.InvariantCulture));
+            return new XbimRect3D(Convert.ToDouble(itms[0], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToDouble(itms[1], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToDouble(itms[2], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToDouble(itms[3], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToDouble(itms[4], System.Globalization.CultureInfo.InvariantCulture),
+                                  Convert.ToDouble(itms[5], System.Globalization.CultureInfo.InvariantCulture));
 
         }
 
@@ -315,28 +315,15 @@ namespace Xbim.Common.Geometry
         static public XbimRect3D Inflate( double x, double y, double z)
         {
             XbimRect3D rect = new XbimRect3D();
-            rect.X -= (float)x; rect.Y -= (float)y; rect.Z -= (float)z;
-            rect.SizeX += (float)x * 2; rect.SizeY += (float)y * 2; rect.SizeZ += (float)z * 2;
-            return rect;
-        }
-
-        static public XbimRect3D Inflate(float x, float y, float z)
-        {
-            XbimRect3D rect = new XbimRect3D();
             rect.X -= x; rect.Y -= y; rect.Z -= z;
             rect.SizeX += x * 2; rect.SizeY += y * 2; rect.SizeZ += z * 2;
             return rect;
         }
 
-        static public XbimRect3D Inflate( double d)
-        {
-            XbimRect3D rect = new XbimRect3D();
-            rect.X -= (float)d; rect.Y -= (float)d; rect.Z -= (float)d;
-            rect.SizeX += (float)d * 2; rect.SizeY += (float)d * 2; rect.SizeZ += (float)d * 2;
-            return rect;
-        }
+       
+       
 
-        static public XbimRect3D Inflate(float d)
+        static public XbimRect3D Inflate(double d)
         {
             XbimRect3D rect = new XbimRect3D();
             rect.X -= d; rect.Y -= d; rect.Z -= d;
@@ -392,12 +379,12 @@ namespace Xbim.Common.Geometry
             }
             else if (!bb.IsEmpty)
             {
-                float numX = Math.Min(X, bb.X);
-                float numY = Math.Min(Y, bb.Y);
-                float numZ = Math.Min(Z, bb.Z);
-                _sizeX = Math.Max((float)(X + _sizeX), (float)(bb.X + bb._sizeX)) - numX;
-                _sizeY = Math.Max((float)(Y + _sizeY), (float)(bb.Y + bb._sizeY)) - numY;
-                _sizeZ = Math.Max((float)(Z + _sizeZ), (float)(bb.Z + bb._sizeZ)) - numZ;
+                double numX = Math.Min(X, bb.X);
+                double numY = Math.Min(Y, bb.Y);
+                double numZ = Math.Min(Z, bb.Z);
+                _sizeX = Math.Max((X + _sizeX), (bb.X + bb._sizeX)) - numX;
+                _sizeY = Math.Max((Y + _sizeY), (bb.Y + bb._sizeY)) - numY;
+                _sizeZ = Math.Max((Z + _sizeZ), (bb.Z + bb._sizeZ)) - numZ;
                 X = numX;
                 Y = numY;
                 Z = numZ;
@@ -415,7 +402,7 @@ namespace Xbim.Common.Geometry
             {
                 return false;
             }
-            return this.ContainsCoords((float)x, (float)y, (float)z);
+            return this.ContainsCoords(x, y, z);
         }
 
         public bool Contains(XbimPoint3D pt)
@@ -427,7 +414,7 @@ namespace Xbim.Common.Geometry
             return this.ContainsCoords(pt.X, pt.Y, pt.Z);
         }
 
-        private bool ContainsCoords(float x, float y, float z)
+        private bool ContainsCoords(double x, double y, double z)
         {
             return (((((x >= this._x) && (x <= (this._x + this._sizeX))) && ((y >= this._y) && (y <= (this._y + this._sizeY)))) && (z >= this._z)) && (z <= (this._z + this._sizeZ)));
   
@@ -474,10 +461,10 @@ namespace Xbim.Common.Geometry
        /// Returns the radius of the sphere that contains this bounding box rectangle 3D
        /// </summary>
        /// <returns></returns>
-        public float Radius()
+        public double Radius()
         {
             XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
-            float len = max.Length;
+            double len = max.Length;
             if (len != 0)
                 return  len / 2;
             else
@@ -488,7 +475,7 @@ namespace Xbim.Common.Geometry
         /// Indicative size of the Box along all axis.
         /// </summary>
         /// <returns>Returns the length of the diagonal</returns>
-        public float Length()
+        public double Length()
         {
             XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
             return max.Length;
@@ -514,12 +501,12 @@ namespace Xbim.Common.Geometry
         public void Round(int digits)
         {
 
-            _x = (float)Math.Round(_x, digits);
-            _y = (float)Math.Round(_y, digits);
-            _z = (float)Math.Round(_z, digits);
-            _sizeX = (float)Math.Round(_sizeX, digits);
-            _sizeY = (float)Math.Round(_sizeY, digits);
-            _sizeZ = (float)Math.Round(_sizeZ, digits);
+            _x = Math.Round(_x, digits);
+            _y = Math.Round(_y, digits);
+            _z = Math.Round(_z, digits);
+            _sizeX = Math.Round(_sizeX, digits);
+            _sizeY = Math.Round(_sizeY, digits);
+            _sizeZ = Math.Round(_sizeZ, digits);
         }
 
         /// <summary>
@@ -530,12 +517,12 @@ namespace Xbim.Common.Geometry
         /// <returns></returns>
         public static XbimRect3D Round(XbimRect3D r, int digits)
         {
-            return new XbimRect3D((float)Math.Round(r.X, digits),
-                (float)Math.Round(r.Y, digits),
-                (float)Math.Round(r.Z, digits),
-                (float)Math.Round(r.SizeX, digits),
-                (float)Math.Round(r.SizeY, digits),
-                (float)Math.Round(r.SizeZ, digits)
+            return new XbimRect3D(Math.Round(r.X, digits),
+                Math.Round(r.Y, digits),
+                Math.Round(r.Z, digits),
+                Math.Round(r.SizeX, digits),
+                Math.Round(r.SizeY, digits),
+                Math.Round(r.SizeZ, digits)
                 );
         }
 

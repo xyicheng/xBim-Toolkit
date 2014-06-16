@@ -87,6 +87,7 @@ namespace Xbim
 					  virtual void InstanceCleanup() override;
 					  void AddFaces(std::vector<vertex_t>& vertices, std::vector<mesh_t*>& meshes, double precision, unsigned int rounding, IEnumerable<IfcFace^>^ faces, bool orientate);
 			          void ResizeVertexStore(size_t newSize);
+					  static void  GetConnected(HashSet<XbimPolyhedron^>^ connected,Dictionary<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ clusters, XbimPolyhedron^ clusterAround);
 			
 			public:
 				XbimPolyhedron(void);
@@ -103,6 +104,10 @@ namespace Xbim
 				XbimPolyhedron(IfcFaceBasedSurfaceModel^ fbsm, double precision, unsigned int rounding, int representationLabel, int styleLabel, bool orientate);
 				XbimPolyhedron(IfcShell^ shell, double precision, unsigned int rounding, int representationLabel, int styleLabel, bool orientate);
 				XbimPolyhedron(IfcFacetedBrep^ brep, double precision, unsigned int rounding, int representationLabel, int styleLabel, bool orientate);
+				
+				//Implementationo of the IXbimPolyhedron interface
+				virtual bool WritePly(String^ fileName, bool ascii);
+				
 				//properties
 				virtual property double Volume 
 				{
@@ -133,7 +138,8 @@ namespace Xbim
 				void AddFaces(IfcOpenShell^ shell, double precision, unsigned int rounding, bool orientate);
 				void AddFaces(IfcClosedShell^ shell, double precision, unsigned int rounding, bool orientate);
 				void AddFaces(IfcFacetedBrep^ brep, double precision, unsigned int rounding, bool orientate);
-
+				///merges all faces of the polyderon list into one mesh set
+				static XbimPolyhedron^ Merge(List<XbimPolyhedron^>^ toMerge, XbimModelFactors^ m);
 				virtual property meshset_t* MeshSet
 				{
 					meshset_t* get(){return _meshSet;}
@@ -148,7 +154,7 @@ namespace Xbim
 				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
 				virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding) override ;
 				virtual String^ WriteAsString(XbimModelFactors^ modelFactors) override;
-				void WritePly(String^ fileName, bool ascii);
+				bool WritePlyInternal(String^ fileName, bool ascii);
 				void WriteObj(String^ fileName);
 				void WriteVtk(String^ fileName);
 				virtual bool Write(String^ fileName,XbimModelFactors^ modelFactors) override;
@@ -164,8 +170,10 @@ namespace Xbim
 				size_t Improve( double min_colinearity,
 										  double min_delta_v,
 										  double min_normal_angle,
-										  double min_length,
 										  double EPSILON);
+				size_t Improve( double EPSILON);
+				void Invert();
+				size_t MergeCoPlanarFaces(double normalAngle);
 				bool IsClosed();
 			};
 		}

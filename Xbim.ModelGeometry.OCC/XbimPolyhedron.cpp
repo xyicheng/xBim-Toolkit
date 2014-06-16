@@ -160,15 +160,28 @@ namespace Xbim
 								double min_colinearity,
 								double min_delta_v,
 								double min_normal_angle,
-								double min_length,
 								double EPSILON)
+			{			
+				carve::mesh::MeshSimplifier simplifier;
+				size_t mods = simplifier.improveMesh(_meshSet, min_colinearity,min_delta_v,min_normal_angle,EPSILON);
+				GC::KeepAlive(this);
+				return mods;
+			}
+			size_t XbimPolyhedron::Improve(double EPSILON)
 			{			
 				carve::mesh::MeshSimplifier simplifier;
 				size_t mods = simplifier.improveMesh_conservative(_meshSet, EPSILON);	
 				GC::KeepAlive(this);
 				return mods;
 			}
-			
+
+			size_t XbimPolyhedron::MergeCoPlanarFaces(double normalAngle)
+			{			
+				carve::mesh::MeshSimplifier simplifier;
+				size_t mods = simplifier.mergeCoplanarFaces(_meshSet, normalAngle);	
+				GC::KeepAlive(this);
+				return mods;
+			}
 
 			size_t XbimPolyhedron::EliminateShortEdges(double minLength, double EPSILON)
 			{
@@ -274,7 +287,7 @@ namespace Xbim
 					l = sr->ReadLine(); //get the next line
 				}
 				_meshSet =  polyData.createMesh(carve::input::Options(),0.0);
-				//this->WritePly("p",true);
+				
 			}
 
 			
@@ -313,8 +326,7 @@ namespace Xbim
 				_meshSet = new meshset_t(vertices, meshes);
 			//	System::Diagnostics::Debug::Assert(_meshSet->isClosed());	
 				
-			//	this->WritePly("f",true);
-			//	Console::WriteLine(this->Volume);
+			
 			}
 
 			XbimPolyhedron::XbimPolyhedron(IfcShell^ shell, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
@@ -354,7 +366,7 @@ namespace Xbim
 				_representationLabel=representationLabel;
 				_surfaceStyleLabel=styleLabel;
 				AddFaces(fbsm,precision,rounding,orientate);
-				//this->WritePly("f",true);
+				
 			}
 
 			XbimPolyhedron::XbimPolyhedron(IfcShellBasedSurfaceModel^ sbsm, double precision, unsigned int rounding,  int representationLabel, int styleLabel, bool orientate)
@@ -396,12 +408,15 @@ namespace Xbim
 					{
 						if(dynamic_cast<IfcClosedShell^>(shell))
 						{
-							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
-							if(!this->IsClosed()) Logger->WarnFormat("IfcClosedShell #{0} is not ccorrectly closed",shell->EntityLabel);
+							IfcClosedShell^ closedShell = (IfcClosedShell^)shell;
+							if(closedShell->ModelOf->ModelFactors->MaxBRepSewFaceCount<allPointsTally) orientate = false;
+							AddFaces(vertices,meshes,precision,rounding,  closedShell->CfsFaces, orientate);
 						}
 						else if(dynamic_cast<IfcOpenShell^>(shell))
 						{
-							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+							IfcOpenShell^ openShell = (IfcOpenShell^)shell;
+							if(openShell->ModelOf->ModelFactors->MaxBRepSewFaceCount<allPointsTally) orientate = false;
+							AddFaces(vertices,meshes,precision,rounding,  openShell->CfsFaces, orientate);
 						}
 						else
 							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
@@ -415,12 +430,15 @@ namespace Xbim
 					{
 						if(dynamic_cast<IfcClosedShell^>(shell))
 						{
-							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
-							if(!this->IsClosed()) Logger->WarnFormat("IfcClosedShell #{0} is not ccorrectly closed",shell->EntityLabel);
+							IfcOpenShell^ openShell = (IfcOpenShell^)shell;
+							if(openShell->ModelOf->ModelFactors->MaxBRepSewFaceCount < allPointsTally) orientate = false;
+							AddFaces(_meshSet->vertex_storage,_meshSet->meshes,precision,rounding,  openShell->CfsFaces, orientate);
 						}
 						else if(dynamic_cast<IfcOpenShell^>(shell))
 						{
-							AddFaces((IfcConnectedFaceSet^)shell,precision, rounding,  orientate);
+							IfcOpenShell^ openShell = (IfcOpenShell^)shell;
+							if(openShell->ModelOf->ModelFactors->MaxBRepSewFaceCount < allPointsTally) orientate = false;
+							AddFaces(_meshSet->vertex_storage,_meshSet->meshes,precision,rounding,  openShell->CfsFaces, orientate);
 						}
 						else
 							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
@@ -609,13 +627,13 @@ namespace Xbim
 								if(outerLoopPoints.size()==0 || index!= outerLoopPoints.back()) 
 									outerLoopPoints.push_back(index);  //don't add the same point twice
 								else
-									Logger->InfoFormat("Duplicate vertex found in IfcPolyloop #{0}, it has been ignored",bound->EntityLabel);
+									Logger->InfoFormat("Duplicate vertex found in IfcFaceBound #{0}, it has been ignored",bound->EntityLabel);
 								
 							}
 							if(outerLoopPoints.size()>1 && outerLoopPoints.front() == outerLoopPoints.back()) // too many points specified, some tools duplicate the last point to close
 							{
 								outerLoopPoints.pop_back();
-								Logger->InfoFormat("Duplicate vertex found in IfcPolyloop #{0} (start point duplicated, it has been ignored",bound->EntityLabel);
+								Logger->InfoFormat("Duplicate vertex found in IfcFaceBound #{0} (start point duplicated, it has been ignored",bound->EntityLabel);
 							}
 							if(outerLoopPoints.size()<3)
 							{
@@ -972,12 +990,23 @@ IncorporateHoles:
 				return "";
 			}*/
 
-			void XbimPolyhedron::WritePly(String^ fileName, bool ascii)
+			bool XbimPolyhedron::WritePlyInternal(String^ fileName, bool ascii)
 			{
 				const char* chars = (const char*)(Marshal::StringToHGlobalAnsi(fileName)).ToPointer();
-				std::string stdString = chars;
-				carve::common::writePLY(stdString,_meshSet,ascii);
-				Marshal::FreeHGlobal(IntPtr((void*)chars));
+				try
+				{
+					std::string stdString = chars;
+					carve::common::writePLY(stdString,_meshSet,ascii);
+					return true;
+				}
+				catch(...)
+				{
+					return false;
+				}
+				finally
+				{
+					Marshal::FreeHGlobal(IntPtr((void*)chars));
+				}
 			}
 
 			void XbimPolyhedron::WriteObj(String^ fileName)
@@ -1293,7 +1322,6 @@ IncorporateHoles:
 				try
 				{				
 					XbimPolyhedron^ result = csg->Subtract(this,toCut);
-					
 					if(result->IsValid)
 						return result;
 					else
@@ -1317,6 +1345,7 @@ IncorporateHoles:
 				try
 				{				
 					XbimPolyhedron^ result = csg->Combine(this,toCombine);
+					
 					if(result->IsValid)
 						return result;
 					else
@@ -1324,6 +1353,7 @@ IncorporateHoles:
 				}
 				catch (XbimGeometryException^ ex) 
 				{
+					
 					Logger->ErrorFormat("Failed to combine two shapes, exception: {0}.\n Body is #{1}, Addition is #{2}.\nCombination ignored. This should not happen.", ex->Message, RepresentationLabel, shape->RepresentationLabel);
 				}	
 				return this;
@@ -1340,7 +1370,6 @@ IncorporateHoles:
 				try
 				{				
 					XbimPolyhedron^ result = csg->Union(this,polyToUnion);
-					
 					if(result->IsValid)
 						return result;
 					else
@@ -1348,6 +1377,7 @@ IncorporateHoles:
 				}
 				catch (XbimGeometryException^ ex) 
 				{
+					
 					Logger->ErrorFormat("Failed to union shapes, exception: {0}.\n Body is #{1}, Union is #{2}.\nUnion ignored. This should not happen.", ex->Message, RepresentationLabel, shape->RepresentationLabel);
 				}	
 				return this;
@@ -1377,9 +1407,160 @@ IncorporateHoles:
 				}	
 				return this;
 			}
+
+			///true is a manifold closed solid
 			bool XbimPolyhedron::IsClosed()
 			{		
 				return _meshSet!=nullptr && _meshSet->isClosed();
+			}
+
+			///inverts all meshes that form this shape
+			void XbimPolyhedron::Invert()
+			{
+				if(_meshSet==nullptr) return;
+				for (size_t i = 0; i < _meshSet->meshes.size(); i++)
+					_meshSet->meshes[i]->invert();		
+			}
+
+			void  XbimPolyhedron::GetConnected(HashSet<XbimPolyhedron^>^ connected, Dictionary<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ clusters, XbimPolyhedron^ clusterAround)
+			{	
+				if(connected->Add(clusterAround))
+				{
+					for each (KeyValuePair<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ polysets in clusters)
+					{
+						if(!connected->Contains(polysets->Key) && !(polysets->Key==clusterAround) && polysets->Value->Contains(clusterAround))  //don't do the same one twice
+						{	
+							GetConnected(connected, clusters, polysets->Key);
+							for each (XbimPolyhedron^ poly in polysets->Value)
+							{
+								GetConnected(connected, clusters, poly);
+							}
+						}
+					}
+				}
+			}
+
+			XbimPolyhedron^  XbimPolyhedron::Merge(List<XbimPolyhedron^>^ toMerge, XbimModelFactors^ mf)
+			{
+				if(!Enumerable::Any(toMerge)) return nullptr;
+				
+				//first remove any that intersect as simple merging leads to illegal geometries.
+		
+				Dictionary<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ clusters = gcnew Dictionary<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>();
+				for each (XbimPolyhedron^ polyToCheck in toMerge) //init all the clusters
+					clusters[polyToCheck]= gcnew HashSet<XbimPolyhedron^>();
+				for each (XbimPolyhedron^ polyToCheck in toMerge)
+				{
+					for each (KeyValuePair<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ cluster in clusters)
+					{
+						if(polyToCheck!=cluster->Key && polyToCheck->GetBoundingBox().Intersects(cluster->Key->GetBoundingBox()))
+							cluster->Value->Add(polyToCheck);
+					}
+				}
+	            List<XbimPolyhedron^>^ toMergeReduced = gcnew List<XbimPolyhedron^>();	
+				Dictionary<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ clustersSparse = gcnew Dictionary<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>();
+				for each (KeyValuePair<XbimPolyhedron^,HashSet<XbimPolyhedron^>^>^ cluster in clusters)
+				{
+					if(cluster->Value->Count>0) 
+						clustersSparse->Add(cluster->Key,cluster->Value);
+					else
+						toMergeReduced->Add(cluster->Key); //record the ones to simply merge
+				}
+				clusters=nullptr;
+
+				
+				XbimPolyhedron^ clusterAround = Enumerable::FirstOrDefault(clustersSparse->Keys);
+				
+				while(clusterAround!=nullptr)
+				{
+					HashSet<XbimPolyhedron^>^ connected = gcnew HashSet<XbimPolyhedron^>();
+					XbimPolyhedron::GetConnected(connected, clustersSparse,clusterAround);
+					XbimPolyhedron^ poly = nullptr;
+					for each (XbimPolyhedron^ toConnect in connected) //join up the connected
+					{
+						if(poly==nullptr) poly = toConnect;
+						else poly = (XbimPolyhedron^)poly->Union(toConnect,mf);
+					}
+					if(poly!=nullptr) toMergeReduced->Add(poly);
+					for each (XbimPolyhedron^ poly in connected) //remove what we have conected
+						clustersSparse->Remove(poly);
+					clusterAround = Enumerable::FirstOrDefault(clustersSparse->Keys);
+				}
+
+				//create a map between old and new vertices
+ 				std::unordered_map<vertex_t *, size_t> vert_idx;
+				
+				size_t meshCount = 0;
+				for each (XbimPolyhedron^ poly in toMergeReduced)
+				{	
+					meshCount+=poly->MeshSet->meshes.size();
+					for(carve::mesh::MeshSet<3U>::face_iter f = poly->MeshSet->faceBegin();f!=poly->MeshSet->faceEnd();++f)
+					{
+						face_t* face = *f;
+						edge_t* e = face->edge;
+						do
+						{		
+							vert_idx[e->vert] = 0;
+							e = e->next;
+						}
+						while(e!=face->edge);
+					}
+				}
+				//determine max number of new vertices
+				std::vector<vertex_t> newVertexStorage;
+				newVertexStorage.reserve(vert_idx.size());
+				//Add indexes and unique vertices in to the new vertex storage
+				for (std::unordered_map<vertex_t *, size_t>::iterator
+						i = vert_idx.begin(); i != vert_idx.end(); ++i) 
+				{
+							(*i).second = newVertexStorage.size();
+							newVertexStorage.push_back(*(*i).first);
+				}
+				
+				//create meshes and faces
+				std::vector<mesh_t*> newMeshes;
+				newMeshes.reserve(meshCount);			
+			    std::vector<carve::mesh::MeshSet<3>::vertex_t *> faceVerts;
+				std::vector<face_t *> faceList;
+				for each (XbimPolyhedron^ poly in toMergeReduced)
+				{
+					for (int i = 0; i < poly->MeshSet->meshes.size(); i++)
+					{
+						mesh_t* mesh = poly->MeshSet->meshes[i];
+						faceList.clear();
+						faceList.reserve(mesh->faces.size());						
+						for(std::vector<face_t*>::iterator f = mesh->faces.begin();f!=mesh->faces.end();++f)
+						{
+							face_t* face = *f;
+							edge_t* e = face->edge;
+							std::vector<carve::mesh::MeshSet<3>::vertex_t *> faceVerts;
+							faceVerts.clear();
+							do
+							{
+								faceVerts.push_back(&(newVertexStorage[vert_idx[e->vert]]));
+								e = e->next;
+							}
+							while(e!=face->edge);
+							faceList.push_back(new face_t(faceVerts.begin(), faceVerts.end()));
+						}
+						std::vector<mesh_t*> nextMeshes;
+						mesh_t::create(faceList.begin(), faceList.end(), nextMeshes, carve::mesh::MeshOptions(), false);
+						for (int i = 0; i < nextMeshes.size(); i++)
+							newMeshes.push_back(nextMeshes[i]);
+					}
+				}
+				meshset_t* meshSet = new meshset_t(newVertexStorage, newMeshes);
+				//create a new Poly using representation and style of first one by default
+				XbimPolyhedron^ result = gcnew XbimPolyhedron(meshSet,toMerge[0]->RepresentationLabel,toMerge[0]->SurfaceStyleLabel);
+				
+				return result;
+			}
+
+
+			//Implementation of the IXbimPolyhedron interface
+			bool XbimPolyhedron::WritePly(String^ fileName, bool ascii)
+			{
+				return IsValid &&  WritePlyInternal(fileName,ascii);
 			}
 		}
 

@@ -11,7 +11,7 @@ namespace Xbim.Presentation
     {
         public static XbimRect3D ToXbimRect3D(this Rect3D r3D)
         {
-            return new XbimRect3D((float)r3D.X, (float)r3D.Y, (float)r3D.Z, (float)r3D.SizeX, (float)r3D.SizeY, (float)r3D.SizeZ);
+            return new XbimRect3D(r3D.X, r3D.Y, r3D.Z, r3D.SizeX, r3D.SizeY, r3D.SizeZ);
         }
     }
 }

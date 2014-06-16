@@ -1385,6 +1385,7 @@ namespace Xbim.Presentation
 
                 if (modelBounds.IsEmpty) modelBounds = layer.BoundingBoxHidden();
                 else modelBounds.Union(layer.BoundingBoxHidden());
+
             }
 
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
@@ -1410,13 +1411,12 @@ namespace Xbim.Presentation
         {
              XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             //get a list of all the unique styles
-             Dictionary<int, Material> styles = new Dictionary<int, Material>();
+            Dictionary<int, WpfMaterial> styles = new Dictionary<int, WpfMaterial>();
             foreach (var style in context.SurfaceStyles())
             {
                 WpfMaterial wpfMaterial = new WpfMaterial();
                 wpfMaterial.CreateMaterial(style);
-                Material mat = (Material)wpfMaterial;
-                styles.Add(style.DefinedObjectId, mat);
+                styles.Add(style.DefinedObjectId, wpfMaterial);
             }
            
 
@@ -1424,11 +1424,10 @@ namespace Xbim.Presentation
             double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
            
-            Model3DGroup grp = new Model3DGroup();
-            
-            Brush brush1 = new SolidColorBrush(Colors.Turquoise);
-            Material back =  new DiffuseMaterial(brush1);
-            
+            Model3DGroup opaques = new Model3DGroup();
+            Model3DGroup transparents = new Model3DGroup();
+          //  opaques.Transform = wcsTransform.ToMatrixTransform3D();
+           // transparents.Transform = wcsTransform.ToMatrixTransform3D();
             foreach (var shapeGeom in context.ShapeGeometries().Where(sg=>sg.ReferenceCount>0))
             {
                 MeshGeometry3D wpfMesh = new MeshGeometry3D();          
@@ -1440,9 +1439,12 @@ namespace Xbim.Presentation
                 {
                     int styleId = shapeInstance.StyleLabel > 0 ? shapeInstance.StyleLabel : shapeInstance.IfcTypeId * -1;
                     GeometryModel3D mg = new GeometryModel3D(wpfMesh, styles[styleId]);
-                    mg.BackMaterial = back;
-                    mg.Transform = shapeInstance.Transformation.ToMatrixTransform3D();
-                    grp.Children.Add(mg);
+                    mg.BackMaterial = mg.Material;
+                    mg.Transform = XbimMatrix3D.Multiply(shapeInstance.Transformation,wcsTransform).ToMatrixTransform3D();
+                    if( styles[styleId].IsTransparent)
+                        transparents.Children.Add(mg);
+                    else
+                        opaques.Children.Add(mg);
                 }
 
                 //    ModelVisual3D mv = new ModelVisual3D();
@@ -1456,18 +1458,22 @@ namespace Xbim.Presentation
 
                 
             }
-            if (grp.Children.Any())
+            if (opaques.Children.Any())
             {
                 ModelVisual3D mv = new ModelVisual3D();
-                mv.Content = grp;
-                grp.Transform = wcsTransform.ToMatrixTransform3D();
-                //if (layer.Style.IsTransparent)
-                //    Transparents.Children.Add(mv);
-                //else
+                mv.Content = opaques;
                 Opaques.Children.Add(mv);
-                modelBounds = grp.Bounds.ToXbimRect3D();
+                modelBounds = mv.Content.Bounds.ToXbimRect3D();             
             }
-           
+            if (transparents.Children.Any())
+            {
+                ModelVisual3D mv = new ModelVisual3D();
+                mv.Content = transparents;
+                Transparents.Children.Add(mv);
+                if (modelBounds.IsEmpty) modelBounds = mv.Content.Bounds.ToXbimRect3D();
+                else modelBounds.Union(mv.Content.Bounds.ToXbimRect3D());
+            }
+          //  modelBounds = modelBounds.Transform(wcsTransform);
 
          //   Stopwatch sw = new Stopwatch(); sw.Start();
          //   Dictionary<int, XbimShapeGeometry> shapeGeometries = context.ShapeGeometries().ToDictionary(s=>s.ShapeLabel);

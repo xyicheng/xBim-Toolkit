@@ -53,6 +53,7 @@
 %token  CODE
 %token  ATTRIBUTE
 %token  PROPERTY
+%token  COBIE
 
 /*operations and keywords*/
 %token  WHERE
@@ -165,6 +166,7 @@ model_actions
 	| CLOSE MODEL																				{CloseModel();}
 	| VALIDATE MODEL																			{ValidateModel();}
 	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
+	| DUMP MODEL TO COBIE STRING STRING															{ExportCOBie($5.strVal,$6.strVal);}
 	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
 	/* | COPY IDENTIFIER TO MODEL STRING														{CopyToModel($2.strVal, $5.strVal);} */
 	;

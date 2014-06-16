@@ -48,10 +48,10 @@ namespace Xbim.ModelGeometry.Scene.Clustering
         /// <returns>True if the maximum distance is under the threshold.</returns>
         private static bool ValidDistance(Common.Geometry.XbimRect3D R1, Common.Geometry.XbimRect3D R2, double eps)
         {
-            float dx = AxisDistance(R1.X, R1.SizeX, R2.X, R2.SizeX);
-            float dy = AxisDistance(R1.Y, R1.SizeY, R2.Y, R2.SizeY);
-            float dz = AxisDistance(R1.Z, R1.SizeZ, R2.Z, R2.SizeZ);
-            float max = Math.Max(Math.Max(dx, dy), dz);
+            double dx = AxisDistance(R1.X, R1.SizeX, R2.X, R2.SizeX);
+            double dy = AxisDistance(R1.Y, R1.SizeY, R2.Y, R2.SizeY);
+            double dz = AxisDistance(R1.Z, R1.SizeZ, R2.Z, R2.SizeZ);
+            double max = Math.Max(Math.Max(dx, dy), dz);
             return (max < eps);
         }
 
@@ -63,7 +63,7 @@ namespace Xbim.ModelGeometry.Scene.Clustering
         /// <param name="c2">Starting coordinate of interval 2 along the axis</param>
         /// <param name="s2">Size of interval 2 along the axis</param>
         /// <returns>A positive distance if segments don't overlap (a negative if they do)</returns>
-        private static float AxisDistance(float c1, float s1, float c2, float s2)
+        private static double AxisDistance(double c1, double s1, double c2, double s2)
         {
             if (c1 < c2)
                 return c2 - (c1 + s1);

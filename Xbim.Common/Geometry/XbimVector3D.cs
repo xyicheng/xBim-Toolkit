@@ -14,11 +14,11 @@ namespace Xbim.Common.Geometry
         {
             Zero = new XbimVector3D(0, 0, 0);
         }
-        public float X;
-        public float Y;
-        public float Z;
+        public double X;
+        public double Y;
+        public double Z;
         
-        public float Length 
+        public double Length 
         {
             get
             {
@@ -26,26 +26,20 @@ namespace Xbim.Common.Geometry
             }
         }
 
-        private float length()
+        private double length()
         {
-           return (Single)Math.Sqrt(X * X + Y * Y + Z * Z);
+           return Math.Sqrt(X * X + Y * Y + Z * Z);
         }
 
-        public XbimVector3D(float vx, float vy, float vz)
-        { 
+
+        public XbimVector3D(double vx, double vy, double vz)
+        {
             X = vx;
             Y = vy;
             Z = vz;
         }
 
-        public XbimVector3D(double vx, double vy, double vz)
-        {
-            X = (float)vx;
-            Y = (float)vy;
-            Z = (float)vz;
-        }
-
-        public XbimVector3D(float v)
+        public XbimVector3D(double v)
         {
             X = v;
             Y = v;
@@ -120,27 +114,22 @@ namespace Xbim.Common.Geometry
             return new XbimVector3D(vector1.X - vector2.X, vector1.Y - vector2.Y, vector1.Z - vector2.Z);
         }
 
-        public static XbimVector3D operator *(float l, XbimVector3D v1)
+        public static XbimVector3D operator *(double l, XbimVector3D v1)
         {
             return XbimVector3D.Multiply(l, v1);
         }
 
         public static XbimVector3D operator *(XbimVector3D v1, double l)
         {
-            return XbimVector3D.Multiply((float)l, v1);
-        }
-        
-        public static XbimVector3D operator *(XbimVector3D v1, float l)
-        {
             return XbimVector3D.Multiply(l, v1);
         }
-
+        
         public static XbimVector3D operator *(XbimVector3D v1, XbimMatrix3D m)
         {
             return XbimVector3D.Multiply(v1, m);
         }
 
-        public static XbimVector3D Multiply(float val, XbimVector3D vec)
+        public static XbimVector3D Multiply(double val, XbimVector3D vec)
         {
             return new XbimVector3D( vec.X * val, vec.Y * val, vec.Z * val);
         }
@@ -161,7 +150,7 @@ namespace Xbim.Common.Geometry
             var x = X;
             var y = Y;
             var z = Z;
-            var len = (Single)Math.Sqrt(x * x + y * y + z * z);
+            var len = Math.Sqrt(x * x + y * y + z * z);
 
             if (len == 0)
             {
@@ -212,11 +201,11 @@ namespace Xbim.Common.Geometry
 
         
 
-        public static float DotProduct(XbimVector3D v1, XbimVector3D v2)
+        public static double DotProduct(XbimVector3D v1, XbimVector3D v2)
         {
             return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
         }
-        public float DotProduct(XbimVector3D v2)
+        public double DotProduct(XbimVector3D v2)
         {
             return XbimVector3D.DotProduct(this, v2);
         }
@@ -248,7 +237,7 @@ namespace Xbim.Common.Geometry
 
         public bool IsEqual(XbimVector3D b, double precision = 1e-9)
         {
-            float p = this.DotProduct(b);
+            double p = this.DotProduct(b);
             return Math.Abs(p - 1) <= precision;
         }
     }

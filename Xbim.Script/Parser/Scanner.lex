@@ -9,7 +9,7 @@
 	//all the user code is in XbimQueryScanerHelper
 
 %}
-
+ 
 %%
 
 %{
@@ -147,6 +147,7 @@
 "material"		{ return (int)SetValue(Tokens.MATERIAL); }
 "thickness"		{ return (int)Tokens.THICKNESS; }  
 "file"			{ return (int)Tokens.FILE; }
+"cobie"			{ return (int)Tokens.COBIE; }
 "model"			{ return (int)Tokens.MODEL; }
 "reference"			{ return (int)Tokens.REFERENCE; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }

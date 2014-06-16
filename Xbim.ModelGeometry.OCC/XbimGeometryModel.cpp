@@ -965,7 +965,7 @@ TryCombineSolid:
 
 			IXbimPolyhedron^ XbimGeometryModel::ToPolyhedron(XbimModelFactors^ modelFactors)
 			{
-				return this->ToPolyHedron(modelFactors->DeflectionTolerance,modelFactors->PrecisionBoolean,modelFactors->PrecisionBooleanMax,modelFactors->Rounding);
+				return this->ToPolyHedron(modelFactors->DeflectionTolerance,modelFactors->Precision,modelFactors->PrecisionMax,modelFactors->Rounding);
 			}
 
 			String^ XbimGeometryModel::WriteAsString(XbimModelFactors^ modelFactors)

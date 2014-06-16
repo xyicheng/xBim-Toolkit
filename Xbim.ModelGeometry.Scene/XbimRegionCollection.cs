@@ -19,12 +19,12 @@ namespace Xbim.ModelGeometry.Scene
             {
                 bw.Write(region.Name);
                 bw.Write(region.Population);
-                bw.Write(region.Centre.X);
-                bw.Write(region.Centre.Y);
-                bw.Write(region.Centre.Z);
-                bw.Write(region.Size.X);
-                bw.Write(region.Size.Y);
-                bw.Write(region.Size.Z);
+                bw.Write((float)region.Centre.X);
+                bw.Write((float)region.Centre.Y);
+                bw.Write((float)region.Centre.Z);
+                bw.Write((float)region.Size.X);
+                bw.Write((float)region.Size.Y);
+                bw.Write((float)region.Size.Z);
             }
             bw.Close();
             return ms.ToArray();
@@ -72,7 +72,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimRegion Largest()
         {
-            float max = 0;
+            double max = 0;
             XbimRegion Largest = null;
             foreach (var region in this)
             {

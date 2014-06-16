@@ -468,7 +468,7 @@ namespace Xbim.ModelGeometry.Converter
             int localTally = tally;
 
             Parallel.ForEach<IGrouping<IfcElement, IfcFeatureElement>>(openingsAndProjections, new ParallelOptions(), pair =>
-          //  foreach (IGrouping<IfcElement, IfcRelVoidsElement> pair in productShapeAndOpeningsIds)
+          //  foreach (IGrouping<IfcElement, IfcFeatureElement> pair in openingsAndProjections)
            {
                IfcElement element = pair.Key;
                Interlocked.Increment(ref localTally);
@@ -480,41 +480,46 @@ namespace Xbim.ModelGeometry.Converter
                    int styleLabel = 0; //take the last style and rep label of the shapes that make up the object
                    int context = 0;
                    IXbimGeometryModel elementGeom = null;
-                   foreach (var elemShape in elementShapes)
+                   if (elementShapes.Count() > 1) //merge multiple body parts together
                    {
-                       IXbimGeometryModel geom = GetGeometryModel(elemShape);
-                       if (elementGeom == null)
-                           elementGeom = geom;
-                       else
-                           elementGeom = elementGeom.Union(geom, _model.ModelFactors);
-                       styleLabel = elemShape.StyleLabel;
-                       context = elemShape.RepresentationContext;
+                       List<IXbimPolyhedron> allBody = new List<IXbimPolyhedron>();
+                       foreach (var elemShape in elementShapes)
+                       {
+                           IXbimPolyhedron geom = GetGeometryModel(elemShape);
+                           allBody.Add(geom);
+                           context = elemShape.RepresentationContext;
+                       }
+                       elementGeom = _engine.Merge(allBody, _model.ModelFactors);
+                   }
+                   else
+                   {
+                       elementGeom = GetGeometryModel(elementShapes.First());
+                       context = elementShapes.First().RepresentationContext;
                    }
 
-                   IXbimGeometryModel allOpenings = null;
-                   IXbimGeometryModel allProjections = null;
+                  
+
+                   List<IXbimPolyhedron> allOpenings = new List<IXbimPolyhedron>();
+                   List<IXbimPolyhedron> allProjections = new List<IXbimPolyhedron>();
+                  
                    foreach (var feature in pair)
                    {
                        IfcFeatureElementSubtraction opening = feature as IfcFeatureElementSubtraction;
                        if (opening != null)
                        {
                            IEnumerable<XbimShapeInstance> openingShapes = WriteProductShape(shapeLookup, mapsWritten, allMapBounds, clusters, opening, false);
-                           
+                          
                            if (openingShapes.Any())
                            {
                                foreach (var openingShape in openingShapes)
                                {
-
-                                   IXbimGeometryModel openingGeom = GetGeometryModel(openingShape);
-                                   if (allOpenings == null)
-                                       allOpenings = openingGeom;
-                                   else
-                                       allOpenings = allOpenings.Union(openingGeom, _model.ModelFactors);
+                                   IXbimPolyhedron openingGeom = GetGeometryModel(openingShape);     
+                                   allOpenings.Add(openingGeom);
                                }
                            }
                            else
-                               Logger.WarnFormat("{0}(#{1}) is an opening that has been no 3D geometric form definition", opening.GetType().Name, opening.EntityLabel);
-                           processed.Add((uint)opening.EntityLabel);
+                               Logger.WarnFormat("{0} - #{1} is an opening that has been no 3D geometric form definition", opening.GetType().Name, Math.Abs(opening.EntityLabel));
+                           processed.Add((uint)Math.Abs(opening.EntityLabel));
                        }
                        else
                        {
@@ -528,24 +533,29 @@ namespace Xbim.ModelGeometry.Converter
                                    foreach (var projectionShape in projectionShapes)
                                    {
 
-                                       IXbimGeometryModel openingGeom = GetGeometryModel(projectionShape);
-                                       if (allProjections == null)
-                                           allProjections = openingGeom;
-                                       else
-                                           allProjections = allProjections.Union(openingGeom, _model.ModelFactors);
+                                       IXbimPolyhedron projGeom = GetGeometryModel(projectionShape);
+                                       allProjections.Add(projGeom);
                                    }
                                }
                                else
-                                   Logger.WarnFormat("{0}(#{1}) is a projection that has been no 3D geometric form definition", opening.GetType().Name, Math.Abs(opening.EntityLabel));
+                                   Logger.WarnFormat("{0} - #{1} is a projection that has been no 3D geometric form definition", opening.GetType().Name, Math.Abs(opening.EntityLabel));
                                processed.Add((uint)Math.Abs(opening.EntityLabel));
                            }
                        }
                    }
-                   if (allProjections != null)
-                       elementGeom = elementGeom.Union(allProjections, _model.ModelFactors);
-                   if (allOpenings != null)
-                       elementGeom = elementGeom.Cut(allOpenings, _model.ModelFactors);
-                   
+
+                   //make the finished shape
+                   if (allProjections.Any())
+                   {
+                       IXbimGeometryModel m = _engine.Merge(allProjections, _model.ModelFactors);
+                       elementGeom = elementGeom.Union(m, _model.ModelFactors);
+                   }
+                   if (allOpenings.Any())
+                   {
+                       IXbimGeometryModel m = _engine.Merge(allOpenings, _model.ModelFactors);
+                       elementGeom = elementGeom.Cut(m, _model.ModelFactors);
+                       
+                   }
                   
                    //now add to the DB
                    XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()
@@ -572,7 +582,7 @@ namespace Xbim.ModelGeometry.Converter
 
                }
                else
-                   Logger.WarnFormat("{0}(#{1}) is an element that contains openings but it has no 3D geometric form definition", element.GetType().Name, Math.Abs(element.EntityLabel));
+                   Logger.WarnFormat("{0} - #{1} is an element that contains openings but it has no 3D geometric form definition", element.GetType().Name, Math.Abs(element.EntityLabel));
                processed.Add((uint)Math.Abs(element.EntityLabel));
                if (progDelegate != null)
                {
@@ -584,7 +594,7 @@ namespace Xbim.ModelGeometry.Converter
                    }
                }
            }
-           );
+          );
             percentageParsed = localPercentageParsed;
             tally = localTally;
             return processed;
@@ -608,7 +618,7 @@ namespace Xbim.ModelGeometry.Converter
         }
 
 
-        public IXbimGeometryModel GetGeometryModel(XbimShapeInstance xbimShapeInstance)
+        public IXbimPolyhedron GetGeometryModel(XbimShapeInstance xbimShapeInstance)
         {
             IXbimGeometryEngine engine = _model.GeometryEngine();
             if (engine != null)
@@ -620,8 +630,7 @@ namespace Xbim.ModelGeometry.Converter
                 geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
                 geomModel.SurfaceStyleLabel = xbimShapeInstance.StyleLabel;
                 geomModel.TransformBy(xbimShapeInstance.Transformation);
-
-                return geomModel;
+                return geomModel.ToPolyhedron(_model.ModelFactors);
             }
             else return XbimEmptyGeometryGroup.Empty;
         }
@@ -649,7 +658,7 @@ namespace Xbim.ModelGeometry.Converter
                 //write out the representation if it has one
                 if (rep != null)
                 {
-                    foreach (var shape in rep.Items)
+                    foreach (var shape in rep.Items.Where(i=>!(i is IfcGeometricSet)))
                     {
                         if (shape is IfcMappedItem)
                         {

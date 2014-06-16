@@ -78,10 +78,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AssemblyResolver.cs" />
-    <Compile Include="IfcProductGeometryExtensions.cs" />
-    <Compile Include="IfcRepresentationGeometryExtensions.cs" />
-    <Compile Include="IfcRepresentationItemGeometryExtensions.cs" />
-    <Compile Include="IfcSolidModelGeometryExtensions.cs" />
     <Compile Include="IModelGeometryExtensions.cs" />
     <Compile Include="Xbim3DModelContext.cs" />
     <Compile Include="XbimMesher.cs" />

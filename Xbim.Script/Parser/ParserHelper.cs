@@ -22,6 +22,8 @@ using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.Util;
 using System.Globalization;
+using Xbim.COBie;
+using Xbim.COBie.Serialisers;
 
 namespace Xbim.Script
 {
@@ -1537,6 +1539,8 @@ namespace Xbim.Script
         {
             try
             {
+                if (File.Exists(path))
+                    File.Delete(path);
                 _model.SaveAs(path);
             }
             catch (Exception e)
@@ -1867,6 +1871,42 @@ namespace Xbim.Script
                     throw new ArgumentException("Unexpected value of the condition");
             }
         }
+        #endregion
+
+        #region COBie
+        public void ExportCOBie(string path, string template)
+        {
+            string outputFile = Path.ChangeExtension(path, ".xls"); //enforce xls
+            FilterValues UserFilters = new FilterValues();//COBie Class filters, set to initial defaults
+            // Build context
+            COBieContext context = new COBieContext();
+            context.TemplateFileName = template;
+            context.Model = _model;
+            //set filter option
+            context.Exclude = UserFilters;
+
+            //set the UI language to get correct resource file for template
+            //if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
+            //{
+            try
+            {
+                System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-GB");
+                System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
+            }
+            catch (Exception)
+            {
+                //to nothing Default culture will still be used
+
+            }
+
+            COBieBuilder builder = new COBieBuilder(context);
+            COBieXLSSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+        
+            serialiser.Excludes = UserFilters;
+            builder.Export(serialiser);
+        }
+
+
         #endregion
 
         #region Creation of classification systems
