@@ -17,7 +17,7 @@
 #include <Geom_Plane.hxx>
 #include <Handle_Geom_Plane.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
-#include <BRepTopAdaptor_FClass2d.hxx>
+// #include <BRepTopAdaptor_FClass2d.hxx>
 #include <carve/geom2d.hpp>
 namespace Xbim
 {
