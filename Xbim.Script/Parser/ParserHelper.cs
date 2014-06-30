@@ -24,6 +24,7 @@ using NPOI.HSSF.Util;
 using System.Globalization;
 using Xbim.COBie;
 using Xbim.COBie.Serialisers;
+using Newtonsoft.Json;
 
 namespace Xbim.Script
 {
@@ -1485,10 +1486,11 @@ namespace Xbim.Script
             try
             {
                 string ext = Path.GetExtension(path).ToLower();
-                if (ext != ".xbim" || ext != ".xbimf")
-                    _model.CreateFrom(path, null, null, true);
+                if (ext == ".xbim" || ext == ".xbimf")
+                    _model.Open(path, XbimExtensions.XbimDBAccess.Read,null);
                 else
-                    _model.Open(path, XbimExtensions.XbimDBAccess.ReadWrite);
+                   _model.CreateFrom(path, null, null, true,true);
+                _model.CacheStart();
                 ModelChanged(_model);
             }
             catch (Exception e)
@@ -1519,7 +1521,7 @@ namespace Xbim.Script
             try
             {
                 TextWriter errOutput = new StringWriter();
-                var errCount = _model.Validate(errOutput, XbimExtensions.ValidationFlags.All);
+                var errCount = _model.Validate(errOutput, XbimExtensions.ValidationFlags.Properties);
 
                 if (errCount != 0)
                 {
@@ -1872,6 +1874,27 @@ namespace Xbim.Script
             }
         }
         #endregion
+
+        #region Summary
+
+        public void ExportSummary(string path, string format="json")
+        {
+            if (string.Compare(format, "json", true) == 0)
+            {
+                string outputFile = Path.ChangeExtension(path, ".json"); //enforce JSON
+                using (StreamWriter sw = new StreamWriter(path))
+                {
+                    using (JsonTextWriter jw = new JsonTextWriter(sw))
+                    {
+                        JsonSerializer s = JsonSerializer.Create();
+                        s.Serialize(jw, new XbimModelSummary(_model));
+                    }
+                }
+            }
+        }
+
+        #endregion
+
 
         #region COBie
         public void ExportCOBie(string path, string template)

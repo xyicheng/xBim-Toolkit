@@ -6,8 +6,11 @@
     xmlns:HelixToolkit="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
 >
 
-    <HelixToolkit:HelixViewport3D  x:Name="Canvas" 
-                                   ZoomAroundMouseDownPoint="True" 
+    <HelixToolkit:HelixViewport3D  x:Name="Canvas"  IsHitTestVisible="True"
+                                   ShowFieldOfView="True"
+                                   
+                                   ClipToBounds="False" 
+                                   ZoomAroundMouseDownPoint="true" 
                                    RotateAroundMouseDownPoint="True" 
                                    CameraMode="Inspect"
                                    CameraRotationMode="Turntable" 
@@ -16,7 +19,7 @@
                                    ViewCubeLeftText="F"
                                    ViewCubeFrontText="R"
                                    ViewCubeRightText="B"
-                                   ViewCubeBackText="L"
+                                   ViewCubeBackText="L"   
                                    >
 
         <HelixToolkit:HelixViewport3D.DefaultCamera>

@@ -26,7 +26,7 @@ namespace Xbim.IO
         /// <summary>
         /// The id of the shape geometry  that this is an instance of
         /// </summary>
-        int ShapeLabel { get; set; }
+        int ShapeGeometryLabel { get; set; }
         /// <summary>
         /// The label of the IFC representation context of this instance
         /// </summary>

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common;
+using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -15,5 +17,9 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="ascii"></param>
         /// <returns></returns>
         bool WritePly(string fileName, bool ascii=true);
+
+        int VertexCount { get; }
+        XbimPoint3D Vertex(int i);
+        IList<Int32> Triangulation(double precision);
     }
 }

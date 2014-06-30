@@ -86,7 +86,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             {
                 using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
                 {
-                    json.Data = model.GetInstances();
+                    json.Data = model.GetShapeInstances();
                 }
             }
             catch (Exception e)
@@ -132,6 +132,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             return json;
         }
 
+
         public JsonResult ShapeLibrary(string name, string ext)
         {
             JsonResult json = new JsonResult();
@@ -140,7 +141,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             {
                 using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
                 {
-                    json.Data = model.GetShapeLibrary();
+                    json.Data = model.GetShapeGeometry();
                 }
             }
             catch (Exception e)
@@ -150,7 +151,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             return json;
         }
 
-        public JsonResult StyleLibrary(string name, string ext)
+        public JsonResult Styles(string name, string ext)
         {
             JsonResult json = new JsonResult();
             json.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
@@ -158,7 +159,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             {
                 using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
                 {
-                    json.Data = model.GetStyleLibrary();
+                    json.Data = model.GetStyles();
                 }
             }
             catch (Exception e)
@@ -168,15 +169,16 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             return json;
         }
 
-        public JsonResult ProductShapes(string name, string ext)
+        public JsonResult ShapeInstances(string name, string ext)
         {
             JsonResult json = new JsonResult();
             json.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
+            json.MaxJsonLength = Int32.MaxValue;
             try
             {
                 using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
                 {
-                    json.Data = model.GetProductShapes();
+                    json.Data = model.GetShapeInstances();
                 }
             }
             catch (Exception e)
@@ -236,6 +238,23 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             }
         }
 
+        public JsonResult GetSceneOutline(string name, string ext)
+        {
+            JsonResult json = new JsonResult();
+            json.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
+            try
+            {
+                using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
+                {
+                    json.Data = model.GetSceneOutline(); 
+                }
+            }
+            catch (Exception e)
+            {
+                json.Data = new { Model = name, Error = e.Message };
+            }
+            return json;
+        }
         
     }
 }

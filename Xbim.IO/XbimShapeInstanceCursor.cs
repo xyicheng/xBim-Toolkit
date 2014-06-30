@@ -284,7 +284,7 @@ namespace Xbim.IO
                 _colValRepresentationContext.Value = instance.RepresentationContext;
                 _colValIfcProductLabel.Value = instance.IfcProductLabel;
                 _colValIfcTypeId.Value = instance.IfcTypeId;
-                _colValShapeLabel.Value = instance.ShapeLabel;
+                _colValShapeLabel.Value = instance.ShapeGeometryLabel;
                 _colValStyleLabel.Value = instance.StyleLabel;
                 _colValRepType.Value = instance.RepresentationType;
                 _colValTransformation.Value = instance.Transformation;
@@ -336,7 +336,7 @@ namespace Xbim.IO
             si.IfcTypeId = _colValIfcTypeId.Value.Value;
             si.IfcProductLabel = _colValIfcProductLabel.Value.Value;
             si.StyleLabel = _colValStyleLabel.Value.Value;
-            si.ShapeLabel = _colValShapeLabel.Value.Value;
+            si.ShapeGeometryLabel = _colValShapeLabel.Value.Value;
             si.RepresentationType = _colValRepType.Value.Value;
             si.Transformation = _colValTransformation.Value;
         }

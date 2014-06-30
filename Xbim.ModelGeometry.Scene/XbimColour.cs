@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.PresentationResource;
@@ -11,10 +12,19 @@ namespace Xbim.ModelGeometry.Scene
     /// <summary>
     /// Represents a Colour in the model
     /// </summary>
+    [DataContract]
     public class XbimColour
     {
         public static XbimColour LightGrey = new XbimColour("LightGrey", 0.47, 0.53, 0.60, 1);
-
+        /// <summary>
+        /// Gets or sets Colour Name, defaults to its parts
+        /// </summary>
+        [DataMember]
+        public String Name
+        {
+            get { if (string.IsNullOrWhiteSpace(_name)) return ""; else  return _name; }
+            set { _name = value; }
+        }
 
         public override bool Equals(object obj)
         {
@@ -41,6 +51,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// True if the cuolour is not opaque
         /// </summary>
+        [IgnoreDataMember]
         public bool IsTransparent
         {
             get
@@ -80,6 +91,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Gets or sets Red Value
         /// </summary>
+        [DataMember(Name = "Red")]
         public float Red
         {
             get;
@@ -89,6 +101,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Gets or sets Green Value
         /// </summary>
+        [DataMember(Name="Green")]
         public float Green
         {
             get;
@@ -98,6 +111,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Gets or sets Blue Value
         /// </summary>
+        [DataMember(Name="Blue")]
         public float Blue
         {
             get;
@@ -107,26 +121,26 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Gets or sets Alpha Value
         /// </summary>
+        [DataMember(Name="Alpha")]
         public float Alpha
         {
             get;
             set;
         }
+        
         private String _name;
+        [DataMember(Name="DF")]
         public float DiffuseFactor;
+        [DataMember(Name = "TF")]
         public float TransmissionFactor;
+        [DataMember(Name = "DTF")]
         public float DiffuseTransmissionFactor;
+        [DataMember(Name = "RF")]
         public float ReflectionFactor;
+        [DataMember(Name = "SF")]
         public float SpecularFactor;
 
-        /// <summary>
-        /// Gets or sets Colour Name, defaults to its parts
-        /// </summary>
-        public String Name
-        {
-            get { if(string.IsNullOrWhiteSpace(_name)) return this.ToString(); else  return _name; }
-            set { _name = value; }
-        }
+        
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -172,8 +186,8 @@ namespace Xbim.ModelGeometry.Scene
             this.TransmissionFactor = (float)transmissionFactor;
             this.ReflectionFactor = (float)reflectanceFactor;
         }
-
         
+        [IgnoreDataMember]
         public static XbimColour Default 
         {
             get

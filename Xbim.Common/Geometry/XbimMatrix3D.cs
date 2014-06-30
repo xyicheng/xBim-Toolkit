@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Xbim.Common.Exceptions;
 
@@ -241,6 +242,7 @@ namespace Xbim.Common.Geometry
             _identity._isNotDefaultInitialised = true;
         }
 
+        [IgnoreDataMember]
         public bool IsAffine
         {
             get
@@ -248,7 +250,7 @@ namespace Xbim.Common.Geometry
                 return (this._m14 == 0.0 && this._m24 == 0.0 && this._m34 == 0.0 && this._m44 == 1.0);
             }
         }
-
+        
         public static XbimMatrix3D Identity
         {
             get
@@ -256,7 +258,7 @@ namespace Xbim.Common.Geometry
                 return _identity;
             }
         }
-
+        [IgnoreDataMember]
         public bool IsIdentity 
         {
             get
@@ -445,6 +447,7 @@ namespace Xbim.Common.Geometry
         #endregion
 
         #region Accessors
+        [IgnoreDataMember]
         public XbimVector3D Up
         {
             get
@@ -452,6 +455,8 @@ namespace Xbim.Common.Geometry
                 return new XbimVector3D(_m21, _m22, _m23);
             }
         }
+
+        [IgnoreDataMember]
         public XbimVector3D Down
         {
             get
@@ -459,6 +464,8 @@ namespace Xbim.Common.Geometry
                 return new XbimVector3D(-_m21, -_m22,-_m23);
             }
         }
+
+        [IgnoreDataMember]
         public XbimVector3D Right
         {
             get
@@ -466,6 +473,8 @@ namespace Xbim.Common.Geometry
                 return new XbimVector3D(_m11, _m12, _m13);
             }
         }
+
+        [IgnoreDataMember]
         public XbimVector3D Left
         {
             get
@@ -473,6 +482,8 @@ namespace Xbim.Common.Geometry
                 return new XbimVector3D(-_m11, -_m12, -_m13);
             }
         }
+
+        [IgnoreDataMember]
         public XbimVector3D Forward
         {
             get
@@ -480,6 +491,8 @@ namespace Xbim.Common.Geometry
                 return new XbimVector3D(-_m31, -_m32, -_m33);
             }
         }
+
+        [IgnoreDataMember]
         public XbimVector3D Backward
         {
             get
@@ -488,6 +501,7 @@ namespace Xbim.Common.Geometry
             }
         }
 
+        [IgnoreDataMember]
         public XbimVector3D Translation
         {
             get

@@ -120,6 +120,9 @@
     <Compile Include="LayerStyling\LayerStylerV2CustomGroups.cs" />
     <Compile Include="LayerStyling\LayerStylerV2TypeAndStyle.cs" />
     <Compile Include="Rect3DExtensions.cs" />
+    <Compile Include="Xbim3DViewerControl.xaml.cs">
+      <DependentUpon>Xbim3DViewerControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="XbimMatrix3DExtensions.cs" />
     <Compile Include="MeshGeometry3DExtensions.cs" />
     <Compile Include="SynchronizedView.xaml.cs">
@@ -159,6 +162,7 @@
     <Compile Include="XbimMaterialProvider.cs" />
     <Compile Include="XbimMeshHelper.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
+    <Compile Include="XbimMouseClickActions.cs" />
     <Compile Include="XbimTreeview.cs" />
     <Compile Include="XbimViewType.cs" />
   </ItemGroup>
@@ -188,6 +192,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="SynchronizedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xbim3DViewerControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

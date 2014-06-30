@@ -118,7 +118,7 @@ namespace Xbim
 				{
 					int get();
 				}
-
+				virtual XbimPoint3D Vertex(int i);
 				virtual property int VertexCount 
 				{
 					int get();
@@ -175,6 +175,7 @@ namespace Xbim
 				void Invert();
 				size_t MergeCoPlanarFaces(double normalAngle);
 				bool IsClosed();
+				virtual IList<Int32>^ Triangulation(double precision);
 			};
 		}
 	}

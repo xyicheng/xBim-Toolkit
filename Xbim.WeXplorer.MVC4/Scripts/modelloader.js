@@ -10,24 +10,31 @@
     ModelLoader.prototype.StartLoading = function () {
         this.StartTime = new Date();
         //this.GetData("GeometryVersion", this.HandleGeometrySupportLevel);
-        this.GetData("GetBoundsInstances", this.HandleBoundsInstances);
+       // this.GetData("GeometryContext", this.HandleModelContext);
+        this.GetData("GetSceneOutline", this.HandleSceneOutline);
     }
-    ModelLoader.prototype.HandleBoundsInstances = function (self, data) {
-        ModelProcessor.HandleBoundsInstances(data);
+
+    ModelLoader.prototype.GetSceneOutline = function (self, data) {
+        ModelProcessor.CreateSceneOutline(data);
     }
+
     //ModelLoader.prototype.HandleGeometrySupportLevel = function (self, data) {
 
     //    //if we aren't looking at level 2, then quit out
     //    self.GetData("GeometryContext", self.HandleModelContext);
     //}
-    //ModelLoader.prototype.HandleModelContext = function (self, data) {
-    //    ModelProcessor.HandleContext(data);
-    //    self.GetData("StyleLibrary", self.HandleLibraryStyles);
-    //}
-    //ModelLoader.prototype.HandleLibraryStyles = function (self, data) {
-    //    ModelProcessor.HandleLibraryStyles(data);
-    //    self.GetData("ShapeLibrary", self.HandleLibraryShapes);
-    //}
+    ModelLoader.prototype.HandleModelContext = function (self, data) {
+        ModelProcessor.HandleContext(data);
+        self.GetData("Styles", self.HandleLibraryStyles);
+    }
+    ModelLoader.prototype.HandleLibraryStyles = function (self, data) {
+        ModelProcessor.HandleLibraryStyles(data);
+        self.GetData("ShapeInstances", self.HandleShapeInstances);
+       // self.GetData("ShapeLibrary", self.HandleLibraryShapes);
+    }
+    ModelLoader.prototype.HandleShapeInstances = function (self, data) {
+        ModelProcessor.HandleShapeInstances(data);
+    }
     //ModelLoader.prototype.HandleLibraryShapes = function (self, data) {
     //    self.MapQueue = ModelProcessor.HandleLibraryShapes(data);
     //    self.GetData("ProductShapes", self.HandleProductShapes);

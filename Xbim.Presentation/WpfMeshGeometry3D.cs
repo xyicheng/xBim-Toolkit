@@ -24,7 +24,7 @@ namespace Xbim.Presentation
         uint _pointTally;
         uint _fanStartIndex;
         uint indexOffset;
-
+     
 #region standard calls
 
         private void Init()
@@ -69,8 +69,7 @@ namespace Xbim.Presentation
 
         public WpfMeshGeometry3D()
         {
-            //WpfMesh = new GeometryModel3D();
-            //WpfMesh.Geometry = new MeshGeometry3D();
+          
         }
 
         public WpfMeshGeometry3D(IXbimMeshGeometry3D mesh)
@@ -81,6 +80,12 @@ namespace Xbim.Presentation
             Mesh.Normals = new WpfVector3DCollection(mesh.Normals);
             Mesh.TriangleIndices = new Int32Collection (mesh.TriangleIndices);
             meshes = new XbimMeshFragmentCollection(mesh.Meshes);
+        }
+
+        public WpfMeshGeometry3D(WpfMaterial material, WpfMaterial backMaterial = null)
+        {
+            WpfMesh = new GeometryModel3D(new MeshGeometry3D(),material);
+            if (backMaterial != null) WpfMesh.BackMaterial = backMaterial;
         }
         
         public static implicit operator GeometryModel3D(WpfMeshGeometry3D mesh)
@@ -402,6 +407,9 @@ namespace Xbim.Presentation
 
         public bool Read(String data, XbimMatrix3D? tr = null)
         {
+            XbimQuaternion q = new XbimQuaternion();
+            if (tr.HasValue)
+                q = tr.Value.GetRotationQuaternion();
            
             using (StringReader sr = new StringReader(data))
             {
@@ -423,6 +431,9 @@ namespace Xbim.Presentation
                         string command = tokens[0].Trim().ToUpper();
                         switch (command)
                         {
+                            case "P":
+                            case "F":
+                                break;
                             case "V": //process vertices
                                 for (int i = 1; i < tokens.Length; i++)
                                 {
@@ -442,8 +453,6 @@ namespace Xbim.Presentation
                                     Vector3D v = new Vector3D(Convert.ToDouble(xyz[0], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[1], CultureInfo.InvariantCulture),
                                                                        Convert.ToDouble(xyz[2], CultureInfo.InvariantCulture));
-                                    if (m3d.HasValue)
-                                        v = m3d.Value.Transform(v);
                                     normalList.Add(v);
                                 }
                                 break;
@@ -493,6 +502,14 @@ namespace Xbim.Presentation
                                                     int normalIndex = int.Parse(indexNormalPair[1]);
                                                     currentNormal = normalList[normalIndex];
                                                     break;
+                                            }
+                                            if (tr.HasValue)
+                                            {
+                                                XbimVector3D vout;
+                                                XbimVector3D vin = new XbimVector3D(currentNormal.X, currentNormal.Y, currentNormal.Z);
+                                                XbimQuaternion.Transform(ref vin, ref q, out vout);
+                                                currentNormal = new Vector3D(vout.X,vout.Y,vout.Z);
+
                                             }
                                         }
                                         //now add the index

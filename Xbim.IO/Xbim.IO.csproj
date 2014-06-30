@@ -165,6 +165,7 @@
     <Compile Include="XbimLazyDBTransaction.cs" />
     <Compile Include="XbimModel.cs" />
     <Compile Include="XbimInputStream.cs" />
+    <Compile Include="XbimModelSummary.cs" />
     <Compile Include="XbimOutputStream.cs" />
     <Compile Include="XbimPackage.cs" />
     <Compile Include="XbimParserState.cs" />

@@ -142,7 +142,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        public int ShapeLabel
+        public int ShapeGeometryLabel
         {
             get
             {

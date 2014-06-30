@@ -22,6 +22,7 @@ using namespace  System::Threading;
 using namespace  System::Text;
 using namespace Xbim::IO;
 using System::Runtime::InteropServices::Marshal;
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -1070,7 +1071,9 @@ IncorporateHoles:
 						
 						//sort the normal
 						vector_t n =  face->plane.N;
+						n.normalize();
 						gp_Dir normal(n.x,n.y,n.z);
+						
 						String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
 						if(normal.IsEqual(gp::DX(),0.1)) f="R";
 						else if(normal.IsOpposite(gp::DX(),0.1)) f="L";
@@ -1524,7 +1527,7 @@ IncorporateHoles:
 				std::vector<face_t *> faceList;
 				for each (XbimPolyhedron^ poly in toMergeReduced)
 				{
-					for (int i = 0; i < poly->MeshSet->meshes.size(); i++)
+					for (size_t i = 0; i < poly->MeshSet->meshes.size(); i++)
 					{
 						mesh_t* mesh = poly->MeshSet->meshes[i];
 						faceList.clear();
@@ -1545,7 +1548,7 @@ IncorporateHoles:
 						}
 						std::vector<mesh_t*> nextMeshes;
 						mesh_t::create(faceList.begin(), faceList.end(), nextMeshes, carve::mesh::MeshOptions(), false);
-						for (int i = 0; i < nextMeshes.size(); i++)
+						for (size_t i = 0; i < nextMeshes.size(); i++)
 							newMeshes.push_back(nextMeshes[i]);
 					}
 				}
@@ -1561,6 +1564,53 @@ IncorporateHoles:
 			bool XbimPolyhedron::WritePly(String^ fileName, bool ascii)
 			{
 				return IsValid &&  WritePlyInternal(fileName,ascii);
+			}
+
+			XbimPoint3D XbimPolyhedron::Vertex(int i)
+			{
+				if(_meshSet!=nullptr)
+				{
+					vertex_t v = _meshSet->vertex_storage.at(i);
+					return XbimPoint3D(v.v.x,v.v.y,v.v.z);
+				}
+				else
+					return XbimPoint3D();
+			}
+
+			IList<Int32>^ XbimPolyhedron::Triangulation(double precision)
+			{
+				if(!IsValid) return gcnew List<Int32>(0);
+				List<Int32>^ indices = gcnew List<Int32>(this->FaceCount*5);
+				for (meshset_t::face_iter f = _meshSet->faceBegin(), e = _meshSet->faceEnd(); f != e; ++f) 
+				{
+					face_t *face = *f;
+					int numVertices = face->nVertices();
+					if(numVertices>=3)
+					{
+						std::vector<carve::mesh::MeshSet<3>::vertex_t *> verts;
+						face->getVertices(verts);
+						if(verts.size()==3) //it is a triangular face
+						{
+							indices->Add((Int32) carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[0]));
+							indices->Add((Int32) carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[1]));
+							indices->Add((Int32) carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[2]));	
+						}
+						else //need to triangulate
+						{
+							std::vector<carve::geom::vector<2> > projectedVerts;
+							face->getProjectedVertices(projectedVerts);
+							std::vector<carve::triangulate::tri_idx> result;
+							carve::triangulate::triangulate(projectedVerts,result,precision);	
+							for (size_t i = 0; i < result.size(); i++)
+							{	
+								indices->Add((Int32) carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].a]));
+								indices->Add((Int32) carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].b]));
+								indices->Add((Int32) carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].c]));	
+							}	
+						}
+					}
+				}
+				return indices;
 			}
 		}
 

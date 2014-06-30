@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Xbim.Ifc2x3.ActorResource;
 using Xbim.Ifc2x3.Kernel;
@@ -28,6 +29,7 @@ namespace Xbim.ModelGeometry.Scene
     /// <summary>
     /// Provides a map for obtaining a colour for a keyed type, the colour is an ARGB value
     /// </summary>
+    [DataContract(Name="ColourMap")]
     public class XbimColourMap : KeyedCollection<string, XbimColour>
     {
 
@@ -60,6 +62,7 @@ namespace Xbim.ModelGeometry.Scene
             return item.Name;
         }
 
+        [IgnoreDataMember]
         public bool IsTransparent
         {
             get

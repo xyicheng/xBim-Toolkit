@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        "Xbim.ModelGeometry.OCC32"
+    </assembly>
+    <members>
+        <member name="M:Xbim.ModelGeometry.OCC.XbimFaceBound.Build(Xbim.Ifc2x3.ProfileResource.IfcCircleProfileDef,System.Boolean@)">
+TODO: Need to add support for curve segment continuity a moment only continuous supported
+</member>
+        <member name="M:Xbim.ModelGeometry.OCC.XbimFaceBound.NewellsNormal(TopoDS_Wire!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+Calculates the normal of the wire using Newells method. This takes into account the winding 
+Curve and line edges are supported
+</member>
+        <member name="M:Xbim.ModelGeometry.OCC.XbimPolyhedron.Invert">
+inverts all meshes that form this shape
+</member>
+        <member name="M:Xbim.ModelGeometry.OCC.XbimPolyhedron.IsClosed">
+true is a manifold closed solid
+</member>
+        <member name="M:carve.csg.CSG.generateFaceLoops(carve.mesh.MeshSet&lt;0x3&gt;*,carve.csg.detail.Data!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,carve.csg.FaceLoopList*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.Double,System.Double)">
+\brief Build a set of face loops for all (split) faces of a Polyhedron.
+
+@param[in] poly The polyhedron to process
+@param vmap 
+@param face_split_edges 
+@param divided_edges 
+@param[out] face_loops_out The resulting face loops
+
+@return The number of edges generated.
+
+</member>
+        <member name="M:carve.csg.CSG.slice(carve.mesh.MeshSet&lt;0x3&gt;*,carve.mesh.MeshSet&lt;0x3&gt;*,std.list&lt;carve.mesh.MeshSet&lt;0x3&gt;**&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.list&lt;carve.mesh.MeshSet&lt;0x3&gt;**&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.unordered_set&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;**,carve.mesh.Vertex&lt;0x3&gt;**&gt;&gt;*)">
+
+
+@param a 
+@param b 
+@param a_sliced 
+@param b_sliced 
+@param hooks 
+@param shared_edges_ptr 
+
+</member>
+        <member name="M:carve.csg.CSG.sliceAndClassify(carve.mesh.MeshSet&lt;0x3&gt;*,carve.mesh.MeshSet&lt;0x3&gt;*,std.list&lt;std.pair&lt;carve.csg.FaceClass,carve.mesh.MeshSet&lt;0x3&gt;**&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.unordered_set&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;**,carve.mesh.Vertex&lt;0x3&gt;**&gt;&gt;*)">
+
+
+@param closed 
+@param open 
+@param FaceClass 
+@param result 
+@param hooks 
+@param shared_edges_ptr 
+
+@return 
+
+</member>
+        <member name="M:carve.csg.CSG.compute(carve.mesh.MeshSet&lt;0x3&gt;*,carve.mesh.MeshSet&lt;0x3&gt;*,carve.csg.CSG.OP,std.unordered_set&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;**,carve.mesh.Vertex&lt;0x3&gt;**&gt;&gt;*,carve.csg.CSG.CLASSIFY_TYPE)">
+
+
+@param a 
+@param b 
+@param op 
+@param hooks 
+@param shared_edges 
+@param classify_type 
+
+@return 
+
+</member>
+        <member name="M:carve.csg.CSG.compute(carve.mesh.MeshSet&lt;0x3&gt;*,carve.mesh.MeshSet&lt;0x3&gt;*,carve.csg.CSG.Collector*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.unordered_set&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;**,carve.mesh.Vertex&lt;0x3&gt;**&gt;&gt;*,carve.csg.CSG.CLASSIFY_TYPE)">
+
+
+@param a 
+@param b 
+@param collector 
+@param hooks 
+@param shared_edges_ptr 
+@param classify_type 
+
+@return 
+
+</member>
+        <member name="M:returnSharedEdges(std.unordered_set&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;**,carve.mesh.Vertex&lt;0x3&gt;**&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.list&lt;carve.mesh.MeshSet&lt;0x3&gt;**&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.unordered_set&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;**,carve.mesh.Vertex&lt;0x3&gt;**&gt;&gt;*)">
+
+
+@param shared_edges 
+@param result_list 
+@param shared_edge_ptr 
+
+</member>
+        <member name="M:carve.csg.CSG.calc(carve.mesh.MeshSet&lt;0x3&gt;*,carve.geom.RTreeNode&lt;0x3,carve.mesh.Face&lt;0x3&gt;**&gt;!System.Runtime.CompilerServices.IsConst*,carve.mesh.MeshSet&lt;0x3&gt;*,carve.geom.RTreeNode&lt;0x3,carve.mesh.Face&lt;0x3&gt;**&gt;!System.Runtime.CompilerServices.IsConst*,std.unordered_map&lt;carve.mesh.Vertex&lt;0x3&gt;!System.Runtime.CompilerServices.IsConst**,carve.csg.PC2&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.unordered_map&lt;std.pair&lt;carve.mesh.Vertex&lt;0x3&gt;!System.Runtime.CompilerServices.IsConst**,carve.mesh.Vertex&lt;0x3&gt;!System.Runtime.CompilerServices.IsConst**&gt;,carve.csg.EC2&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,carve.csg.FaceLoopList*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,carve.csg.FaceLoopList*!System.Runtime.CompilerServices.Is">
+
+
+@param a 
+@param b 
+@param vclass 
+@param eclass 
+@param a_face_loops 
+@param b_face_loops 
+@param a_edge_count 
+@param b_edge_count 
+@param hooks 
+
+</member>
+        <member name="M:checkFaceLoopIntegrity(carve.csg.FaceLoopList*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+
+
+@param fll 
+
+</member>
+        <member name="M:carve.csg.CSG.divideIntersectedEdges(carve.csg.detail.Data*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+\brief For each intersected edge, decompose into a set of vertex pairs representing an ordered set of edge fragments.
+
+@tparam[in,out] data Internal intersection data. data.emap is used to produce data.divided_edges.
+
+</member>
+        <member name="M:Xbim.ModelGeometry.OCC.XbimPolyhedron.Merge(System.Collections.Generic.List`1{Xbim.ModelGeometry.OCC.XbimPolyhedron},Xbim.Common.XbimModelFactors)">
+merges all faces of the polyderon list into one mesh set
+</member>
+        <member name="M:Xbim.ModelGeometry.OCC.XbimSolid.Build(Xbim.Ifc2x3.GeometricModelResource.IfcSweptDiskSolid,System.Boolean@)">
+static builders 
+</member>
+    </members>
+</doc>

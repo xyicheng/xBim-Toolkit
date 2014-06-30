@@ -54,7 +54,7 @@
 %token  ATTRIBUTE
 %token  PROPERTY
 %token  COBIE
-
+%token  SUMMARY
 /*operations and keywords*/
 %token  WHERE
 %token  WITH_NAME /*with name, called*/
@@ -62,6 +62,7 @@
 %token  NEW /*is new*/
 %token  ADD
 %token  TO
+%token  AS
 %token  REMOVE
 %token  FROM
 %token  FOR
@@ -167,6 +168,7 @@ model_actions
 	| VALIDATE MODEL																			{ValidateModel();}
 	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
 	| DUMP MODEL TO COBIE STRING STRING															{ExportCOBie($5.strVal,$6.strVal);}
+	| DUMP MODEL TO FILE STRING	AS SUMMARY											            {ExportSummary($5.strVal);}
 	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
 	/* | COPY IDENTIFIER TO MODEL STRING														{CopyToModel($2.strVal, $5.strVal);} */
 	;

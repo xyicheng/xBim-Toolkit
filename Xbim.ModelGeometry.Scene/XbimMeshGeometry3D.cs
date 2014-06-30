@@ -98,8 +98,16 @@ namespace Xbim.ModelGeometry.Scene
                         switch (command)
                         {
                             case "P":
-                                vertexList = new List<XbimPoint3D>();
-                                normalList = new List<XbimVector3D>();
+                                int pointCount = 512;
+                                int faceCount = 128;
+                                int triangleCount = 256;
+                                int normalCount = 512;
+                                if (tokens.Length > 1) pointCount = Int32.Parse(tokens[1]);
+                                if (tokens.Length > 2) faceCount = Int32.Parse(tokens[2]);
+                                if (tokens.Length > 3) triangleCount = Int32.Parse(tokens[3]);
+                                if (tokens.Length > 4) normalCount = Int32.Parse(tokens[4]);
+                                vertexList = new List<XbimPoint3D>(pointCount);
+                                normalList = new List<XbimVector3D>(normalCount);
                                 break;
                             case "V": //process vertices
                                 for (int i = 1; i < tokens.Length; i++)
@@ -169,8 +177,7 @@ namespace Xbim.ModelGeometry.Scene
                                                 XbimVector3D v;
                                                 XbimQuaternion.Transform(ref currentNormal, ref q, out v);
                                                 currentNormal = v;
-                                                //currentNormal = trans.Value.Transform(currentNormal);
-                                                //currentNormal.Normalize();
+
                                             }
                                         }
 
@@ -193,6 +200,8 @@ namespace Xbim.ModelGeometry.Scene
                                     }
                                 }
                                 
+                                break;
+                            case "F":
                                 break;
                             default:
                                 throw new Exception("Invalid Geometry Command");

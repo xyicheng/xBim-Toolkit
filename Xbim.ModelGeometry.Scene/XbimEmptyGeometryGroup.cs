@@ -97,5 +97,22 @@ namespace Xbim.ModelGeometry.Scene
         {
             return false;
         }
+
+
+
+
+        public int VertexCount
+        {
+            get { return 0; }
+        }
+
+        public XbimPoint3D Vertex(int i)
+        {
+            return default(XbimPoint3D);
+        }
+        public IList<Int32> Triangulation(double precision)
+        {
+            return new List<int>(0);
+        }
     }
 }

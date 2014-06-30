@@ -1409,5 +1409,6 @@ namespace Xbim.IO
         {
             return cache.GetShapeInstanceTable();
         }
+
     }
 }

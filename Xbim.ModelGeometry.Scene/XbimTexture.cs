@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
@@ -12,19 +13,25 @@ namespace Xbim.ModelGeometry.Scene
     /// Class to hold the surface style or texture of an object, corresponds to IfcSurfaceStyle and OpenGL Texture
     /// Does not handle bitmap textured surfaces etc at present
     /// </summary>
+    [DataContract]
     public class XbimTexture 
     {
+        [DataMember(Name = "Style")]
         public XbimColourMap ColourMap = new XbimColourMap();
         /// <summary>
         /// The object that this style defines
         /// </summary>
-        public int DefinedObjectId;
+        [DataMember(Name="Id")]
+        public int DefinedObjectId{get;set;}
         bool renderBothFaces = true;
         bool switchFrontAndRearFaces = false;
-
+        [DataMember(Name="DTC")]
         public XbimColour DiffuseTransmissionColour;
+        [DataMember(Name = "TC")]
         public XbimColour TransmissionColour;
+        [DataMember(Name = "DRC")]
         public XbimColour DiffuseReflectionColour;
+        [DataMember(Name = "RC")]
         public XbimColour ReflectanceColour;
 
         public XbimTexture CreateTexture(IfcSurfaceStyle surfaceStyle)
@@ -189,16 +196,17 @@ namespace Xbim.ModelGeometry.Scene
             return this;
         }
 
+        [IgnoreDataMember]
         public bool IsTransparent
         {
             get { return ColourMap.IsTransparent; }
         }
-
+        [DataMember]
         public bool RenderBothFaces
         {
             get { return renderBothFaces; }
         }
-
+        [DataMember]
         public bool SwitchFrontAndRearFaces
         {
             get { return switchFrontAndRearFaces; }

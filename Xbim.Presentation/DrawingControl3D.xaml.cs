@@ -48,6 +48,11 @@ using System.Text;
 using Xbim.Presentation.ModelGeomInfo;
 using Xbim.ModelGeometry.Converter;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Interop;
+using System.Windows.Threading;
+
 
 #endregion
 
@@ -63,13 +68,14 @@ namespace Xbim.Presentation
             InitializeComponent();
             Viewport = Canvas;
             Canvas.MouseDown += Canvas_MouseDown;
+            Canvas.MouseWheel += Canvas_MouseWheel;
             this.Loaded += DrawingControl3D_Loaded;
             federationColours = new XbimColourMap(StandardColourMaps.Federation);
             Viewport.CameraChanged += Viewport_CameraChanged;
             ClearGraphics();
-            MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
-            MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
-            MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, MouseClickActions.SetClip);            
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Control, XbimMouseClickActions.Toggle);
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, XbimMouseClickActions.Measure);
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Shift, XbimMouseClickActions.SetClip);            
         }
         
         CombinedManipulator ClipHandler = null;
@@ -319,18 +325,9 @@ namespace Xbim.Presentation
             remove { RemoveHandler(LoadedEvent, value); }
         }
 
-        public enum MouseClickActions
-        {
-            Toggle,
-            Add,
-            Remove,
-            Single,
-            Ignore,
-            Measure,
-            SetClip
-        }
+        
 
-        public Dictionary<ModifierKeys, MouseClickActions> MouseModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
+        public Dictionary<ModifierKeys, XbimMouseClickActions> MouseModifierKeyBehaviour = new Dictionary<ModifierKeys, XbimMouseClickActions>();
 
         private void SelectionDrivenSelectedEntityChange(IPersistIfcEntity entity)
         {
@@ -352,19 +349,23 @@ namespace Xbim.Presentation
         
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            return;
+          
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
             // the highlighting of the selected component is triggered by the change of SelectedEntity (see OnSelectedEntityChanged)
           //  _selectedMeshFragment = GetClickedMeshFragment(hit);
-            var thisSelectedEntity = GetClickedEntity(hit);
+            int label = (int)hit.ModelHit.GetValue(TagProperty);
+            XbimInstanceHandle selhandle = ((XbimInstanceHandle)this.GetValue(ModelProperty));
+            var thisSelectedEntity = selhandle.GetEntity();
+         //   return;
+         //   var thisSelectedEntity = GetClickedEntity(hit);
             if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
                 // default behaviour is single selection
-                MouseClickActions mc = MouseClickActions.Single;
+                XbimMouseClickActions mc = XbimMouseClickActions.Single;
                 if (MouseModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
                     mc = MouseModifierKeyBehaviour[Keyboard.Modifiers];
-                if (mc != MouseClickActions.Measure)
+                if (mc != XbimMouseClickActions.Measure)
                 {
                     // drop the geometry for the measure visualization
                     // FurtherGeometries.Content = null;
@@ -383,27 +384,27 @@ namespace Xbim.Presentation
                     
                     switch (mc)
                     {
-                        case MouseClickActions.Add:
+                        case XbimMouseClickActions.Add:
                             Selection.Add(thisSelectedEntity);
                             SelectionDrivenSelectedEntityChange(thisSelectedEntity);
                             break;
-                        case MouseClickActions.Remove:
+                        case XbimMouseClickActions.Remove:
                             Selection.Remove(thisSelectedEntity);
                             SelectionDrivenSelectedEntityChange(null);
                             break;
-                        case MouseClickActions.Toggle:
+                        case XbimMouseClickActions.Toggle:
                             bool bAdded = Selection.Toggle(thisSelectedEntity);
                             if (bAdded)
                                 SelectionDrivenSelectedEntityChange(thisSelectedEntity);
                             else
                                 SelectionDrivenSelectedEntityChange(null);
                             break;
-                        case MouseClickActions.Single:
+                        case XbimMouseClickActions.Single:
                             Selection.Clear();
                             Selection.Add(thisSelectedEntity);
                             SelectionDrivenSelectedEntityChange(thisSelectedEntity);
                             break;
-                        case MouseClickActions.Measure:
+                        case XbimMouseClickActions.Measure:
                             var p = GetClosestPoint(hit);
                             if (UserModeledDimension.Last3DPoint.HasValue && UserModeledDimension.Last3DPoint.Value == p.Point)
                                 UserModeledDimension.RemoveLast();
@@ -414,7 +415,7 @@ namespace Xbim.Presentation
                             
                             // UserModeledDimension.SetToVisual(FurtherGeometries); 
                             break;
-                        case MouseClickActions.SetClip:
+                        case XbimMouseClickActions.SetClip:
                             SetCutPlane(
                                 hit.PointHit.X, hit.PointHit.Y, hit.PointHit.Z,
                                 0, 0, -1);
@@ -1412,52 +1413,106 @@ namespace Xbim.Presentation
              XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             //get a list of all the unique styles
             Dictionary<int, WpfMaterial> styles = new Dictionary<int, WpfMaterial>();
+            Dictionary<int, MeshGeometry3D> shapeGeometries = new Dictionary<int, MeshGeometry3D>();
+            Dictionary<int, WpfMeshGeometry3D> meshSets = new Dictionary<int, WpfMeshGeometry3D>();
+            Model3DGroup opaques = new Model3DGroup();
+            Model3DGroup transparents = new Model3DGroup();
             foreach (var style in context.SurfaceStyles())
             {
                 WpfMaterial wpfMaterial = new WpfMaterial();
                 wpfMaterial.CreateMaterial(style);
                 styles.Add(style.DefinedObjectId, wpfMaterial);
+                WpfMeshGeometry3D mg = new WpfMeshGeometry3D(wpfMaterial, wpfMaterial);
+                
+                meshSets.Add(style.DefinedObjectId, mg);
+                if (style.IsTransparent)
+                    transparents.Children.Add(mg);
+                else
+                    opaques.Children.Add(mg);
+
             }
-           
+
 
             if (!styles.Any()) return scene; //this should always return something
             double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
            
-            Model3DGroup opaques = new Model3DGroup();
-            Model3DGroup transparents = new Model3DGroup();
-          //  opaques.Transform = wcsTransform.ToMatrixTransform3D();
-           // transparents.Transform = wcsTransform.ToMatrixTransform3D();
-            foreach (var shapeGeom in context.ShapeGeometries().Where(sg=>sg.ReferenceCount>0))
-            {
-                MeshGeometry3D wpfMesh = new MeshGeometry3D();          
-                wpfMesh.Read(shapeGeom.ShapeData);
-                foreach (var shapeInstance in context.ShapeInstancesOf(shapeGeom)
-                    .Where(s=>s.RepresentationType==XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded && 
+           
+
+            foreach (var shapeInstance in context.ShapeInstances()
+                    .Where(s => s.RepresentationType == XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded &&
                         !typeof(IfcFeatureElement).IsAssignableFrom(IfcMetaData.GetType(s.IfcTypeId)) &&
                         !typeof(IfcSpace).IsAssignableFrom(IfcMetaData.GetType(s.IfcTypeId))))
+            {
+                int styleId = shapeInstance.StyleLabel > 0 ? shapeInstance.StyleLabel : shapeInstance.IfcTypeId * -1;
+
+                //GET THE ACTUAL GEOMETRY 
+                MeshGeometry3D wpfMesh;
+                //see if we have already read it
+                if (shapeGeometries.TryGetValue(shapeInstance.ShapeGeometryLabel, out wpfMesh))
                 {
-                    int styleId = shapeInstance.StyleLabel > 0 ? shapeInstance.StyleLabel : shapeInstance.IfcTypeId * -1;
                     GeometryModel3D mg = new GeometryModel3D(wpfMesh, styles[styleId]);
+                    mg.SetValue(TagProperty, new XbimInstanceHandle(model, shapeInstance.IfcProductLabel, shapeInstance.IfcTypeId));
                     mg.BackMaterial = mg.Material;
-                    mg.Transform = XbimMatrix3D.Multiply(shapeInstance.Transformation,wcsTransform).ToMatrixTransform3D();
-                    if( styles[styleId].IsTransparent)
+                    mg.Transform = XbimMatrix3D.Multiply(shapeInstance.Transformation, wcsTransform).ToMatrixTransform3D();
+                    if (styles[styleId].IsTransparent)
                         transparents.Children.Add(mg);
                     else
                         opaques.Children.Add(mg);
                 }
+                else //we need to get the shape geometry
+                {
+                    XbimShapeGeometry shapeGeom = context.ShapeGeometry(shapeInstance.ShapeGeometryLabel);
+                    if (shapeGeom.ReferenceCount > 1) //only store if we are going to use again
+                    {
+                        wpfMesh = new MeshGeometry3D();
+                        wpfMesh.Read(shapeGeom.ShapeData);
+                        shapeGeometries.Add(shapeInstance.ShapeGeometryLabel, wpfMesh);
+                        GeometryModel3D mg = new GeometryModel3D(wpfMesh, styles[styleId]);
+                        mg.SetValue(TagProperty, new XbimInstanceHandle(model, shapeInstance.IfcProductLabel, shapeInstance.IfcTypeId));
+                        mg.BackMaterial = mg.Material;
+                        mg.Transform = XbimMatrix3D.Multiply(shapeInstance.Transformation, wcsTransform).ToMatrixTransform3D();
+                        if (styles[styleId].IsTransparent)
+                            transparents.Children.Add(mg);
+                        else
+                            opaques.Children.Add(mg);
+                    }
+                    else //it is a one off, merge it with shapes of a similar material
+                    {
+                        WpfMeshGeometry3D mg = meshSets[styleId];
+                        mg.Add(shapeGeom.ShapeData,
+                            shapeInstance.IfcTypeId,
+                            shapeInstance.IfcProductLabel,
+                            shapeInstance.InstanceLabel,
+                            XbimMatrix3D.Multiply(shapeInstance.Transformation, wcsTransform),0);
+                    }
+                }
 
-                //    ModelVisual3D mv = new ModelVisual3D();
-                //mv.Content = mg;
-                    //mv.Transform = shapeInstance.Transformation.ToMatrixTransform3D();
-                    
-                  //  m3d.SetValue(TagProperty, layer);
-                    // sort out materials and bind
-              
-                    // SetOpacityPercent(m3d.Material, ModelOpacity);
-
-                
             }
+
+            //foreach (var shapeGeom in context.ShapeGeometries().Where(sg=>sg.ReferenceCount>1))
+            //{
+            //    MeshGeometry3D wpfMesh = new MeshGeometry3D();          
+            //    wpfMesh.Read(shapeGeom.ShapeData);
+            //    foreach (var shapeInstance in context.ShapeInstancesOf(shapeGeom)
+            //        .Where(s=>s.RepresentationType==XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded && 
+            //            !typeof(IfcFeatureElement).IsAssignableFrom(IfcMetaData.GetType(s.IfcTypeId)) &&
+            //            !typeof(IfcSpace).IsAssignableFrom(IfcMetaData.GetType(s.IfcTypeId))))
+            //    {
+            //        int styleId = shapeInstance.StyleLabel > 0 ? shapeInstance.StyleLabel : shapeInstance.IfcTypeId * -1;
+            //        GeometryModel3D mg = new GeometryModel3D(wpfMesh, styles[styleId]);
+            //        mg.SetValue(TagProperty, new XbimInstanceHandle(model, shapeInstance.IfcProductLabel,shapeInstance.IfcTypeId));
+            //        mg.BackMaterial = mg.Material;
+            //        mg.Transform = XbimMatrix3D.Multiply(shapeInstance.Transformation,wcsTransform).ToMatrixTransform3D();
+            //        if( styles[styleId].IsTransparent)
+            //            transparents.Children.Add(mg);
+            //        else
+            //            opaques.Children.Add(mg);
+            //    }
+
+   
+                
+            //}
             if (opaques.Children.Any())
             {
                 ModelVisual3D mv = new ModelVisual3D();
@@ -1815,7 +1870,7 @@ namespace Xbim.Presentation
         {
             XbimPoint3D c = viewBounds.Centroid();
             Point3D p = new Point3D(c.X, c.Y, c.Z);
-            Viewport.CameraController.ResetCamera();
+            if (Viewport.CameraController != null) Viewport.CameraController.ResetCamera();
             Rect3D r3d = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
             Viewport.ZoomExtents(r3d);
         }
@@ -1931,6 +1986,66 @@ namespace Xbim.Presentation
                 {
                     ShowOctree(child, specificLevel, onlyWithContent);
                 }
+        }
+
+        private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            Console.WriteLine(e.Delta);
+        }
+
+        /// <summary>
+        /// create a bitmap image of the required size and saves to the specificed file. Title is printed if specified
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="bmpFileName"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        static public void CreateThumbnail(XbimModel model,string bmpFileName, int width, int height, string title=null)
+        {
+            DrawingControl3D d3d = new DrawingControl3D();
+            // Create the container
+            var container = new Border
+            {
+                Child = d3d,
+                Background = Brushes.White,
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(1),
+                Width=width,
+                Height=height
+            };
+
+            // Measure and arrange the container
+            container.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            container.Arrange(new Rect(container.DesiredSize));
+
+            // Temporarily add a PresentationSource if none exists
+            using (var temporaryPresentationSource = new HwndSource(new HwndSourceParameters()) { RootVisual = (VisualTreeHelper.GetParent(container) == null ? container : null) })
+            {
+                
+                d3d.Dispatcher.Invoke(DispatcherPriority.SystemIdle, new Action(() => { }));
+                d3d.LoadGeometry(model);
+                d3d.Viewport.ShowViewCube = false;
+                d3d.Viewport.ShowFieldOfView = false;
+                d3d.Viewport.ShowCoordinateSystem = false;
+                if (!string.IsNullOrEmpty(title))
+                {
+                    d3d.Viewport.Title = title;
+                   
+                }
+                d3d.ShowGridLines = false;
+                d3d.Viewport.ZoomExtents();
+                // Render to bitmap
+                var rtb = new RenderTargetBitmap((int)container.ActualWidth, (int)container.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(container);
+
+                PngBitmapEncoder aEncoder = new PngBitmapEncoder();
+                aEncoder.Frames.Add(BitmapFrame.Create(rtb));
+
+                using (Stream stm = File.Create(bmpFileName))
+                {
+                    aEncoder.Save(stm);
+                }
+            }
         }
     }
 }

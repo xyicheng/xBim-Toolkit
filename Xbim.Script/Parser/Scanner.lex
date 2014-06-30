@@ -114,6 +114,7 @@
 "new"			{ return (int)Tokens.NEW;}  /*is new*/								
 "add"			{ return (int)Tokens.ADD;}
 "to"			{ return (int)Tokens.TO; }
+"as"			{ return (int)Tokens.AS; }
 "remove"			{ return (int)Tokens.REMOVE; }
 "from"			{ return (int)Tokens.FROM; }
 "export" |
@@ -149,6 +150,7 @@
 "file"			{ return (int)Tokens.FILE; }
 "cobie"			{ return (int)Tokens.COBIE; }
 "model"			{ return (int)Tokens.MODEL; }
+"summary"			{ return (int)Tokens.SUMMARY; }
 "reference"			{ return (int)Tokens.REFERENCE; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }
 "group"			{ return (int)SetValue(Tokens.GROUP); }

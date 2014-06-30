@@ -41,7 +41,7 @@ namespace GeometrySample
                                 bw.Write(si.IfcProductLabel);
                                 bw.Write(si.IfcTypeId);
                                 bw.Write(si.StyleLabel);
-                                bw.Write(si.ShapeLabel);
+                                bw.Write(si.ShapeGeometryLabel);
                                 bw.Write(si.Transformation.ToArray(false));
                                 XbimShapeGeometry sg = m3d.ShapeGeometry(si);
                                 bw.Write(sg.Cost);

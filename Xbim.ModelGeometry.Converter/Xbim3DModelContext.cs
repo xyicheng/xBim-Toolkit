@@ -25,6 +25,7 @@ using System.Threading;
 using Xbim.XbimExtensions;
 using Xbim.ModelGeometry.Scene.Clustering;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 namespace Xbim.ModelGeometry.Converter
 {
 
@@ -326,17 +327,6 @@ namespace Xbim.ModelGeometry.Converter
                              Logger.ErrorFormat("Failed to write entity #{0} to database", shapeGeom.IfcShapeLabel);
                            
                         }
-                        
-                        //localTally++;
-                        //if (progDelegate != null)
-                        //{
-                        //    int newPercentage = Convert.ToInt32((double)localTally / total * 100.0);
-                        //    if (newPercentage > localPercentageParsed)
-                        //    {
-                        //        localPercentageParsed = newPercentage;
-                        //        progDelegate(localPercentageParsed, "Meshing");
-                        //    }
-                        //}
                         long remainder = geomCount % _transactionBatchSize; //pulse transactions
                         if (remainder == _transactionBatchSize - 1)
                         {
@@ -375,7 +365,7 @@ namespace Xbim.ModelGeometry.Converter
                                 shapeFeature = shapeFeatures.Take();
                                 shapeInstance = shapeFeature.Item1;
                                 shapeGeometry = shapeFeature.Item2;
-                                shapeInstance.ShapeLabel = geomTable.AddGeometry((IXbimShapeGeometryData)shapeGeometry);
+                                shapeInstance.ShapeGeometryLabel = geomTable.AddGeometry((IXbimShapeGeometryData)shapeGeometry);
                                 instanceTable.AddInstance((IXbimShapeInstanceData)shapeInstance);
                             }
                             catch (InvalidOperationException)
@@ -571,7 +561,7 @@ namespace Xbim.ModelGeometry.Converter
                    XbimShapeInstance shapeInstance = new XbimShapeInstance()
                    {
                        IfcProductLabel = Math.Abs(element.EntityLabel),
-                       ShapeLabel = 0,
+                       ShapeGeometryLabel = 0,
                        StyleLabel = styleLabel,
                        RepresentationType = XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded,
                        RepresentationContext = context,
@@ -623,13 +613,25 @@ namespace Xbim.ModelGeometry.Converter
             IXbimGeometryEngine engine = _model.GeometryEngine();
             if (engine != null)
             {
-                XbimShapeGeometry shapeGeom = this.ShapeGeometry(xbimShapeInstance.ShapeLabel);
+                XbimShapeGeometry shapeGeom = this.ShapeGeometry(xbimShapeInstance.ShapeGeometryLabel);
                 if (shapeGeom.ShapeLabel < 0)
-                    Logger.ErrorFormat("Shape Geometry #{0} was not found in the database ", xbimShapeInstance.ShapeLabel);
+                    Logger.ErrorFormat("Shape Geometry #{0} was not found in the database ", xbimShapeInstance.ShapeGeometryLabel);
                 IXbimGeometryModel geomModel = engine.GetGeometry3D(shapeGeom.ShapeData, shapeGeom.Format);
                 geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
                 geomModel.SurfaceStyleLabel = xbimShapeInstance.StyleLabel;
                 geomModel.TransformBy(xbimShapeInstance.Transformation);
+                return geomModel.ToPolyhedron(_model.ModelFactors);
+            }
+            else return XbimEmptyGeometryGroup.Empty;
+        }
+
+        public IXbimPolyhedron GetGeometryModel(XbimShapeGeometry shapeGeom)
+        {
+            IXbimGeometryEngine engine = _model.GeometryEngine();
+            if (engine != null)
+            {
+                IXbimGeometryModel geomModel = engine.GetGeometry3D(shapeGeom.ShapeData, shapeGeom.Format);
+                geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
                 return geomModel.ToPolyhedron(_model.ModelFactors);
             }
             else return XbimEmptyGeometryGroup.Empty;
@@ -767,6 +769,7 @@ namespace Xbim.ModelGeometry.Converter
                             else productBounds.Union(mapBounds);
 
                         }
+                        
                     }
                     else  //it is a direct reference to geometry shape
                     {
@@ -1021,7 +1024,7 @@ namespace Xbim.ModelGeometry.Converter
         {
             //Get the meta data about the instances
             var counts = ShapeInstances().GroupBy(
-                       i => i.ShapeLabel,
+                       i => i.ShapeGeometryLabel,
                        (label, instances) => new
                        {
                            Label = (uint)label,
@@ -1079,7 +1082,7 @@ namespace Xbim.ModelGeometry.Converter
             XbimShapeInstance shapeInstance = new XbimShapeInstance()
              {
                  IfcProductLabel = Math.Abs(product.EntityLabel),
-                 ShapeLabel = shapeLabel,
+                 ShapeGeometryLabel = shapeLabel,
                  StyleLabel = styleLabel,
                  RepresentationType = repType,
                  RepresentationContext = ctxtId,
@@ -1230,7 +1233,7 @@ namespace Xbim.ModelGeometry.Converter
 
         public XbimShapeGeometry ShapeGeometry(XbimShapeInstance shapeInstance)
         {
-            return ShapeGeometry(shapeInstance.ShapeLabel);
+            return ShapeGeometry(shapeInstance.ShapeGeometryLabel);
         }
 
         /// <summary>
@@ -1490,12 +1493,34 @@ namespace Xbim.ModelGeometry.Converter
         /// <returns></returns>
         public IXbimMeshGeometry3D ShapeGeometryMeshOf(XbimShapeInstance shapeInstance)
         {
-            XbimShapeGeometry sg = ShapeGeometry(shapeInstance.ShapeLabel);
+            XbimShapeGeometry sg = ShapeGeometry(shapeInstance.ShapeGeometryLabel);
             XbimMeshGeometry3D mg = new XbimMeshGeometry3D();
             mg.Add(sg.ShapeData, shapeInstance.IfcTypeId, shapeInstance.IfcProductLabel,
                 shapeInstance.InstanceLabel, shapeInstance.Transformation, _model.UserDefinedId);
             return mg;
         }
+
+        /// <summary>
+        /// Creates a SceneJS scene on the textwriter for the model context
+        /// </summary>
+        /// <param name="textWriter"></param>
+        public void CreateSceneJS(TextWriter textWriter)
+        {
+            HashSet<uint> maps = new HashSet<uint>();
+            using (JsonWriter writer = new JsonTextWriter(textWriter))
+            {            
+                XbimSceneJS sceneJS = new XbimSceneJS(this);
+                sceneJS.WriteScene(writer);
+            }
+        }
+
+        public string CreateSceneJS()
+        {
+            StringWriter sw = new StringWriter();
+            CreateSceneJS(sw);
+            return sw.ToString();
+        }
+
         //srl these methods below need to go
         internal IEnumerable<XbimShape> Shapes(int[] _shapeGeomLabels)
         {

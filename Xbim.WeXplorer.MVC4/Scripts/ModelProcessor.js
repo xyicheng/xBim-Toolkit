@@ -14,28 +14,31 @@
             shapes: []
         };
     }
-    processor.prototype.HandleBoundsInstances = function (data)
+    processor.prototype.HandleShapeInstances = function (data)
     {
         if (!data) return;
 
         for (var i = 0; i < data.instances.length; i++)
         {
             var geom = data.instances[i];
-            geom.Transformation = this.CreateMatrix(geom.Transformation);
-            var xform = mat4.create();
+            geom.Trans = this.CreateMatrix(geom.Trans);
+
+
+            //geom.Transformation = this.CreateMatrix(geom.Trans);
+            //var xform = mat4.create();
             //mat4.multiply(transform, placement, xform);
 
 
 
-            var geopiece = {
-                id: geom.InstanceLabel,
-            //    layerid: geom.StyleLabel,
-            //    mapid: geom.MapLabel ? geom.MapLabel:0,
-            //    Positions: mesh.Positions,
-            //    Normals: mesh.Normals,
-            //    Indices: mesh.Indices,
-                data: { prod: geom.IfcProductLabel }
-            };
+            //var geopiece = {
+            //    id: geom.Id,
+            ////    layerid: geom.StyleLabel,
+            ////    mapid: geom.MapLabel ? geom.MapLabel:0,
+            ////    Positions: mesh.Positions,
+            ////    Normals: mesh.Normals,
+            ////    Indices: mesh.Indices,
+            //    data: { prod: geom.Prod }
+            //};
 
             eventmanager.FireEvent("Box", geom);
         }
@@ -70,8 +73,12 @@
 
         this.transform = mat4.create();
         mat4.identity(this.transform);
-        mat4.translate(this.transform, vec3.create([-mostPopulation.Centre.X, -mostPopulation.Centre.Y, -mostPopulation.Centre.Z]), this.transform);
         
+        var scale = this.MetreFactor;
+        var  trans = vec3.create([-mostPopulation.Centre.X, -mostPopulation.Centre.Y, -mostPopulation.Centre.Z]);
+        vec3.scale(trans,scale,trans);
+        mat4.translate(this.transform, trans, this.transform);
+        mat4.scale(this.transform, vec3.create([scale, scale, scale]), this.transform);
         eventmanager.FireEvent("ModelBounds", this.transform);
     }
     processor.prototype.HandleLibraryStyles = function (data) {
@@ -79,9 +86,9 @@
         for (var i = 0; i < data.length; i++)
         {
             //if(data[i].Material.Alpha >= 0.9999)
-                this.library.materials[data[i].Material.MaterialID] = data[i].Material;
+                this.library.materials[data[i].Id] = data[i];
         }
-        this.library.materials["0"] = { MaterialID:0, Red: 1.0, Green: 0.0, Blue: 1.0, Alpha: 0.0 };
+        this.library.materials["0"] = { Id: 0, Style: [{ Red: 1.0, Green: 0.0, Blue: 1.0, Alpha: 0.0 }] };
         eventmanager.FireEvent("Materials", this.library.materials);
     }
     processor.prototype.HandleLibraryShapes = function (data) {

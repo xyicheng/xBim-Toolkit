@@ -97,9 +97,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeometrySample", "GeometryS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.WeXplorer.MVC4", "Xbim.WeXplorer.MVC4\Xbim.WeXplorer.MVC4.csproj", "{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimThumbnail", "XbimThumbnail\XbimThumbnail.csproj", "{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 28
+		SccNumberOfProjects = 29
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -197,6 +199,10 @@ Global
 		SccProjectTopLevelParentUniqueName27 = XbimComplete.sln
 		SccProjectName27 = GeometrySample
 		SccLocalPath27 = GeometrySample
+		SccProjectUniqueName28 = XbimThumbnail\\XbimThumbnail.csproj
+		SccProjectTopLevelParentUniqueName28 = XbimComplete.sln
+		SccProjectName28 = XbimThumbnail
+		SccLocalPath28 = XbimThumbnail
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -284,13 +290,13 @@ Global
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug Excluding Binary Geometry|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug Excluding Binary Geometry|Any CPU.Build.0 = Debug Excluding Binary Geometry|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug|Any CPU.Build.0 = Debug|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.ActiveCfg = Release|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.Build.0 = Release|x64
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug Excluding Binary Geometry|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug Excluding Binary Geometry|Any CPU.Build.0 = Debug Excluding Binary Geometry|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.ActiveCfg = Release|Win32
+		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.Build.0 = Release|Win32
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug Excluding Binary Geometry|Any CPU
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -299,11 +305,14 @@ Global
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug Excluding Binary Geometry|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Release|Any CPU.Build.0 = Release|Any CPU
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug Excluding Binary Geometry|Any CPU
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97255EE6-4C71-43FC-8EB8-69604C675C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97255EE6-4C71-43FC-8EB8-69604C675C0F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71BE5A26-FD3E-470B-9525-B115079732C3}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug Excluding Binary Geometry|Any CPU
 		{71BE5A26-FD3E-470B-9525-B115079732C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71BE5A26-FD3E-470B-9525-B115079732C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -328,7 +337,14 @@ Global
 		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug|Any CPU
 		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}.Debug Excluding Binary Geometry|Any CPU.Build.0 = Debug|Any CPU
 		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63}.Debug Excluding Binary Geometry|Any CPU.ActiveCfg = Debug|Any CPU
+		{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -344,6 +360,7 @@ Global
 		{F93BB93A-9951-4B18-9482-05155B0F493D} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{B694FC6F-1C75-4355-BD52-92B20C2E07C7} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{5EEDA7D5-FB2D-4757-A73B-26374B8A0AC5} = {0DA6263B-5A69-401E-99D0-391644EF4709}
+		{91F77CC7-C0A1-45BC-9B0A-53CAF915CD63} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{B0EBA5AF-9911-4487-B4F6-3187087723CC} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}

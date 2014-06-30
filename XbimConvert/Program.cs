@@ -91,18 +91,10 @@ namespace XbimConvert
                                 try
                                 {
                                     m3d.CreateContext(true, progDelegate);
-                                    //List<XbimTexture> ss = m3d.SurfaceStyles().ToList();
-                                    //foreach (var texture in ss)
-                                    //{
-                                    //    List<XbimShapeInstance> instances = m3d.ShapeInstancesOf(texture).ToList();
-                                    //    foreach (var instance in instances)
-                                    //    {
-                                    //        IXbimMeshGeometry3D mg = m3d.ShapeGeometryMeshOf(instance);
-                                           
-                                    //    }
-                                       
-                                    //}
-                                  //  m3d.ExportShapeData("Shapes.txt");
+                                   StringWriter sw = new StringWriter();
+                                    //m3d.CreateSceneJS(sw);
+                                    //string s = sw.ToString();
+                                    //Console.WriteLine(s);
                                 }
                                 catch (Exception ce)
                                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Xbim.Common.Geometry
@@ -42,8 +43,8 @@ namespace Xbim.Common.Geometry
             get { return _sizeZ; }
             set { _sizeZ = value; }
         }
-      
 
+        [IgnoreDataMember]
         public XbimPoint3D Location
         {
             get
@@ -93,6 +94,7 @@ namespace Xbim.Common.Geometry
             }
         }
 
+        [IgnoreDataMember]
         public bool IsEmpty
         {
             get
@@ -163,6 +165,7 @@ namespace Xbim.Common.Geometry
         /// <summary>
         /// Minimum vertex
         /// </summary>
+        [IgnoreDataMember]
         public XbimPoint3D Min //This was returning maximum instead of minimum. Fixed by Martin Cerny 6/1/2014
         {
             get
@@ -173,6 +176,7 @@ namespace Xbim.Common.Geometry
         /// <summary>
         /// Maximum vertex
         /// </summary>
+        [IgnoreDataMember]
         public XbimPoint3D Max  //This was returning minimum instead of maximum. Fixed by Martin Cerny 6/1/2014
         {
             get
@@ -181,6 +185,7 @@ namespace Xbim.Common.Geometry
             }
         }
 
+        [IgnoreDataMember]
         public double Volume
         {
             get

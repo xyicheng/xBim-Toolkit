@@ -11,6 +11,7 @@ using Xbim.XbimExtensions;
 using Xbim.WeXplorer.MVC4.Helpers;
 using Xbim.IO;
 using System.IO;
+using Xbim.Common.Geometry;
 
 namespace Xbim.WeXplorer.MVC4.Models
 {
@@ -60,55 +61,55 @@ namespace Xbim.WeXplorer.MVC4.Models
         public String GetGeometryContext()
         {
             dynamic returndata;
-            if (!EnsureGeometryExists())
-            {
-                returndata = new
-                {
-                    Model = Name,
-                    Error = "Failed to create the geometry"
-                };
-            }
-            else
-            {
-                switch (model.GeometrySupportLevel)
-                {
-                    case 1:
-                        IfcProject project = model.IfcProject;
-                        int projectId = 0;
-                        if (project != null) projectId = Math.Abs(project.EntityLabel);
-                        XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
-                        if (regionData != null)
-                        {
-                            returndata = new
-                            {
-                                MetreFactor = 1.0 / model.ModelFactors.OneMetre,
-                                Regions = XbimRegionCollection.FromArray(regionData.ShapeData)
-                            };
-                        }
-                        else
-                            returndata = Enumerable.Empty<XbimRegion>();
-                        break;
-                    case 2:
+            //if (!EnsureGeometryExists())
+            //{
+            //    returndata = new
+            //    {
+            //        Model = Name,
+            //        Error = "Failed to create the geometry"
+            //    };
+            //}
+            //else
+            //{
+            //    switch (model.GeometrySupportLevel)
+            //    {
+            //        case 1:
+            //            IfcProject project = model.IfcProject;
+            //            int projectId = 0;
+            //            if (project != null) projectId = Math.Abs(project.EntityLabel);
+            //            XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
+            //            if (regionData != null)
+            //            {
+            //                returndata = new
+            //                {
+            //                    MetreFactor = 1.0 / model.ModelFactors.OneMetre,
+            //                    Regions = XbimRegionCollection.FromArray(regionData.ShapeData)
+            //                };
+            //            }
+            //            else
+            //                returndata = Enumerable.Empty<XbimRegion>();
+            //            break;
+            //        case 2:
                         Xbim3DModelContext context = new Xbim3DModelContext(model);
                         returndata = new
                         {
                             MetreFactor = 1.0 / model.ModelFactors.OneMetre,
                             Regions = context.GetRegions()
                         };
-                        break;
-                    default:
-                        returndata = new { Error = String.Format("Unexpected Geometry Support Level {0}", model.GeometrySupportLevel) };
-                        break;
-                }
-            }
+            //            break;
+            //        default:
+            //            returndata = new { Error = String.Format("Unexpected Geometry Support Level {0}", model.GeometrySupportLevel) };
+            //            break;
+            //    }
+            //}
             return JsonConvert.SerializeObject(returndata);
         }
 
-        public string GetInstances()
+        public string GetShapeInstances()
         {
 
             Xbim3DModelContext m3d = new Xbim3DModelContext(model);
-            var sbs = m3d.ShapeInstances().Select(s => new XbimShapeBounds(s, m3d.ShapeGeometry(s)));
+            var sbs = m3d.ShapeInstances().Where(si=>si.RepresentationType==XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded).Select(s => new XbimShapeBounds(s, m3d.ShapeGeometry(s)));
             var message = new
             {
                 command = Commands.GetInstances,
@@ -122,7 +123,7 @@ namespace Xbim.WeXplorer.MVC4.Models
         /// Returns meta data about shapes that are multiply used
         /// </summary>
         /// <returns></returns>
-        public String GetShapeLibrary()
+        public String GetShapeGeometry()
         {
             object returndata;
 
@@ -141,81 +142,42 @@ namespace Xbim.WeXplorer.MVC4.Models
         }
 
 
-        public String GetStyleLibrary()
+        public String GetStyles()
         {
-            return "";
-            //Xbim3DModelContext context = new Xbim3DModelContext(model);
-            //XbimWebColourMap ColourMap = new XbimWebColourMap();
-
-            //List<XbimWebMaterial> Materials = new List<XbimWebMaterial>();
-
-            //foreach (var cm in ColourMap)
-            //{
-            //    XbimTexture t = new XbimTexture().CreateTexture(cm);
-            //    XbimWebMaterial m = new XbimWebMaterial();
-            //    m.CreateMaterial(t);
-            //    m.Material.MaterialID = cm.Name;
-            //    Materials.Add(m);
-            //}
-
-            //if (context.IsGenerated)
-            //{
-            //    IEnumerable<Int32> labels = context.GetShapeStyleLabels();
-
-            //    foreach (var label in labels)
-            //    {
-            //        XbimTexture t = new XbimTexture().CreateTexture(model.Instances[label] as IfcSurfaceStyle);
-            //        XbimWebMaterial m = new XbimWebMaterial();
-            //        m.CreateMaterial(t);
-            //        m.Material.MaterialID = label.ToString();
-            //        Materials.Add(m);
-            //    }
-            //}
-            //return JsonConvert.SerializeObject(Materials);
+            Xbim3DModelContext context = new Xbim3DModelContext(model);
+            return JsonConvert.SerializeObject(context.SurfaceStyles());
         }
 
-        public String GetProductShapes()
-        {
-            return null;
-            //object returndata;
-
-            //Xbim3DModelContext context = new Xbim3DModelContext(model);
-
-            //if (context.IsGenerated)
-            //{
-            //    var shapes = context.ProductShapes;
-            //    returndata = shapes.Select(s => s.GetSimpleMetadataObject());
-            //}
-            //else
-            //{
-            //    returndata = Enumerable.Empty<Int32>();
-            //}
-
-            //return JsonConvert.SerializeObject(returndata);
-        }
+       
 
         public object GetMeshes(String ids)
         {
-            return null;
-            // object returndata;
+            
+            object returndata;
 
-            //String[] stringids = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            String[] stringids = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            //IEnumerable<Int32> intIds = stringids.Select(s => Int32.Parse(s));
+            IEnumerable<Int32> intIds = stringids.Select(s => Int32.Parse(s));
 
-            //Xbim3DModelContext context = new Xbim3DModelContext(model);
+            Xbim3DModelContext context = new Xbim3DModelContext(model);
 
             //if (context.IsGenerated)
             //{
-            //    var shapes = context.Shapes(intIds, cache: false);
-            //    returndata = shapes.ToList();
+            List<object> shapes = new List<object>(intIds.Count());
+            foreach (var id in intIds)
+            {
+                XbimShapeGeometry g = context.ShapeGeometry(id);
+                dynamic d = new { id = g.ShapeLabel, data = g.ShapeData };
+                shapes.Add(d);
+            }
+            returndata = shapes.ToList();
             //}
             //else
             //{
             //    returndata = Enumerable.Empty<XbimShape>();
             //}
 
-            //return JsonConvert.SerializeObject(returndata);
+            return JsonConvert.SerializeObject(returndata);
         }
 
         public object GetGeometryVersion()
@@ -225,6 +187,12 @@ namespace Xbim.WeXplorer.MVC4.Models
                 GeometryVersion = model.GeometrySupportLevel
             };
             return JsonConvert.SerializeObject(data);
+        }
+
+        public String GetSceneOutline()
+        {
+            Xbim3DModelContext context = new Xbim3DModelContext(model);
+            return context.CreateSceneJS(); ;
         }
     }
 }
