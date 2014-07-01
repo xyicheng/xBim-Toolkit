@@ -29,9 +29,9 @@ namespace Xbim.ModelGeometry.Converter
 
         private void WriteCamera(JsonWriter writer)
         {
-            writer.WriteStartObject(); //the main scene
-            writer.WritePropertyName("nodes");
-            writer.WriteStartArray();
+            //writer.WriteStartObject(); //the main scene
+            //writer.WritePropertyName("nodes");
+            //writer.WriteStartArray();
             writer.WriteStartObject(); //the camera node
             writer.WritePropertyName("type"); writer.WriteValue("cameras/orbit"); //main camera node
             writer.WritePropertyName("id"); writer.WriteValue("camera");
@@ -51,8 +51,8 @@ namespace Xbim.ModelGeometry.Converter
             writer.WriteEndArray();
             writer.WriteEndObject(); //end of orbit camera
 
-            writer.WriteEndArray();
-            writer.WriteEndObject(); //end of nodes
+            //writer.WriteEndArray();
+            //writer.WriteEndObject(); //end of nodes
         }
 
         private static void WritePerspectiveCamera(JsonWriter writer)

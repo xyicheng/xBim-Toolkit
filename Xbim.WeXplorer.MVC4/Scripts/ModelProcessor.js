@@ -14,6 +14,11 @@
             shapes: []
         };
     }
+    processor.prototype.HandleSceneOutline = function (data) {
+        if (!data) return;
+        eventmanager.FireEvent("SceneOutline", data);
+    }
+
     processor.prototype.HandleShapeInstances = function (data)
     {
         if (!data) return;

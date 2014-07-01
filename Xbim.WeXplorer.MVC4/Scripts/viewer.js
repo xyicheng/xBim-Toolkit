@@ -65,14 +65,10 @@ define(['jquery', 'bootstrap', 'scenejs', 'modelloader', 'eventmanager', 'observ
         ]
     });
     var canvas = scene.getCanvas();
-
-    eventmanager.RegisterCallback("CreateSceneOutline", function (sceneOutline) {
+    eventmanager.RegisterCallback("SceneOutline", function (SceneOutline) {
         scene.getNode("XbimModelScene", function (XbimModelScene) {
-            XbimModelScene.addNode(sceneOutline);
+            XbimModelScene.addNode(SceneOutline);
         });
-
-        var scene = SceneJS.createScene(sceneOutline);
-        var canvas = scene.getCanvas();
     });
 
     eventmanager.RegisterCallback("ModelBounds", function (ModelBounds) {

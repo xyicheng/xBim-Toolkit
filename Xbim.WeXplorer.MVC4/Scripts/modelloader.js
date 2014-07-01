@@ -14,8 +14,8 @@
         this.GetData("GetSceneOutline", this.HandleSceneOutline);
     }
 
-    ModelLoader.prototype.GetSceneOutline = function (self, data) {
-        ModelProcessor.CreateSceneOutline(data);
+    ModelLoader.prototype.HandleSceneOutline = function (self, data) {
+        ModelProcessor.HandleSceneOutline(data);
     }
 
     //ModelLoader.prototype.HandleGeometrySupportLevel = function (self, data) {
