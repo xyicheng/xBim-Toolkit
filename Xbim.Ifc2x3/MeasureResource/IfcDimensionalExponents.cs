@@ -453,9 +453,40 @@ namespace Xbim.Ifc2x3.MeasureResource
             }
         }
 
+		  public static IfcDimensionalExponents DeriveDimensionalExponents(DerivedUnitElementSet UnitElements)
+		  {
+			  if(UnitElements.Count == 0)
+				  throw new ArgumentNullException();
+			  IModel model = UnitElements.FirstOrDefault().ModelOf;
+
+			  #region Strict Implementation
+			  IfcDimensionalExponents Result = new IfcDimensionalExponents(0, 0, 0, 0, 0, 0, 0);
+			  Result._model = model;
+			  foreach (IfcDerivedUnitElement unitElement in UnitElements)
+			  {
+				  Result.LengthExponent = Result.LengthExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.LengthExponent);
+				  Result.MassExponent = +Result.MassExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.MassExponent);
+				  Result.TimeExponent = Result.TimeExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.TimeExponent);
+				  Result.ElectricCurrentExponent = Result.ElectricCurrentExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.ElectricCurrentExponent);
+				  Result.ThermodynamicTemperatureExponent = Result.ThermodynamicTemperatureExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.ThermodynamicTemperatureExponent);
+				  Result.AmountOfSubstanceExponent = Result.AmountOfSubstanceExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.AmountOfSubstanceExponent);
+				  Result.LuminousIntensityExponent = Result.LuminousIntensityExponent +
+						(unitElement.Exponent * unitElement.Unit.Dimensions.LuminousIntensityExponent);
+			  }
+			  return Result;
+			  #endregion Strict Implementation
+		  }
         public static IfcDimensionalExponents DeriveDimensionalExponents(IfcUnit unit)
         {
-            throw new NotImplementedException();
+			  if (unit is IfcDerivedUnit)
+				  return DeriveDimensionalExponents((unit as IfcDerivedUnit).Elements);
+           throw new NotImplementedException();
         }
 
         public static IfcDimensionalExponents CorrectUnitAssignment(List<IfcUnit> units)
