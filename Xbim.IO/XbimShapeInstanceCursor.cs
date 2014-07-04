@@ -49,6 +49,9 @@ namespace Xbim.IO
         /// The transformation to be applied to shape to place it in the world coordinates
         /// </summary>
         BytesColumnValue _colValTransformation;
+        /// The bounding box of this instance, requires tranformation to place in world coordinates
+        /// </summary>
+        BytesColumnValue _colValBoundingBox;
 
         #endregion
 
@@ -142,6 +145,12 @@ namespace Xbim.IO
         private JET_COLUMNID _colIdTransformation;
 
         /// <summary>
+        /// The bounding box of this instance, requires tranformation to place in world coordinates
+        /// </summary>
+        const string colNameBoundingBox = "BoundingBox";
+
+        private JET_COLUMNID _colIdBoundingBox;
+        /// <summary>
         /// Holds all the table row values
         /// </summary>
         ColumnValue[] _colValues;
@@ -157,7 +166,7 @@ namespace Xbim.IO
             _colIdRepresentationContext = Api.GetTableColumnid(sesid, table, colNameRepresentationContext);
             _colIdRepType = Api.GetTableColumnid(sesid, table, colNameRepType);
             _colIdTransformation = Api.GetTableColumnid(sesid, table, colNameTransformation);
-            
+            _colIdBoundingBox = Api.GetTableColumnid(sesid, table, colNameBoundingBox);
 
             _colValInstanceLabel = new Int32ColumnValue { Columnid = _colIdInstanceLabel };
             _colValIfcTypeId = new Int16ColumnValue { Columnid = _colIdIfcTypeId };
@@ -167,10 +176,10 @@ namespace Xbim.IO
             _colValRepresentationContext = new Int32ColumnValue { Columnid = _colIdRepresentationContext };
             _colValRepType = new ByteColumnValue { Columnid = _colIdRepType };
             _colValTransformation = new BytesColumnValue { Columnid = _colIdTransformation };
+            _colValBoundingBox = new BytesColumnValue { Columnid = _colIdBoundingBox };
 
 
-
-            _colValues = new ColumnValue[] { _colValIfcTypeId, _colValIfcProductLabel, _colValStyleLabel, _colValShapeLabel, _colValRepresentationContext, _colValRepType, _colValTransformation };
+            _colValues = new ColumnValue[] { _colValIfcTypeId, _colValIfcProductLabel, _colValStyleLabel, _colValShapeLabel, _colValRepresentationContext, _colValRepType, _colValTransformation,_colValBoundingBox, };
 
 
 
@@ -231,6 +240,12 @@ namespace Xbim.IO
                 columndef.grbit = ColumndefGrbit.ColumnNotNULL;
                 columndef.cbMax = SizeOfTransformation;
                 Api.JetAddColumn(sesid, tableid, colNameTransformation, columndef, null, 0, out columnid);
+
+                //Bounding Box data
+                columndef.coltyp = JET_coltyp.Binary;
+                columndef.grbit = ColumndefGrbit.ColumnNotNULL;
+                Api.JetAddColumn(sesid, tableid, colNameBoundingBox, columndef, null, 0, out columnid);
+
                 string indexDef;
                 // The  index on the shape geometry label.
                 indexDef = string.Format("+{0}\0\0", colNameShapeLabel);
@@ -288,6 +303,7 @@ namespace Xbim.IO
                 _colValStyleLabel.Value = instance.StyleLabel;
                 _colValRepType.Value = instance.RepresentationType;
                 _colValTransformation.Value = instance.Transformation;
+                _colValBoundingBox.Value = instance.BoundingBox;
                 Api.SetColumns(sesid, table, _colValues);
                 instance.InstanceLabel = Api.RetrieveColumnAsInt32(sesid, table, _colIdInstanceLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
                 update.Save();
@@ -339,6 +355,7 @@ namespace Xbim.IO
             si.ShapeGeometryLabel = _colValShapeLabel.Value.Value;
             si.RepresentationType = _colValRepType.Value.Value;
             si.Transformation = _colValTransformation.Value;
+            si.BoundingBox = _colValBoundingBox.Value;
         }
 
        /// <summary>

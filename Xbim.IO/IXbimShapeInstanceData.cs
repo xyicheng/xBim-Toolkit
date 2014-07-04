@@ -39,5 +39,10 @@ namespace Xbim.IO
         /// The transformation to be applied to shape to place it in the world coordinates
         /// </summary>
         byte[] Transformation { get; set; }
+        /// <summary>
+        /// The bounding box of this instance, does not require tranformation to place in world coordinates
+        /// </summary>
+        byte[] BoundingBox { get; set; }
+       
     }
 }

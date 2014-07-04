@@ -349,13 +349,13 @@ namespace Xbim.Presentation
         
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-          
+            
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
             // the highlighting of the selected component is triggered by the change of SelectedEntity (see OnSelectedEntityChanged)
           //  _selectedMeshFragment = GetClickedMeshFragment(hit);
-            int label = (int)hit.ModelHit.GetValue(TagProperty);
-            XbimInstanceHandle selhandle = ((XbimInstanceHandle)this.GetValue(ModelProperty));
+            XbimInstanceHandle selhandle = ((XbimInstanceHandle)hit.ModelHit.GetValue(TagProperty));
+            
             var thisSelectedEntity = selhandle.GetEntity();
          //   return;
          //   var thisSelectedEntity = GetClickedEntity(hit);

@@ -33,10 +33,10 @@ namespace XbimThumbnail
 
             try
             {
-                if (args.Length < 2) throw new Exception("Invalid number of Parameters, 1 required");
+                if (args.Length < 1) throw new Exception("Invalid number of Parameters, 1 required");
                 SourceModelName = GetModelFileName(args[0], ".ifc");
                 if (!File.Exists(SourceModelName)) throw new Exception(SourceModelName + " does not exist");
-                TargetThumbnailName = args[1];
+                if (args.Length > 1) TargetThumbnailName = args[1]; else TargetThumbnailName = "Thumbnail.bmp";
                 if (args.Length > 2) Width = Int32.Parse(args[2]); else { Width = 800; Height = 600; }
                 if (args.Length > 3) Height = Int32.Parse(args[3]); else Height = (int) (Width * 0.8);
                 SourceIsXbimFile = Path.GetExtension(SourceModelName).ToLower() == ".xbim";

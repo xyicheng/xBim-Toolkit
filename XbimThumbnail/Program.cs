@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using Xbim.IO;
@@ -24,13 +25,20 @@ namespace XbimThumbnail
                         Console.Write(string.Format("{0:D5}", percentProgress));
                         ResetCursor(Console.CursorTop);
                     };
+                    //resolve the DLL paths
+                     
+                 //  string basePath = ConfigurationManager.AppSettings["OCCpath"];
+                    string basePath = @"c:\xbim";
+                    Console.WriteLine("Updated");
+                    AssemblyResolver.GetModelGeometryAssembly(basePath);
+                    
                     using (XbimModel model = new XbimModel())
                     {
                         Console.WriteLine(string.Format("Reading {0}", arguments.SourceModelName));
                         if (arguments.SourceIsXbimFile)
                             model.Open(arguments.SourceModelName);
                         else
-                            model.CreateFrom(arguments.SourceModelName, null, progDelegate, true);
+                            model.CreateFrom(arguments.SourceModelName, null, null, true);
                         Console.WriteLine();
                         Console.WriteLine("Compiling Geometry");
                         Xbim3DModelContext m3d = new Xbim3DModelContext(model);
@@ -41,10 +49,26 @@ namespace XbimThumbnail
                         catch (Exception ce)
                         {
                             Console.WriteLine("Error compiling geometry, " + ce.Message);
+                            Exception next = ce.InnerException;
+                            while (next != null)
+                            {
+                                Console.WriteLine(next.Message);
+                                next = next.InnerException;
+                            }
                         }
-                        Console.WriteLine();
-                        Console.WriteLine("Creating Thumbnail");
-                        DrawingControl3D.CreateThumbnail(model, arguments.TargetThumbnailName, arguments.Width, arguments.Height, model.IfcProject.Name);
+                        try
+                        {
+
+
+                            Console.WriteLine();
+                            Console.WriteLine("Creating Thumbnail");
+                            DrawingControl3D.CreateThumbnail(model, arguments.TargetThumbnailName, arguments.Width, arguments.Height, model.IfcProject.Name);
+                        }
+                        catch (Exception ce)
+                        {
+
+                            Console.WriteLine("Error creating thumbnail geometry, " + ce.Message);
+                        }
                     }
                 }
                 catch (Exception e)

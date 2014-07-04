@@ -905,12 +905,14 @@ IncorporateHoles:
 			//Transforms the polyhedron by the specified matrix
 			void XbimPolyhedron::TransformBy(XbimMatrix3D t)
 			{
+				if(_meshSet==nullptr) return;
 				carve::math::Matrix m(t.M11,t.M21,t.M31,t.OffsetX,
 					t.M12,t.M22,t.M32,t.OffsetY,
 					t.M13,t.M23,t.M33,t.OffsetZ,
 					t.M14,t.M24,t.M34,t.M44);
 				carve::math::matrix_transformation mt(m);
 				_meshSet->transform(mt);
+				
 			}
 
 

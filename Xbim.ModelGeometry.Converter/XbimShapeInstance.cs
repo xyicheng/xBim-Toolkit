@@ -82,6 +82,10 @@ namespace Xbim.ModelGeometry.Converter
         /// The transformation to be applied to shape to place it in the world coordinates
         /// </summary>
         XbimMatrix3D _transformation;
+        /// <summary>
+        /// The bounding box of this instance, requires tranformation to place in world coordinates
+        /// </summary>
+        XbimRect3D _boundingBox;
 
         public XbimShapeInstance(int Id=-1)
         {
@@ -93,6 +97,7 @@ namespace Xbim.ModelGeometry.Converter
             _representationContext = -1;
             _representationType = XbimGeometryRepresentationType.OpeningsAndAdditionsExcluded;
             _transformation = XbimMatrix3D.Identity;
+            _boundingBox = XbimRect3D.Empty;
         }
         public int InstanceLabel
         {
@@ -215,6 +220,34 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
+        /// <summary>
+        /// The bounding box of this instance, does not require tranformation to place in world coordinates
+        /// </summary>
+        public XbimRect3D BoundingBox
+        {
+            get
+            {
+                return _boundingBox;
+            }
+            set
+            {
+                _boundingBox = value;
+            }
+        }
+        /// <summary>
+        /// The bounding box of this instance, does not require tranformation to place in world coordinates
+        /// </summary>
+        byte[] IXbimShapeInstanceData.BoundingBox
+        {
+            get
+            {
+                return _boundingBox.ToFloatArray();
+            }
+            set
+            {
+                _boundingBox = XbimRect3D.FromArray(value);
+            }
+        }
         /// <summary>
         /// returns true if the shape instance has a defined style
         /// </summary>

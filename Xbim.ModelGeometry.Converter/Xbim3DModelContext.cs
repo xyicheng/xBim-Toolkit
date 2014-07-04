@@ -546,7 +546,10 @@ namespace Xbim.ModelGeometry.Converter
                        elementGeom = elementGeom.Cut(m, _model.ModelFactors);
                        
                    }
-                  
+                   XbimMatrix3D elemTransform = element.ObjectPlacement.ToMatrix3D();
+                   XbimMatrix3D elemTransforminverted = elemTransform;
+                   elemTransforminverted.Invert();
+                   elementGeom.TransformBy(elemTransforminverted);// move geometry back to transform space to make the boundingbox more credible
                    //now add to the DB
                    XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()
                    {
@@ -566,7 +569,8 @@ namespace Xbim.ModelGeometry.Converter
                        RepresentationType = XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded,
                        RepresentationContext = context,
                        IfcTypeId = IfcMetaData.IfcTypeId(element),
-                       Transformation = XbimMatrix3D.Identity //no transformation required
+                       Transformation =  elemTransform,
+                       BoundingBox = elementGeom.GetBoundingBox()
                    };
                    features.Add(new Tuple<XbimShapeInstance, XbimShapeGeometry>(shapeInstance, shapeGeometry));
 
@@ -717,16 +721,6 @@ namespace Xbim.ModelGeometry.Converter
                     WriteProductShape(shapeLookup, mapsWritten, allMapBounds, clusters, product, true);
                 }
 
-                //Interlocked.Increment(ref localTally);
-                //if (progDelegate != null)
-                //{
-                //    int newPercentage = Convert.ToInt32((double)localTally / total * 100.0);
-                //    if (newPercentage > localPercentageParsed)
-                //    {
-                //        localPercentageParsed = newPercentage;
-                //        progDelegate(localPercentageParsed, "Meshing");
-                //    }
-                //}
             }
           );
             tally = localTally;
@@ -791,15 +785,16 @@ namespace Xbim.ModelGeometry.Converter
                 if (geomLabels.Any())
                 {
                     List<XbimShapeInstance> shapesInstances = new List<XbimShapeInstance>(geomLabels.Count);
-                    productBounds = productBounds.Transform(placementTransform);
+                    
                     int contextId = Math.Abs(rep.ContextOfItems.EntityLabel);
                     foreach (var instance in geomLabels)
                     {
                         shapesInstances.Add(
                             WriteShapeInstanceToDB(_model, instance.GeometryId, instance.StyleLabel, contextId, element,
-                                       placementTransform,
+                                       placementTransform, productBounds,
                                        includesOpenings ? XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded : XbimGeometryRepresentationType.OpeningsAndAdditionsExcluded)
                             );
+                        productBounds = productBounds.Transform(placementTransform); //transform the bounds
                         clusters[rep.ContextOfItems].Enqueue(new XbimBBoxClusterElement(instance.GeometryId, productBounds));
                     }
                     return shapesInstances;
@@ -1076,7 +1071,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <param name="geom"></param>
         /// <param name="refCount">Number of other references to this geometry</param>
         /// <returns></returns>
-        XbimShapeInstance WriteShapeInstanceToDB(XbimModel model, int shapeLabel, int styleLabel, int ctxtId, IfcProduct product, XbimMatrix3D placementTransform, XbimGeometryRepresentationType repType)
+        XbimShapeInstance WriteShapeInstanceToDB(XbimModel model, int shapeLabel, int styleLabel, int ctxtId, IfcProduct product, XbimMatrix3D placementTransform, XbimRect3D bounds, XbimGeometryRepresentationType repType)
         {
 
             XbimShapeInstance shapeInstance = new XbimShapeInstance()
@@ -1088,6 +1083,7 @@ namespace Xbim.ModelGeometry.Converter
                  RepresentationContext = ctxtId,
                  IfcTypeId = IfcMetaData.IfcTypeId(product),
                  Transformation = placementTransform,
+                 BoundingBox=bounds
              };
             XbimShapeInstanceCursor geomTable = model.GetShapeInstanceTable();
             try
