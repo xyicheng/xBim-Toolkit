@@ -352,13 +352,56 @@ namespace Xbim.Presentation
             
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
-            // the highlighting of the selected component is triggered by the change of SelectedEntity (see OnSelectedEntityChanged)
-          //  _selectedMeshFragment = GetClickedMeshFragment(hit);
-            XbimInstanceHandle selhandle = ((XbimInstanceHandle)hit.ModelHit.GetValue(TagProperty));
+            if (hit == null || hit.ModelHit == null)
+            {
+                Selection.Clear();
+                HighlighSelected(null);
+                return;
+            };
+           
+            object hitObject = hit.ModelHit.GetValue(TagProperty);
+            IPersistIfcEntity thisSelectedEntity=null;
+            if (hitObject is XbimInstanceHandle)
+            {
+                XbimInstanceHandle selhandle = (XbimInstanceHandle)hitObject;
+                thisSelectedEntity = selhandle.GetEntity();
+            }
+            else if (hitObject is WpfMeshGeometry3D)
+            {
+                WpfMeshGeometry3D mesh = hitObject as WpfMeshGeometry3D;
+                var frag = mesh.Meshes.Find(hit.VertexIndex1);
+                short modelId = frag.ModelId;
+                XbimModel modelHit = null; //default to not hit
+                if (modelId == 0) modelHit = this.Model;
+                else
+                {
+                    foreach (var refModel in this.Model.ReferencedModels)
+                    {
+                        if (refModel.Model.UserDefinedId == modelId)
+                        {
+                            modelHit = refModel.Model;
+                            break;
+                        }
+                    }
+                }
+                if (modelHit != null)
+                {
+                    if (frag.IsEmpty)
+                        frag = mesh.Meshes.Find(hit.VertexIndex2);
+                    if (frag.IsEmpty)
+                        frag = mesh.Meshes.Find(hit.VertexIndex3);
+                    if (!frag.IsEmpty)
+                    {
+                        thisSelectedEntity = modelHit.Instances[frag.EntityLabel];
+                    }
+                }
+            }
+            else
+            {
+                Selection.Clear();
+                HighlighSelected(null);
+            }
             
-            var thisSelectedEntity = selhandle.GetEntity();
-         //   return;
-         //   var thisSelectedEntity = GetClickedEntity(hit);
             if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
                 // default behaviour is single selection
@@ -738,145 +781,144 @@ namespace Xbim.Presentation
         /// <param name="newVal"></param>
         private void HighlighSelected(IPersistIfcEntity newVal)
         {
-            //srl need to redo this
-            //XbimMeshGeometry3D m = new XbimMeshGeometry3D();
+          
+            XbimMeshGeometry3D m = new XbimMeshGeometry3D();
+           
+            // 1. get the geometry first
+            if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
+            {
+                foreach (var item in Selection)
+                {
+                    var fromModel = item.ModelOf as XbimModel;
+                    if (fromModel != null)
+                    {
+                        short modelId = fromModel.UserDefinedId;
+                        double metre = fromModel.ModelFactors.OneMetre;
+                        wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
+           
+                        Xbim3DModelContext context = new Xbim3DModelContext(fromModel);
+                        List<XbimShapeInstance> productShape = context.ShapeInstancesOf((IfcProduct)newVal).Where(s => s.RepresentationType != XbimGeometryRepresentationType.OpeningsAndAdditionsExcluded).ToList();
+                        if (productShape.Any())
+                        {
 
-            //// 1. get the geometry first
-            //if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
-            //{
-            //    foreach (var item in Selection)
-            //    {
-            //        var fromModel = item.ModelOf as XbimModel;
-            //        if (fromModel != null)
-            //        {
-            //            short modelId = fromModel.UserDefinedId;
-            //            Xbim3DModelContext context = new Xbim3DModelContext(fromModel);
-            //            XbimProductShape productShape = context.GetProductShape((IfcProduct)newVal);
-            //            if (productShape != null)
-            //            {
-            //                XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
-            //                foreach (var shape in productShape.Shapes)
-            //                {
-            //                    XbimMatrix3D? shapeTransform = shape.Transform;
-            //                    if (shapeTransform.HasValue)
-            //                        //add the shape to the right layer
-            //                        m.Add(shape.MeshString, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, shapeTransform.Value * prodTransform, modelId);
-            //                    else
-            //                        //add the shape to the right layer
-            //                        m.Add(shape.MeshString, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform, modelId);
-            //                }
-            //            }
-            //        }
+                            foreach (var shapeInstance in productShape)
+                            {
+                                XbimShapeGeometry shapeGeom = context.ShapeGeometry(shapeInstance.ShapeGeometryLabel);
+                                m.Add(shapeGeom.ShapeData, shapeInstance.IfcTypeId, shapeInstance.IfcProductLabel, shapeInstance.InstanceLabel, XbimMatrix3D.Multiply(shapeInstance.Transformation,wcsTransform), modelId);
+                            }
+                        }
+                    }
 
-            //    }
-            //}
-            //else if (newVal != null)
-            //{
-            //    var fromModel = newVal.ModelOf as XbimModel;
+                }
+            }
+            else if (newVal != null)
+            {
+                var fromModel = newVal.ModelOf as XbimModel;
 
-            //    if (fromModel != null && newVal is IfcProduct)
-            //    {
-            //        Xbim3DModelContext context = new Xbim3DModelContext(fromModel);
-            //        XbimProductShape productShape = context.GetProductShape((IfcProduct)newVal);
-            //        if (productShape != null)
-            //        {
-            //            XbimMatrix3D prodTransform = productShape.Placement * wcsTransform;
-            //            foreach (var shape in productShape.Shapes)
-            //            {
-            //                XbimMatrix3D? shapeTransform = shape.Transform;
-            //                if (shapeTransform.HasValue)
-            //                    //add the shape to the right layer
-            //                    m.Add(shape.MeshString, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, shapeTransform.Value * prodTransform, fromModel.UserDefinedId);
-            //                else
-            //                    //add the shape to the right layer
-            //                    m.Add(shape.MeshString, productShape.ProductType, productShape.ProductLabel, shape.GeometryLabel, prodTransform, fromModel.UserDefinedId);
-            //            }
-            //        }
-            //    }
-            //}
+                if (fromModel != null && newVal is IfcProduct)
+                {
+                    Xbim3DModelContext context = new Xbim3DModelContext(fromModel);
+                    short modelId = fromModel.UserDefinedId;
+                    double metre = fromModel.ModelFactors.OneMetre;
+                    wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
+           
+                    List<XbimShapeInstance> productShape = context.ShapeInstancesOf((IfcProduct)newVal).Where(s=>s.RepresentationType!=XbimGeometryRepresentationType.OpeningsAndAdditionsExcluded).ToList();
+                    if (productShape.Any())
+                    {
 
-            //// 2. then determine how to highlight it
-            ////
-            //if (SelectionHighlightMode == SelectionHighlightModes.WholeMesh)
-            //{
-            //    List<Point3D> ps = new List<Point3D>(m.PositionCount);
-            //    foreach (var item in m.Positions)
-            //    {
-            //        ps.Add(new Point3D(item.X, item.Y, item.Z));
-            //    }
-            //    // Highlighted is defined in the XAML of drawingcontrol3d
-            //    Highlighted.Mesh = new Mesh3D(ps, m.TriangleIndices);
-            //}
-            //else if (SelectionHighlightMode == SelectionHighlightModes.Normals)
-            //{
-            //    // prepares the normals to faces (or points)
-            //    var axesMeshBuilder = new MeshBuilder();
-            //    for (int i = 0; i < m.TriangleIndices.Count; i += 3)
-            //    {
-            //        int p1 = m.TriangleIndices[i];
-            //        int p2 = m.TriangleIndices[i + 1];
-            //        int p3 = m.TriangleIndices[i + 2];
+                        foreach (var shapeInstance in productShape)
+                        {
+                            XbimShapeGeometry shapeGeom = context.ShapeGeometry(shapeInstance.ShapeGeometryLabel);
+                            m.Add(shapeGeom.ShapeData, shapeInstance.IfcTypeId, shapeInstance.IfcProductLabel, shapeInstance.InstanceLabel, XbimMatrix3D.Multiply(shapeInstance.Transformation,wcsTransform), modelId);
 
-            //        if (m.Normals[p1] == m.Normals[p2] && m.Normals[p1] == m.Normals[p3]) // same normals
-            //        {
-            //            var cnt = FindCentroid(new XbimPoint3D[] { m.Positions[p1], m.Positions[p2], m.Positions[p3] });
-            //            CreateNormal(cnt, m.Normals[p1], axesMeshBuilder);
-            //        }
-            //        else
-            //        {
-            //            CreateNormal(m.Positions[p1], m.Normals[p1], axesMeshBuilder);
-            //            CreateNormal(m.Positions[p2], m.Normals[p2], axesMeshBuilder);
-            //            CreateNormal(m.Positions[p3], m.Normals[p3], axesMeshBuilder);
-            //        }
-            //    }
-            //    Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
-            //}
-            //else
-            //{
-            //    var axesMeshBuilder = new MeshBuilder();
-            //    if (newVal != null)
-            //    {
-            //        XbimRect3D box = XbimRect3D.Empty;
-            //        for (int i = 0; i < m.TriangleIndices.Count; i += 3)
-            //        {
-            //            int p1 = m.TriangleIndices[i];
-            //            int p2 = m.TriangleIndices[i + 1];
-            //            int p3 = m.TriangleIndices[i + 2];
+                        }
+                    }
+                }
+            }
 
-            //            // box evaluation
-            //            box.Union(new XbimPoint3D(m.Positions[p1].X, m.Positions[p1].Y, m.Positions[p1].Z));
-            //            box.Union(new XbimPoint3D(m.Positions[p2].X, m.Positions[p2].Y, m.Positions[p2].Z));
-            //            box.Union(new XbimPoint3D(m.Positions[p3].X, m.Positions[p3].Y, m.Positions[p3].Z));
-            //        }
+            // 2. then determine how to highlight it
+            //
+            if (SelectionHighlightMode == SelectionHighlightModes.WholeMesh)
+            {
+                List<Point3D> ps = new List<Point3D>(m.PositionCount);
+                foreach (var item in m.Positions)
+                {
+                    ps.Add(new Point3D(item.X, item.Y, item.Z));
+                }
+                // Highlighted is defined in the XAML of drawingcontrol3d
+                Highlighted.Mesh = new Mesh3D(ps, m.TriangleIndices);
+                
+            }
+            else if (SelectionHighlightMode == SelectionHighlightModes.Normals)
+            {
+                // prepares the normals to faces (or points)
+                var axesMeshBuilder = new MeshBuilder();
+                for (int i = 0; i < m.TriangleIndices.Count; i += 3)
+                {
+                    int p1 = m.TriangleIndices[i];
+                    int p2 = m.TriangleIndices[i + 1];
+                    int p3 = m.TriangleIndices[i + 2];
 
-            //        double bl = box.Length();
-            //        double LineThickness = bl / 1000; // 0.01;
+                    if (m.Normals[p1] == m.Normals[p2] && m.Normals[p1] == m.Normals[p3]) // same normals
+                    {
+                        var cnt = FindCentroid(new XbimPoint3D[] { m.Positions[p1], m.Positions[p2], m.Positions[p3] });
+                        CreateNormal(cnt, m.Normals[p1], axesMeshBuilder);
+                    }
+                    else
+                    {
+                        CreateNormal(m.Positions[p1], m.Normals[p1], axesMeshBuilder);
+                        CreateNormal(m.Positions[p2], m.Normals[p2], axesMeshBuilder);
+                        CreateNormal(m.Positions[p3], m.Normals[p3], axesMeshBuilder);
+                    }
+                }
+                Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
+            }
+            else
+            {
+                var axesMeshBuilder = new MeshBuilder();
+                if (newVal != null)
+                {
+                    XbimRect3D box = XbimRect3D.Empty;
+                    for (int i = 0; i < m.TriangleIndices.Count; i += 3)
+                    {
+                        int p1 = m.TriangleIndices[i];
+                        int p2 = m.TriangleIndices[i + 1];
+                        int p3 = m.TriangleIndices[i + 2];
 
-            //        for (int i = 0; i < m.TriangleIndices.Count; i += 3)
-            //        {
-            //            int p1 = m.TriangleIndices[i];
-            //            int p2 = m.TriangleIndices[i + 1];
-            //            int p3 = m.TriangleIndices[i + 2];
+                        // box evaluation
+                        box.Union(new XbimPoint3D(m.Positions[p1].X, m.Positions[p1].Y, m.Positions[p1].Z));
+                        box.Union(new XbimPoint3D(m.Positions[p2].X, m.Positions[p2].Y, m.Positions[p2].Z));
+                        box.Union(new XbimPoint3D(m.Positions[p3].X, m.Positions[p3].Y, m.Positions[p3].Z));
+                    }
+
+                    double bl = box.Length();
+                    double LineThickness = bl / 1000; // 0.01;
+
+                    for (int i = 0; i < m.TriangleIndices.Count; i += 3)
+                    {
+                        int p1 = m.TriangleIndices[i];
+                        int p2 = m.TriangleIndices[i + 1];
+                        int p3 = m.TriangleIndices[i + 2];
                         
 
-            //            List<Point3D> path = new List<Point3D>();
-            //            path.Add(new Point3D(m.Positions[p1].X, m.Positions[p1].Y, m.Positions[p1].Z));
-            //            path.Add(new Point3D(m.Positions[p2].X, m.Positions[p2].Y, m.Positions[p2].Z));
-            //            path.Add(new Point3D(m.Positions[p3].X, m.Positions[p3].Y, m.Positions[p3].Z));
+                        List<Point3D> path = new List<Point3D>();
+                        path.Add(new Point3D(m.Positions[p1].X, m.Positions[p1].Y, m.Positions[p1].Z));
+                        path.Add(new Point3D(m.Positions[p2].X, m.Positions[p2].Y, m.Positions[p2].Z));
+                        path.Add(new Point3D(m.Positions[p3].X, m.Positions[p3].Y, m.Positions[p3].Z));
 
                         
-            //            axesMeshBuilder.AddTube(path, LineThickness, 9, true);
+                        axesMeshBuilder.AddTube(path, LineThickness, 9, true);
 
-            //        }
+                    }
                     
-            //        HideAll();
-            //    }
-            //    else
-            //    {
-            //        ShowAll();
-            //    }
-            //    Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
-            //}
+                    HideAll();
+                }
+                else
+                {
+                    ShowAll();
+                }
+                Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
+            }
         }
 
         #endregion
@@ -1423,7 +1465,7 @@ namespace Xbim.Presentation
                 wpfMaterial.CreateMaterial(style);
                 styles.Add(style.DefinedObjectId, wpfMaterial);
                 WpfMeshGeometry3D mg = new WpfMeshGeometry3D(wpfMaterial, wpfMaterial);
-                
+                mg.WpfModel.SetValue(TagProperty, mg);
                 meshSets.Add(style.DefinedObjectId, mg);
                 if (style.IsTransparent)
                     transparents.Children.Add(mg);
@@ -1485,6 +1527,7 @@ namespace Xbim.Presentation
                             shapeInstance.IfcProductLabel,
                             shapeInstance.InstanceLabel,
                             XbimMatrix3D.Multiply(shapeInstance.Transformation, wcsTransform),0);
+
                     }
                 }
 

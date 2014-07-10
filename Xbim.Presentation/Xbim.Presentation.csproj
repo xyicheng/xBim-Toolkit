@@ -120,6 +120,7 @@
     <Compile Include="LayerStyling\LayerStylerV2CustomGroups.cs" />
     <Compile Include="LayerStyling\LayerStylerV2TypeAndStyle.cs" />
     <Compile Include="Rect3DExtensions.cs" />
+    <Compile Include="WpfExtensions.cs" />
     <Compile Include="Xbim3DViewerControl.xaml.cs">
       <DependentUpon>Xbim3DViewerControl.xaml</DependentUpon>
     </Compile>

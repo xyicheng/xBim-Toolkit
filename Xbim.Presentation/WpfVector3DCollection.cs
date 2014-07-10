@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Xbim.Common.Geometry;
 
@@ -95,4 +96,6 @@ namespace Xbim.Presentation
             return new WpfVector3DCollectionEnumerator(this.wpfVectors);
         }
     }
+
+
 }

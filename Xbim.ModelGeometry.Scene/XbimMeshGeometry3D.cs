@@ -102,10 +102,10 @@ namespace Xbim.ModelGeometry.Scene
                                 int faceCount = 128;
                                 int triangleCount = 256;
                                 int normalCount = 512;
-                                if (tokens.Length > 1) pointCount = Int32.Parse(tokens[1]);
-                                if (tokens.Length > 2) faceCount = Int32.Parse(tokens[2]);
-                                if (tokens.Length > 3) triangleCount = Int32.Parse(tokens[3]);
-                                if (tokens.Length > 4) normalCount = Int32.Parse(tokens[4]);
+                                if (tokens.Length > 1) pointCount = Int32.Parse(tokens[2]);
+                                if (tokens.Length > 2) faceCount = Int32.Parse(tokens[3]);
+                                if (tokens.Length > 3) triangleCount = Int32.Parse(tokens[4]);
+                                if (tokens.Length > 4) normalCount = Int32.Parse(tokens[5]);
                                 vertexList = new List<XbimPoint3D>(pointCount);
                                 normalList = new List<XbimVector3D>(normalCount);
                                 break;

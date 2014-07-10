@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "XbimPolyhedron.h"
 #include "XbimCsg.h"
-#include "XbimTriangularMeshStreamer.h"
+
 #include <carve/mesh.hpp>
 #include <carve/csg.hpp>
 #include <carve/input.hpp>
@@ -291,7 +291,15 @@ namespace Xbim
 				
 			}
 
-			
+			XbimPolyhedron::XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, XbimNormalMap* normalMap, int representationLabel, int styleLabel)
+			{
+				_bounds=XbimRect3D::Empty;
+				_meshSet = mesh;
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=styleLabel;
+				_normalMap = normalMap;
+
+			}
 
 			XbimPolyhedron::XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel)
 			{
@@ -889,8 +897,15 @@ IncorporateHoles:
 				{
 					delete _meshSet;
 					_meshSet=nullptr;
+					temp = System::Threading::Interlocked::Exchange(IntPtr(_normalMap), IntPtr(0));
+					if(temp!=IntPtr(0))
+					{
+						delete _normalMap;
+						_normalMap=nullptr;
+					}
 					System::GC::SuppressFinalize(this);
 				}
+
 				XbimGeometryModel::InstanceCleanup();
 			}
 
@@ -1051,6 +1066,7 @@ IncorporateHoles:
 			{
 				
 				double precision = modelFactors==nullptr?1e-5:modelFactors->Precision;
+				size_t rounding =  (size_t)(modelFactors==nullptr?4:modelFactors->Rounding);
 				StringBuilder^ sw = gcnew StringBuilder();
 				size_t normalsOffset=-1;
 				int vCount=0, fCount=0, tCount=0, nCount=0;
@@ -1064,77 +1080,120 @@ IncorporateHoles:
 					sw->Append(String::Format(" {0},{1},{2}",vt.v.x,vt.v.y,vt.v.z));
 				}
 				sw->AppendLine();
+				//write out any compound faces (curved surfaces typically)
+
+				std::vector<std::pair<size_t, face_t*>> faceGroups; //pairs to assoc surfaceID with face
+				
+				std::unordered_map<face_t*,size_t> faceNormals;	
+				if(_normalMap==nullptr) _normalMap = new XbimNormalMap();
+				
 				for (meshset_t::face_iter i = _meshSet->faceBegin(), e = _meshSet->faceEnd(); i != e; ++i) 
 				{
+					fCount++;
 					face_t *face = *i;
+					size_t surfaceID = _normalMap->GetSurfaceIdOfFace(face);
+					faceGroups.push_back(std::make_pair(surfaceID,face));
+					if(surfaceID==0) //it is a planar face we need to add its normal
+					{
+						vector_t n =  face->plane.N;	
+						Double3D n3D(n.x,n.y,n.z,precision,rounding);
+						faceNormals[face]=_normalMap->AddNormal(n3D);
+					}
+				}
+				
+				std::sort(faceGroups.begin(), faceGroups.end(), sortFaceGroup());
+				//write the normals
+				const std::vector<Double3D>& uniqueNormals = _normalMap->UniqueNormals();
+				nCount =uniqueNormals.size();
+				if(uniqueNormals.size()>0)
+				{
+					sw->Append("N");
+					for (std::vector<Double3D>::const_iterator i = uniqueNormals.begin(); i !=uniqueNormals.end(); ++i)
+					{
+						Double3D norm = *i;
+						sw->Append(String::Format(" {0},{1},{2}",Math::Round(norm.Dim1,4),Math::Round(norm.Dim2,4),Math::Round(norm.Dim3,4)));
+						
+					}
+					sw->AppendLine();
+				}
+			
+
+				size_t currentGroup =  std::numeric_limits<std::size_t>::max(); //the current group is undefined
+				bool firstTime=true;
+				bool planarSurface = true;
+				for (std::vector<std::pair<size_t, face_t*>>::iterator i = faceGroups.begin(), e = faceGroups.end(); i != e; ++i) 
+				{
+					size_t surfaceGroup = i->first;
+					face_t *face = i->second;
 					int numVertices = face->nVertices();
+				
 					if(numVertices>0)
 					{
-						
-						//sort the normal
-						vector_t n =  face->plane.N;
-						n.normalize();
-						gp_Dir normal(n.x,n.y,n.z);
-						
-						String^ f = "$"; //the name of the face normal if it is a simple (LRUPFB)
-						if(normal.IsEqual(gp::DX(),0.1)) f="R";
-						else if(normal.IsOpposite(gp::DX(),0.1)) f="L";
-						else if(normal.IsEqual(gp::DY(),0.1)) f="B";
-						else if(normal.IsOpposite(gp::DY(),0.1)) f="F";
-						else if(normal.IsEqual(gp::DZ(),0.1)) f="U";
-						else if(normal.IsOpposite(gp::DZ(),0.1)) f="D";
-						else
-						{
-							if(abs(normal.X())<precision) normal.SetX(0.);
-							if(abs(normal.Y())<precision) normal.SetY(0.);
-							if(abs(normal.Z())<precision) normal.SetZ(0.);
-							sw->AppendFormat("N {0},{1},{2}",(float)normal.X(),(float)normal.Y(),(float)normal.Z()); nCount++;
-							sw->AppendLine();
-							normalsOffset++;//we will have written out this number of normals
-						} 
 
+						//if the face is a triangle just do it
+						std::vector<carve::triangulate::tri_idx> result;
 						std::vector<carve::geom::vector<2> > projectedVerts;
 						face->getProjectedVertices(projectedVerts);
 						std::vector<carve::mesh::MeshSet<3>::vertex_t *> verts;
-						face->getVertices(verts);
-						std::vector<carve::triangulate::tri_idx> result;
+						face->getVertices(verts);						
 						carve::triangulate::triangulate(projectedVerts,result,precision);
 
-						bool firstTime=true;
-						sw->Append("T"); 
+						if(currentGroup!=surfaceGroup || surfaceGroup==0)
+						{
+							firstTime=true;
+							if(currentGroup!=std::numeric_limits<std::size_t>::max())
+								sw->AppendLine();
+							sw->Append("T"); 
+						    planarSurface = _normalMap->IsPlanarSurface(surfaceGroup);
+						}
+						
 						for (size_t i = 0; i < result.size(); i++)
 						{
 							tCount++;
 							ptrdiff_t a = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].a]);
 							ptrdiff_t b = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].b]);
 							ptrdiff_t c = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[result[i].c]);
-							if(firstTime)
+
+							if(planarSurface) // normals are the same
 							{
-								if(f=="$") //face name is undefined
-									sw->AppendFormat(" {0}/{3},{1},{2}", a,b,c, normalsOffset);
+								if(firstTime)
+								{
+									size_t normalIndex;
+									if(surfaceGroup==0)
+										normalIndex= faceNormals[face]; //just get the first normal
+									else
+										normalIndex= _normalMap->GetNormalIndexToAnyVertexOnSurface(surfaceGroup);
+									sw->AppendFormat(" {0}/{3},{1},{2}", a,b,c, normalIndex);
+									firstTime=false;
+								}
 								else
-									sw->AppendFormat(" {0}/{3},{1},{2}", a,b,c, f);
-								firstTime=false;
+									sw->AppendFormat(" {0},{1},{2}", a,b,c);
 							}
-							else
-								sw->AppendFormat(" {0},{1},{2}", a,b,c, f);
+							else //each point has its own normal
+							{
+								size_t an = _normalMap->GetNormalIndexToVertexOnSurface(surfaceGroup,a);
+								size_t bn = _normalMap->GetNormalIndexToVertexOnSurface(surfaceGroup,b);
+								size_t cn = _normalMap->GetNormalIndexToVertexOnSurface(surfaceGroup,c);
+								sw->AppendFormat(" {0}/{3},{1}/{4},{2}/{5}", a,b,c, an,bn,cn);
+							}
 						}	
-						sw->AppendLine();
-						sw->Append("F"); fCount++; //write out the face boundaries
-						for (size_t i = 0; i < verts.size(); i++)
-						{
-							ptrdiff_t a = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[i]);
-							sw->Append(" ");
-							sw->Append(a);
-						}	
-						sw->AppendLine();
+						//sw->AppendLine();
+						//sw->Append("F"); fCount++; //write out the face boundaries
+						//for (size_t i = 0; i < verts.size(); i++)
+						//{
+						//	ptrdiff_t a = carve::poly::ptrToIndex_fast(_meshSet->vertex_storage,verts[i]);
+						//	sw->Append(" ");
+						//	sw->Append(a);
+						//}	
+						//sw->AppendLine();
+						currentGroup=surfaceGroup;
 					}
 				}
 				//Polyhedron header =  Version | Vertices Count | Face Count | Trianngle Count
 				String^ def = String::Format("P {0} {1} {2} {3} {4}\n", 1, vCount, fCount, tCount, nCount );
 				return def + sw->ToString();
 			}
-			
+
 			XbimPolyhedron^ XbimPolyhedron::ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding)
 			{
 				return this;
@@ -1616,5 +1675,6 @@ IncorporateHoles:
 			}
 		}
 
+		
 	}
 }

@@ -40,8 +40,12 @@ namespace Xbim.IO
         /// </summary>
         byte[] BoundingBox { get; set; }
         /// <summary>
-        /// The geometry data defining the shape
+        /// The geometry data defining the shape in zip compression
         /// </summary>
-        byte[] ShapeData{get;set;}
+        byte[] ShapeDataCompressed{get;set;}
+        /// <summary>
+        /// The geometry data defining the shape in  uncompressed format
+        /// </summary>
+        byte[] ShapeData { get; set; }
     }
 }

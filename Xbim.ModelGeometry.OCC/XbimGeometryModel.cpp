@@ -37,10 +37,12 @@
 #include <BRepBuilderAPI.hxx>
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <ShapeFix_ShapeTolerance.hxx>
+#include <gp_Quaternion.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <carve/triangulator.hpp>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <carve/mesh_simplify.hpp>
+#include <carve/interpolator.hpp>
 using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace Xbim::Ifc2x3::SharedComponentElements;
@@ -1177,15 +1179,17 @@ TryCombineSolid:
 			{	
 				TopoDS_Shape shape = *(this->Handle);
 				std::vector<vertex_t> vertexStore; //vertices in the polyhedron
-				std::vector<std::vector<carve::mesh::MeshSet<3>::vertex_t *>> faces; //faces on the polyhedron
+				
 				vertexStore.reserve(2048);
-				faces.reserve(1024);
+				
 				TopTools_DataMapOfShapeInteger vertexMap;
 				bool warned=false;
 				std::vector<mesh_t*> meshes;
-
+				XbimNormalMap * normalMap = nullptr;
 				if(!HasCurvedEdges)
 				{
+					std::vector<std::vector<carve::mesh::MeshSet<3>::vertex_t *>> faces; //faces on the polyhedron
+					faces.reserve(1024);
 					bool hasUnboundedFace = false; //use this to check if we have a half space solid
 					gp_Pln halfSpacePlane;
 					gp_Pnt tl,bl,tr,br; //the four points of the bounding plane
@@ -1388,7 +1392,6 @@ TryCombineSolid:
 				}
 				else //triangulate the faces
 				{
-
 					Monitor::Enter(this);
 					try
 					{
@@ -1412,6 +1415,16 @@ TryCombineSolid:
 							vertexStore.push_back(carve::geom::VECTOR(p.X(), p.Y(), p.Z()));
 						}
 					}
+					//
+					
+					
+					
+					int surfaceId = 0; //the id of the first surface that is curved
+					std::vector<face_t*> faces;
+					//estimate how many faces we have
+					size_t faceCount=0;
+					for (TopExp_Explorer faceCounter(shape,TopAbs_FACE);faceCounter.More(); faceCounter.Next()) faceCount++;
+					faces.reserve(faceCount);
 					for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
 					{
 						faces.clear();
@@ -1422,16 +1435,35 @@ TryCombineSolid:
 							TopLoc_Location loc;
 							Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
 							if(facing.IsNull()) continue;
+							//see if we have a non planar surface
+							Handle(Geom_Surface) surf = BRep_Tool::Surface(face); //the surface
+							
+							GeomLib_IsPlanarSurface ps(surf, precision);
+						    Standard_Boolean planar = ps.IsPlanar(); //see if we have a [lanrar or curved surface, if planar we need only worry about one normal
+							
+					
+							if(normalMap==nullptr) normalMap = new XbimNormalMap();
+							surfaceId++;
+							
 
 							Standard_Integer nbNodes = facing->NbNodes();
 							Standard_Integer nbTriangles = facing->NbTriangles();
 
 							const TColgp_Array1OfPnt& points = facing->Nodes();
 							std::unordered_map<Standard_Integer,size_t> posMap;
+							const gp_Trsf& tr = loc.Transformation();
+							/* Not used any more, not very accurate
+							gp_Quaternion q = tr.GetRotation(); //needed to get normals correct
+							
+							if(!planar)
+								Poly::ComputeNormals(facing);*/
+			
+							BRepGProp_Face gprop(face);
+
 							for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 							{
 								gp_XYZ p = points(nd).XYZ();
-								loc.Transformation().Transforms(p);			 
+								tr.Transforms(p);			 
 								Double3D p3D(p.X(),p.Y(),p.Z(),precision,rounding);
 								std::unordered_map<Double3D, size_t>::const_iterator hit = vertexMap.find(p3D);
 								if(hit==vertexMap.end()) //not found add it in
@@ -1442,57 +1474,94 @@ TryCombineSolid:
 								}
 								else
 									posMap.insert(std::make_pair(nd,hit->second));
+
+								size_t vertexIdx = posMap[nd];
+								if(!planar) //store the normals, if it is planar and we are on the first vertex, so write a normal once for all other vertice
+								{									
+								/*
+								stop using this method as it is not precise
+								    Standard_Integer n = 3 * nd - 2;
+									const TShort_Array1OfShortReal& normals =  facing->Normals();
+									gp_Vec v(normals(n),normals(n+1),normals(n+2));
+									if(orient == TopAbs_REVERSED) v.Reverse();
+									v = q.Multiply(v); //need to correct normal for rotation of surface
+									*/
+									GeomAPI_ProjectPointOnSurf projpnta(gp_Pnt(p), surf,precision);
+									if(projpnta.IsDone())
+									{
+										double au, av; //the u- and v-coordinates of the projected point
+										projpnta.LowerDistanceParameters(au, av); //get the nearest projection
+										gp_Pnt pt;
+										gp_Vec v;
+										gprop.Normal(au,av,pt,v);	
+										v.Normalize();
+										normalMap->SetNormalToVertexOnSurface(surfaceId,vertexIdx,Double3D(v.X(),v.Y(),v.Z()));
+									}
+									else
+									{
+										normalMap->SetNormalToVertexOnSurface(surfaceId,vertexIdx,Double3D(1,0,0)); //this should never really happen
+									} 
+									
+								}
+								else if(nd==1) //just add a single normal for the first point as they will all be the same
+								{									
+									gp_Pln plane = ps.Plan();
+									gp_Dir dir = plane.Axis().Direction();
+									if(orient == TopAbs_REVERSED) dir.Reverse();
+									normalMap->SetNormalToVertexOnSurface(surfaceId,vertexIdx,Double3D(dir.X(),dir.Y(),dir.Z()));
+								}
+								
 							}
 							const Poly_Array1OfTriangle& triangles = facing->Triangles();
-							Standard_Integer n1, n2, n3;			
+							Standard_Integer n1, n2, n3;	
+							faces.reserve(nbTriangles);
+
 							for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
 							{
 								triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
-								faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
-								std::vector<carve::mesh::MeshSet<3>::vertex_t *> &m = faces.back();
-								m.reserve(3);
+								
+								face_t* triangularface;
 								if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
-								{
-									m.push_back(&vertexStore[posMap[n3]]);
-									m.push_back(&vertexStore[posMap[n2]]);
-									m.push_back(&vertexStore[posMap[n1]]);
-								}
+									triangularface = new face_t(&vertexStore[posMap[n3]],&vertexStore[posMap[n2]],&vertexStore[posMap[n1]]);
 								else
-								{
-									m.push_back(&vertexStore[posMap[n1]]);
-									m.push_back(&vertexStore[posMap[n2]]);
-									m.push_back(&vertexStore[posMap[n3]]);
-								}
+									triangularface = new face_t(&vertexStore[posMap[n1]],&vertexStore[posMap[n2]],&vertexStore[posMap[n3]]);
+								faces.push_back(triangularface);
+								normalMap->AddFaceToSurface(triangularface,surfaceId);
 							}
 						}
-						std::vector<face_t *> faceList;
-						faceList.reserve(faces.size());
-						for (size_t i = 0; i < faces.size(); ++i) 
-						{
-							faceList.push_back(new face_t(faces[i].begin(), faces[i].end()));
-						}
 						std::vector<mesh_t*> theseMeshes;
-						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions(), false);
+						mesh_t::create(faces.begin(), faces.end(), theseMeshes, carve::mesh::MeshOptions(), false);
 						for (size_t i = 0; i < theseMeshes.size(); i++)
 						{
 							if(theseMeshes[i]!=nullptr && theseMeshes[i]->isClosed()) //if we have not got a closed manifold, remove any open manifolds
-					    {
-							meshes.push_back(theseMeshes[i]);
-						}
+							{
+								meshes.push_back(theseMeshes[i]);
+							}
 							else
 							{
 								meshes.push_back(theseMeshes[i]);
 							}
-							
+
 						}
-						
+
 					}
+					Monitor::Enter(this);
+					try
+					{
+						BRepTools::Clean(shape);
+					}
+					finally
+					{
+						Monitor::Exit(this);
+					}
+					GC::KeepAlive(this);
 
 				}
 				//Make the Polyhedron 
 				meshset_t *mesh = new meshset_t(vertexStore, meshes);
-				XbimPolyhedron^ p =  gcnew XbimPolyhedron(mesh, RepresentationLabel, SurfaceStyleLabel);
+				XbimPolyhedron^ p =  gcnew XbimPolyhedron(mesh, normalMap, RepresentationLabel, SurfaceStyleLabel);
 			//	p->WritePly("s",true);
+				
 				return p;
 
 			}

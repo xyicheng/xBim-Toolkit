@@ -285,7 +285,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The geometry data defining the shape, this is a compressed representation of the data
         /// </summary>
-        byte[] IXbimShapeGeometryData.ShapeData
+        byte[] IXbimShapeGeometryData.ShapeDataCompressed
         {
             get
             {
@@ -314,9 +314,21 @@ namespace Xbim.ModelGeometry.Converter
                     //_shapeData = Encoding.UTF8.GetString(mso.ToArray());
                     _shapeData = mso.ToArray();
                 }
+
             }
         }
 
+        byte[] IXbimShapeGeometryData.ShapeData
+        {
+            get
+            {
+                return _shapeData;
+            }
+            set
+            {
+                _shapeData = value;
+            }
+        }
         /// <summary>
         /// Returns true if the geometry is valid
         /// </summary>
@@ -343,5 +355,6 @@ namespace Xbim.ModelGeometry.Converter
             return new XbimShapeGeometryHandle(_contextHandle, _shapeLabel, _referenceCount);
         }
      
+
     }
 }

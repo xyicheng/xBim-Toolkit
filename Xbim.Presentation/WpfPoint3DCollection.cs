@@ -99,4 +99,5 @@ namespace Xbim.Presentation
             return new WpfPoint3DCollectionEnumerator(this.wpfPoints);
         }
     }
+   
 }

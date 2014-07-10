@@ -15,7 +15,7 @@ namespace Xbim.Presentation
 {
     public class WpfMeshGeometry3D : IXbimMeshGeometry3D
     {
-        public GeometryModel3D WpfMesh;
+        public GeometryModel3D WpfModel;
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
         private TriangleType _meshType;
 
@@ -74,8 +74,8 @@ namespace Xbim.Presentation
 
         public WpfMeshGeometry3D(IXbimMeshGeometry3D mesh)
         {
-            WpfMesh = new GeometryModel3D();
-            WpfMesh.Geometry = new MeshGeometry3D();
+            WpfModel = new GeometryModel3D();
+            WpfModel.Geometry = new MeshGeometry3D();
             Mesh.Positions = new WpfPoint3DCollection(mesh.Positions);
             Mesh.Normals = new WpfVector3DCollection(mesh.Normals);
             Mesh.TriangleIndices = new Int32Collection (mesh.TriangleIndices);
@@ -84,22 +84,23 @@ namespace Xbim.Presentation
 
         public WpfMeshGeometry3D(WpfMaterial material, WpfMaterial backMaterial = null)
         {
-            WpfMesh = new GeometryModel3D(new MeshGeometry3D(),material);
-            if (backMaterial != null) WpfMesh.BackMaterial = backMaterial;
+            WpfModel = new GeometryModel3D(new MeshGeometry3D(),material);
+           
+            if (backMaterial != null) WpfModel.BackMaterial = backMaterial;
         }
         
         public static implicit operator GeometryModel3D(WpfMeshGeometry3D mesh)
         {
-             if(mesh.WpfMesh==null)
-                mesh.WpfMesh=new GeometryModel3D();
-             return mesh.WpfMesh;
+             if(mesh.WpfModel==null)
+                mesh.WpfModel=new GeometryModel3D();
+             return mesh.WpfModel;
         }
 
         public MeshGeometry3D Mesh
         {
             get
             { 
-                return WpfMesh.Geometry as MeshGeometry3D;
+                return WpfModel.Geometry as MeshGeometry3D;
             }
         }
         //public IEnumerable<XbimPoint3D> Positions
@@ -175,26 +176,26 @@ namespace Xbim.Presentation
                 toMesh.TriangleIndices = new List<int>(this.TriangleIndices);
 
                 toMesh.Meshes = new XbimMeshFragmentCollection(this.Meshes); this.meshes.Clear();
-                WpfMesh.Geometry = new MeshGeometry3D();
+                WpfModel.Geometry = new MeshGeometry3D();
                 toMesh.EndUpdate();
             }
         }
 
         public void BeginUpdate()
         {
-            if (WpfMesh == null)
-                WpfMesh = new GeometryModel3D();
-            WpfMesh.Geometry = new MeshGeometry3D();
+            if (WpfModel == null)
+                WpfModel = new GeometryModel3D();
+            WpfModel.Geometry = new MeshGeometry3D();
         }
 
         public void EndUpdate()
         {
-            WpfMesh.Geometry.Freeze();
+            WpfModel.Geometry.Freeze();
         }
 
         public GeometryModel3D ToGeometryModel3D()
         {
-            return WpfMesh;
+            return WpfModel;
         }
 
         public MeshGeometry3D GetWpfMeshGeometry3D(XbimMeshFragment frag)
@@ -407,19 +408,22 @@ namespace Xbim.Presentation
 
         public bool Read(String data, XbimMatrix3D? tr = null)
         {
-            XbimQuaternion q = new XbimQuaternion();
-            if (tr.HasValue)
-                q = tr.Value.GetRotationQuaternion();
            
+            
             using (StringReader sr = new StringReader(data))
             {
                 Matrix3D? m3d = null;
-                if(tr.HasValue) m3d = new Matrix3D(tr.Value.M11,tr.Value.M12,tr.Value.M13,tr.Value.M14,
-                                                  tr.Value.M21,tr.Value.M22,tr.Value.M23,tr.Value.M24,
-                                                  tr.Value.M31,tr.Value.M32,tr.Value.M33,tr.Value.M34,
-                                                  tr.Value.OffsetX,tr.Value.OffsetY,tr.Value.OffsetZ,tr.Value.M44);
-                List<Point3D> vertexList = new List<Point3D>(); //holds the actual positions of the vertices in this data set in the mesh
-                List<Vector3D> normalList = new List<Vector3D>(); //holds the actual normals of the vertices in this data set in the mesh
+                RotateTransform3D r = new RotateTransform3D();
+                if (tr.HasValue) //set up the windows media transforms
+                {
+                    m3d = new Matrix3D(tr.Value.M11, tr.Value.M12, tr.Value.M13, tr.Value.M14,
+                                                  tr.Value.M21, tr.Value.M22, tr.Value.M23, tr.Value.M24,
+                                                  tr.Value.M31, tr.Value.M32, tr.Value.M33, tr.Value.M34,
+                                                  tr.Value.OffsetX, tr.Value.OffsetY, tr.Value.OffsetZ, tr.Value.M44);
+                    r = tr.Value.GetRotateTransform3D();
+                }
+                Point3DCollection vertexList = new Point3DCollection(); //holds the actual positions of the vertices in this data set in the mesh
+                Vector3DCollection normalList = new Vector3DCollection(); //holds the actual normals of the vertices in this data set in the mesh
                 String line;
                 // Read and display lines from the data until the end of
                 // the data is reached.
@@ -432,6 +436,21 @@ namespace Xbim.Presentation
                         switch (command)
                         {
                             case "P":
+                                int pointCount = 512;
+                                int faceCount = 128;
+                                int triangleCount = 256;
+                                int normalCount = 512;
+                                if (tokens.Length > 1) pointCount = Int32.Parse(tokens[2]);
+                                if (tokens.Length > 2) faceCount = Int32.Parse(tokens[3]);
+                                if (tokens.Length > 3) triangleCount = Int32.Parse(tokens[4]);
+                                if (tokens.Length > 4) normalCount = Math.Max(Int32.Parse(tokens[5]),pointCount); //can't really have less normals than points
+                                vertexList = new Point3DCollection(pointCount);
+                                normalList = new Vector3DCollection(normalCount);
+                                //for efficienciency avoid continual regrowing
+                                this.Mesh.Positions = this.Mesh.Positions.GrowBy(pointCount);
+                                this.Mesh.Normals = this.Mesh.Normals.GrowBy(normalCount);
+                                this.Mesh.TriangleIndices = this.Mesh.TriangleIndices.GrowBy(triangleCount*3);
+                                break;
                             case "F":
                                 break;
                             case "V": //process vertices
@@ -476,27 +495,21 @@ namespace Xbim.Presentation
                                             {
                                                 case "F": //Front
                                                     currentNormal = new Vector3D(0, -1, 0);
-                                                    if (m3d.HasValue) currentNormal = m3d.Value.Transform(currentNormal);
                                                     break;
                                                 case "B": //Back
                                                     currentNormal = new Vector3D(0, 1, 0);
-                                                    if (m3d.HasValue) currentNormal = m3d.Value.Transform(currentNormal);
                                                     break;
                                                 case "L": //Left
                                                     currentNormal = new Vector3D(-1, 0, 0);
-                                                    if (m3d.HasValue) currentNormal = m3d.Value.Transform(currentNormal);
                                                     break;
                                                 case "R": //Right
                                                     currentNormal = new Vector3D(1, 0, 0);
-                                                    if (m3d.HasValue) currentNormal = m3d.Value.Transform(currentNormal);
                                                     break;
                                                 case "U": //Up
                                                     currentNormal = new Vector3D(0, 0, 1);
-                                                    if (m3d.HasValue) currentNormal = m3d.Value.Transform(currentNormal);
                                                     break;
                                                 case "D": //Down
                                                     currentNormal = new Vector3D(0, 0, -1);
-                                                    if (m3d.HasValue) currentNormal = m3d.Value.Transform(currentNormal);
                                                     break;
                                                 default: //it is an index number
                                                     int normalIndex = int.Parse(indexNormalPair[1]);
@@ -505,11 +518,7 @@ namespace Xbim.Presentation
                                             }
                                             if (tr.HasValue)
                                             {
-                                                XbimVector3D vout;
-                                                XbimVector3D vin = new XbimVector3D(currentNormal.X, currentNormal.Y, currentNormal.Z);
-                                                XbimQuaternion.Transform(ref vin, ref q, out vout);
-                                                currentNormal = new Vector3D(vout.X,vout.Y,vout.Z);
-
+                                                currentNormal = r.Transform(currentNormal);
                                             }
                                         }
                                         //now add the index

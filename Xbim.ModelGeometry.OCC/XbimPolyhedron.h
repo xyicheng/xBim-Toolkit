@@ -1,12 +1,14 @@
 #pragma once
 
 #include "XbimGeometryModel.h"
+#include "XbimTriangularMeshStreamer.h"
 #include <carve\polyhedron_decl.hpp>
 #include <carve\input.hpp>
 #include <carve\csg.hpp>
 #include <carve/carve.hpp>
 #include <carve/collection_types.hpp>
 #include "CarveCsg\common\write_ply.hpp"
+#include <carve/interpolator.hpp>
 #ifndef WIN32
 #  include <stdint.h>
 #endif
@@ -65,13 +67,123 @@ namespace Xbim
 				double _precision;
 			};
 
+			struct sortFaceGroup
+			{
+				inline bool operator() (const std::pair<size_t,face_t*>& f1, const std::pair<size_t,face_t*>& f2)
+				{
+					return (f1.first < f2.first);
+				}
+			};
+
+			public class XbimNormalMap
+			{
+			private:
+				std::unordered_map<size_t,std::unordered_map<size_t,size_t>> normalLookup;
+				std::unordered_map<Double3D,size_t> uniqueNormals;
+				std::vector<Double3D> normals;
+				carve::interpolate::FaceAttr<size_t> surfaceIds;
+			public:
+				void AddFaceToSurface(face_t* face, size_t surfaceId)
+				{
+					System::Diagnostics::Debug::Assert(surfaceId>0); //0 is reserved
+					surfaceIds.setAttribute(face,surfaceId);
+				}
+				size_t GetSurfaceIdOfFace(face_t* face)
+				{
+					return surfaceIds.getAttribute(face);
+				}
+				carve::interpolate::FaceAttr<size_t>& FaceAttributes()
+				{
+					return surfaceIds;
+				}
+				bool IsPlanarSurface(size_t surfaceId)
+				{
+					if(surfaceId==0) return true; //all zero surfaces are standard polgonal faces
+					std::unordered_map<size_t,std::unordered_map<size_t,size_t>>::const_iterator surfaceHit = normalLookup.find(surfaceId);
+					if(surfaceHit ==normalLookup.end())return true;
+
+					const std::unordered_map<size_t,size_t>& nList = surfaceHit->second;
+					if(nList.size() <= 1) return true; //only one or less normal specified must be planar
+					std::unordered_map<size_t,size_t>::const_iterator k =nList.begin();
+					size_t n = k->second;
+					for(++k;k!=nList.end(); ++k)
+					{
+						if(n!=k->second) return false;
+					}
+
+					return true;
+				}
+
+				//returns true if a normal is defined for this vertex on this surface
+				bool HasNormalToVertexOnSurface(size_t surfaceId, size_t vertexIdx)
+				{
+					std::unordered_map<size_t,std::unordered_map<size_t,size_t>>::const_iterator surfaceHit = normalLookup.find(surfaceId);
+					if(surfaceHit ==normalLookup.end())return false;
+					std::unordered_map<size_t,size_t>::const_iterator vertexHit = surfaceHit->second.find(vertexIdx);
+					if(vertexHit == surfaceHit->second.end())
+						return false;
+					else
+						return true;
+				}
+
+				void SetNormalToVertexOnSurface(size_t surfaceId, size_t vertexIndex, Double3D normal)
+				{
+					normalLookup[surfaceId][vertexIndex]= AddNormal(normal);
+				};
+
+				Double3D GetNormalToVertexOnSurface(size_t surfaceId, size_t vertexIndex)
+				{
+					size_t n = normalLookup[surfaceId][vertexIndex];
+					return normals[n];
+				}
+
+				size_t GetNormalIndexToVertexOnSurface(size_t surfaceId, size_t vertexIndex)
+				{
+					return normalLookup[surfaceId][vertexIndex];
+				}
+
+				//returns any normal on the surface, typically used for planar surfaces
+				size_t GetNormalIndexToAnyVertexOnSurface(size_t surfaceId)
+				{
+					std::unordered_map<size_t,std::unordered_map<size_t,size_t>>::const_iterator norms = normalLookup.find(surfaceId);
+					if(norms !=normalLookup.end())
+					{
+						const std::unordered_map<size_t,size_t>& vals = norms->second;
+						if(vals.size() >0)
+							return vals.begin()->second;
+					}
+					
+				}
+
+				size_t AddNormal(Double3D normal)
+				{
+					std::unordered_map<Double3D, size_t>::const_iterator hit = uniqueNormals.find(normal);
+					size_t normalIndex;
+					if(hit==uniqueNormals.end()) //not found add it in
+					{	
+						normalIndex = normals.size();
+						uniqueNormals.insert(std::make_pair(normal,normalIndex));	
+						normals.push_back(normal);		
+					}	
+					else
+						normalIndex = hit->second;
+					return normalIndex;
+				}
+
+				const std::vector<Double3D>& UniqueNormals()
+				{
+					return normals;
+				}
+
+			};
 
 			public ref class XbimPolyhedron : public XbimGeometryModel, public IXbimPolyhedron
 			{
 			private:
 				static Object^ resourceLock = gcnew Object();
-				
+
 				carve::csg::CSG::meshset_t* _meshSet;
+				XbimNormalMap * _normalMap;
 				~XbimPolyhedron()
 				{
 					InstanceCleanup();
@@ -96,6 +208,7 @@ namespace Xbim
 				//create and empty polyhedron
 				XbimPolyhedron(int representationLabel, int styleLabel);
 				XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel);
+				XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, XbimNormalMap* normalMap, int representationLabel, int styleLabel);
 				XbimPolyhedron(XbimModelFactors^ modelFactors, IEnumerable<IfcFace^>^ faces, int representationLabel, int styleLabel, bool orientate);
 				XbimPolyhedron(IfcConnectedFaceSet^ faces,double precision, unsigned int rounding, int representationLabel, int styleLabel, bool orientate);
 				XbimPolyhedron(IfcOpenShell^ shell,double precision, unsigned int rounding, int representationLabel, int styleLabel, bool orientate);
@@ -123,7 +236,7 @@ namespace Xbim
 				{
 					int get();
 				}
-
+				
 				//funtions
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 

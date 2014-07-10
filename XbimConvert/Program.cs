@@ -91,7 +91,8 @@ namespace XbimConvert
                                 try
                                 {
                                     m3d.CreateContext(true, progDelegate);
-                                   StringWriter sw = new StringWriter();
+
+                                   //StringWriter sw = new StringWriter();
                                     //m3d.CreateSceneJS(sw);
                                     //string s = sw.ToString();
                                     //Console.WriteLine(s);

@@ -287,7 +287,7 @@ namespace Xbim.IO
                 _colValReferenceCount.Value = shapeGeom.ReferenceCount;
                 _colValLOD.Value = shapeGeom.LOD;
                 _colValFormat.Value = shapeGeom.Format;
-                _colValShapeData.Value = shapeGeom.ShapeData;
+                _colValShapeData.Value = shapeGeom.ShapeDataCompressed;
                 _colValBoundingBox.Value = shapeGeom.BoundingBox;
                 Api.SetColumns(sesid, table, _colValues);
                 mainId = Api.RetrieveColumnAsInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
@@ -324,7 +324,7 @@ namespace Xbim.IO
             sg.ReferenceCount = _colValReferenceCount.Value.Value;
             sg.LOD = _colValLOD.Value.Value;
             sg.Format = _colValFormat.Value.Value;
-            sg.ShapeData = _colValShapeData.Value;
+            sg.ShapeDataCompressed = _colValShapeData.Value;
             sg.BoundingBox = _colValBoundingBox.Value;
         }
 
