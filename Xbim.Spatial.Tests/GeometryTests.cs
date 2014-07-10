@@ -45,24 +45,25 @@ namespace Xbim.Spatial.Tests
 
         private bool CompareHashes(IfcProduct baseline, IfcProduct revision)
         {
-            var shape = _baselineContext.ProductShapes.Where(ps => ps.Product == baseline).FirstOrDefault();
+            //Martin**** need to resolve geometry
+            //var shape = _baselineContext.ProductShapes.Where(ps => ps.Product == baseline).FirstOrDefault();
 
-            XbimShapeGroup baseShapeGroup = shape.Shapes; //get the basic geometries that make up this one
-            IEnumerable<int> baseShapeHashes = baseShapeGroup.ShapeHashCodes();
-            int baseCount = baseShapeHashes.Count();
+            //XbimShapeGroup baseShapeGroup = shape.Shapes; //get the basic geometries that make up this one
+            //IEnumerable<int> baseShapeHashes = baseShapeGroup.ShapeHashCodes();
+            //int baseCount = baseShapeHashes.Count();
 
-            var rs = _revisedContext.ProductShapes.Where(ps => ps.Product == revision).FirstOrDefault();
-            if (rs != null)
-            {
-                XbimShapeGroup shapeGroup = rs.Shapes;
-                IEnumerable<int> revShapeHashes = rs.Shapes.ShapeHashCodes();
-                if (baseCount == revShapeHashes.Count() && baseShapeHashes.Union(revShapeHashes).Count() == baseCount) //we have a match
-                {
-                    return true;
-                }
-                else
-                    return false;
-            }
+            //var rs = _revisedContext.ProductShapes.Where(ps => ps.Product == revision).FirstOrDefault();
+            //if (rs != null)
+            //{
+            //    XbimShapeGroup shapeGroup = rs.Shapes;
+            //    IEnumerable<int> revShapeHashes = rs.Shapes.ShapeHashCodes();
+            //    if (baseCount == revShapeHashes.Count() && baseShapeHashes.Union(revShapeHashes).Count() == baseCount) //we have a match
+            //    {
+            //        return true;
+            //    }
+            //    else
+            //        return false;
+            //}
             return false;
         }
     }

@@ -92,7 +92,7 @@
       <Name>Xbim.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
-      <Project>{09870f18-1796-4a3e-a66d-68db3da60b24}</Project>
+      <Project>{6df47d23-8f4d-4069-a44b-bbdacd3f9aea}</Project>
       <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">

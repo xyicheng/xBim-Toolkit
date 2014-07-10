@@ -33,7 +33,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// The octree's looseness value.
         /// </summary> 
-        private float looseness = 0;
+        private double looseness = 0;
 
         /// <summary>
         /// The octree's depth.
@@ -49,7 +49,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// The octree's length.
         /// </summary>
-        private float length = 0f;
+        private double length = 0f;
 
         ///  <summary>
         /// The bounding box that represents the octree.
@@ -80,8 +80,8 @@ namespace Xbim.ModelGeometry.Scene
         ///  <summary>
         /// The octree's world size.
         /// </summary> 
-        private float worldSize = 0f;
-        private float targetCanvasSize = 100000f;
+        private double worldSize = 0f;
+        private double targetCanvasSize = 100000.0;
 
         private XbimRect3D contentBounds = XbimRect3D.Empty;
         
@@ -91,11 +91,11 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="worldSize">/// The octree's world size.</param>
         /// <param name="targetCanvasSize">The octree recursion depth.</param>
         /// <param name="looseness">The octree's looseness value.</param>
-        public XbimOctree(float worldSize, float targetCanvasSize, float looseness)
+        public XbimOctree(double worldSize, double targetCanvasSize, double looseness)
             : this(worldSize, targetCanvasSize, looseness, 0, XbimPoint3D.Zero)
         {
         }
-        public XbimOctree(float worldSize, float targetCanvasSize, float looseness, XbimPoint3D centre)
+        public XbimOctree(double worldSize, double targetCanvasSize, double looseness, XbimPoint3D centre)
             : this(worldSize, targetCanvasSize, looseness, 0, centre)
         {
         }
@@ -109,15 +109,15 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="looseness">The octree's looseness value.</param>
         /// <param name="depth">The maximum depth to recurse to.</param>
         /// <param name="centre">The octree's centre coordinates.</param>
-        private XbimOctree(float worldSize,float targetCanvasSize, float looseness, int depth, XbimPoint3D centre)
+        private XbimOctree(double worldSize, double targetCanvasSize, double looseness, int depth, XbimPoint3D centre)
         {
             this.worldSize = worldSize;
             this.targetCanvasSize = targetCanvasSize;
             this.looseness = looseness;
             this.depth = depth;
             this.centre = centre;
-            this.length = this.looseness * this.worldSize / (float)Math.Pow(2, this.depth);
-            float radius = this.length / 2f;
+            this.length = this.looseness * this.worldSize / Math.Pow(2, this.depth);
+            double radius = this.length / 2f;
 
             // Create the bounding box.
             XbimPoint3D min = this.centre + new XbimVector3D(-radius);
@@ -235,7 +235,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="o">The object to add.</param>
         /// <param name="centre">The object's centre coordinates.</param>
         /// <param name="radius">The object's radius.</param>
-        private XbimOctree<T> Add(T o, XbimPoint3D centre, float radius)
+        private XbimOctree<T> Add(T o, XbimPoint3D centre, double radius)
         {
             XbimPoint3D min = centre - new XbimVector3D(radius);
             XbimPoint3D max = centre + new XbimVector3D(radius);
@@ -358,7 +358,7 @@ namespace Xbim.ModelGeometry.Scene
         {
             this.children = new XbimOctree<T>[XbimOctree<T>.ChildCount];
             int depth = this.depth + 1;
-            float quarter = this.length / this.looseness / 4f;
+            double quarter = this.length / this.looseness / 4f;
 
             this.children[0] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
                  depth, this.centre + new XbimVector3D(-quarter, quarter, -quarter)) { localAddress = new OctAddress( new int[]{ -1, 1, -1 } ) };

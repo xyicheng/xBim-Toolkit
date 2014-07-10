@@ -11,7 +11,7 @@ using Xbim.Common.Geometry;
 using System.IO;
 using Xbim.ModelGeometry.Scene;
 using System.Diagnostics;
-
+using Xbim.Ifc2x3.Extensions;
 namespace Xbim.Analysis.Spatial
 {
     public class XbimSpatialAnalyser : ISpatialAnalyser
@@ -63,7 +63,7 @@ namespace Xbim.Analysis.Spatial
                 //bounding boxes are lightweight and are produced when geometry is created at first place
                 //sw.Start();
                 var geom = prod.Geometry3D();
-                var trans = prod.Transform();
+                var trans = prod.ObjectPlacement.ToMatrix3D();
                 //sw.Stop();
                 //var geomGeneration = sw.ElapsedMilliseconds;
 
@@ -79,7 +79,7 @@ namespace Xbim.Analysis.Spatial
 
                     //add every BBox to the world to get the size and position of the world
                     _prodBBs.Add(prod, bb);
-                    if (!float.IsNaN(bb.SizeX))
+                    if (!double.IsNaN(bb.SizeX))
                         worldBB.Union(bb);
 
                     //Debug.WriteLine("{0,-45} {1,10:F5} {2,10:F5} {3,10:F5} {4,10:F5} {5,10:F5} {6,10:F5}", 

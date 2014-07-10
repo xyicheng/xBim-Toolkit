@@ -35,78 +35,80 @@ namespace Xbim.Analysis.Comparing
 
         public GeometryComparerII(XbimModel baselineModel, XbimModel revisedModel)
         {
-            if (baselineModel == null || revisedModel == null)
-                throw new ArgumentNullException();
+            //Martin needs to be re-engineered for new Geometry
 
-            _baselineModel = baselineModel;
-            _revisedModel = revisedModel;
+            //if (baselineModel == null || revisedModel == null)
+            //    throw new ArgumentNullException();
 
-            //check if all the model use the same units
-            _meter = baselineModel.ModelFactors.OneMetre;
-            _precision = baselineModel.ModelFactors.Precision;
-            if (Math.Abs(revisedModel.ModelFactors.OneMetre - _meter) > 1e-9)
-                throw new ArgumentException("All models have to use the same length units.");
-            //if (Math.Abs(revisedModel.ModelFactors.Precision - _precision) > 1e-9)
-            //    throw new ArgumentException("All models have to use the same precision.");
+            //_baselineModel = baselineModel;
+            //_revisedModel = revisedModel;
 
-            if (revisedModel.ModelFactors.Precision > _precision)
-                _precision = revisedModel.ModelFactors.Precision;
+            ////check if all the model use the same units
+            //_meter = baselineModel.ModelFactors.OneMetre;
+            //_precision = baselineModel.ModelFactors.Precision;
+            //if (Math.Abs(revisedModel.ModelFactors.OneMetre - _meter) > 1e-9)
+            //    throw new ArgumentException("All models have to use the same length units.");
+            ////if (Math.Abs(revisedModel.ModelFactors.Precision - _precision) > 1e-9)
+            ////    throw new ArgumentException("All models have to use the same precision.");
 
-            //get axis aligned BBoxes and overall world size
-            XbimRect3D worldBB = XbimRect3D.Empty;
-            //foreach (var model in new[] { baselineModel, revisedModel })
-            Parallel.ForEach<XbimModel>(new[] { baselineModel, revisedModel }, model =>
-            {
-                //load geometry engine using local path
-                if (model.GeometriesCount == 0)
-                {
-                    //load geometry engine if it is not loaded yet
-                    string basePath = Path.GetDirectoryName(GetType().Assembly.Location);
-                    AssemblyResolver.GetModelGeometryAssembly(basePath);
-                }
+            //if (revisedModel.ModelFactors.Precision > _precision)
+            //    _precision = revisedModel.ModelFactors.Precision;
 
-                //initialize octree with all the objects
-                Xbim3DModelContext context = new Xbim3DModelContext(model);
-                context.CreateContext();
-                var prodShapes = context.ProductShapes;
+            ////get axis aligned BBoxes and overall world size
+            //XbimRect3D worldBB = XbimRect3D.Empty;
+            ////foreach (var model in new[] { baselineModel, revisedModel })
+            //Parallel.ForEach<XbimModel>(new[] { baselineModel, revisedModel }, model =>
+            //{
+            //    //load geometry engine using local path
+            //    if (model.GeometriesCount == 0)
+            //    {
+            //        //load geometry engine if it is not loaded yet
+            //        string basePath = Path.GetDirectoryName(GetType().Assembly.Location);
+            //        AssemblyResolver.GetModelGeometryAssembly(basePath);
+            //    }
 
-                if (model == baselineModel)
-                    _baselineContext = context;
-                else
-                    _revisedContext = context;
+            //    //initialize octree with all the objects
+            //    Xbim3DModelContext context = new Xbim3DModelContext(model);
+            //    context.CreateContext();
+            //    var prodShapes = context.ProductShapes;
 
-                //we need to preprocess all the products first to get the world size. Will keep results to avoid repetition.
-                foreach (var shp in prodShapes)
-                {
-                    //bounding boxes are lightweight and are produced when geometry is created at first place
-                    var bb = shp.BoundingBox;
+            //    if (model == baselineModel)
+            //        _baselineContext = context;
+            //    else
+            //        _revisedContext = context;
 
-                    if (shp.Product.ModelOf == baselineModel)
-                        _prodBBsA.Add(shp.Product, bb);
-                    else
-                        _prodBBsB.Add(shp.Product, bb);
+            //    //we need to preprocess all the products first to get the world size. Will keep results to avoid repetition.
+            //    foreach (var shp in prodShapes)
+            //    {
+            //        //bounding boxes are lightweight and are produced when geometry is created at first place
+            //        var bb = shp.BoundingBox;
 
-                    //add every BBox to the world to get the size and position of the world
-                    //if it contains valid BBox
-                    if (!float.IsNaN(bb.SizeX))
-                        worldBB.Union(bb);
-                }
-            }
-            );
+            //        if (shp.Product.ModelOf == baselineModel)
+            //            _prodBBsA.Add(shp.Product, bb);
+            //        else
+            //            _prodBBsB.Add(shp.Product, bb);
 
-            //create octree
-            //target size must depend on the units of the model
-            //size inflated with 0.5 meter so that there are not that many products on the boundary of the world
-            var size = Math.Max(Math.Max(worldBB.SizeX, worldBB.SizeY), worldBB.SizeZ) + (float)_meter / 2f;
-            var shift = (float)_meter / 4f;
-            var position = worldBB.Location + new XbimVector3D() { X = size / 2f - shift, Y = size / 2f - shift, Z = size / 2f - shift };
-            _tree = new XbimOctree<IfcProduct>(size, (float)_meter, 1f, position);
+            //        //add every BBox to the world to get the size and position of the world
+            //        //if it contains valid BBox
+            //        if (!float.IsNaN(bb.SizeX))
+            //            worldBB.Union(bb);
+            //    }
+            //}
+            //);
 
-            //add every product and its AABBox to octree
-            foreach (var item in _prodBBsA)
-                _tree.Add(item.Key, item.Value);
-            foreach (var item in _prodBBsB)
-                _tree.Add(item.Key, item.Value);
+            ////create octree
+            ////target size must depend on the units of the model
+            ////size inflated with 0.5 meter so that there are not that many products on the boundary of the world
+            //var size = Math.Max(Math.Max(worldBB.SizeX, worldBB.SizeY), worldBB.SizeZ) + _meter / 2.0;
+            //var shift = (float)_meter / 4f;
+            //var position = worldBB.Location + new XbimVector3D() { X = size / 2f - shift, Y = size / 2f - shift, Z = size / 2f - shift };
+            //_tree = new XbimOctree<IfcProduct>(size, (float)_meter, 1f, position);
+
+            ////add every product and its AABBox to octree
+            //foreach (var item in _prodBBsA)
+            //    _tree.Add(item.Key, item.Value);
+            //foreach (var item in _prodBBsB)
+            //    _tree.Add(item.Key, item.Value);
         }
 
 
@@ -256,23 +258,24 @@ namespace Xbim.Analysis.Comparing
 
         private bool CompareHashes(IfcProduct baseline, IfcProduct revision)
         {
-            var shape = _baselineContext.ProductShapes.Where(ps => ps.Product == baseline).FirstOrDefault();
+            //Martin messed up by srls new geometry
+            //var shape = _baselineContext.ProductShapes.Where(ps => ps.Product == baseline).FirstOrDefault();
 
-            XbimShapeGroup baseShapeGroup = shape.Shapes; //get the basic geometries that make up this one
-            IEnumerable<int> baseShapeHashes = baseShapeGroup.ShapeHashCodes();
-            int baseCount = baseShapeHashes.Count();
+            //XbimShapeGroup baseShapeGroup = shape.Shapes; //get the basic geometries that make up this one
+            //IEnumerable<int> baseShapeHashes = baseShapeGroup.ShapeHashCodes();
+            //int baseCount = baseShapeHashes.Count();
 
-            IEnumerable<XbimProductShape> revisionShapes = _revisedContext.ProductShapes.Where(ps => ps.Product == revision);
+            //IEnumerable<XbimProductShape> revisionShapes = _revisedContext.ProductShapes.Where(ps => ps.Product == revision);
 
-            foreach (var rs in revisionShapes)
-            {
-                XbimShapeGroup shapeGroup = rs.Shapes;
-                IEnumerable<int> revShapeHashes = rs.Shapes.ShapeHashCodes();
-                if (baseCount == revShapeHashes.Count() && baseShapeHashes.Union(revShapeHashes).Count() == baseCount) //we have a match
-                {
-                    return true;
-                }
-            }
+            //foreach (var rs in revisionShapes)
+            //{
+            //    XbimShapeGroup shapeGroup = rs.Shapes;
+            //    IEnumerable<int> revShapeHashes = rs.Shapes.ShapeHashCodes();
+            //    if (baseCount == revShapeHashes.Count() && baseShapeHashes.Union(revShapeHashes).Count() == baseCount) //we have a match
+            //    {
+            //        return true;
+            //    }
+            //}
             return false;
         }
 

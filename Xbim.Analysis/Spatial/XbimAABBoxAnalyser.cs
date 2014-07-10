@@ -43,19 +43,25 @@ namespace Xbim.Analysis.Spatial
             //initialize octree with all the objects
             Xbim3DModelContext context = new Xbim3DModelContext(model);
             context.CreateContext();
-            var prodShapes = context.ProductShapes;
+
 
             //create cached BBoxes
-            foreach (var shp in prodShapes)
+            foreach (var prod in model.IfcProducts.Cast<IfcProduct>())
             {
-                //bounding boxes are lightweight and are produced when geometry is created at first place
+                XbimRect3D prodBox = XbimRect3D.Empty;
+                foreach (var shp in context.ShapeInstancesOf(prod))
+                {
+                    //bounding boxes are lightweight and are produced when geometry is created at first place
 
                     //get or cast to BBox
                     var bb = shp.BoundingBox;
-
+                    bb = XbimRect3D.TransformBy(bb, shp.Transformation);
+                    if (prodBox.IsEmpty) prodBox = bb; else prodBox.Union(bb);
                     //add every BBox to the world to get the size and position of the world
-                    _prodBBs.Add(shp.Product, bb);
+                }
+                _prodBBs.Add(prod, prodBox);
             }
+            
         }
 
         /// <summary>
@@ -195,7 +201,7 @@ namespace Xbim.Analysis.Spatial
             return true;
         }
 
-        public static bool AlmostEqual(float a, float b, double tolerance)
+        public static bool AlmostEqual(double a, double b, double tolerance)
         {
             return Math.Abs(a - b) < tolerance;
         }

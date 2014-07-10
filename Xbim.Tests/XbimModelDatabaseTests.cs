@@ -388,7 +388,7 @@ namespace Xbim.Tests
                  {
                      using (var txn = model2.BeginTransaction())
                      {
-                         model2.InsertCopy(model1.IfcProject);
+                         model2.InsertCopy(model1.IfcProject, txn);
                          txn.Commit();
                      }
                      model2.SaveAs("Test.ifc", XbimStorageType.IFC);

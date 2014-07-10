@@ -9,6 +9,7 @@
 #include <carve/collection_types.hpp>
 #include "CarveCsg\common\write_ply.hpp"
 #include <carve/interpolator.hpp>
+
 #ifndef WIN32
 #  include <stdint.h>
 #endif
@@ -152,7 +153,7 @@ namespace Xbim
 						if(vals.size() >0)
 							return vals.begin()->second;
 					}
-					
+					throw "Illegal surface that contains no normals or vetices.";
 				}
 
 				size_t AddNormal(Double3D normal)

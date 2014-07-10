@@ -12,7 +12,7 @@ using System.Diagnostics;
 using Xbim.XbimExtensions.Interfaces;
 using System.Threading.Tasks;
 using Xbim.Ifc2x3.SharedBldgElements;
-
+using Xbim.Ifc2x3.Extensions;
 namespace Xbim.Analysis.Spatial
 {
     public class XbimSpatialModelComparer
@@ -68,23 +68,29 @@ namespace Xbim.Analysis.Spatial
                 //var prods = model.Instances.OfType<IfcWall>();
                 Xbim3DModelContext context = new Xbim3DModelContext(model);
                 context.CreateContext();
-                var prodShapes = context.ProductShapes;
-                //we need to preprocess all the products first to get the world size. Will keep results to avoid repetition.
-                foreach (var shp in prodShapes)
+                foreach (var prod in model.IfcProducts.Cast<IfcProduct>())
                 {
-                    //bounding boxes are lightweight and are produced when geometry is created at first place
-                    //var geom = prod.Geometry3D();
-                    //var trans = prod.Transform();
+                    XbimRect3D prodBox = XbimRect3D.Empty;
+                    foreach (var shp in context.ShapeInstancesOf(prod))
+                    {
 
-                  //  if (geom != null && geom.FirstOrDefault() != null)
-                  //  {
+                        //we need to preprocess all the products first to get the world size. Will keep results to avoid repetition.
+
+                        //bounding boxes are lightweight and are produced when geometry is created at first place
+                        //var geom = prod.Geometry3D();
+                        //var trans = prod.Transform();
+
+                        //  if (geom != null && geom.FirstOrDefault() != null)
+                        //  {
                         //var mesh = geom.Mesh(model.ModelFactors.DeflectionTolerance);
                         //var bb = mesh.Bounds;
 
                         //Axis aligned BBox
                         var bb = shp.BoundingBox;//.GetAxisAlignedBoundingBox();
+                        bb = XbimRect3D.TransformBy(bb, shp.Transformation);
+                        if (prodBox.IsEmpty) prodBox = bb; else prodBox.Union(bb);
                         //bb = bb.Transform(trans);
-                       // bb = new XbimRect3D(trans.Transform(bb.Min), trans.Transform(bb.Max));
+                        // bb = new XbimRect3D(trans.Transform(bb.Min), trans.Transform(bb.Max));
 
 
 #if DEBUG
@@ -92,16 +98,19 @@ namespace Xbim.Analysis.Spatial
                         //                                    prod.Name, bb.X, bb.Y, bb.Z, bb.SizeX, bb.SizeY, bb.SizeZ);
 #endif
 
-                        if (shp.Product.ModelOf == modelA)
-                            _prodBBsA.Add(shp.Product, bb);
-                        else
-                            _prodBBsB.Add(shp.Product, bb);
+                      
+                        // }
 
-                        //add every BBox to the world to get the size and position of the world
-                        //if it contains valid BBox
-                        if (!float.IsNaN(bb.SizeX))
-                            worldBB.Union(bb);
-                   // }
+                    }
+                    if (model == modelA)
+                        _prodBBsA.Add(prod, prodBox);
+                    else
+                        _prodBBsB.Add(prod, prodBox);
+
+                    //add every BBox to the world to get the size and position of the world
+                    //if it contains valid BBox
+                    if (!double.IsNaN(prodBox.SizeX))
+                        worldBB.Union(prodBox);
                 }
             }
             //);
