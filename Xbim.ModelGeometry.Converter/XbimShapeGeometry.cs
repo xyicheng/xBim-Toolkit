@@ -103,7 +103,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The geometry data defining the shape
         /// </summary>
-        string _shapeData;
+        byte[] _shapeData;
 
 
         /// <summary>
@@ -275,11 +275,11 @@ namespace Xbim.ModelGeometry.Converter
         {
             get
             {
-                return _shapeData;
+                return Encoding.UTF8.GetString(_shapeData.ToArray());
             }
             set
             {
-                _shapeData = value;
+                _shapeData = Encoding.UTF8.GetBytes(value);
             }
         }
         /// <summary>
@@ -289,9 +289,9 @@ namespace Xbim.ModelGeometry.Converter
         {
             get
             {
-                var bytes = Encoding.UTF8.GetBytes(_shapeData);
+                //var bytes = Encoding.UTF8.GetBytes(_shapeData);
 
-                using (var msi = new MemoryStream(bytes))
+                using (var msi = new MemoryStream(_shapeData))
                 using (var mso = new MemoryStream())
                 {
                     using (var gs = new GZipStream(mso, CompressionMode.Compress))
@@ -311,7 +311,8 @@ namespace Xbim.ModelGeometry.Converter
                     {
                         gs.CopyTo(mso);
                     }
-                    _shapeData = Encoding.UTF8.GetString(mso.ToArray());
+                    //_shapeData = Encoding.UTF8.GetString(mso.ToArray());
+                    _shapeData = mso.ToArray();
                 }
             }
         }
