@@ -538,13 +538,35 @@ namespace Xbim.ModelGeometry.Converter
                    //make the finished shape
                    if (allProjections.Any())
                    {
-                       IXbimGeometryModel m = _engine.Merge(allProjections, _model.ModelFactors);
-                       elementGeom = elementGeom.Union(m, _model.ModelFactors);
+                       List<IXbimGeometryModel> toMerge = new List<IXbimGeometryModel>(allProjections.Count);
+                       //do anything that is curvedf first
+                       foreach (var p in allProjections)
+                       {
+                           if (p.HasCurvedEdges) elementGeom = elementGeom.Union(p, _model.ModelFactors);
+                           else toMerge.Add(p);
+
+                       }
+                       if (toMerge.Any())
+                       {
+                           IXbimGeometryModel m = _engine.Merge(toMerge, _model.ModelFactors);
+                           elementGeom = elementGeom.Union(m, _model.ModelFactors);
+                       }
                    }
                    if (allOpenings.Any())
                    {
-                       IXbimGeometryModel m = _engine.Merge(allOpenings, _model.ModelFactors);
-                       elementGeom = elementGeom.Cut(m, _model.ModelFactors);
+                       List<IXbimGeometryModel> toMerge = new List<IXbimGeometryModel>(allOpenings.Count);
+                       //do anything that is curvedf first
+                       foreach (var o in allOpenings)
+                       {
+                           if (o.HasCurvedEdges) elementGeom = elementGeom.Cut(o, _model.ModelFactors);
+                           else toMerge.Add(o);
+
+                       }
+                       if (toMerge.Any())
+                       {
+                           IXbimGeometryModel m = _engine.Merge(toMerge, _model.ModelFactors);
+                           elementGeom = elementGeom.Cut(m, _model.ModelFactors);
+                       }
                        
                    }
                    XbimMatrix3D elemTransform = element.ObjectPlacement.ToMatrix3D();
@@ -635,7 +657,7 @@ namespace Xbim.ModelGeometry.Converter
                     geomModel = engine.GetGeometry3D(shapeGeom.ShapeData, shapeGeom.Format);
                     geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
                     geomModel.SurfaceStyleLabel = xbimShapeInstance.StyleLabel;
-                    geomModel.TransformBy(xbimShapeInstance.Transformation);
+                    geomModel = geomModel.TransformBy(xbimShapeInstance.Transformation);
                     return geomModel.ToPolyhedron(_model.ModelFactors);
                 }
                 else return XbimEmptyGeometryGroup.Empty;
@@ -653,7 +675,7 @@ namespace Xbim.ModelGeometry.Converter
                 IXbimGeometryModel geomModel = engine.GetGeometry3D(shapeGeom.ShapeData, shapeGeom.Format);
                 geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
                 geomModel.SurfaceStyleLabel = xbimShapeInstance.StyleLabel;
-                geomModel.TransformBy(xbimShapeInstance.Transformation);
+                geomModel = geomModel.TransformBy(xbimShapeInstance.Transformation);
                 return geomModel.ToPolyhedron(_model.ModelFactors);
             }
             else return XbimEmptyGeometryGroup.Empty;
