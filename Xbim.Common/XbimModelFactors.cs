@@ -95,7 +95,7 @@ namespace Xbim.Common
                 Precision = 1e-5;
             PrecisionMax = OneMilliMetre / 10;
             MaxBRepSewFaceCount = 1024;
-            PrecisionBoolean =  Precision; //might need to make it courser than point precision if precision is very fine
+            PrecisionBoolean =  Math.Max(Precision,OneMilliMetre/100); //might need to make it courser than point precision if precision is very fine
             PrecisionBooleanMax = OneMilliMetre *100;
             Rounding = Math.Abs((int)Math.Log10(Precision*100)); //default round all points to 100 times  precision, this is used in the hash functions
 
