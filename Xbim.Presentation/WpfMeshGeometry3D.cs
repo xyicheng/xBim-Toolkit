@@ -1,4 +1,4 @@
-﻿using System;
+﻿lusing System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -447,9 +447,9 @@ namespace Xbim.Presentation
                                 vertexList = new Point3DCollection(pointCount);
                                 normalList = new Vector3DCollection(normalCount);
                                 //for efficienciency avoid continual regrowing
-                                this.Mesh.Positions = this.Mesh.Positions.GrowBy(pointCount);
-                                this.Mesh.Normals = this.Mesh.Normals.GrowBy(normalCount);
-                                this.Mesh.TriangleIndices = this.Mesh.TriangleIndices.GrowBy(triangleCount*3);
+                                //this.Mesh.Positions = this.Mesh.Positions.GrowBy(pointCount);
+                                //this.Mesh.Normals = this.Mesh.Normals.GrowBy(normalCount);
+                                //this.Mesh.TriangleIndices = this.Mesh.TriangleIndices.GrowBy(triangleCount*3);
                                 break;
                             case "F":
                                 break;
