@@ -457,8 +457,8 @@ namespace Xbim.ModelGeometry.Converter
             int localPercentageParsed = percentageParsed;
             int localTally = tally;
 
-            Parallel.ForEach<IGrouping<IfcElement, IfcFeatureElement>>(openingsAndProjections, new ParallelOptions(), pair =>
-          //  foreach (IGrouping<IfcElement, IfcFeatureElement> pair in openingsAndProjections)
+          //  Parallel.ForEach<IGrouping<IfcElement, IfcFeatureElement>>(openingsAndProjections, new ParallelOptions(), pair =>
+            foreach (IGrouping<IfcElement, IfcFeatureElement> pair in openingsAndProjections)
            {
                IfcElement element = pair.Key;
                Interlocked.Increment(ref localTally);
@@ -551,16 +551,17 @@ namespace Xbim.ModelGeometry.Converter
                    elemTransforminverted.Invert();
                    elementGeom.TransformBy(elemTransforminverted);// move geometry back to transform space to make the boundingbox more credible
                    //now add to the DB
+                   string shapeData = elementGeom.WriteAsString(_model.ModelFactors);
                    XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()
                    {
                        IfcShapeLabel = (uint)element.EntityLabel,
                        GeometryHash = 0,
                        LOD = XbimLOD.LOD_Unspecified,
                        Format = XbimGeometryType.Polyhedron,
-                       ShapeData = elementGeom.WriteAsString(_model.ModelFactors),
+                       ShapeData = shapeData,
                        BoundingBox = elementGeom.GetBoundingBox()
                    };
-
+                   
                    XbimShapeInstance shapeInstance = new XbimShapeInstance()
                    {
                        IfcProductLabel = Math.Abs(element.EntityLabel),
@@ -588,7 +589,7 @@ namespace Xbim.ModelGeometry.Converter
                    }
                }
            }
-          );
+         // );
             percentageParsed = localPercentageParsed;
             tally = localTally;
             return processed;
@@ -876,8 +877,8 @@ namespace Xbim.ModelGeometry.Converter
             ConcurrentDictionary<uint, uint> mapLookup =
                 new ConcurrentDictionary<uint, uint>();
 
-            Parallel.ForEach<uint>(listShapes, pOpts, shapeId =>
-            //         foreach (var shapeId in listShapes)
+           // Parallel.ForEach<uint>(listShapes, pOpts, shapeId =>
+                     foreach (var shapeId in listShapes)
             {
                 Interlocked.Increment(ref localTally);
                 IfcRepresentationItem shape = (IfcRepresentationItem)Model.Instances[shapeId];
@@ -898,13 +899,14 @@ namespace Xbim.ModelGeometry.Converter
                         {
                             IXbimPolyhedron poly = geomModel.ToPolyhedron(_model.ModelFactors);
                             XbimRect3D bb = poly.GetBoundingBox();
+                            string shapeData = poly.WriteAsString(_model.ModelFactors);
                             XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()
                             {
                                 IfcShapeLabel = shapeId,
                                 GeometryHash = key.GetHashCode(),
                                 LOD = XbimLOD.LOD_Unspecified,
                                 Format = XbimGeometryType.Polyhedron,
-                                ShapeData = poly.WriteAsString(_model.ModelFactors),
+                                ShapeData = shapeData,
                                 BoundingBox = bb
                             };
                             shapeGeometries.Add(shapeGeometry);
@@ -930,7 +932,7 @@ namespace Xbim.ModelGeometry.Converter
                 }
             }
 
-         );
+        // );
 
             percentageParsed = localPercentageParsed;
             tally = localTally;

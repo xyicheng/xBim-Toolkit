@@ -69,9 +69,7 @@ namespace Xbim
 		IXbimGeometryModel^ XbimGeometryEngine::GetGeometry3D(String^ data, XbimGeometryType xbimGeometryType)
 		{
 			if(xbimGeometryType==XbimGeometryType::Polyhedron)
-				return gcnew XbimPolyhedron(data,false);
-			else if(xbimGeometryType==XbimGeometryType::TriangulatedPolyhedron)
-				return gcnew XbimPolyhedron(data, true);
+				return gcnew XbimPolyhedron(data);
 			else //unsupported format
 				throw gcnew XbimGeometryException("Unsupported Geometry Type in XbimGeometryEngine::GetGeometry3D - Ignored");
 		}

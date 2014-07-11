@@ -193,15 +193,15 @@ namespace Xbim
 			size_t XbimPolyhedron::RemoveFins()
 			{
 				carve::mesh::MeshSimplifier simplifier;
-				 return simplifier.removeFins(_meshSet);
+				return simplifier.removeFins(_meshSet);
 			}  
 
 
 			size_t XbimPolyhedron::Simplify(double min_colinearity,
 				double min_delta_v,
-											double min_normal_angle,
-											double min_length,
-											double EPSILON)
+				double min_normal_angle,
+				double min_length,
+				double EPSILON)
 			{
 				carve::mesh::MeshSimplifier simplifier;
 				size_t mods = simplifier.simplify(_meshSet,min_colinearity, min_delta_v,min_normal_angle,min_length, EPSILON);	
@@ -210,61 +210,82 @@ namespace Xbim
 			}
 
 
-			
 
 
-			//Constructs geometry based on  ascii data, if asTriangulation is true the triangulated mesh is created else a polyhedron mesh is created
-			XbimPolyhedron::XbimPolyhedron(String^ strData, bool asTriangulation)
+
+			//Constructs geometry based on  ascii data
+			XbimPolyhedron::XbimPolyhedron(String^ strData)
 			{	
 				StringReader^ sr = gcnew StringReader(strData);
 				String^ l = sr->ReadLine(); 
 				array<Char>^ space = gcnew array<Char>{' '};
 				array<Char>^ comma = gcnew array<Char>{','};
 				array<Char>^ slash = gcnew array<Char>{'/'};
-				XbimVector3D normal; //the current Normal
-				
-				carve::input::PolyhedronData polyData;
+
+				std::vector<vertex_t> vertices;
+				XbimNormalMap* normalMap = new XbimNormalMap();
+				std::vector<face_t*> meshFaces;
+				std::vector<Double3D> normals;
+				int curveSurfaceCount = 0;
 				while( l!=nullptr)
 				{
 					array<String^>^ toks = l->Split(space,StringSplitOptions::RemoveEmptyEntries);
 					if(toks->Length<2) //skip if invalid line
 						continue;
 					String^ cmd = toks[0]->ToUpperInvariant();
-					if(cmd=="V")
+					if( cmd == "T")
+					{
+
+						bool isCurvedSurface = false;
+						if(toks->Length>1) //we have at least one triangle
+						{
+							//first look to see if we have a curved surface, if the second value has a normal they all have
+							array<String^>^ indices = toks[1]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
+							array<String^>^ b = indices[1]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
+							//if the second indices has a normal all the rest do, so it is a curved surface
+							if(b->Length==2) 
+							{
+								isCurvedSurface=true; //we will need to keep all triangles
+								curveSurfaceCount++;
+							}
+							for (int i = 1; i < toks->Length; i++)
+							{
+								array<String^>^ indices = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
+								array<String^>^ a = indices[0]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
+								array<String^>^ b = indices[1]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
+								array<String^>^ c = indices[2]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
+								meshFaces.reserve(indices->Length);
+								size_t av = UInt32::Parse(a[0]);
+								size_t bv = UInt32::Parse(b[0]);
+								size_t cv = UInt32::Parse(c[0]);
+								meshFaces.push_back(new face_t(&vertices[av],&vertices[bv],&vertices[cv]));
+								if(isCurvedSurface) 
+								{
+									size_t an = UInt32::Parse(a[1]);
+									size_t bn = UInt32::Parse(b[1]);
+									size_t cn = UInt32::Parse(c[1]);
+									normalMap->AddFaceToSurface(meshFaces.back(),curveSurfaceCount);
+									normalMap->SetNormalToVertexOnSurface(curveSurfaceCount,av,normals[an]);
+									normalMap->SetNormalToVertexOnSurface(curveSurfaceCount,bv,normals[bn]);
+									normalMap->SetNormalToVertexOnSurface(curveSurfaceCount,cv,normals[cn]);
+								}
+							}
+						}
+					}
+					else if(cmd=="V")
 					{
 						for (int i = 1; i < toks->Length; i++)
 						{
 							array<String^>^ coords = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
-							polyData.addVertex(carve::geom::VECTOR(Double::Parse(coords[0]),Double::Parse(coords[1]),Double::Parse(coords[2])));
+							vertices.push_back(carve::geom::VECTOR(Double::Parse(coords[0]),Double::Parse(coords[1]),Double::Parse(coords[2])));
 						}
-					}
-					else if( cmd == "T")
+					}	
+					else if(cmd == "N")
 					{
-						if(asTriangulation)
+						for (int i = 1; i < toks->Length; i++)
 						{
-							for (int i = 1; i < toks->Length; i++)
-							{
-								array<String^>^ indices = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
-								std::vector<int> triangle;
-								for (int t = 0; t < 3; t++)
-								{
-									array<String^>^ indiceTokens = indices[t]->Split(slash,StringSplitOptions::RemoveEmptyEntries);
-									triangle.push_back(Int32::Parse(indiceTokens[0]));
-								}
-								polyData.addFace(triangle.begin(),triangle.end());
-							}
-						}
-					}
-					else if(cmd == "F") //initialise the face data
-					{
-						if(!asTriangulation)
-						{
-							std::vector<int> fIndices;
-							for (int i = 1; i < toks->Length; i++)
-							{
-								fIndices.push_back(Int32::Parse(toks[i]));
-							}
-							polyData.addFace(fIndices.begin(), fIndices.end());
+							array<String^>^ norm = toks[i]->Split(comma,StringSplitOptions::RemoveEmptyEntries);
+							normals.push_back(Double3D(Double::Parse(norm[0]),Double::Parse(norm[1]),Double::Parse(norm[2])));
 						}
 					}
 					else if(cmd == "P") //initialise the polyData
@@ -273,22 +294,27 @@ namespace Xbim
 						int vCount = Int32::Parse(toks[2]);
 						int fCount = Int32::Parse(toks[3]);
 						int tCount = Int32::Parse(toks[4]);
-						polyData.reserveVertices(vCount);
-						if(asTriangulation)
-							polyData.reserveVertices(tCount);
-						else
-							polyData.reserveVertices(fCount);
+						int nCount = Int32::Parse(toks[5]);
+						vertices.reserve(vCount);
+						normals.reserve(nCount);
+						meshFaces.reserve(tCount);
 					}
-					else if(cmd == "N")
+					else if(cmd == "F") //initialise the face data
 					{
-						//do nothing just now
+						//do nothing
 					}
 					else
-						Logger->WarnFormat("Illegal Polygon command format '{0}' has been ignored");
+						Logger->WarnFormat("Illegal Polygon command format '{0}' has been ignored", cmd);
 					l = sr->ReadLine(); //get the next line
 				}
-				_meshSet =  polyData.createMesh(carve::input::Options(),0.0);
-				
+				std::vector<mesh_t*> newMeshes;
+				mesh_t::create(meshFaces.begin(), meshFaces.end(), newMeshes, carve::mesh::MeshOptions());
+				_meshSet =  new meshset_t(vertices,newMeshes);
+				if(normalMap->UniqueNormals().size() > 0)
+					_normalMap = normalMap;
+				else
+					delete normalMap;
+
 			}
 
 			XbimPolyhedron::XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, XbimNormalMap* normalMap, int representationLabel, int styleLabel)

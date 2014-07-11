@@ -204,8 +204,8 @@ namespace Xbim
 			
 			public:
 				XbimPolyhedron(void);
-				//Constructs geometry based on  ascii data, if asTriangulation is true the triangulated mesh is created else a polyhedron mesh is created
-				XbimPolyhedron(String^ strData, bool asTriangulation);
+				//Constructs geometry based on  ascii data
+				XbimPolyhedron(String^ strData);
 				//create and empty polyhedron
 				XbimPolyhedron(int representationLabel, int styleLabel);
 				XbimPolyhedron(carve::csg::CSG::meshset_t* mesh, int representationLabel, int styleLabel);
