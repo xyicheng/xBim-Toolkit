@@ -63,8 +63,10 @@ namespace Xbim.ModelGeometry.Scene
         /// <returns></returns>
         bool Write(string fileName, XbimModelFactors modelFactors);
 
-        void TransformBy(XbimMatrix3D xbimMatrix3D);
+        IXbimGeometryModel TransformBy(XbimMatrix3D xbimMatrix3D);
 
         IXbimPolyhedron ToPolyhedron(XbimModelFactors modelFactors);
+
+        bool HasCurvedEdges { get; }
     }
 }

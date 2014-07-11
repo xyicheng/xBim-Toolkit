@@ -280,6 +280,26 @@ namespace Xbim
 					nativeHandle->Move(location);
 				}
 			}
+			IXbimGeometryModel^ XbimFacetedShell::TransformBy(XbimMatrix3D t)
+			{
+				Build();
+				XbimFacetedShell^ fs = gcnew XbimFacetedShell(isSolid, _faceSet,_hasCurvedEdges,_representationLabel,_surfaceStyleLabel);
+
+				if(shapes->Count>0)
+				{
+					for each(XbimGeometryModel^ shape in shapes)
+						fs->Add((XbimGeometryModel^)shape->TransformBy(t));
+				}
+				else if(nativeHandle !=nullptr)
+				{
+					*(fs->Handle) = *nativeHandle;
+
+					BRepBuilderAPI_Transform gTran(*(fs->Handle),XbimGeomPrim::ToTransform(t));
+					*(fs->Handle) =gTran.Shape();
+
+				}
+				return fs;
+			}
 
 			XbimGeometryModel^ XbimFacetedShell::CopyTo(IfcAxis2Placement^ placement)
 			{

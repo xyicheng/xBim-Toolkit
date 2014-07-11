@@ -32,7 +32,13 @@ namespace Xbim
 				
 				XbimShell(const TopoDS_Shape & shell, bool hasCurves,int representationLabel, int surfaceStyleLabel );
 				XbimShell(XbimShell^ shell, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves );
-				
+				virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D t) override
+				{
+					TopoDS_Shape temp = *(Handle);
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(t));
+					return gcnew XbimShell(gTran.Shape(),_hasCurvedEdges,_representationLabel,_surfaceStyleLabel);
+				};
+
 				~XbimShell()
 				{
 					InstanceCleanup();

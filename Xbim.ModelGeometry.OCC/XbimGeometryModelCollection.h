@@ -181,7 +181,7 @@ namespace Xbim
 
 				virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
-				
+				virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D transform) override;
 				virtual void ToSolid(double precision, double maxPrecision) override;
 				virtual property int Count
 				{

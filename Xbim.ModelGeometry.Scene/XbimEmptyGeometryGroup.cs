@@ -60,11 +60,6 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
-        public void TransformBy(XbimMatrix3D xbimMatrix3D)
-        {
-            
-        }
-
         public IXbimGeometryModel Cut(IXbimGeometryModel openingGeom, XbimModelFactors modelFactors)
         {
             return this;
@@ -113,6 +108,17 @@ namespace Xbim.ModelGeometry.Scene
         public IList<Int32> Triangulation(double precision)
         {
             return new List<int>(0);
+        }
+
+
+        public IXbimGeometryModel TransformBy(XbimMatrix3D xbimMatrix3D)
+        {
+            return this;
+        }
+
+        public bool HasCurvedEdges
+        {
+            get { return false; }
         }
     }
 }

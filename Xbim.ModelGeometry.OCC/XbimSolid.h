@@ -54,11 +54,20 @@ namespace Xbim
 
 				//solid operations
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
-				virtual void ToSolid(double precision, double maxPrecision) override {}; //nothing to do
-				virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
-
-				///static builders 
+				virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D t) override
+				{
+					TopoDS_Shape temp = *(Handle);
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(t));;
+					return gcnew XbimSolid(gTran.Shape(),_hasCurvedEdges,_representationLabel,_surfaceStyleLabel);
+				};
 				
+			
+
+			virtual void ToSolid(double precision, double maxPrecision) override {}; //nothing to do
+			virtual IXbimGeometryModelGroup^ ToPolyHedronCollection(double deflection, double precision,double precisionMax, unsigned int rounding) override;
+
+			///static builders 
+
 				static TopoDS_Solid Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves);
 				static TopoDS_Solid Build(IfcSweptAreaSolid^ sweptAreaSolid, bool% hasCurves);
 				static TopoDS_Solid Build(IfcExtrudedAreaSolid^ repItem, bool% hasCurves);
@@ -74,7 +83,7 @@ namespace Xbim
 				static TopoDS_Solid Build(const TopoDS_Face & face, IfcAxis1Placement^ revolaxis, double angle, bool% hasCurves);
 				static TopoDS_Solid MakeHalfSpace(IfcHalfSpaceSolid^ hs, bool% hasCurves, bool shift);
 				//XbimGeometryModel interface
-
+				
 			};
 		}
 	}

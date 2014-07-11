@@ -41,7 +41,7 @@ namespace Xbim
 			IList<IfcFace^>^ Faces();
 
 			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
-
+			virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D transform) override;
 			virtual property bool IsValid
 			{
 				bool get() override

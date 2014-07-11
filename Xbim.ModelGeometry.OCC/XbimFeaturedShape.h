@@ -25,6 +25,7 @@ namespace Xbim
 			List<XbimGeometryModel^>^ mOpenings;
 			List<XbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcAxis2Placement^ location);
+			XbimFeaturedShape(XbimFeaturedShape^ copy, XbimMatrix3D t);
 			XbimGeometryModelCollection^ PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax);
 			XbimGeometryModel^ SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax, unsigned int rounding);
 			
@@ -82,6 +83,7 @@ namespace Xbim
 			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding) override;
 			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double deflection, double precision, double maxPrecision, unsigned int rounding) override;
 			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
+			virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D transform) override;
 			virtual void Move(TopLoc_Location location) override;
 
 			~XbimFeaturedShape()

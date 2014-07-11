@@ -212,7 +212,7 @@ namespace Xbim.ModelGeometry.Converter
             List<IGrouping<IfcElement, IfcFeatureElement>> openingsAndProjections = GetOpeningsAndProjections();
 
             //HashSet<int> elementIDsForVoidsandProjectionOps = GetElementIDsForVoidandProjectionOperations();
-            //ConcurrentDictionary<int, IXbimGeometryModel> geomsForVoidsandProjectionOps = new ConcurrentDictionary<int, IXbimGeometryModel>();
+            ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes = new ConcurrentDictionary<uint, IXbimGeometryModel>();
             //
             int total = productShapeIds.Count() + openingsAndProjections.Count();
             int tally = 0;
@@ -242,7 +242,7 @@ namespace Xbim.ModelGeometry.Converter
                     try
                     {
                         //remove any implicit duplicate geometries by comparing their IFC definitions
-                        int deduplicateCount = WriteShapeGeometries(productShapeIds, shapeLookup, surfaceStyles, total, ref tally, ref percentageParsed, progDelegate, pOpts, shapeGeometries);
+                        int deduplicateCount = WriteShapeGeometries(productShapeIds, shapeLookup, surfaceStyles, total, ref tally, ref percentageParsed, progDelegate, pOpts, shapeGeometries, curvedShapes);
                         
                     }
                     finally
@@ -263,7 +263,7 @@ namespace Xbim.ModelGeometry.Converter
                 {
                     try
                     {
-                        processed = WriteFeatureElements(openingsAndProjections, shapeLookup, mapsWritten, allMapBounds, clusters, features, total, ref tally, ref percentageParsed, progDelegate);
+                        processed = WriteFeatureElements(openingsAndProjections, shapeLookup, mapsWritten, allMapBounds, curvedShapes, clusters, features, total, ref tally, ref percentageParsed, progDelegate);
                     }
                     finally
                     {
@@ -445,6 +445,7 @@ namespace Xbim.ModelGeometry.Converter
             ConcurrentDictionary<uint, GeometryReference> shapeLookup,
             ConcurrentDictionary<uint, List<GeometryReference>> mapsWritten,
             ConcurrentDictionary<uint, XbimRect3D> allMapBounds,
+            ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes,
             Dictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>> clusters,
             BlockingCollection<Tuple<XbimShapeInstance, XbimShapeGeometry>> features,
             int total,
@@ -472,10 +473,10 @@ namespace Xbim.ModelGeometry.Converter
                    IXbimGeometryModel elementGeom = null;
                    if (elementShapes.Count() > 1) //merge multiple body parts together
                    {
-                       List<IXbimPolyhedron> allBody = new List<IXbimPolyhedron>();
+                       List<IXbimGeometryModel> allBody = new List<IXbimGeometryModel>();
                        foreach (var elemShape in elementShapes)
                        {
-                           IXbimPolyhedron geom = GetGeometryModel(elemShape);
+                           IXbimGeometryModel geom = GetGeometryModel(elemShape, curvedShapes);
                            allBody.Add(geom);
                            context = elemShape.RepresentationContext;
                        }
@@ -483,14 +484,14 @@ namespace Xbim.ModelGeometry.Converter
                    }
                    else
                    {
-                       elementGeom = GetGeometryModel(elementShapes.First());
+                       elementGeom = GetGeometryModel(elementShapes.First(),curvedShapes);
                        context = elementShapes.First().RepresentationContext;
                    }
 
-                  
 
-                   List<IXbimPolyhedron> allOpenings = new List<IXbimPolyhedron>();
-                   List<IXbimPolyhedron> allProjections = new List<IXbimPolyhedron>();
+
+                   List<IXbimGeometryModel> allOpenings = new List<IXbimGeometryModel>();
+                   List<IXbimGeometryModel> allProjections = new List<IXbimGeometryModel>();
                   
                    foreach (var feature in pair)
                    {
@@ -503,7 +504,7 @@ namespace Xbim.ModelGeometry.Converter
                            {
                                foreach (var openingShape in openingShapes)
                                {
-                                   IXbimPolyhedron openingGeom = GetGeometryModel(openingShape);     
+                                   IXbimGeometryModel openingGeom = GetGeometryModel(openingShape,curvedShapes);     
                                    allOpenings.Add(openingGeom);
                                }
                            }
@@ -523,7 +524,7 @@ namespace Xbim.ModelGeometry.Converter
                                    foreach (var projectionShape in projectionShapes)
                                    {
 
-                                       IXbimPolyhedron projGeom = GetGeometryModel(projectionShape);
+                                       IXbimGeometryModel projGeom = GetGeometryModel(projectionShape, curvedShapes);
                                        allProjections.Add(projGeom);
                                    }
                                }
@@ -549,7 +550,7 @@ namespace Xbim.ModelGeometry.Converter
                    XbimMatrix3D elemTransform = element.ObjectPlacement.ToMatrix3D();
                    XbimMatrix3D elemTransforminverted = elemTransform;
                    elemTransforminverted.Invert();
-                   elementGeom.TransformBy(elemTransforminverted);// move geometry back to transform space to make the boundingbox more credible
+                   elementGeom = elementGeom.TransformBy(elemTransforminverted);// move geometry back to transform space to make the boundingbox more credible
                    //now add to the DB
                    string shapeData = elementGeom.WriteAsString(_model.ModelFactors);
                    XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()
@@ -612,6 +613,34 @@ namespace Xbim.ModelGeometry.Converter
             return openingsAndProjections;
         }
 
+        private IXbimGeometryModel GetGeometryModel(XbimShapeInstance xbimShapeInstance, ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes)
+        {
+            IXbimGeometryModel geomModel;
+            XbimShapeGeometry shapeGeom = this.ShapeGeometry(xbimShapeInstance.ShapeGeometryLabel);
+            if (curvedShapes.TryGetValue((uint)shapeGeom.IfcShapeLabel, out geomModel))
+            {
+                geomModel = geomModel.TransformBy(xbimShapeInstance.Transformation);
+                geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
+                geomModel.SurfaceStyleLabel = xbimShapeInstance.StyleLabel;
+                return geomModel;
+            }
+            else
+            {
+                IXbimGeometryEngine engine = _model.GeometryEngine();
+                if (engine != null)
+                {
+                    
+                    if (shapeGeom.ShapeLabel < 0)
+                        Logger.ErrorFormat("Shape Geometry #{0} was not found in the database ", xbimShapeInstance.ShapeGeometryLabel);
+                    geomModel = engine.GetGeometry3D(shapeGeom.ShapeData, shapeGeom.Format);
+                    geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
+                    geomModel.SurfaceStyleLabel = xbimShapeInstance.StyleLabel;
+                    geomModel.TransformBy(xbimShapeInstance.Transformation);
+                    return geomModel.ToPolyhedron(_model.ModelFactors);
+                }
+                else return XbimEmptyGeometryGroup.Empty;
+            }
+        }
 
         public IXbimPolyhedron GetGeometryModel(XbimShapeInstance xbimShapeInstance)
         {
@@ -864,7 +893,8 @@ namespace Xbim.ModelGeometry.Converter
             ref int percentageParsed,
             ReportProgressDelegate progDelegate,
             ParallelOptions pOpts,
-            BlockingCollection<XbimShapeGeometry> shapeGeometries)
+            BlockingCollection<XbimShapeGeometry> shapeGeometries,
+            ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes)
         {
             int localPercentageParsed = percentageParsed;
             int localTally = tally;
@@ -897,6 +927,7 @@ namespace Xbim.ModelGeometry.Converter
                         IXbimGeometryModel geomModel = shape.Geometry3D();
                         if (geomModel != null)
                         {
+                            if (geomModel.HasCurvedEdges) curvedShapes.TryAdd(shapeId, geomModel);
                             IXbimPolyhedron poly = geomModel.ToPolyhedron(_model.ModelFactors);
                             XbimRect3D bb = poly.GetBoundingBox();
                             string shapeData = poly.WriteAsString(_model.ModelFactors);

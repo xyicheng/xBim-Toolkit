@@ -486,6 +486,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryEngine::Merge(IEnumerable<IXbimGeometryModel^>^ toMerge, XbimModelFactors^ modelFactors)
 		{
+			if(Enumerable::Count(toMerge) == 1) return Enumerable::First(toMerge); //do not change
 			List<XbimPolyhedron^>^ polys = gcnew List<XbimPolyhedron^>();
 			for each (IXbimGeometryModel^ model in toMerge)
 			{

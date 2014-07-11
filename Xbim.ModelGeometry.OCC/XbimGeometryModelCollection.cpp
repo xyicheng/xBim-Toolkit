@@ -122,6 +122,18 @@ namespace Xbim
 				return newColl;
 			}
 
+			//Transforms the polyhedron by the specified matrix and returns a copy
+			IXbimGeometryModel^ XbimGeometryModelCollection::TransformBy(XbimMatrix3D t)
+			{
+				XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(HasCurvedEdges,RepresentationLabel,SurfaceStyleLabel);
+				for each(XbimGeometryModel^ shape in shapes)
+				{
+					newColl->Add((XbimGeometryModel^)shape->TransformBy(t));
+				}
+				return newColl;				
+			}
+
+
 			void XbimGeometryModelCollection::ToSolid(double precision, double maxPrecision) 
 			{				
 				for each (XbimGeometryModel^ shape in this)

@@ -953,17 +953,7 @@ TryCombineSolid:
 				}
 			}
 
-			void XbimGeometryModel::TransformBy(XbimMatrix3D t)
-			{
-
-				if(Handle!=nullptr)
-				{
-					TopoDS_Shape temp = *(Handle);
-					nativeHandle = new TopoDS_Shape();
-					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(t));
-					*nativeHandle =gTran.Shape();
-				}
-			}
+			
 
 			IXbimPolyhedron^ XbimGeometryModel::ToPolyhedron(XbimModelFactors^ modelFactors)
 			{

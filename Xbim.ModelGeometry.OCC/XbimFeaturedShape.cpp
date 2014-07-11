@@ -293,9 +293,32 @@ TryCutPolyhedron:
 
 			}
 
+			
+			
+			XbimFeaturedShape::XbimFeaturedShape(XbimFeaturedShape^ copy, XbimMatrix3D t)
+			{
+				_representationLabel = copy->RepresentationLabel;
+				_surfaceStyleLabel = copy->SurfaceStyleLabel;
+
+				TopoDS_Shape movedShape = *(copy->mResultShape->Handle);
+				BRepBuilderAPI_Transform gTran(movedShape,XbimGeomPrim::ToTransform(t));
+				*nativeHandle =gTran.Shape();
+				mBaseShape = copy->mBaseShape;
+				mOpenings = copy->mOpenings;
+				mProjections = copy->mProjections;
+				_hasCurvedEdges = copy->HasCurvedEdges;
+				if(mResultShape == nullptr)
+					throw(gcnew XbimGeometryException("XbimFeaturedShape::CopyTo has failed to move shape"));
+
+			}
 			XbimGeometryModel^ XbimFeaturedShape::CopyTo(IfcAxis2Placement^ placement)
 			{
 				return gcnew XbimFeaturedShape(this,placement);
+			}
+
+			IXbimGeometryModel^ XbimFeaturedShape::TransformBy(XbimMatrix3D t)
+			{
+				return gcnew XbimFeaturedShape(this,t);
 			}
 
 			void XbimFeaturedShape::Move(TopLoc_Location location)

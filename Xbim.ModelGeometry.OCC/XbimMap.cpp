@@ -87,6 +87,17 @@ namespace Xbim
 
 			}
 
+			IXbimGeometryModel^ XbimMap::TransformBy(XbimMatrix3D t)
+			{
+				TopoDS_Shape temp = *(Handle);
+				nativeHandle = new TopoDS_Shape();
+				BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(t));
+				*nativeHandle =gTran.Shape();
+				XbimMap^ map = gcnew XbimMap(*nativeHandle,this);
+				return map;
+
+			}
+
 			XbimTriangulatedModelCollection^ XbimMap::Mesh(double deflection)
 			{
 				if(theMesh==nullptr)

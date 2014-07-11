@@ -78,12 +78,26 @@ namespace Xbim
 
 			public class XbimNormalMap
 			{
-			private:
+			protected:
 				std::unordered_map<size_t,std::unordered_map<size_t,size_t>> normalLookup;
 				std::unordered_map<Double3D,size_t> uniqueNormals;
 				std::vector<Double3D> normals;
 				carve::interpolate::FaceAttr<size_t> surfaceIds;
 			public:
+				XbimNormalMap::XbimNormalMap(){};
+				XbimNormalMap::XbimNormalMap(XbimNormalMap* toCopy, const std::unordered_map<face_t*,face_t*>& facelookup)
+				{
+					normalLookup = toCopy->normalLookup;
+					uniqueNormals =  toCopy->uniqueNormals;
+					normals = normals;
+					for (std::unordered_map<face_t*,face_t*>::const_iterator i = facelookup.begin(); i !=  facelookup.end(); ++i)
+					{
+						face_t* orig = i->first;
+						face_t* clone = i->second;
+						surfaceIds.setAttribute(clone,toCopy->GetSurfaceIdOfFace(orig));
+					}
+				}
+
 				void AddFaceToSurface(face_t* face, size_t surfaceId)
 				{
 					System::Diagnostics::Debug::Assert(surfaceId>0); //0 is reserved
@@ -258,7 +272,7 @@ namespace Xbim
 				{
 					meshset_t* get(){return _meshSet;}
 				}
-				virtual void TransformBy(XbimMatrix3D transform) override;
+				virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D transform) override;
 				virtual XbimRect3D GetBoundingBox() override;
 				virtual property bool IsEmpty {bool get();}
 				virtual property bool IsValid {bool get() override;}

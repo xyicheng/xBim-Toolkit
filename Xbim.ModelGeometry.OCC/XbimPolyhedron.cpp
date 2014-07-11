@@ -943,16 +943,32 @@ IncorporateHoles:
 				_meshSet=nullptr;
 			}
 
-			//Transforms the polyhedron by the specified matrix
-			void XbimPolyhedron::TransformBy(XbimMatrix3D t)
+			//Transforms the polyhedron by the specified matrix and returns a copy
+			IXbimGeometryModel^ XbimPolyhedron::TransformBy(XbimMatrix3D t)
 			{
-				if(_meshSet==nullptr) return;
+				if(_meshSet==nullptr) return this;
 				carve::math::Matrix m(t.M11,t.M21,t.M31,t.OffsetX,
 					t.M12,t.M22,t.M32,t.OffsetY,
 					t.M13,t.M23,t.M33,t.OffsetZ,
 					t.M14,t.M24,t.M34,t.M44);
 				carve::math::matrix_transformation mt(m);
-				_meshSet->transform(mt);
+				meshset_t* newMesh = _meshSet->clone();
+				newMesh->transform(mt);
+				XbimNormalMap* newNormaMap;
+				if(_normalMap!=nullptr)
+				{
+					std::unordered_map<face_t*,face_t*> facelookup;
+					meshset_t::face_iter clone = newMesh->faceBegin();
+					meshset_t::face_iter orig =_meshSet->faceBegin();
+					for (; clone!=newMesh->faceEnd();)
+					{
+						facelookup[*orig]=*clone;
+						clone++;
+						orig++;
+					}
+					newNormaMap = new XbimNormalMap(_normalMap,facelookup);
+				}
+				return gcnew XbimPolyhedron(newMesh,newNormaMap,_representationLabel,_surfaceStyleLabel);
 				
 			}
 

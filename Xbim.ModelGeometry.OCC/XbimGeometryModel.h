@@ -12,7 +12,7 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <BRepTools.hxx>
-
+#include <BRepBuilderAPI_Transform.hxx>
 
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::XbimExtensions::SelectTypes;
@@ -98,8 +98,7 @@ private:
 			};
 
 		public:		
-			literal String^ PolyhedronFormat = "PLY";
-
+			
 			virtual IEnumerator<IXbimGeometryModel^>^ GetEnumerator()
 			{
 				return gcnew enumerator(this);
@@ -151,6 +150,7 @@ private:
 					return _hasCurvedEdges;
 				}
 			};
+
 			virtual property TopoDS_Shape* Handle
 			{
 				TopoDS_Shape* get() 
@@ -176,7 +176,7 @@ private:
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision,double precisionMax, unsigned int rounding) ;
 			virtual String^ WriteAsString(XbimModelFactors^ modelFactors);
 			virtual bool Write(String^ fileName,XbimModelFactors^ modelFactors);
-			virtual void TransformBy(XbimMatrix3D transform);
+			virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D transform) abstract;
 			virtual IXbimPolyhedron^ ToPolyhedron(XbimModelFactors^ modelFactors);
 			virtual property XbimLocation ^ Location 
 			{

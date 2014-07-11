@@ -44,6 +44,7 @@ namespace Xbim
 				XbimGeometryModel::InstanceCleanup();
 			}
 			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
+			virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D transform) override;
 			//virtual void Move(TopLoc_Location location) override;
 			virtual property bool IsValid
 			{
