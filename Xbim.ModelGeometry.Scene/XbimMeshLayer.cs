@@ -245,7 +245,7 @@ namespace Xbim.ModelGeometry.Scene
                 string layerName = geomData.StyleLabel.ToString();
                 if (!subLayerMap.Contains(layerName))
                 {
-                    IfcSurfaceStyle style = model.Instances[geomData.StyleLabel] as IfcSurfaceStyle;
+                    IfcSurfaceStyle style = model.Instances[(uint)geomData.StyleLabel] as IfcSurfaceStyle;
                     //create a sub layer
                     subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(model,style);
                     subLayer.Name = layerName;
@@ -314,7 +314,7 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public IEnumerable<MeshInfo> GetMeshInfo(int entityLabel)
+        public IEnumerable<MeshInfo> GetMeshInfo(uint entityLabel)
         {
             foreach (var mf in Visible.Meshes.Where(m => m.EntityLabel == entityLabel))
                 yield return new MeshInfo(mf, this);
@@ -334,7 +334,7 @@ namespace Xbim.ModelGeometry.Scene
        /// <param name="includeHidden">Include fragments in hidden layers</param>
        /// <param name="includSublayers">Recurse into sub layers</param>
        /// <returns></returns>
-        internal IEnumerable<XbimMeshFragment> GetMeshFragments(int entityLabel, bool includeHidden = false, bool includSublayers = false)
+        internal IEnumerable<XbimMeshFragment> GetMeshFragments(uint entityLabel, bool includeHidden = false, bool includSublayers = false)
         {
             foreach (var mf in Visible.Meshes.Where(m => m.EntityLabel == entityLabel))
                 yield return mf;
@@ -349,7 +349,7 @@ namespace Xbim.ModelGeometry.Scene
 
         
 
-        public bool HasEntity(int entityLabel, bool includeHidden = false, bool includSublayers = false)
+        public bool HasEntity(uint entityLabel, bool includeHidden = false, bool includSublayers = false)
         {
             foreach (var item in  this.GetMeshFragments(entityLabel, includeHidden, includSublayers))
 	        {
@@ -358,7 +358,7 @@ namespace Xbim.ModelGeometry.Scene
             return false;          
         }
 
-        public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(int entityLabel, short modelId)
+        public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(uint entityLabel, short modelId)
         {
             IEnumerable<XbimMeshFragment> fragments = GetMeshFragments(entityLabel); //get all the fragments for this entity in the visible layer
             int maxSize = fragments.Sum(f => f.PositionCount);
@@ -423,7 +423,7 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public void Add(String mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId=0)
+        public void Add(String mesh, Type productType, uint productLabel, uint geometryLabel, XbimMatrix3D? transform = null, short modelId=0)
         {
             Hidden.Add(mesh, productType, productLabel, geometryLabel, transform, modelId);
         }

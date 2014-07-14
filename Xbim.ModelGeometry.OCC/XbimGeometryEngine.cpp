@@ -31,7 +31,7 @@ namespace Xbim
 			if(xbimGeometryType != XbimGeometryType::Polyhedron)
 				throw gcnew NotImplementedException("Only polyhedron geometry is currently implemented");
 			Object^ lookup;
-			int id = Math::Abs(product->EntityLabel);
+			int id = product->EntityLabel;
 			if(_cache->TryGetValue(id,lookup))
 				return (IXbimGeometryModelGroup^)lookup;
 			else
@@ -78,7 +78,7 @@ namespace Xbim
 		{
 
 			Object^ lookup;
-			int id = Math::Abs(solid->EntityLabel);
+			int id = solid->EntityLabel;
 			if(_cache->TryGetValue(id,lookup))
 				return (IXbimGeometryModelGroup^)lookup;
 			else
@@ -100,7 +100,7 @@ namespace Xbim
 		IXbimGeometryModelGroup^ XbimGeometryEngine::GetGeometry3D(IfcRepresentation^ representation)
 		{
 			Object^ lookup;
-			int id = Math::Abs(representation->EntityLabel);
+			int id = representation->EntityLabel;
 			if(_cache->TryGetValue(id,lookup))
 				return (IXbimGeometryModelGroup^)lookup;
 			else
@@ -116,7 +116,7 @@ namespace Xbim
 			return XbimEmptyGeometryGroup::Empty;
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 
 			if(product->Representation == nullptr ||  product->Representation->Representations == nullptr 
@@ -256,7 +256,7 @@ namespace Xbim
 
 
 
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 			return CreateFrom(product, nullptr, maps, forceSolid, lod, occOut);
 		}
@@ -267,7 +267,7 @@ namespace Xbim
 			// Upstream callers should ideally terminate the application ASAP.
 			/*__try
 			{*/
-				return CreateFrom(product, nullptr, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod,occOut);
+				return CreateFrom(product, nullptr, gcnew ConcurrentDictionary<unsigned int, Object^>(), forceSolid,lod,occOut);
 			/*}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
@@ -280,7 +280,7 @@ namespace Xbim
 		/*
 		Create a model geometry for a given shape
 		*/
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentation^ rep, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentation^ rep, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 
 			if(rep->Items->Count == 0) //we have nothing to do
@@ -305,20 +305,20 @@ namespace Xbim
 
 		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(rep, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod, occOut);
+			return CreateFrom(rep, gcnew ConcurrentDictionary<unsigned int, Object^>(), forceSolid,lod, occOut);
 		}
 
 		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(repItem, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod, occOut);
+			return CreateFrom(repItem, gcnew ConcurrentDictionary<unsigned int, Object^>(), forceSolid,lod, occOut);
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
 		{
 			//look up if we have already created it
 			
 			Object^ lookup;
-			if(maps!=nullptr && maps->TryGetValue(Math::Abs(repItem->EntityLabel),lookup))
+			if(maps!=nullptr && maps->TryGetValue(repItem->EntityLabel,lookup))
 				return (XbimGeometryModel^)lookup;
 			XbimGeometryModel^ geomModel;
 		    if(dynamic_cast<IfcHalfSpaceSolid^>(repItem))
@@ -345,12 +345,12 @@ namespace Xbim
 				IfcRepresentationMap^ repMap = map->MappingSource;
 				XbimGeometryModel^ mg;
 				
-				if(maps==nullptr || !maps->TryGetValue(Math::Abs(repMap->MappedRepresentation->EntityLabel), lookup)) //look it up
+				if(maps==nullptr || !maps->TryGetValue(repMap->MappedRepresentation->EntityLabel, lookup)) //look it up
 				{
 					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
 					if(maps!=nullptr && mg!=nullptr)
 					{
-						maps->TryAdd(Math::Abs(repMap->MappedRepresentation->EntityLabel), mg);
+						maps->TryAdd(repMap->MappedRepresentation->EntityLabel, mg);
 					}
 				}
 				else
@@ -381,18 +381,17 @@ namespace Xbim
 			else if(dynamic_cast<IfcGeometricSet^>(repItem))
 			{
 				geomModel =  nullptr; //this s not a solid object
-				//IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
-				//Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
+				
 			}
 			else
 			{
 				geomModel =  nullptr;
 				Type ^ type = repItem->GetType();
-				Logger->Warn(String::Format("XbimGeometryModel. Could not Build Geometry #{0}, type {1} is not implemented",Math::Abs(repItem->EntityLabel), type->Name));
+				Logger->Warn(String::Format("XbimGeometryModel. Could not Build Geometry #{0}, type {1} is not implemented",repItem->EntityLabel, type->Name));
 			}
 			
 			if(geomModel !=nullptr && maps!=nullptr && !geomModel->IsMap) //no point really in mapping maps
-				maps->TryAdd(Math::Abs(repItem->EntityLabel),geomModel);
+				maps->TryAdd(repItem->EntityLabel,geomModel);
 			return geomModel;
 		}
 
@@ -418,7 +417,7 @@ namespace Xbim
 				return false;
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::Build(IfcBooleanResult^ repItem, ConcurrentDictionary<int, Object^>^ maps)
+		XbimGeometryModel^ XbimGeometryEngine::Build(IfcBooleanResult^ repItem, ConcurrentDictionary<unsigned int, Object^>^ maps)
 		{
 			
 			IfcBooleanOperand^ fOp= repItem->FirstOperand;
@@ -474,7 +473,7 @@ namespace Xbim
 		}
 
 
-		XbimGeometryModel^ XbimGeometryEngine::Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<int, Object^>^ maps)
+		XbimGeometryModel^ XbimGeometryEngine::Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<unsigned int, Object^>^ maps)
 			{
 				if(dynamic_cast<IfcBooleanResult^>(csgSolid->TreeRootExpression)) 
 					return Build((IfcBooleanResult^)csgSolid->TreeRootExpression, maps);

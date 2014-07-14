@@ -228,19 +228,19 @@ namespace Xbim
 				case BRepBuilderAPI_FaceDone:
 					return false;
 				case BRepBuilderAPI_NoFace:
-					Logger->WarnFormat("Could not build a face for Entity = #{0}", Math::Abs(entityLabel));
+					Logger->WarnFormat("Could not build a face for Entity = #{0}", entityLabel);
 					break;
 				case BRepBuilderAPI_NotPlanar:
-					Logger->WarnFormat("Could not build a planar face for Entity = #{0}", Math::Abs(entityLabel));
+					Logger->WarnFormat("Could not build a planar face for Entity = #{0}", entityLabel);
 					break;
 				case BRepBuilderAPI_CurveProjectionFailed:
-					Logger->WarnFormat("Could not project face boundary for Entity = #{0}", Math::Abs(entityLabel));
+					Logger->WarnFormat("Could not project face boundary for Entity = #{0}", entityLabel);
 					break;
 				case BRepBuilderAPI_ParametersOutOfRange:
-					Logger->WarnFormat("Face parameters out of range for Entity = #{0}", Math::Abs(entityLabel));
+					Logger->WarnFormat("Face parameters out of range for Entity = #{0}", entityLabel);
 					break;
 				default:
-					Logger->WarnFormat("Unknown error building a face for Entity = #{0}", Math::Abs(entityLabel));
+					Logger->WarnFormat("Unknown error building a face for Entity = #{0}", entityLabel);
 					break;
 				}
 				return true;

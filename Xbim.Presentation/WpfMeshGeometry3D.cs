@@ -1,4 +1,4 @@
-﻿lusing System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -392,7 +392,7 @@ namespace Xbim.Presentation
             
         }
 
-        public void Add(string mesh, short productTypeId, int productLabel, int geometryLabel, XbimMatrix3D? transform = null, short modelId = 0)
+        public void Add(string mesh, short productTypeId, uint productLabel, uint geometryLabel, XbimMatrix3D? transform = null, short modelId = 0)
         {
             XbimMeshFragment frag = new XbimMeshFragment(PositionCount, TriangleIndexCount, productTypeId, productLabel, geometryLabel, modelId);
             Read(mesh, transform);
@@ -401,7 +401,7 @@ namespace Xbim.Presentation
             meshes.Add(frag);
         }
 
-        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform = null,short modelId=0)
+        public void Add(string mesh, Type productType, uint productLabel, uint geometryLabel, XbimMatrix3D? transform = null,short modelId=0)
         {
             Add(mesh, IfcMetaData.IfcTypeId(productType), productLabel, geometryLabel, transform, modelId);
         }

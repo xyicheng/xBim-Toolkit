@@ -10,12 +10,12 @@ namespace Xbim.Presentation.ModelGeomInfo
     public class PointGeomInfo
     {
         public IPersistIfcEntity Entity;
-        public int EntityLabel
+        public uint EntityLabel
         {
             get
             {
-                if (Entity != null)
-                    return -1;
+                if (Entity == null)
+                    return 0;
                 return Entity.EntityLabel;
             }
         }

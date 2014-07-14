@@ -28,12 +28,12 @@ namespace Xbim.Presentation.LayerStyling
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene
             )
         {
-            int iLab;
+            uint iLab;
             string LayerName = layerKey;
-            bool conversionok = Int32.TryParse(layerKey, out iLab);
+            bool conversionok = UInt32.TryParse(layerKey, out iLab);
             if (conversionok)
             {
-                layerKey = model.Instances[Math.Abs(iLab)].GetType().Name;
+                layerKey = model.Instances[iLab].GetType().Name;
             }
             XbimColour colour = scene.LayerColourMap[layerKey];
             return new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = LayerName };

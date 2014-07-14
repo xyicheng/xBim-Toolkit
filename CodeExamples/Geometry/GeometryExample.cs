@@ -56,7 +56,7 @@ namespace CodeExamples.Geometry
                     if (ifcDoors.Any())
                     {
                         IfcDoor ifcDoor = ifcDoors.First(); //we use the first door
-                        int entLbl = Math.Abs(ifcDoor.EntityLabel);
+                        uint entLbl = ifcDoor.EntityLabel;
                         
                         foreach (var layer in scene.Layers)//loop material layers
                         {

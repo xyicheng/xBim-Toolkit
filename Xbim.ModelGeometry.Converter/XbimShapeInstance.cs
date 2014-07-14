@@ -53,7 +53,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The unique label of this shape instance
         /// </summary>
-        int _instanceLabel;
+        uint _instanceLabel;
         /// <summary>
         /// The IFC type of the product this instance represents
         /// </summary>
@@ -61,19 +61,19 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The label of the IFC Product object that  this instance fully or partly defines
         /// </summary>
-        int _ifcProductLabel;
+        uint _ifcProductLabel;
         /// <summary>
         /// The style that this shape is presented in when it overrides the shape style
         /// </summary>
-        int _styleLabel;
+        uint _styleLabel;
         /// <summary>
         /// The id of the shape  that this is an instance of
         /// </summary>
-        int _shapeLabel;
+        uint _shapeLabel;
         /// <summary>
         /// The label of the IFC representation context of this instance
         /// </summary>
-        int _representationContext;
+        uint _representationContext;
         /// <summary>
         /// What type of representation, typically this is how the shape has been generated, i.e. openings have been applied or not applied
         /// </summary>
@@ -87,19 +87,19 @@ namespace Xbim.ModelGeometry.Converter
         /// </summary>
         XbimRect3D _boundingBox;
 
-        public XbimShapeInstance(int Id=-1)
+        public XbimShapeInstance(uint Id=0)
         {
             _instanceLabel = Id;
-            _ifcTypeId = -1;
-            _ifcProductLabel = -1;
-            _styleLabel = -1;
-            _shapeLabel = -1;
-            _representationContext = -1;
+            _ifcTypeId = 0;
+            _ifcProductLabel = 0;
+            _styleLabel =0;
+            _shapeLabel = 0;
+            _representationContext = 0;
             _representationType = XbimGeometryRepresentationType.OpeningsAndAdditionsExcluded;
             _transformation = XbimMatrix3D.Identity;
             _boundingBox = XbimRect3D.Empty;
         }
-        public int InstanceLabel
+        public uint InstanceLabel
         {
             get
             {
@@ -123,7 +123,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        public int IfcProductLabel
+        public uint IfcProductLabel
         {
             get
             {
@@ -135,7 +135,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        public int StyleLabel
+        public uint StyleLabel
         {
             get
             {
@@ -147,7 +147,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        public int ShapeGeometryLabel
+        public uint ShapeGeometryLabel
         {
             get
             {
@@ -159,7 +159,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        public int RepresentationContext
+        public uint RepresentationContext
         {
             get
             {

@@ -70,7 +70,7 @@ namespace Xbim.XbimExtensions.Interfaces
         XbimModelFactors ModelFactors { get; }
 
         IXbimInstanceCollection Instances { get; }
-        int Activate(IPersistIfcEntity owningEntity, bool write);
+        uint Activate(IPersistIfcEntity owningEntity, bool write);
         void Delete(IPersistIfcEntity instance);
 
         IEnumerable<IPersistIfcEntity> IfcProducts { get; }

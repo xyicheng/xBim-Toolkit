@@ -140,9 +140,9 @@ namespace Xbim.Tests
 
             private void CompareXbimFiles(string source, string target)
             {
-                List<int> badLabels1_3 = GetFileBadLabels(source, target);
+                List<uint> badLabels1_3 = GetFileBadLabels(source, target);
                 // get any labels in xbimFile2 that are not in xbimFile1
-                List<int> badLabels2_3 = GetFileBadLabels(target, source);
+                List<uint> badLabels2_3 = GetFileBadLabels(target, source);
                 // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
                 Assert.AreEqual(badLabels1_3.Count, 0);
                 Assert.AreEqual(badLabels2_3.Count, 0);
@@ -286,9 +286,9 @@ namespace Xbim.Tests
                 return "";
             }
 
-            private List<int> GetFileBadLabels(string fileName1, string fileName2)
+            private List<uint> GetFileBadLabels(string fileName1, string fileName2)
             {
-                List<int> badLabels = new List<int>();
+                List<uint> badLabels = new List<uint>();
                 using (XbimModel modelServer = new XbimModel())
                 {
                     modelServer.Open(fileName1);
@@ -297,10 +297,9 @@ namespace Xbim.Tests
                         modelServer2.Open(fileName2);
                         foreach (var entity in modelServer.Instances)
                         {
-                            int entityLabel = entity.EntityLabel;
+                            uint entityLabel = entity.EntityLabel;
                             byte[] b1 = modelServer.GetEntityBinaryData(entity);
 
-                            int posLabel = Math.Abs(entityLabel);
 
                             // we have entityLabel from 1st file, this should be in second file as well
                             IPersistIfcEntity entity2 = null;
@@ -321,7 +320,7 @@ namespace Xbim.Tests
 
                                     //if (!CompareBytes(modelServer, entity, b1, b2))
                                     isBadEntity = true;
-                                    throw new Exception("Entity mismatch: EntityLabel: " + posLabel + " \n" + b1.ToString() + " \n" + b2.ToString());
+                                    throw new Exception("Entity mismatch: EntityLabel: " + entityLabel + " \n" + b1.ToString() + " \n" + b2.ToString());
                                 }
                             }
                             else
@@ -333,7 +332,7 @@ namespace Xbim.Tests
                             if (isBadEntity)
                             {
                                 // add label to badLabels List
-                                badLabels.Add(posLabel);
+                                badLabels.Add(entityLabel);
                             }
                             
                         }

@@ -40,8 +40,8 @@ namespace Xbim.IO
     {
         private static readonly Dictionary<string, IfcParserType> primitives;
         private readonly int _transactionBatchSize = 100;
-        private Dictionary<string, int> idMap;
-        private int lastId;
+        private Dictionary<string, uint> idMap;
+        private uint lastId;
         static IfcXmlReader()
         {
             primitives = new Dictionary<string, IfcParserType>();
@@ -233,7 +233,7 @@ namespace Xbim.IO
         {
             string elementName = input.LocalName;
             bool isRefType;
-            int id = GetId(input, out isRefType);
+            uint? id = GetId(input, out isRefType);
            
             IfcType ifcType;
             
@@ -242,19 +242,19 @@ namespace Xbim.IO
             int propIndex;
 
 
-            if (id > -1 && IsIfcEntity(elementName, out ifcType)) //we have an element which is an Ifc Entity
+            if (id.HasValue && IsIfcEntity(elementName, out ifcType)) //we have an element which is an Ifc Entity
             {
                 IPersistIfcEntity ent;
-                if (!cache.Contains(id))
+                if (!cache.Contains(id.Value))
                 {
                     // not been declared in a ref yet
                     // model.New creates an instance uisng type and id
-                    ent = cache.CreateNew(ifcType.Type, id);
+                    ent = cache.CreateNew(ifcType.Type, id.Value);
                    
                 }
                 else
                 {
-                    ent = cache.GetInstance(id, false, true);
+                    ent = cache.GetInstance(id.Value, false, true);
                 }
 
                 XmlEntity xmlEnt = new XmlEntity(_currentNode, ent);
@@ -352,7 +352,7 @@ namespace Xbim.IO
 
                 return;
             }
-            else if (id == -1 && IsIfcProperty(elementName, out propIndex, out prop)) //we have an element which is a property
+            else if (!id.HasValue && IsIfcProperty(elementName, out propIndex, out prop)) //we have an element which is a property
             {
 
                 string cType = input.GetAttribute(_cTypeAttribute);
@@ -390,7 +390,7 @@ namespace Xbim.IO
                     if (!input.IsEmptyElement) _currentNode = n;
                 }
             }
-            else if (id == -1 && IsIfcType(elementName, out ifcType)) // we have an Ifc ExpressType
+            else if (!id.HasValue && IsIfcType(elementName, out ifcType)) // we have an Ifc ExpressType
             {
 
 
@@ -401,7 +401,7 @@ namespace Xbim.IO
 
                 if (!input.IsEmptyElement) _currentNode = n;
             }
-            else if (id == -1 && IsPrimitiveType(elementName, out parserType)) // we have an basic type i.e. double, bool etc
+            else if (!id.HasValue && IsPrimitiveType(elementName, out parserType)) // we have an basic type i.e. double, bool etc
             {
                 // its parent can be a collection, if yes then this property needs to be added to parent
                 XmlNode n = new XmlBasicType(_currentNode, parserType);
@@ -465,10 +465,10 @@ namespace Xbim.IO
             return ok && typeof(ExpressType).IsAssignableFrom(ifcType.Type);
         }
 
-        private int GetId(XmlReader input, out bool isRefType)
+        private uint? GetId(XmlReader input, out bool isRefType)
         {
             isRefType = false;
-            int nextId = -1;
+            uint? nextId = null;
             IfcType ifcType;
             string strId = input.GetAttribute("id");
             if (string.IsNullOrEmpty(strId))
@@ -478,13 +478,15 @@ namespace Xbim.IO
             }
             if (!string.IsNullOrEmpty(strId)) //must be a new instance or a reference to an existing one  
             {
-               
-                if (!idMap.TryGetValue(strId, out nextId))
+                uint lookup;
+                if (!idMap.TryGetValue(strId, out lookup))
                 {
                     ++lastId;
                     nextId = lastId;
-                    idMap.Add(strId, nextId);
+                    idMap.Add(strId, nextId.Value);
                 }
+                else
+                    nextId = lookup;
                 // if we have id or refid then remove letters and get the number part
                 //Match match = Regex.Match(strId, @"\d+");
 
@@ -810,7 +812,7 @@ namespace Xbim.IO
         {
            
             // Read until end of file
-            idMap = new Dictionary<string, int>();
+            idMap = new Dictionary<string, uint>();
             lastId = 0;
             _entitiesParsed = 0;
             bool foundHeader = false;

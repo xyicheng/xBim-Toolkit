@@ -56,9 +56,10 @@ namespace Xbim
 				virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 				virtual IXbimGeometryModel^ TransformBy(XbimMatrix3D t) override
 				{
-					TopoDS_Shape temp = *(Handle);
-					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(t));;
-					return gcnew XbimSolid(gTran.Shape(),_hasCurvedEdges,_representationLabel,_surfaceStyleLabel);
+					
+					BRepBuilderAPI_Transform gTran(*(Handle),XbimGeomPrim::ToTransform(t));
+					TopoDS_Shape temp = gTran.Shape();
+					return gcnew XbimSolid(temp,_hasCurvedEdges,_representationLabel,_surfaceStyleLabel);
 				};
 				
 			

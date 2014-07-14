@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.TimeSeriesResource
         }
         public override int GetHashCode()
         {
-            return Math.Abs(_entityLabel); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
+            return _entityLabel.GetHashCode(); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
         }
 
         public static bool operator ==(IfcTimeSeriesReferenceRelationship left, IfcTimeSeriesReferenceRelationship right)
@@ -53,7 +53,7 @@ namespace Xbim.Ifc2x3.TimeSeriesResource
             if (((object)left == null) || ((object)right == null))
                 return false;
 
-            return (Math.Abs(left.EntityLabel) == Math.Abs(right.EntityLabel)) && (left.ModelOf == right.ModelOf);
+            return (left.EntityLabel == right.EntityLabel) && (left.ModelOf == right.ModelOf);
 
         }
 
@@ -63,7 +63,9 @@ namespace Xbim.Ifc2x3.TimeSeriesResource
         }
         #region IPersistIfcEntity Members
 
-        private int _entityLabel;
+        private uint _entityLabel;
+		bool _activated;
+
         private IModel _model;
 
         public IModel ModelOf
@@ -71,25 +73,26 @@ namespace Xbim.Ifc2x3.TimeSeriesResource
             get { return _model; }
         }
 
-        void IPersistIfcEntity.Bind(IModel model, int entityLabel)
+        void IPersistIfcEntity.Bind(IModel model, uint entityLabel, bool activated)
         {
-            _model = model;
+            _activated=activated;
+			_model = model;
             _entityLabel = entityLabel;
         }
 
         bool IPersistIfcEntity.Activated
         {
-            get { return _entityLabel > 0; }
+            get { return _activated; }
         }
 
-        public int EntityLabel
+        public uint EntityLabel
         {
             get { return _entityLabel; }
         }
 
         void IPersistIfcEntity.Activate(bool write)
         {
-            lock(this) { if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false); }
+            lock(this) { if (_model != null && !_activated) _activated = _model.Activate(this, false)>0;  }
             if (write) _model.Activate(this, write);
         }
 

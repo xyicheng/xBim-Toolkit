@@ -12,7 +12,7 @@ namespace XbimXplorer.Querying
 {
     public static class GeomQuerying
     {
-        public static string GeomInfoBoundBox(XbimModel model, int iEntLabel)
+        public static string GeomInfoBoundBox(XbimModel model, uint iEntLabel)
         {
             XbimGeometryData geomdata = model.GetGeometryData(iEntLabel, XbimGeometryType.BoundingBox).FirstOrDefault();
             if (geomdata == null)
@@ -22,7 +22,7 @@ namespace XbimXplorer.Querying
             return string.Format("Bounding box (position, size): {0}", r3d.ToString());
         }
 
-        public static string GeomInfoMesh(XbimModel model, int iEntLabel)
+        public static string GeomInfoMesh(XbimModel model, uint iEntLabel)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -46,7 +46,7 @@ namespace XbimXplorer.Querying
             // sb.Append(m.ToString());
         }
 
-        public static string Viewerdata(DrawingControl3D control, XbimModel model, int EntityLabel)
+        public static string Viewerdata(DrawingControl3D control, XbimModel model, uint EntityLabel)
         {
             StringBuilder sb = new StringBuilder();
             control.ReportData(sb, model, EntityLabel);
@@ -152,7 +152,7 @@ namespace XbimXplorer.Querying
         //    return sb.ToString();
         //}
 
-        internal static string GeomLayers(XbimModel Model, int item, List<Xbim.ModelGeometry.Scene.XbimScene<Xbim.Presentation.WpfMeshGeometry3D, Xbim.Presentation.WpfMaterial>> scenes)
+        internal static string GeomLayers(XbimModel Model, uint item, List<Xbim.ModelGeometry.Scene.XbimScene<Xbim.Presentation.WpfMeshGeometry3D, Xbim.Presentation.WpfMaterial>> scenes)
         {
             StringBuilder sb = new StringBuilder();
             // XbimMeshGeometry3D geometry = new XbimMeshGeometry3D();

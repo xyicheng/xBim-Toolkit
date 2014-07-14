@@ -36,7 +36,7 @@ namespace Xbim.Presentation
                 IPersistIfcEntity p2 = SelectedEntity;
                 if (p2 == null)
                     SelectedEntity = p;
-                else if (!(p.ModelOf == p2.ModelOf && Math.Abs(p.EntityLabel)==Math.Abs(p2.EntityLabel))) 
+                else if (!(p.ModelOf == p2.ModelOf && p.EntityLabel==p2.EntityLabel)) 
                     SelectedEntity = p;
             }
         }
@@ -211,7 +211,7 @@ namespace Xbim.Presentation
         // it should be possible in the redesign to build an IXbimViewModel from an IPersistIfcEntity.
         private static bool IsMatch(IXbimViewModel node, IPersistIfcEntity entity)
         {
-            return node.Model == entity.ModelOf && node.EntityLabel == Math.Abs(entity.EntityLabel);
+            return node.Model == entity.ModelOf && node.EntityLabel == entity.EntityLabel;
         }
 
         public XbimViewType ViewDefinition

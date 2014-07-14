@@ -22,7 +22,7 @@ namespace Xbim
 			IfcAxis2Placement^ _origin; 
 			IfcCartesianTransformationOperator^ _cartTransform;
 		public:
-			XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
+			XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<unsigned int,Object^>^ maps);
 			XbimMap(const TopoDS_Shape & shape,XbimMap^ copy);
 #if USE_CARVE
 			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax, unsigned int rounding) override;

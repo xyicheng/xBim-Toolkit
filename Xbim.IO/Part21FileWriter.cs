@@ -30,7 +30,7 @@ namespace Xbim.IO
     {
         private HashSet<long> _written;
 
-        public void Write(XbimModel model, TextWriter output, IDictionary<int, int> map = null)
+        public void Write(XbimModel model, TextWriter output, IDictionary<uint, uint> map = null)
         {
             _written = new HashSet<long>();
             output.Write(HeaderAsString(model.Header ?? new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults)));

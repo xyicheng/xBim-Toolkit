@@ -74,15 +74,15 @@ namespace Xbim.IO
        
         #endregion
         #region Cached data
-        private ConcurrentDictionary<int, IPersistIfcEntity> read = new ConcurrentDictionary<int, IPersistIfcEntity>();
+        private ConcurrentDictionary<uint, IPersistIfcEntity> read = new ConcurrentDictionary<uint, IPersistIfcEntity>();
 
-        internal ConcurrentDictionary<int, IPersistIfcEntity> Read
+        internal ConcurrentDictionary<uint, IPersistIfcEntity> Read
         {
             get { return read; }
            
         }
-        protected ConcurrentDictionary<int, IPersistIfcEntity> modified = new ConcurrentDictionary<int, IPersistIfcEntity>();
-        protected ConcurrentDictionary<int, IPersistIfcEntity> createdNew = new ConcurrentDictionary<int, IPersistIfcEntity>();
+        protected ConcurrentDictionary<uint, IPersistIfcEntity> modified = new ConcurrentDictionary<uint, IPersistIfcEntity>();
+        protected ConcurrentDictionary<uint, IPersistIfcEntity> createdNew = new ConcurrentDictionary<uint, IPersistIfcEntity>();
         private BlockingCollection<IfcForwardReference> forwardReferences = new BlockingCollection<IfcForwardReference>();
 
         internal BlockingCollection<IfcForwardReference> ForwardReferences
@@ -749,10 +749,10 @@ namespace Xbim.IO
 
         public bool Contains(IPersistIfcEntity instance)
         {
-            return Contains(Math.Abs(instance.EntityLabel));
+            return Contains(instance.EntityLabel);
         }
 
-        public bool Contains(int posLabel)
+        public bool Contains(uint posLabel)
         {
             if (caching && this.read.ContainsKey(posLabel)) //check if it is cached
                 return true;
@@ -787,7 +787,7 @@ namespace Xbim.IO
         /// <returns></returns>
         private long CountOf(Type theType)
         {
-            HashSet<int> entityLabels = new HashSet<int>();
+            HashSet<uint> entityLabels = new HashSet<uint>();
             IfcType ifcType = IfcMetaData.IfcType(theType);
             var entityTable = GetEntityTable();
             HashSet<short> typeIds = new HashSet<short>();
@@ -880,7 +880,7 @@ namespace Xbim.IO
         /// <summary>
         /// returns the value of the highest current entity label
         /// </summary>
-        public int HighestLabel
+        public uint HighestLabel
         {
             get
             {
@@ -909,7 +909,7 @@ namespace Xbim.IO
             XbimEntityCursor cursor = _model.GetTransactingCursor();
             XbimInstanceHandle h = cursor.AddEntity(t);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
-            entity.Bind(_model, h.EntityLabel); //bind it, the object is new and empty so the label is positive
+            entity.Bind(_model, h.EntityLabel,true); //bind it, the object is new and empty so it is activated
             entity= this.read.GetOrAdd(h.EntityLabel, entity);
             modified.TryAdd(h.EntityLabel, entity);
             createdNew.TryAdd(h.EntityLabel, entity);
@@ -923,13 +923,11 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        internal IPersistIfcEntity CreateNew(Type type, int label)
+        internal IPersistIfcEntity CreateNew(Type type, uint label)
         {
-            int posLabel = Math.Abs(label);
+            
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(type);
-            entity.Bind(_model, posLabel); //bind it, the object is new and empty so the label is positive
-            //this.Add(posLabel, entity);
-            //ToCreate.Add(entity);
+            entity.Bind(_model, label, true); //bind it, the object is new and empty so it is activated
             return entity;
         }
      
@@ -1013,14 +1011,14 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity GetInstance(int label, bool loadProperties = false, bool unCached = false)
+        public IPersistIfcEntity GetInstance(uint label, bool loadProperties = false, bool unCached = false)
         {
-            int posLabel = Math.Abs(label);
+           
             IPersistIfcEntity entity;
-            if (caching && this.read.TryGetValue(posLabel, out entity))
+            if (caching && this.read.TryGetValue(label, out entity))
                 return entity;
             else
-                return GetInstanceFromStore(posLabel, loadProperties, unCached);
+                return GetInstanceFromStore(label, loadProperties, unCached);
         }
 
 
@@ -1031,26 +1029,26 @@ namespace Xbim.IO
         /// <param name="type">If not null creates an instance of this type, else creates an unknown Ifc Type</param>
         /// <param name="properties">if not null populates all properties of the instance</param>
         /// <returns></returns>
-        public IPersistIfcEntity GetOrCreateInstanceFromCache(int label, Type type, byte[] properties)
+        public IPersistIfcEntity GetOrCreateInstanceFromCache(uint label, Type type, byte[] properties)
         {
             Debug.Assert(caching); //must be caching to call this
-            int posLabel = Math.Abs(label);
+           
             IPersistIfcEntity entity;
-            if (!this.read.TryGetValue(posLabel, out entity))
+            if (!this.read.TryGetValue(label, out entity))
             {
                 if (type.IsAbstract)
                 {
-                    XbimModel.Logger.ErrorFormat("Illegal Entity in the model #{0}, Type {1} is defined as Abstract and cannot be created", posLabel, type.Name);
+                    XbimModel.Logger.ErrorFormat("Illegal Entity in the model #{0}, Type {1} is defined as Abstract and cannot be created", label, type.Name);
                     return null;
                 }
                 entity = (IPersistIfcEntity)Activator.CreateInstance(type);
-                entity.Bind(_model, posLabel * -1); //bind it, the object is new and empty so the label is negative
-                entity = read.GetOrAdd(posLabel, entity); //might have been done by another
+                entity.Bind(_model, label, false); //bind it, the object is new and empty so not activated
+                entity = read.GetOrAdd(label, entity); //might have been done by another
                 lock (entity)
                 {
                     if (!entity.Activated)
                     {
-                        entity.Bind(_model, posLabel); //stop recursive activation
+                        entity.Bind(_model, label,true); //stop recursive activation
                         entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false, true);
                     }
                 }
@@ -1070,7 +1068,7 @@ namespace Xbim.IO
         /// <param name="loadProperties">if true the properties of the object are loaded  at the same time</param>
         /// <param name="unCached">if true the object is not cached, this is dangerous and can lead to object duplicates</param>
         /// <returns></returns>
-        private IPersistIfcEntity GetInstanceFromStore(int posLabel, bool loadProperties = false, bool unCached = false)
+        private IPersistIfcEntity GetInstanceFromStore(uint posLabel, bool loadProperties = false, bool unCached = false)
         {
             var entityTable = GetEntityTable();
             try
@@ -1086,10 +1084,10 @@ namespace Xbim.IO
                         {
                             byte[] properties = entityTable.GetProperties();
                             entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), unCached);
-                            entity.Bind(_model, posLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                            entity.Bind(_model, posLabel, true); //the attributes of this entity have been loaded 
                         }
                         else
-                            entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                            entity.Bind(_model, posLabel, false); //the attributes of this entity have not been loaded yet
                         if (caching && !unCached)
                             entity = this.read.GetOrAdd(posLabel, entity);
                         return entity;
@@ -1128,7 +1126,7 @@ namespace Xbim.IO
         }
         private IEnumerable<TIfcType> OfTypeUnindexed<TIfcType>(IfcType ifcType, bool activate = false) where TIfcType : IPersistIfcEntity
         {
-            HashSet<int> entityLabels = new HashSet<int>();
+            HashSet<uint> entityLabels = new HashSet<uint>();
             var entityTable = GetEntityTable();
             try
             {
@@ -1151,7 +1149,7 @@ namespace Xbim.IO
                                 {
                                     byte[] properties = entityTable.GetProperties();
                                     entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
-                                    entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                    entity.Bind(_model, ih.EntityLabel,true); // the attributes of this entity have been loaded 
                                 }
                                 entityLabels.Add(entity.EntityLabel);
                                 yield return (TIfcType)entity;
@@ -1163,10 +1161,10 @@ namespace Xbim.IO
                                 {
                                     byte[] properties = entityTable.GetProperties();
                                     entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
-                                    entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                    entity.Bind(_model, ih.EntityLabel,true); //the attributes of this entity have been loaded 
                                 }
                                 else
-                                    entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                                    entity.Bind(_model, ih.EntityLabel,false); //the attributes of this entity have not been loaded yet
 
                                 if (caching) entity = this.read.GetOrAdd(ih.EntityLabel, entity);
                                 entityLabels.Add(entity.EntityLabel);
@@ -1202,8 +1200,12 @@ namespace Xbim.IO
         /// <param name="indexKey">if the entity has a key object, optimises to search for this handle</param>
         /// <param name="overrideType">if specified this parameter overrides the ifcType used internally (but not TIfcType) for filtering purposes</param>
         /// <returns></returns>
-        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1, IfcType overrideType = null) where TIfcType:IPersistIfcEntity 
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, uint? indexKey = null, IfcType overrideType = null) where TIfcType:IPersistIfcEntity 
         {
+            //srl this needs to be removed, but preserves compatibility with old databases, the -1 should not be used in future
+            int indexKeyAsInt;
+            if (indexKey.HasValue) indexKeyAsInt = (int)indexKey.Value; //this is lossy and needs to be fixed if we get large databases
+            else indexKeyAsInt = -1;
             IfcType SearchingIfcType;
             if (overrideType != null)
                 SearchingIfcType = overrideType;
@@ -1227,7 +1229,7 @@ namespace Xbim.IO
             {
                 //Set the IndexedClass Attribute of this class to ensure that seeking by index will work, this is a optimisation
                 // Trying to look a class up by index that is not declared as indexeable
-                HashSet<int> entityLabels = new HashSet<int>();
+                HashSet<uint> entityLabels = new HashSet<uint>();
                 var entityTable = GetEntityTable();
                 try
                 {
@@ -1237,7 +1239,7 @@ namespace Xbim.IO
                         {
                             short typeId = IfcMetaData.IfcTypeId(t);
                             XbimInstanceHandle ih;
-                            if (entityTable.TrySeekEntityType(typeId, out ih, indexKey) && entityTable.TrySeekEntityLabel(ih.EntityLabel)) //we have the first instance
+                            if (entityTable.TrySeekEntityType(typeId, out ih, indexKeyAsInt) && entityTable.TrySeekEntityLabel(ih.EntityLabel)) //we have the first instance
                             {
                                 do
                                 {
@@ -1248,7 +1250,7 @@ namespace Xbim.IO
                                         {
                                             byte[] properties = entityTable.GetProperties();
                                             entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
-                                            entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                            entity.Bind(_model, ih.EntityLabel,true); //the attributes of this entity have been loaded yet
                                         }
                                         entityLabels.Add(entity.EntityLabel);
                                         yield return (TIfcType)entity;
@@ -1260,10 +1262,10 @@ namespace Xbim.IO
                                         {
                                             byte[] properties = entityTable.GetProperties();
                                             entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
-                                            entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                            entity.Bind(_model, ih.EntityLabel,true); //the attributes of this entity have been loaded yet
                                         }
                                         else
-                                            entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                                            entity.Bind(_model, ih.EntityLabel,false); // the attributes of this entity have not been loaded yet
 
                                         if (caching) entity = this.read.GetOrAdd(ih.EntityLabel, entity);
                                         entityLabels.Add(entity.EntityLabel);
@@ -1279,7 +1281,7 @@ namespace Xbim.IO
                     {
                         foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList())
                         {
-                            if (indexKey == -1) //get all of the type
+                            if (!indexKey.HasValue) //get all of the type
                             {
                                 if (entityLabels.Add(item.Key))
                                     yield return (TIfcType)item.Value;
@@ -1288,7 +1290,7 @@ namespace Xbim.IO
                             {
                                 // todo: bonghi: note the following ( SearchingIfcType != null ) has been added for cases when querying interfaces, but is probably not correct
                                 //
-                                if (SearchingIfcType != null && SearchingIfcType.GetIndexedValues(item.Value).Contains(indexKey)) // get all types that match the index key
+                                if (SearchingIfcType != null && SearchingIfcType.GetIndexedValues(item.Value).Contains(indexKey.Value)) // get all types that match the index key
                                 {
                                     if (entityLabels.Add(item.Key))
                                         yield return (TIfcType)item.Value;
@@ -1304,7 +1306,7 @@ namespace Xbim.IO
             }
             else
             {
-                Debug.Assert(indexKey == -1, "Trying to look a class up by index key, but the class is not indexed");
+                Debug.Assert(indexKeyAsInt == -1, "Trying to look a class up by index key, but the class is not indexed");
                 foreach (var item in OfTypeUnindexed<TIfcType>(SearchingIfcType, activate))
                     yield return item;
             }
@@ -1388,9 +1390,7 @@ namespace Xbim.IO
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    
-                    int posLabel = Math.Abs(entity.EntityLabel);
-                    if (entityTable.TrySeekEntityLabel(posLabel))
+                    if (entityTable.TrySeekEntityLabel(entity.EntityLabel))
                         return entityTable.GetProperties();
                 }
             }
@@ -1401,7 +1401,7 @@ namespace Xbim.IO
             return null;
         }
 
-        public void SaveAs(XbimStorageType _storageType, string _storageFileName, ReportProgressDelegate progress = null, IDictionary<int, int> map = null)
+        public void SaveAs(XbimStorageType _storageType, string _storageFileName, ReportProgressDelegate progress = null, IDictionary<uint, uint> map = null)
         {
             switch (_storageType)
             {
@@ -1464,7 +1464,7 @@ namespace Xbim.IO
 
 
 
-        private void SaveAsIfc(string storageFileName, IDictionary<int, int> map = null)
+        private void SaveAsIfc(string storageFileName, IDictionary<uint, uint> map = null)
         {
             if (string.IsNullOrWhiteSpace(Path.GetExtension(storageFileName))) //make sure we have an extension
                 storageFileName = Path.ChangeExtension(storageFileName, "Ifc");
@@ -1615,7 +1615,7 @@ namespace Xbim.IO
                             if (entity != null)
                             {
                                 indexFound = true;
-                                foreach (var item in OfType<T>(true, Math.Abs(entity.EntityLabel)))
+                                foreach (var item in OfType<T>(true, entity.EntityLabel))
                                 {
                                     if (predicate(item))
                                         yield return item;
@@ -1644,7 +1644,7 @@ namespace Xbim.IO
                                     if (entity != null)
                                     {
                                         indexFound = true;
-                                        foreach (var item in OfType<T>(true, Math.Abs(entity.EntityLabel)))
+                                        foreach (var item in OfType<T>(true, entity.EntityLabel))
                                         {
                                             if (predicate(item))
                                                 yield return item;
@@ -1670,7 +1670,7 @@ namespace Xbim.IO
 
         #endregion
 
-        public IEnumerable<XbimGeometryData> GetGeometry(short typeId, int productLabel, XbimGeometryType geomType)
+        public IEnumerable<XbimGeometryData> GetGeometry(short typeId, uint productLabel, XbimGeometryType geomType)
         {
             XbimGeometryCursor geomTable = GetGeometryTable();
             try
@@ -1738,13 +1738,13 @@ namespace Xbim.IO
             }
             txn.Pulse();
             IfcType ifcType = IfcMetaData.IfcType(toCopy);
-            int copyLabel = Math.Abs(toCopy.EntityLabel);
+            uint copyLabel = toCopy.EntityLabel;
             copyHandle = InsertNew(ifcType.Type);
             mappings.Add(toCopyHandle, copyHandle);
             if (typeof(IfcCartesianPoint) == ifcType.Type || typeof(IfcDirection) == ifcType.Type)//special cases for cartesian point and direction for efficiency
             {
                 IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });      
-                v.Bind(_model, copyHandle.EntityLabel);
+                v.Bind(_model, copyHandle.EntityLabel,true);
                 v.Activate(true);
                 read.TryAdd(copyHandle.EntityLabel, v);
                 createdNew.TryAdd(copyHandle.EntityLabel, v);
@@ -1753,7 +1753,7 @@ namespace Xbim.IO
             else
             {        
                 IPersistIfcEntity theCopy = (IPersistIfcEntity)Activator.CreateInstance(copyHandle.EntityType);
-                theCopy.Bind(_model, copyHandle.EntityLabel);
+                theCopy.Bind(_model, copyHandle.EntityLabel,true);
                 read.TryAdd(copyHandle.EntityLabel, theCopy);
                 createdNew.TryAdd(copyHandle.EntityLabel, theCopy);
                 IfcRoot rt = theCopy as IfcRoot;
@@ -1839,7 +1839,7 @@ namespace Xbim.IO
             return _model.GetTransactingCursor().AddEntity(type);
         }
 
-        private int NextLabel()
+        private uint NextLabel()
         {
             return HighestLabel + 1;
         }
@@ -1872,7 +1872,7 @@ namespace Xbim.IO
         /// <summary>
         /// Returns an enumeration of all the instance labels in the model
         /// </summary>
-        public IEnumerable<int> InstanceLabels 
+        public IEnumerable<uint> InstanceLabels 
         {
             get
             {
@@ -1880,7 +1880,7 @@ namespace Xbim.IO
                 try
                 {
                     
-                    int label;
+                    uint label;
                     if (entityTable.TryMoveFirstLabel(out label)) // we have something
                     {
                         do
@@ -1989,7 +1989,7 @@ namespace Xbim.IO
             }
         }
 
-        internal XbimGeometryHandle GetGeometryHandle(int geometryLabel)
+        internal XbimGeometryHandle GetGeometryHandle(uint geometryLabel)
         {
             XbimGeometryCursor geometryTable = GetGeometryTable();
             try
@@ -2068,7 +2068,7 @@ namespace Xbim.IO
             }
         }
 
-        internal XbimGeometryData GetGeometryData(int geomLabel)
+        internal XbimGeometryData GetGeometryData(uint geomLabel)
         {
             //Get a cached or open a new Table
             XbimGeometryCursor geometryTable = GetGeometryTable();

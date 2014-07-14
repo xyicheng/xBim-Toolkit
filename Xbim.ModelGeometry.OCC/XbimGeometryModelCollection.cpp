@@ -63,18 +63,16 @@ namespace Xbim
 			XbimGeometryModelCollection::XbimGeometryModelCollection(IfcRepresentationItem^ representationItem)
 			{
 				Init();
-				_representationLabel=Math::Abs(representationItem->EntityLabel);
+				_representationLabel=representationItem->EntityLabel;
 				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(representationItem);
-				if(surfaceStyle!=nullptr) _surfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+				if(surfaceStyle!=nullptr) _surfaceStyleLabel=surfaceStyle->EntityLabel;
 			};
 
 
 			XbimGeometryModelCollection::XbimGeometryModelCollection(IfcRepresentation^ representation)
 			{
 				Init();
-				_representationLabel=Math::Abs(representation->EntityLabel);
-				//IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(representation);
-				//if(surfaceStyle!=nullptr) _surfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+				_representationLabel=representation->EntityLabel;
 			};
 
 

@@ -9,7 +9,7 @@ namespace XbimExtract
     {
         public string SourceModelName;
         public string TargetModelName;
-        public List<int> EntityLabels;
+        public List<uint> EntityLabels;
         public bool IsValid { get; set; }
         public bool SourceIsXbimFile { get; set; }
         /// <summary>
@@ -35,8 +35,8 @@ namespace XbimExtract
                 if (!File.Exists(SourceModelName)) throw new Exception(SourceModelName + " does not exist");
                 TargetModelName = GetModelFileName(args[1], ".xbim");
                 SourceIsXbimFile = Path.GetExtension(SourceModelName).ToLower() == ".xbim";
-                EntityLabels = new List<int>(args.Length - 2);
-                for (int i = 2; i < args.Length; i++) EntityLabels.Add(Int32.Parse(args[i]));
+                EntityLabels = new List<uint>(args.Length - 2);
+                for (int i = 2; i < args.Length; i++) EntityLabels.Add(UInt32.Parse(args[i]));
                 // Parameters are valid
                 IsValid = true;
                 IncludeContext = true;

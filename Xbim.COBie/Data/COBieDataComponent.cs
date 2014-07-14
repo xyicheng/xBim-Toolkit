@@ -246,7 +246,7 @@ namespace Xbim.COBie.Data
                 {
                     Rectangle = XbimRect3D.FromArray(bb.ShapeData),
                     Matrix = XbimMatrix3D.FromArray(bb.DataArray2),
-                    Name = ifcSpaces.Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
+                    Name = ifcSpaces.Where(sp => (sp.EntityLabel == bb.IfcProductLabel)).Select(sp => sp.Name.ToString()).FirstOrDefault()
                 }).ToList();
             }
 

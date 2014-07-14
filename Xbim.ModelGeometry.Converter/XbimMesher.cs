@@ -57,7 +57,7 @@ namespace Xbim.ModelGeometry.Converter
         private class MapRefData
         {
             public int RepresentationLabel;
-            public int EntityLabel;
+            public uint EntityLabel;
             public short EntityTypeId;
             public XbimMatrix3D Matrix;
             public int SurfaceStyleLabel;
@@ -115,13 +115,13 @@ namespace Xbim.ModelGeometry.Converter
             if (!toDraw.Any()) return; //othing to do
             TransformGraph graph = new TransformGraph(model);
             //create a new dictionary to hold maps
-            ConcurrentDictionary<int, Object> maps = new ConcurrentDictionary<int, Object>();
+            ConcurrentDictionary<uint, Object> maps = new ConcurrentDictionary<uint, Object>();
             //add everything that may have a representation
             graph.AddProducts(toDraw); //load the products as we will be accessing their geometry
 
-            ConcurrentDictionary<int, MapData> mappedModels = new ConcurrentDictionary<int, MapData>();
+            ConcurrentDictionary<uint, MapData> mappedModels = new ConcurrentDictionary<uint, MapData>();
             ConcurrentQueue<MapRefData> mapRefs = new ConcurrentQueue<MapRefData>();
-            ConcurrentDictionary<int, int[]> written = new ConcurrentDictionary<int, int[]>();
+            ConcurrentDictionary<uint, uint[]> written = new ConcurrentDictionary<uint, uint[]>();
 
             int tally = 0;
             int percentageParsed = 0;
@@ -152,16 +152,16 @@ namespace Xbim.ModelGeometry.Converter
                             if (geomModel.IsMap) //do not process maps now
                             {
                                 MapData toAdd = new MapData(geomModel, m3d, product);
-                                if (!mappedModels.TryAdd(geomModel.RepresentationLabel, toAdd)) //get unique rep
+                                if (!mappedModels.TryAdd((uint)geomModel.RepresentationLabel, toAdd)) //get unique rep
                                     mapRefs.Enqueue(new MapRefData(toAdd)); //add ref
                             }
                             else
                             {
-                                int[] geomIds;
+                                uint[] geomIds;
                                 XbimGeometryCursor geomTable = model.GetGeometryTable();
 
                                 XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
-                                if (written.TryGetValue(geomModel.RepresentationLabel, out geomIds))
+                                if (written.TryGetValue((uint)geomModel.RepresentationLabel, out geomIds))
                                 {
                                     byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
@@ -178,8 +178,8 @@ namespace Xbim.ModelGeometry.Converter
                                     byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
 
-                                    geomIds = new int[tm.Count + 1];
-                                    geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
+                                    geomIds = new uint[tm.Count + 1];
+                                    geomIds[0] = (uint)geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
                                     bb = XbimRect3D.TransformBy(bb, m3d);
                                     if (bounds.IsEmpty)
                                         bounds = bb;
@@ -188,7 +188,7 @@ namespace Xbim.ModelGeometry.Converter
                                     short subPart = 0;
                                     foreach (XbimTriangulatedModel b in tm)
                                     {
-                                        geomIds[subPart + 1] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
+                                        geomIds[subPart + 1] = (uint)geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
                                         subPart++;
                                     }
 
@@ -251,7 +251,7 @@ namespace Xbim.ModelGeometry.Converter
                 // Debug.WriteLine(tally);
 #if DOPARALLEL
                 //now sort out maps again in parallel
-                Parallel.ForEach<KeyValuePair<int, MapData>>(mappedModels, opts, map =>
+                Parallel.ForEach<KeyValuePair<uint, MapData>>(mappedModels, opts, map =>
 #else
                 foreach (var map in mappedModels)
 #endif
@@ -261,8 +261,8 @@ namespace Xbim.ModelGeometry.Converter
                     IfcProduct product = map.Value.Product;
 
                     //have we already written it?
-                    int[] writtenGeomids = new int[0];
-                    if (!written.TryAdd(geomModel.RepresentationLabel, writtenGeomids))
+                    uint[] writtenGeomids = new uint[0];
+                    if (!written.TryAdd((uint)geomModel.RepresentationLabel, writtenGeomids))
                     {
                         //make maps    
                         mapRefs.Enqueue(new MapRefData(map.Value)); //add ref
@@ -296,8 +296,8 @@ namespace Xbim.ModelGeometry.Converter
                 foreach (var map in mapRefs) //don't do this in parallel to avoid database thrashing as it is very fast
                 {
 
-                    int[] geomIds;
-                    if (!written.TryGetValue(map.RepresentationLabel, out geomIds))
+                    uint[] geomIds;
+                    if (!written.TryGetValue((uint)map.RepresentationLabel, out geomIds))
                     {
                         if (Logger != null) Logger.WarnFormat("A geometry mapped reference (#{0}) has been found that has no base geometry", map.RepresentationLabel);
                     }
@@ -340,9 +340,9 @@ namespace Xbim.ModelGeometry.Converter
                 mapTrans.Begin();
                 XbimRegionCollection regions = PartitionWorld(model, bounds);
                 IfcProject project = model.IfcProject;
-                int projectId = 0;
+                uint projectId = 0;
                 if (project != null)
-                    projectId = Math.Abs(project.EntityLabel);
+                    projectId = project.EntityLabel;
                 geomMapTable.AddGeometry(projectId, XbimGeometryType.Region, IfcMetaData.IfcTypeId(typeof(IfcProject)), XbimMatrix3D.Identity.ToArray(), regions.ToArray());
                 mapTrans.Commit();
 
@@ -394,7 +394,7 @@ namespace Xbim.ModelGeometry.Converter
             return regions;
         }
 
-        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, ref XbimRect3D bounds, XbimMatrix3D m3d, IfcProduct product, double deflection)
+        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<uint, uint[]> written, IXbimGeometryModel geomModel, ref XbimRect3D bounds, XbimMatrix3D m3d, IfcProduct product, double deflection)
         {
             XbimTriangulatedModelCollection tm = geomModel.Mesh(deflection);
             XbimRect3D bb = tm.Bounds;
@@ -403,8 +403,8 @@ namespace Xbim.ModelGeometry.Converter
             XbimGeometryCursor geomTable = model.GetGeometryTable();
 
             XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
-            int[] geomIds = new int[tm.Count + 1];
-            geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
+            uint[] geomIds = new uint[tm.Count + 1];
+            geomIds[0] = (uint)geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
 
             bb = XbimRect3D.TransformBy(bb, m3d);
 
@@ -415,11 +415,11 @@ namespace Xbim.ModelGeometry.Converter
             short subPart = 0;
             foreach (XbimTriangulatedModel b in tm)
             {
-                geomIds[subPart + 1] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
+                geomIds[subPart + 1] = (uint)geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
                 subPart++;
             }
             transaction.Commit();
-            written.AddOrUpdate(geomModel.RepresentationLabel, geomIds, (k, v) => v = geomIds);
+            written.AddOrUpdate((uint)geomModel.RepresentationLabel, geomIds, (k, v) => v = geomIds);
             model.FreeTable(geomTable);
         }
 

@@ -36,7 +36,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcSurfaceStyle surfaceStyle)
         {
-            DefinedObjectId = Math.Abs(surfaceStyle.EntityLabel);
+            DefinedObjectId = (int)surfaceStyle.EntityLabel;
             //set render one or both faces
             renderBothFaces = (surfaceStyle.Side == IfcSurfaceSide.BOTH);
             //switch if required
@@ -134,7 +134,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcColourRgb colour)
         {
-            DefinedObjectId = Math.Abs(colour.EntityLabel);
+            DefinedObjectId = (int)colour.EntityLabel;
             ColourMap.Clear();
             ColourMap.Add(new XbimColour(colour));
             return this;
@@ -142,7 +142,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcSurfaceStyleRendering rendering)
         {
-            DefinedObjectId = Math.Abs(rendering.EntityLabel); 
+            DefinedObjectId = (int)rendering.EntityLabel; 
             ColourMap.Clear();
             AddColour(rendering);
             return this;
@@ -151,7 +151,7 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTexture CreateTexture(IfcSurfaceStyleShading shading)
         {
-            DefinedObjectId = Math.Abs(shading.EntityLabel); 
+            DefinedObjectId = (int)shading.EntityLabel; 
             ColourMap.Clear();
             if (shading is IfcSurfaceStyleRendering)
                 AddColour((IfcSurfaceStyleRendering)shading);

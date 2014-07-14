@@ -64,7 +64,7 @@ namespace Xbim.IO.Tree
         private void SetDefaults(IfcRoot entity)
         {
             Name = entity.CreateFriendlyName();
-            EntityId = Math.Abs(entity.EntityLabel);
+            EntityId = entity.EntityLabel;
 
             if (entity is IfcObjectDefinition)
             {

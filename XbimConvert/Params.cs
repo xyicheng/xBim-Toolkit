@@ -119,8 +119,8 @@ namespace XbimConvert
                         else
                         {
                             // try looking for an instance by ID.
-                            int elementId;
-                            if (int.TryParse(arg, out elementId) == true)
+                            uint elementId;
+                            if (uint.TryParse(arg, out elementId) == true)
                             {
                                 ElementIdFilter = elementId;
                                 FilterType = FilterType.ElementID;
@@ -150,7 +150,7 @@ namespace XbimConvert
         public bool NoGeometry { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
-        public int ElementIdFilter {get;set;}
+        public uint ElementIdFilter {get;set;}
         public IfcType ElementTypeFilter { get; set; }
         public bool OCC { get; set; }
         /// <summary>

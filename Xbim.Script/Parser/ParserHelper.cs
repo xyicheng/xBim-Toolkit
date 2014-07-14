@@ -1089,7 +1089,7 @@ namespace Xbim.Script
                     var entity = entList[j];
                     dataRow = sheet.CreateRow(++rowNum);
                     dataRow.CreateCell(0, CellType.STRING).SetCellValue(entity.GetType().Name);
-                    var label = "#" + Math.Abs(entity.EntityLabel);
+                    var label = "#" + entity.EntityLabel;
                     dataRow.CreateCell(1, CellType.STRING).SetCellValue(label);
 
                     for (int i = 0; i < attrNames.Count(); i++)
@@ -2089,7 +2089,7 @@ namespace Xbim.Script
                 _ruleChecks.Add(ruleName, result);
 
                 if (!check)
-                    WriteLine(String.Format("{0} #{1} doesn't comply to the rule \"{2}\"", item.GetType().Name, Math.Abs(item.EntityLabel), ruleName));
+                    WriteLine(String.Format("{0} #{1} doesn't comply to the rule \"{2}\"", item.GetType().Name, item.EntityLabel, ruleName));
             }
         }
 
@@ -2326,7 +2326,7 @@ namespace Xbim.Script
                     foreach (var ruleRes in result.CheckResults)
                     {
                         var entity = ruleRes.Entity;
-                        var label = entity == null ? 0 : Math.Abs(entity.EntityLabel);
+                        var label = entity == null ? 0 : entity.EntityLabel;
                         var typeName = entity == null ? "" : entity.GetType().Name;
                         file.WriteLine("{0},{1},#{2},{3}", result.Rule, typeName, label, ruleRes.IsCompliant);
                     }
@@ -2377,7 +2377,7 @@ namespace Xbim.Script
                     foreach (var ruleRes in result.CheckResults)
                     {
                         var entity = ruleRes.Entity;
-                        var label = entity == null ? 0 : Math.Abs(entity.EntityLabel);
+                        var label = entity == null ? 0 : entity.EntityLabel;
                         var typeName = entity == null ? "" : entity.GetType().Name;
                         dataRow = sheet.CreateRow(++rowNum);
                         cellNum = -1;

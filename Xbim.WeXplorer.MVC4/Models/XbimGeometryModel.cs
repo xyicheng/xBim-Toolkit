@@ -109,7 +109,7 @@ namespace Xbim.WeXplorer.MVC4.Models
         {
 
             Xbim3DModelContext m3d = new Xbim3DModelContext(model);
-            var sbs = m3d.ShapeInstances().Where(si=>si.RepresentationType==XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded).Select(s => new XbimShapeBounds(s, m3d.ShapeGeometry(s)));
+            var sbs = m3d.ShapeInstances().Where(si=>si.RepresentationType==XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded);
             var message = new
             {
                 command = Commands.GetInstances,
@@ -157,7 +157,7 @@ namespace Xbim.WeXplorer.MVC4.Models
 
             String[] stringids = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            IEnumerable<Int32> intIds = stringids.Select(s => Int32.Parse(s));
+            IEnumerable<UInt32> intIds = stringids.Select(s => UInt32.Parse(s));
 
             Xbim3DModelContext context = new Xbim3DModelContext(model);
 

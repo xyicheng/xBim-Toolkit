@@ -20,7 +20,7 @@ namespace Xbim
 			XbimPolyhedron^ XbimMap::ToPolyHedron(double deflection, double precision, double precisionMax, unsigned int rounding)
 			{
 				XbimPolyhedron^ poly = _mappedItem->ToPolyHedron(deflection, precision,precisionMax, rounding);
-				poly->TransformBy(_transform);
+				poly = (XbimPolyhedron^)poly->TransformBy(_transform);
 				return poly;
 			}
 
@@ -34,7 +34,7 @@ namespace Xbim
 					for each(XbimGeometryModel^ shape in (XbimGeometryModelCollection^)_mappedItem)
 					{
 						XbimPolyhedron^ poly = shape->ToPolyHedron(deflection, precision,precisionMax, rounding);
-						poly->TransformBy(_transform);
+						poly = (XbimPolyhedron^) poly->TransformBy(_transform);
 						polys->Add(poly);
 					}
 					return polys;
@@ -50,7 +50,7 @@ namespace Xbim
 				_representationLabel = copy->RepresentationLabel;
 				_surfaceStyleLabel = copy->SurfaceStyleLabel;
 			}
-			XbimMap::XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
+			XbimMap::XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<unsigned int,Object^>^ maps)
 			{
 				_mappedItem = item;
 				_hasCurvedEdges=item->HasCurvedEdges;

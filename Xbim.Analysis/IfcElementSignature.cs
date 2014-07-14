@@ -51,7 +51,7 @@ namespace Xbim.Analysis
     /// </summary>
     public class IfcElementSignature
     {
-        public int ModelID;
+        public uint ModelID;
         public string SchemaType;
         public string DefinedTypeId;
         public string GlobalId;
@@ -168,7 +168,7 @@ namespace Xbim.Analysis
             {
                 PropertyValuesKey ^= prop.NominalValue.GetHashCode();
             }
-            ModelID = Math.Abs(elem.EntityLabel);
+            ModelID =elem.EntityLabel;
             SchemaType = elem.GetType().Name;
             DefinedTypeId = (ot == null ? "" : ot.GlobalId.ToPart21);
             GlobalId = elem.GlobalId;

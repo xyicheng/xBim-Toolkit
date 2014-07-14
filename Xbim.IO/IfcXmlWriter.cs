@@ -148,20 +148,20 @@ namespace Xbim.IO
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(XbimModel model, int handle, XmlWriter output, int pos = -1)
+        private void Write(XbimModel model, uint handle, XmlWriter output, int pos = -1)
         {
-            long lbl = Math.Abs(handle);
-            if (_written.Contains(lbl)) //we have already done it
+
+            if (_written.Contains(handle)) //we have already done it
                 return;
             //int nextId = _written.Count + 1;
-            _written.Add(lbl);
+            _written.Add(handle);
 
             IPersistIfcEntity entity = model.GetInstanceVolatile(handle); //load either the cache or a volatile version of the entity
             IfcType ifcType = IfcMetaData.IfcType(entity);
 
             output.WriteStartElement(ifcType.Type.Name);
             
-            output.WriteAttributeString("id", string.Format("i{0}", lbl));
+            output.WriteAttributeString("id", string.Format("i{0}", handle));
             if (pos > -1) //we are writing out a list element
                 output.WriteAttributeString("pos", pos.ToString());
             
@@ -293,10 +293,10 @@ namespace Xbim.IO
             {
                 IPersistIfcEntity persistVal = (IPersistIfcEntity)propVal;
                 if (pos == -1) output.WriteStartElement(propName);
-                if (_written.Contains(Math.Abs(persistVal.EntityLabel))) //we have already written it so use an xlink
+                if (_written.Contains(persistVal.EntityLabel)) //we have already written it so use an xlink
                 {
                     output.WriteStartElement(propVal.GetType().Name);
-                    output.WriteAttributeString("ref", string.Format("i{0}", Math.Abs(persistVal.EntityLabel)));
+                    output.WriteAttributeString("ref", string.Format("i{0}", persistVal.EntityLabel));
                     output.WriteAttributeString("xsi", "nil", null, "true");
                     if (pos > -1) //we are writing out a list element
                         output.WriteAttributeString("pos", pos.ToString());

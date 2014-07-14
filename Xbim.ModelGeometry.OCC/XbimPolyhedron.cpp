@@ -454,7 +454,7 @@ namespace Xbim
 							AddFaces(vertices,meshes,precision,rounding,  openShell->CfsFaces, orientate);
 						}
 						else
-							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
+							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",shell->EntityLabel));
 					}
 					_meshSet = new meshset_t(vertices, meshes);
 				}
@@ -476,7 +476,7 @@ namespace Xbim
 							AddFaces(_meshSet->vertex_storage,_meshSet->meshes,precision,rounding,  openShell->CfsFaces, orientate);
 						}
 						else
-							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
+							throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",shell->EntityLabel));
 					}
 				}
 
@@ -572,7 +572,7 @@ namespace Xbim
 					AddFaces((IfcOpenShell^)shell,precision, rounding,  orientate);
 				}
 				else
-					throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",Math::Abs(shell->EntityLabel)));
+					throw gcnew Exception(String::Format("Undefined shell type, neither open nor closed in #{0}",shell->EntityLabel));
 			}
 
 			void XbimPolyhedron::AddFaces(IfcFacetedBrep^ brep, double precision, unsigned int rounding,  bool orientate)
@@ -876,12 +876,13 @@ IncorporateHoles:
 			    mesh_t::create(faceList.begin(), faceList.end(), newMeshes, carve::mesh::MeshOptions().avoid_cavities(true),precision*precision,orientate);
 				for (size_t i = 0; i < newMeshes.size(); i++)
 				{
-					if(newMeshes[i]->isNegative())
+					if(newMeshes[i]->isNegative() || newMeshes[i]->volume()<0)
 						newMeshes[i]->invert();
 					meshes.push_back(newMeshes[i]);
 					newMeshes[i]->meshset=_meshSet;
 				}
 				newMeshes.clear();
+				
 			}
 
 			double XbimPolyhedron::Volume::get()  

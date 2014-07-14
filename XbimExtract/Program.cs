@@ -46,7 +46,7 @@ namespace XbimExtract
                                
                                 foreach (var rel in project.IsDecomposedBy)
                                 {
-                                    arguments.EntityLabels.Add(Math.Abs(rel.EntityLabel));
+                                    arguments.EntityLabels.Add(rel.EntityLabel);
                                 }
                                 
                             }

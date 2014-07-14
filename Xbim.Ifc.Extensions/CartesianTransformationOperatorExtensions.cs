@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.Extensions
 {
     public static class CartesianTransformationOperatorExtensions
     {
-        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator ct, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator ct, ConcurrentDictionary<uint, Object> maps = null)
         {
             if (ct is IfcCartesianTransformationOperator3DnonUniform)
                return ((IfcCartesianTransformationOperator3DnonUniform) ct).ToMatrix3D(maps);
@@ -41,7 +41,7 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "ct3D"></param>
         /// <returns></returns>
-        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D, ConcurrentDictionary<uint, Object> maps = null)
         {
             if (maps == null)
                 return ConvertCartesianTranformOperator3D(ct3D);
@@ -49,10 +49,10 @@ namespace Xbim.Ifc2x3.Extensions
             {
 
                 object transform;
-                if (maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
+                if (maps.TryGetValue(ct3D.EntityLabel, out transform)) //already converted it just return cached
                     return (XbimMatrix3D)transform;
                 XbimMatrix3D matrix = ConvertCartesianTranformOperator3D(ct3D);
-                maps.TryAdd(Math.Abs(ct3D.EntityLabel), matrix);
+                maps.TryAdd(ct3D.EntityLabel, matrix);
                 return matrix;
             }
         }
@@ -70,17 +70,17 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "ct3D"></param>
         /// <returns></returns>
-        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D, ConcurrentDictionary<uint, Object> maps = null)
         {
             if (maps == null)
                 return ConvertCartesianTransformationOperator3DnonUniform(ct3D);
             else
             {
                 object transform;
-                if (maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
+                if (maps.TryGetValue(ct3D.EntityLabel, out transform)) //already converted it just return cached
                     return (XbimMatrix3D)transform;
                 XbimMatrix3D matrix = ConvertCartesianTransformationOperator3DnonUniform(ct3D);
-                maps.TryAdd(Math.Abs(ct3D.EntityLabel), matrix);
+                maps.TryAdd(ct3D.EntityLabel, matrix);
                 return matrix;
             }
         }

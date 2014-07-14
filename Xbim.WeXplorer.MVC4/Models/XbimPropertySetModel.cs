@@ -9,13 +9,13 @@ namespace Xbim.WeXplorer.MVC4.Models
 {
     public class XbimPropertySetModel : XbimRootModel
     {
-        public IEnumerable<int> Properties
+        public IEnumerable<uint> Properties
         {
             get 
             {
                 foreach (var prop in _pSet.HasProperties.OfType<IfcPropertySingleValue>())
                 {
-                    yield return Math.Abs(prop.EntityLabel);
+                    yield return prop.EntityLabel;
                 }
             }
         }

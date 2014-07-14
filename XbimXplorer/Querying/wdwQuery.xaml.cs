@@ -170,7 +170,7 @@ namespace XbimXplorer.Querying
                     if (m.Success)
                     {
                         int recursion = 0;
-                        int v = Convert.ToInt32(m.Groups["el"].Value);
+                        uint v = Convert.ToUInt32(m.Groups["el"].Value);
                         try
                         {
                             recursion = Convert.ToInt32(m.Groups["recursion"].Value);
@@ -300,7 +300,7 @@ namespace XbimXplorer.Querying
                     if (m.Success)
                     {
                         string start = m.Groups["entities"].Value;
-                        IEnumerable<int> labels = tointarray(start, ',');
+                        IEnumerable<uint> labels = toUIntarray(start, ',');
                         if (labels.Count() > 0)
                         {
                             ParentWindow.DrawingControl.LoadGeometry(Model, labels);
@@ -317,7 +317,7 @@ namespace XbimXplorer.Querying
                     {
                         string start = m.Groups["entities"].Value;
                         string mode = m.Groups["mode"].Value; 
-                        IEnumerable<int> labels = tointarray(start, ',');
+                        IEnumerable<uint> labels = toUIntarray(start, ',');
                         foreach (var item in labels)
                         {
                             ReportAdd("Geometry for: " + item.ToString(), Brushes.Green);
@@ -355,8 +355,8 @@ namespace XbimXplorer.Querying
                         if (HighlightT != "")
                             Highlight = true;                        
 
-                        IEnumerable<int> labels = tointarray(start, ',');
-                        IEnumerable<int> ret = null;
+                        IEnumerable<uint> labels = toUIntarray(start, ',');
+                        IEnumerable<uint> ret = null;
                         if (labels.Count() == 0)
                         {
                             // see if it's a type string instead
@@ -565,29 +565,29 @@ namespace XbimXplorer.Querying
                             else if (t == "slabsandwalls")
                             {
                                 ReportAdd("Visual mode set to SlabsAndWalls.");
-                                var visualGrouping = new Xbim.Presentation.LayerStyling.LayerStylerV2CustomGroups();
+                                //var visualGrouping = new Xbim.Presentation.LayerStyling.LayerStylerV2CustomGroups();
                                 
-                                // walls
-                                var wallsGroup = new LayerStyler2CustomSetAppearence();
-                                foreach (var item in Model.Instances.OfType<IfcWall>())
-                                {
-                                    wallsGroup.Set.Add(item);
-                                }
-                                wallsGroup.Appearence = new XbimTexture().CreateTexture(255, 0, 0, 128);
-                                visualGrouping.GroupSpecs.Add(wallsGroup);
+                                //// walls
+                                //var wallsGroup = new LayerStyler2CustomSetAppearence();
+                                //foreach (var item in Model.Instances.OfType<IfcWall>())
+                                //{
+                                //    wallsGroup.Set.Add(item);
+                                //}
+                                //wallsGroup.Appearence = new XbimTexture().CreateTexture(255, 0, 0, 128);
+                                //visualGrouping.GroupSpecs.Add(wallsGroup);
 
-                                // slabs
-                                // walls
-                                var SlabsGroup = new LayerStyler2CustomSetAppearence();
-                                foreach (var item in Model.Instances.OfType<IfcSlab>())
-                                {
-                                    SlabsGroup.Set.Add(item);
-                                }
-                                SlabsGroup.Appearence = new XbimTexture().CreateTexture(0, 255, 0, 255);
-                                visualGrouping.GroupSpecs.Add(SlabsGroup);
+                                //// slabs
+                                //// walls
+                                //var SlabsGroup = new LayerStyler2CustomSetAppearence();
+                                //foreach (var item in Model.Instances.OfType<IfcSlab>())
+                                //{
+                                //    SlabsGroup.Set.Add(item);
+                                //}
+                                //SlabsGroup.Appearence = new XbimTexture().CreateTexture(0, 255, 0, 255);
+                                //visualGrouping.GroupSpecs.Add(SlabsGroup);
 
-                                ParentWindow.DrawingControl.LayerStylerV2 = visualGrouping;
-                                ParentWindow.DrawingControl.ReloadModel();
+                                //ParentWindow.DrawingControl.LayerStylerV2 = visualGrouping;
+                                //ParentWindow.DrawingControl.ReloadModel();
                             }
                             else
                                 ReportAdd(string.Format("mode not understood: {0}.", t));
@@ -637,26 +637,26 @@ namespace XbimXplorer.Querying
             txtOut.Document.Blocks.Add(newP);
         }
 
-        int[] tointarray(string value, char sep)
+        uint[] toUIntarray(string value, char sep)
         {
             string[] sa = value.Split(new char[] { sep}, StringSplitOptions.RemoveEmptyEntries);
-            List<int> ia = new List<int>();
-            for (int i = 0; i < sa.Length; ++i)
+            List<uint> ia = new List<uint>();
+            for (uint i = 0; i < sa.Length; ++i)
             {
                 if (sa[i].Contains('-'))
                 {
                     var v = sa[i].Split('-');
                     if (v.Length == 2)
                     {
-                        int iS, iT;
+                        uint iS, iT;
                         if (
-                            int.TryParse(v[0], out iS) && 
-                            int.TryParse(v[1], out iT) 
+                            uint.TryParse(v[0], out iS) && 
+                            uint.TryParse(v[1], out iT) 
                             )
                         {
                             if (iT >= iS)
                             {
-                                for (int iC = iS; iC <= iT; iC++)
+                                for (uint iC = iS; iC <= iT; iC++)
                                 {
                                     ia.Add(iC);
                                 }
@@ -666,8 +666,8 @@ namespace XbimXplorer.Querying
                 }
                 else 
                 {
-                int j;
-                if (int.TryParse(sa[i], out j))
+                uint j;
+                if (uint.TryParse(sa[i], out j))
                 {
                     ia.Add(j);
                 }
@@ -1010,7 +1010,7 @@ namespace XbimXplorer.Querying
             }
         }
 
-        private TextHighliter ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
+        private TextHighliter ReportEntity(uint EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
         {
             // Debug.WriteLine("EL: " + EntityLabel.ToString());
             TextHighliter sb = new TextHighliter();
@@ -1088,9 +1088,9 @@ namespace XbimXplorer.Querying
             return sb;
         }
 
-        private static IEnumerable<int> ReportProp(TextHighliter sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
+        private static IEnumerable<uint> ReportProp(TextHighliter sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
         {
-            List<int> RetIds = new List<int>();
+            List<uint> RetIds = new List<uint>();
             string propName = prop.PropertyInfo.Name;
             Type propType = prop.PropertyInfo.PropertyType;
             string ShortTypeName = CleanPropertyName(propType.FullName);
@@ -1159,16 +1159,15 @@ namespace XbimXplorer.Querying
             return ShortTypeName;
         }
 
-        private static string ReportPropValue(object propVal, ref List<int> RetIds)
+        private static string ReportPropValue(object propVal, ref List<uint> RetIds)
         {
             IPersistIfcEntity pe = propVal as IPersistIfcEntity;
-            int PropLabel = 0;
+            uint PropLabel = 0;
             if (pe != null)
             {
-                PropLabel = Math.Abs(pe.EntityLabel);
-                RetIds.Add(PropLabel);
+                RetIds.Add(pe.EntityLabel);
             }
-            string ret = propVal.ToString() + ((PropLabel != 0) ? " [#" + Math.Abs(PropLabel).ToString() + "]" : "");
+            string ret = propVal.ToString() + ((PropLabel != 0) ? " [#" + PropLabel.ToString() + "]" : "");
             return ret;
         }
 

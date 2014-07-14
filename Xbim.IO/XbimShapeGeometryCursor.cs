@@ -275,9 +275,9 @@ namespace Xbim.IO
         }
         #endregion
 
-        public int AddGeometry(IXbimShapeGeometryData shapeGeom)
+        public uint AddGeometry(IXbimShapeGeometryData shapeGeom)
         {
-            int mainId = -1;
+            uint mainId = 0;
             
             using (var update = new Update(sesid, table, JET_prep.Insert))
             {
@@ -290,7 +290,7 @@ namespace Xbim.IO
                 _colValShapeData.Value = shapeGeom.ShapeDataCompressed;
                 _colValBoundingBox.Value = shapeGeom.BoundingBox;
                 Api.SetColumns(sesid, table, _colValues);
-                mainId = Api.RetrieveColumnAsInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
+                mainId = Api.RetrieveColumnAsUInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
                 update.Save();
                 UpdateCount(1);
             }
@@ -369,7 +369,7 @@ namespace Xbim.IO
         /// <param name="shapeGeometryLabel"></param>
         /// <param name="sg"></param>
         /// <returns></returns>
-        public bool TryGetShapeGeometry(int shapeGeometryLabel, ref IXbimShapeGeometryData sg)
+        public bool TryGetShapeGeometry(uint shapeGeometryLabel, ref IXbimShapeGeometryData sg)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, shapeGeometryLabel, MakeKeyGrbit.NewKey);

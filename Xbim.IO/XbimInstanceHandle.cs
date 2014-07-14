@@ -12,7 +12,7 @@ namespace Xbim.IO
     /// </summary>
     public struct XbimInstanceHandle
     {
-        public int EntityLabel;
+        public uint EntityLabel;
         public short EntityTypeId;
         public XbimModel Model;
        
@@ -28,7 +28,7 @@ namespace Xbim.IO
 
         public override int GetHashCode()
         {
-            return EntityLabel ^ Model.GetHashCode();
+            return EntityLabel.GetHashCode() ^ Model.GetHashCode();
         }
 
         public override bool Equals(object b)
@@ -63,31 +63,31 @@ namespace Xbim.IO
         }
 
         
-        public XbimInstanceHandle(XbimModel model, int entityLabel, short type = 0)
+        public XbimInstanceHandle(XbimModel model, uint entityLabel, short type = 0)
         {
             Model = model;
-            EntityLabel = Math.Abs(entityLabel);
+            EntityLabel = entityLabel;
             EntityTypeId= type;
         }
 
-        public XbimInstanceHandle(XbimModel model, int entityLabel, Type type)
+        public XbimInstanceHandle(XbimModel model, uint entityLabel, Type type)
         {
             Model = model;
-            EntityLabel = Math.Abs(entityLabel);
+            EntityLabel = entityLabel;
             EntityTypeId = IfcMetaData.IfcTypeId(type);
         }
 
-        public XbimInstanceHandle(XbimModel model, int? label, short? type)
+        public XbimInstanceHandle(XbimModel model, uint? label, short? type)
         {
             Model = model;
-            this.EntityLabel = Math.Abs(label ?? 0);
+            this.EntityLabel = label ?? 0;
             this.EntityTypeId = type ?? 0;  
         }
 
         public XbimInstanceHandle(IPersistIfcEntity entity)
         {
             Model = (XbimModel)entity.ModelOf;
-            this.EntityLabel = Math.Abs(entity.EntityLabel);
+            this.EntityLabel = entity.EntityLabel;
             this.EntityTypeId = IfcMetaData.IfcTypeId(entity);
         }
 

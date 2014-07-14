@@ -14,29 +14,29 @@ namespace Xbim.DOM.Optimization
         /// </summary>
         /// <param name="Model">The model to extract material lists from</param>
         /// <returns>Dictionary associating the entitylabel (value) of an IfcMaterialList that duplicates the composition of the one identified by the entitylabel (Key).</returns>
-        public static Dictionary<int, int> IfcMaterialListReplacementDictionary(this XbimModel Model)
+        public static Dictionary<uint, uint> IfcMaterialListReplacementDictionary(this XbimModel Model)
         {
             // the resulting dictionary contains information on the replacing ID of any IfcMaterialList that duplicates another of the same composition.
             
-            Dictionary<int, int> dic = new Dictionary<int, int>();
-            Dictionary<string, int> CompositionDic = new Dictionary<string, int>();
+            Dictionary<uint, uint> dic = new Dictionary<uint, uint>();
+            Dictionary<string, uint> CompositionDic = new Dictionary<string, uint>();
             foreach (var matList in Model.Instances.OfType<IfcMaterialList>())
             {
-                List<int> mlist = new List<int>();
+                List<uint> mlist = new List<uint>();
                 foreach (var item in matList.Materials)
                 {
-                    mlist.Add(Math.Abs(item.EntityLabel));
+                    mlist.Add(item.EntityLabel);
                 }
                 mlist.Sort();
                 string stSignature = string.Join(",", mlist.ToArray());
                 if (CompositionDic.ContainsKey(stSignature))
                 {
-                    dic.Add(Math.Abs(matList.EntityLabel), CompositionDic[stSignature]);
+                    dic.Add(matList.EntityLabel, CompositionDic[stSignature]);
                 }
                 else
                 {
-                    CompositionDic.Add(stSignature, Math.Abs(matList.EntityLabel));
-                    dic.Add(Math.Abs(matList.EntityLabel), Math.Abs(matList.EntityLabel));
+                    CompositionDic.Add(stSignature, matList.EntityLabel);
+                    dic.Add(matList.EntityLabel, matList.EntityLabel);
                 }
             }
             return dic;

@@ -73,24 +73,24 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="ent"></param>
         /// <returns></returns>
-        internal IEnumerable<int> GetIndexedValues(IPersistIfcEntity ent)
+        internal IEnumerable<uint> GetIndexedValues(IPersistIfcEntity ent)
         {
             if (IndexedProperties == null)
-                return Enumerable.Empty<int>();
-            HashSet<int> keys = new HashSet<int>();
+                return Enumerable.Empty<uint>();
+            HashSet<uint> keys = new HashSet<uint>();
             foreach (var prop in IndexedProperties)
             {
                 object o = prop.GetValue(ent, null);
                 if (null!=o && typeof(IPersistIfcEntity).IsAssignableFrom(o.GetType()))
                 {
-                    int h = Math.Abs(((IPersistIfcEntity)o).EntityLabel);
+                    uint h = ((IPersistIfcEntity)o).EntityLabel;
                     keys.Add(h); //normally there are only one or two keys so don't worry about performance of contains on a list
                 }
                 else if (null != o && typeof(ExpressEnumerable).IsAssignableFrom(o.GetType()))
                 {
                     foreach (var obj in (ExpressEnumerable)o)
                     {
-                        int h = Math.Abs(((IPersistIfcEntity)obj).EntityLabel);
+                        uint h =((IPersistIfcEntity)obj).EntityLabel;
                         keys.Add(h); //normally there are only one or two keys so don't worry about performance of contains on a list
                     }                    
                 }

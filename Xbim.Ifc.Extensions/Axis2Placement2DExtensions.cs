@@ -38,10 +38,10 @@ namespace Xbim.Ifc2x3.Extensions
 
       
 
-        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, ConcurrentDictionary<uint, Object> maps = null)
         {
             object transform;
-            if (maps != null && maps.TryGetValue(Math.Abs(axis2.EntityLabel), out transform)) //already converted it just return cached
+            if (maps != null && maps.TryGetValue(axis2.EntityLabel, out transform)) //already converted it just return cached
                 return (XbimMatrix3D)transform;
             if (axis2.RefDirection != null)
             {
@@ -52,7 +52,7 @@ namespace Xbim.Ifc2x3.Extensions
             else
                 transform = new XbimMatrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y,
                                     axis2.Location.Z, 1);
-            if (maps != null) maps.TryAdd(Math.Abs(axis2.EntityLabel), transform);
+            if (maps != null) maps.TryAdd(axis2.EntityLabel, transform);
             return (XbimMatrix3D)transform;
         }
     }

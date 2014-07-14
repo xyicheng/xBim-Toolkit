@@ -27,7 +27,7 @@ namespace Xbim.Analysis
         }
 
         public Dictionary<IfcRoot, ChangeType> EntityLabelChanges = new Dictionary<IfcRoot, ChangeType>();
-        public Dictionary<Int32, Int32> EntityMapping = new Dictionary<Int32, Int32>();
+        public Dictionary<UInt32, UInt32> EntityMapping = new Dictionary<UInt32, UInt32>();
         public List<IfcRoot> Deleted = new List<IfcRoot>();
         public List<IfcRoot> Added = new List<IfcRoot>();
 
@@ -83,14 +83,14 @@ namespace Xbim.Analysis
             {
                 Message("Cannot resolve Baseline item(s):");
                 foreach (var i in WorkingCopyBaseline)
-                    Message(String.Format("Cannot resolve Missing GUID: {0} (EntityLabel: {1})", i.GlobalId, Math.Abs(i.EntityLabel)));
+                    Message(String.Format("Cannot resolve Missing GUID: {0} (EntityLabel: {1})", i.GlobalId, i.EntityLabel));
             }
             if (WorkingCopyDelta.Count > 0)
             {
                 Message("Cannot resolve Delta item(s):");
                 foreach (var i in WorkingCopyDelta)
                 {
-                    Message(String.Format("Cannot resolve Added GUID: {0} (EntityLabel: {1})", i.GlobalId, Math.Abs(i.EntityLabel)));
+                    Message(String.Format("Cannot resolve Added GUID: {0} (EntityLabel: {1})", i.GlobalId, i.EntityLabel));
                 }
             }
             

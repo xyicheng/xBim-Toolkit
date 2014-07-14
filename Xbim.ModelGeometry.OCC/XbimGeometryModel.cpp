@@ -302,9 +302,9 @@ namespace Xbim
 			void XbimGeometryModel::Init(IfcRepresentationItem^ entity)
 			{
 				_bounds=XbimRect3D::Empty;
-				RepresentationLabel = Math::Abs(entity->EntityLabel);
+				RepresentationLabel = entity->EntityLabel;
 				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(entity);
-				if(surfaceStyle!=nullptr) SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+				if(surfaceStyle!=nullptr) SurfaceStyleLabel=surfaceStyle->EntityLabel;
 			}
 
 			//boolean operations
@@ -1550,7 +1550,7 @@ TryCombineSolid:
 				//Make the Polyhedron 
 				meshset_t *mesh = new meshset_t(vertexStore, meshes);
 				XbimPolyhedron^ p =  gcnew XbimPolyhedron(mesh, normalMap, RepresentationLabel, SurfaceStyleLabel);
-			//	p->WritePly("s",true);
+				//p->WritePly("s",true);
 				
 				return p;
 

@@ -133,31 +133,20 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label">entity label to retrieve</param>
         /// <returns></returns>
-        public IPersistIfcEntity this[int label]
+        public IPersistIfcEntity this[uint label]
         {
             get
             {
                 return cache.GetInstance(label, true, true);
             }
         }
-        /// <summary>
-        /// Returns an instance from the Model with the corresponding label
-        /// </summary>
-        /// <param name="label">entity label to retrieve</param>
-        /// <returns></returns>
-        public IPersistIfcEntity this[uint label]
-        {
-            get
-            {
-                return cache.GetInstance((int)label, true, true);
-            }
-        }
+       
         /// <summary>
         /// Returns the Ifc entity for a given Geometry Label
         /// </summary>
         /// <param name="geometryLabel"></param>
         /// <returns></returns>
-        public IPersistIfcEntity GetFromGeometryLabel(int geometryLabel)
+        public IPersistIfcEntity GetFromGeometryLabel(uint geometryLabel)
         {
             XbimGeometryHandle filledGeomData = cache.GetGeometryHandle(geometryLabel);
             return cache.GetInstance(filledGeomData.ProductLabel, true, true);
@@ -221,7 +210,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entityLabel"></param>
         /// <returns></returns>
-        public  bool Contains(int entityLabel)
+        public  bool Contains(uint entityLabel)
         {
             return cache.Contains(entityLabel);
         }

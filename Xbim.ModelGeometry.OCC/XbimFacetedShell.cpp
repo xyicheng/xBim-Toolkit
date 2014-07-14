@@ -252,7 +252,7 @@ namespace Xbim
 					if(nativeHandle==nullptr)
 						//make a copy of the face set to avoid caching large objects
 					{
-						Build((IfcRepresentationItem^)_faceSet->ModelOf->Instances[Math::Abs(_faceSet->EntityLabel)]);
+						Build((IfcRepresentationItem^)_faceSet->ModelOf->Instances[_faceSet->EntityLabel]);
 					    System::Diagnostics::Debug::Assert((shapes->Count > 0 && nativeHandle==nullptr) || (nativeHandle!=nullptr &&shapes->Count == 0 ) );
 						nativeHandle =  XbimGeometryModelCollection::Handle;
 					}

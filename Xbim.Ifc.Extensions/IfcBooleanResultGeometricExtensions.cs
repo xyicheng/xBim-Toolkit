@@ -16,7 +16,7 @@ namespace Xbim.Ifc2x3.Extensions
         /// <returns></returns>
         public static int GetGeometryHashCode(this  IfcBooleanResult bResult)
         {
-            return Math.Abs(bResult.FirstOperand.EntityLabel) ^ Math.Abs(bResult.SecondOperand.EntityLabel); //good enough for most
+            return (bResult.FirstOperand.EntityLabel ^ bResult.SecondOperand.EntityLabel).GetHashCode(); //good enough for most
         }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace Xbim.Ifc2x3.Extensions
             IfcBooleanResult p = b as IfcBooleanResult;
             if (p == null) return false; //different types are not the same
             if(a.Equals(p)) return true;
-            return Math.Abs(a.FirstOperand.EntityLabel) == Math.Abs(p.FirstOperand.EntityLabel) &&
-                 Math.Abs(a.SecondOperand.EntityLabel) == Math.Abs(p.SecondOperand.EntityLabel) &&
+            return a.FirstOperand.EntityLabel == p.FirstOperand.EntityLabel &&
+                 a.SecondOperand.EntityLabel == p.SecondOperand.EntityLabel &&
                  a.Operator == p.Operator;
 
         }

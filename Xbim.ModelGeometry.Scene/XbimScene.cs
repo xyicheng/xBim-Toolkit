@@ -133,7 +133,7 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <param name="entityLabel"></param>
         /// <returns></returns>
-        public XbimMeshFragmentCollection GetMeshFragments(int entityLabel)
+        public XbimMeshFragmentCollection GetMeshFragments(uint entityLabel)
         {
             XbimMeshFragmentCollection fragments = new XbimMeshFragmentCollection();
             foreach (var layer in Layers)
@@ -154,7 +154,7 @@ namespace Xbim.ModelGeometry.Scene
             {
                 // an entity model could be spread across many layers (e.g. in case of different materials)
                 if(layer.Model == m)
-                    geometry.Add(layer.GetVisibleMeshGeometry3D(Math.Abs(entity.EntityLabel), modelId));
+                    geometry.Add(layer.GetVisibleMeshGeometry3D(entity.EntityLabel, modelId));
             }
             return geometry;
         }

@@ -55,17 +55,17 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "axis3"></param>
         /// <returns></returns>
-        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, ConcurrentDictionary<uint, Object> maps = null)
         {
             if (maps == null)
                 return ConvertAxis3D(axis3);
             else
             {
                     object transform;
-                    if (maps != null && maps.TryGetValue(Math.Abs(axis3.EntityLabel), out transform)) //already converted it just return cached
+                    if (maps != null && maps.TryGetValue(axis3.EntityLabel, out transform)) //already converted it just return cached
                         return (XbimMatrix3D)transform;
                     transform = ConvertAxis3D(axis3);
-                    if (maps != null) maps.TryAdd(Math.Abs(axis3.EntityLabel), transform);
+                    if (maps != null) maps.TryAdd(axis3.EntityLabel, transform);
                     return (XbimMatrix3D)transform;
             }
             

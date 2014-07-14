@@ -66,7 +66,7 @@ namespace Xbim.Presentation
             {
                 // straight return of objects of all associations
                 var Assocs = InstanceCollection.OfType<IfcRelAssociatesMaterial>().Where(
-                    x => Math.Abs(x.RelatingMaterial.EntityLabel) == Math.Abs(matSel.EntityLabel)
+                    x => x.RelatingMaterial.EntityLabel ==matSel.EntityLabel
                     );
                 foreach (var assoc in Assocs)
                 {
@@ -83,7 +83,7 @@ namespace Xbim.Presentation
                 {
                     // straight return of objects of all associations
                     var Assocs = InstanceCollection.OfType<IfcRelAssociatesMaterial>().Where(
-                        x => Math.Abs(x.RelatingMaterial.EntityLabel) == Math.Abs(matSel.EntityLabel)
+                        x =>x.RelatingMaterial.EntityLabel == matSel.EntityLabel
                         );
                     foreach (var assoc in Assocs)
                     {
@@ -106,7 +106,7 @@ namespace Xbim.Presentation
                 {
                     // straight return of objects of all associations
                     var Assocs = InstanceCollection.OfType<IfcRelAssociatesMaterial>().Where(
-                        x => Math.Abs(x.RelatingMaterial.EntityLabel) == Math.Abs(matSel.EntityLabel)
+                        x =>x.RelatingMaterial.EntityLabel == matSel.EntityLabel
                         );
                     foreach (var assoc in Assocs)
                     {
@@ -122,19 +122,19 @@ namespace Xbim.Presentation
                     // a problem with this is that some exporters produce multiple IfcMaterialList that 
                     // they share the same underlying set of Materials, so we are looking for a signature of the underlying materials.
                     // 
-                    var BaseMatArray = ((IfcMaterialList)matSel).Materials.Select(x => Math.Abs(x.EntityLabel)).ToArray(); // this is the signature.
-                    var cmp = EqualityComparer<int>.Default;
+                    var BaseMatArray = ((IfcMaterialList)matSel).Materials.Select(x => x.EntityLabel).ToArray(); // this is the signature.
+                    var cmp = EqualityComparer<uint>.Default;
                     foreach (var testingMaterialList in InstanceCollection.OfType<IfcMaterialList>())
                     {
                         bool bDoesMatch = false;
-                        if (Math.Abs(testingMaterialList.EntityLabel) == Math.Abs(matSel.EntityLabel))
+                        if (testingMaterialList.EntityLabel == matSel.EntityLabel)
                         { // no need to compare
                             bDoesMatch = true;
                         }
                         else
                         {
-                            var CompMatArray = ((IfcMaterialList)testingMaterialList).Materials.Select(x => Math.Abs(x.EntityLabel)).ToArray(); // this is the other signature.
-                            bDoesMatch = ArraysEqual<int>(BaseMatArray, CompMatArray, cmp);
+                            var CompMatArray = ((IfcMaterialList)testingMaterialList).Materials.Select(x => x.EntityLabel).ToArray(); // this is the other signature.
+                            bDoesMatch = ArraysEqual<uint>(BaseMatArray, CompMatArray, cmp);
                         }
                         if (bDoesMatch)
                         {
@@ -151,7 +151,7 @@ namespace Xbim.Presentation
                 // given a material layerset ...
                 // ... search for all its usages modes ...
                 var lsUsages = InstanceCollection.OfType<IfcMaterialLayerSetUsage>().Where(
-                    x => Math.Abs(x.ForLayerSet.EntityLabel) == Math.Abs(((IfcMaterialLayerSet)matSel).EntityLabel)
+                    x => x.ForLayerSet.EntityLabel ==((IfcMaterialLayerSet)matSel).EntityLabel
                     );
                 foreach (var lsUsage in lsUsages)
                 {
@@ -176,7 +176,7 @@ namespace Xbim.Presentation
                 {
                     // straight return of objects of all associations
                     var Assocs = InstanceCollection.OfType<IfcRelAssociatesMaterial>().Where(
-                        x => Math.Abs(x.RelatingMaterial.EntityLabel) == Math.Abs(matSel.EntityLabel)
+                        x => x.RelatingMaterial.EntityLabel == matSel.EntityLabel
                         );
                     foreach (var assoc in Assocs)
                     {

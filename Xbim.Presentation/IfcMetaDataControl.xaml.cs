@@ -341,14 +341,14 @@ namespace Xbim.Presentation
             if (matSel is IfcMaterial) //simplest just add it
                 _materials.Add(new PropertyItem()
                 {
-                    Name = string.Format("{0} [#{1}]", ((IfcMaterial)matSel).Name, Math.Abs(matSel.EntityLabel)),
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterial)matSel).Name, matSel.EntityLabel),
                     PropertySetName = setName,
                     Value = ""
                 });
             else if (matSel is IfcMaterialLayer)
                 _materials.Add(new PropertyItem()
                 {
-                    Name = string.Format("{0} [#{1}]", ((IfcMaterialLayer)matSel).Material.Name, Math.Abs(matSel.EntityLabel)),
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterialLayer)matSel).Material.Name, matSel.EntityLabel),
                     Value = ((IfcMaterialLayer)matSel).LayerThickness.Value.ToString(),
                     PropertySetName = setName
                 });
@@ -358,7 +358,7 @@ namespace Xbim.Presentation
                 {
                     _materials.Add(new PropertyItem()
                     {
-                        Name = string.Format("{0} [#{1}]", mat.Name, Math.Abs(mat.EntityLabel)),
+                        Name = string.Format("{0} [#{1}]", mat.Name, mat.EntityLabel),
                         PropertySetName = setName,
                         Value = ""
                     });

@@ -15,7 +15,7 @@ namespace Xbim.IO.ViewModels
     {
         XbimModel xbimModel;
         Type type;
-        int spatialContainerLabel;
+        uint spatialContainerLabel;
         private bool _isSelected;
         private bool _isExpanded;
         public IXbimViewModel CreatingParent { get; set; } 
@@ -39,7 +39,7 @@ namespace Xbim.IO.ViewModels
 
         public ContainedElementsViewModel(IfcSpatialStructureElement spatialElem, Type type, IXbimViewModel parent)
         {
-            this.spatialContainerLabel = Math.Abs(spatialElem.EntityLabel);
+            this.spatialContainerLabel = spatialElem.EntityLabel;
             this.type = type;
             this.xbimModel = (XbimModel) spatialElem.ModelOf;
             this.CreatingParent = parent;
@@ -72,7 +72,7 @@ namespace Xbim.IO.ViewModels
             }
         }
 
-        public int EntityLabel
+        public uint EntityLabel
         {
             get { return 0; }
         }

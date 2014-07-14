@@ -13,9 +13,9 @@ namespace Xbim.WeXplorer.MVC4.Models
             get { return _prop.GetType().Name; }
         }
 
-        public int? Label
+        public uint? Label
         {
-            get { return Math.Abs(_prop.EntityLabel); }
+            get { return _prop.EntityLabel; }
         }
 
         public string Name 

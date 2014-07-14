@@ -247,7 +247,7 @@ namespace Xbim.IO
             cache.FreeTable(table);
         }
         //Loads the property data of an entity, if it is not already loaded
-        int IModel.Activate(IPersistIfcEntity entity, bool write)
+        uint IModel.Activate(IPersistIfcEntity entity, bool write)
         {
             if (write) //we want to activate for reading
             {
@@ -258,7 +258,7 @@ namespace Xbim.IO
             {
                 cache.Activate(entity);
             }
-            return Math.Abs(entity.EntityLabel);
+            return entity.EntityLabel;
         }
 
         #region Transaction support
@@ -375,7 +375,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal IPersistIfcEntity GetInstanceVolatile(int label)
+        internal IPersistIfcEntity GetInstanceVolatile(uint label)
         {
             return cache.GetInstance(label, true, true);
         }
@@ -816,7 +816,7 @@ namespace Xbim.IO
             return SaveAs(outputFileName, storageType, progress, null);
         }
 
-        public bool SaveAs(string outputFileName, XbimStorageType? storageType = null, ReportProgressDelegate progress = null, IDictionary<int, int> map = null)
+        public bool SaveAs(string outputFileName, XbimStorageType? storageType = null, ReportProgressDelegate progress = null, IDictionary<uint, uint> map = null)
         {
 
             try
@@ -1042,7 +1042,7 @@ namespace Xbim.IO
             return cache.GetGeometryHandles(geomType,sortOrder);
         }
 
-        public XbimGeometryHandle GetGeometryHandle(int geometryLabel)
+        public XbimGeometryHandle GetGeometryHandle(uint geometryLabel)
         {
             return cache.GetGeometryHandle(geometryLabel);
         }
@@ -1055,7 +1055,7 @@ namespace Xbim.IO
         /// <param name="productLabel"></param>
         /// <param name="geomType"></param>
         /// <returns></returns>
-        public IEnumerable<XbimGeometryData> GetGeometryData(int productLabel, XbimGeometryType geomType)
+        public IEnumerable<XbimGeometryData> GetGeometryData(uint productLabel, XbimGeometryType geomType)
         {
             IPersistIfc entity = cache.GetInstance(productLabel, false, true);
             if (entity != null)
@@ -1084,7 +1084,7 @@ namespace Xbim.IO
         public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
         {
 
-            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(product), Math.Abs(product.EntityLabel), geomType))
+            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(product), product.EntityLabel, geomType))
             {
                 yield return item;
             }
@@ -1296,7 +1296,7 @@ namespace Xbim.IO
             return cache.GetGeometryData(handle);
         }
 
-        public XbimGeometryData GetGeometryData(int geomLabel)
+        public XbimGeometryData GetGeometryData(uint geomLabel)
         {
             return cache.GetGeometryData(geomLabel);
         }

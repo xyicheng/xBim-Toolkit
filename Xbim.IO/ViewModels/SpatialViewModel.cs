@@ -15,7 +15,7 @@ namespace Xbim.IO.ViewModels
     public class SpatialViewModel : IXbimViewModel
     {
         XbimModel xbimModel;
-        int spatialStructureLabel;
+        uint spatialStructureLabel;
         private bool _isSelected;
         private bool _isExpanded;
         private List<IXbimViewModel> children;
@@ -36,7 +36,7 @@ namespace Xbim.IO.ViewModels
         public SpatialViewModel(IfcSpatialStructureElement spatialStructure, IXbimViewModel parent)
         {
             xbimModel = spatialStructure.ModelOf as XbimModel;
-            this.spatialStructureLabel = Math.Abs(spatialStructure.EntityLabel);
+            this.spatialStructureLabel = spatialStructure.EntityLabel;
             CreatingParent = parent;
            // IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
         }
@@ -44,7 +44,7 @@ namespace Xbim.IO.ViewModels
         public SpatialViewModel(IfcProject project)
         {
             xbimModel = project.ModelOf as XbimModel;
-            this.spatialStructureLabel = Math.Abs(project.EntityLabel);
+            this.spatialStructureLabel = project.EntityLabel;
            // IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
         }
 
@@ -92,7 +92,7 @@ namespace Xbim.IO.ViewModels
             }
         }
 
-        public int EntityLabel
+        public uint EntityLabel
         {
             get { return spatialStructureLabel; }
         }

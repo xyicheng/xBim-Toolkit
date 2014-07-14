@@ -72,8 +72,8 @@ namespace Xbim.ModelGeometry.Converter
                     XbimColourMap cmap = new XbimColourMap();
                     int layerid = 1;
                     IfcProject project = model.IfcProject;
-                    int projectId = 0;
-                    if (project != null) projectId = Math.Abs(project.EntityLabel);
+                    uint projectId = 0;
+                    if (project != null) projectId = project.EntityLabel;
                     
                     float mScalingReference = (float)model.ModelFactors.OneMetre;
 
@@ -112,7 +112,7 @@ namespace Xbim.ModelGeometry.Converter
                                 XbimRect3D transformed = item.ToXbimRect3D().Transform(composed);
                                 db.AddMetaData(
                                         "Region",
-                                        -1,
+                                        0,
                                         string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
                                         item.Name
                                         );
@@ -126,7 +126,7 @@ namespace Xbim.ModelGeometry.Converter
                             Logger.DebugFormat("XbimScene: Exporting transform.\r\n", mScalingReference);
                         db.AddMetaData(
                                 "Transform",
-                                -1,
+                                0,
                                 composed.ToArray(false),
                                 "World"
                                 );
@@ -183,7 +183,7 @@ namespace Xbim.ModelGeometry.Converter
                         // string data loop
                         foreach (var space in model.Instances.OfType<IfcSpace>())
                         {
-                            int iEntLabel = Math.Abs(space.EntityLabel);
+                            uint iEntLabel = space.EntityLabel;
                             if ((Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces)
                             {
                                 db.AddMetaData(
@@ -224,20 +224,20 @@ namespace Xbim.ModelGeometry.Converter
                         // binary data loop
                     foreach (var space in model.Instances.OfType<IfcSpace>())
                     {
-                            int iEntLabel = Math.Abs(space.EntityLabel);
+                           
                             if ((Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox)
                             {
-                                XbimGeometryData geomdata = model.GetGeometryData(iEntLabel, XbimGeometryType.BoundingBox).FirstOrDefault();
+                                XbimGeometryData geomdata = model.GetGeometryData(space.EntityLabel, XbimGeometryType.BoundingBox).FirstOrDefault();
                                 if (geomdata != null)
                                 {
                                     XbimRect3D r3d = XbimRect3D.FromArray(geomdata.ShapeData);
                                     XbimRect3D transformed = r3d.Transform(composed);
                                     db.AddMetaData(
                                             "SpaceBBox",
-                                            iEntLabel,
+                                            space.EntityLabel,
                                         // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
                                             transformed.ToFloatArray(),
-                                            iEntLabel.ToString()
+                                            space.EntityLabel.ToString()
                                             );
                                 }
                                 // db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", space.EntityLabel.ToString());
@@ -286,7 +286,7 @@ namespace Xbim.ModelGeometry.Converter
 
                                 db.AddMetaData(
                                 "Storey",
-                                    Math.Abs(storey.EntityLabel),
+                                    storey.EntityLabel,
                                     string.Format("Name:{0};Elevation:{1};SpaceCount:{2};", cleanName, InTranslatedReferenceZ, spacesCount), // storeyHeight),
                                 cleanName);
                         }

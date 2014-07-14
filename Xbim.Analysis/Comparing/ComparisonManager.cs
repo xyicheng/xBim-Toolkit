@@ -129,7 +129,7 @@ namespace Xbim.Analysis.Comparing
             //write content
             foreach (var item in _results.Results)
             {
-                var baseLabel = item.Baseline != null ? "#" + Math.Abs(item.Baseline.EntityLabel).ToString() : "-";
+                var baseLabel = item.Baseline != null ? "#" + item.Baseline.EntityLabel.ToString() : "-";
                 var bestMatch = item.BestMatch;
 
                 if (bestMatch.Count == 0)
@@ -143,7 +143,7 @@ namespace Xbim.Analysis.Comparing
 
                 foreach (var match in item.BestMatch)
                 {
-                    var matchLabel = "#" + Math.Abs(match.Candidate.EntityLabel).ToString();
+                    var matchLabel = "#" + match.Candidate.EntityLabel.ToString();
                     file.Write("{0},{1}", baseLabel, matchLabel);
                     foreach (var cmp in _comparers)
                     {
@@ -216,7 +216,7 @@ namespace Xbim.Analysis.Comparing
                 foreach (var item in _results.Results)
                 {
 
-                    var baseLabel = item.Baseline != null ? "#" + Math.Abs(item.Baseline.EntityLabel).ToString() : "";
+                    var baseLabel = item.Baseline != null ? "#" +item.Baseline.EntityLabel.ToString() : "";
                     var baseType = item.Baseline != null ? item.Baseline.GetType().Name : "";
                     var bestMatch = item.BestMatch;
 
@@ -287,7 +287,7 @@ namespace Xbim.Analysis.Comparing
                             c1.SetCellValue(baseType);
                             c1.CellStyle = style;
 
-                            var matchLabel = match.Candidate != null ? "#" + Math.Abs(match.Candidate.EntityLabel).ToString() : "";
+                            var matchLabel = match.Candidate != null ? "#" +match.Candidate.EntityLabel.ToString() : "";
                             var matchType = match.Candidate != null ? match.Candidate.GetType().Name : "";
                             var c2 = dataRow.CreateCell(++index, CellType.STRING);
                             c2.SetCellValue(matchLabel);

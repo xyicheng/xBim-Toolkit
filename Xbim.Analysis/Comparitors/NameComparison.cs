@@ -8,8 +8,8 @@ namespace Xbim.Analysis.Comparitors
 {
     public class NameComparison : IModelComparer
     {
-        private Dictionary<Int32, Int32> map = new Dictionary<Int32, Int32>();
-        public Dictionary<Int32, Int32> GetMap() { return map; }
+        private Dictionary<UInt32, UInt32> map = new Dictionary<UInt32, UInt32>();
+        public Dictionary<UInt32, UInt32> GetMap() { return map; }
 
         public Dictionary<IfcRoot, ChangeType> Compare(IEnumerable<IfcRoot> Baseline, IEnumerable<IfcRoot> Delta)
         {

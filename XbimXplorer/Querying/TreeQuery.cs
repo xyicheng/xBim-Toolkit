@@ -10,13 +10,13 @@ namespace XbimXplorer
 {
     static class QueryEngine
     {
-        static public List<int> EntititesForType(string type, XbimModel Model)
+        static public List<uint> EntititesForType(string type, XbimModel Model)
         {
-            List<int> Values = new List<int>();
+            List<uint> Values = new List<uint>();
             var items = Model.Instances.OfType(type, false);
             foreach (var item in items)
             {
-                int thisV = Math.Abs(item.EntityLabel);
+                uint thisV = item.EntityLabel;
                 if (!Values.Contains(thisV))
                     Values.Add(thisV);
             }
@@ -24,10 +24,10 @@ namespace XbimXplorer
             return Values;
         }
 
-        static public IEnumerable<int> RecursiveQuery(XbimModel Model, string Query, IEnumerable<int> StartList, bool ReturnTransverse)
+        static public IEnumerable<uint> RecursiveQuery(XbimModel Model, string Query, IEnumerable<uint> StartList, bool ReturnTransverse)
         {
             var proparray = Query.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            IEnumerable<int> runningList =  StartList;
+            IEnumerable<uint> runningList =  StartList;
             foreach (var StringQuery in proparray)
             {
                 TreeQueryItem qi = new TreeQueryItem(runningList, StringQuery, ReturnTransverse);
@@ -44,18 +44,18 @@ namespace XbimXplorer
 
     public class TreeQueryItem
     {
-        private IEnumerable<int> _EntityLabelsToParse;
+        private IEnumerable<uint> _EntityLabelsToParse;
         private String _QueryCommand;
         private bool transverse = true;
 
-        public TreeQueryItem(IEnumerable<int> labels, string Query, bool ReturnTransversal)
+        public TreeQueryItem(IEnumerable<uint> labels, string Query, bool ReturnTransversal)
         {
             _QueryCommand = Query;
             _EntityLabelsToParse = labels;
             transverse = ReturnTransversal;
         }
 
-        public IEnumerable<int> Run(XbimModel Model)
+        public IEnumerable<uint> Run(XbimModel Model)
         {
             foreach (var label in _EntityLabelsToParse)
             {

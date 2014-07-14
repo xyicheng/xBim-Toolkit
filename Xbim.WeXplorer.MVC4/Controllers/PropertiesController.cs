@@ -17,8 +17,8 @@ namespace Xbim.WeXplorer.MVC4.Controllers
         public JsonResult GetProperties(string model, int entityLabel)
         {
             var m = GetModel(model);
-            var label = Math.Abs(entityLabel);
-            var obj = m.Instances.Where<IfcObject>(o => Math.Abs( o.EntityLabel) == label).FirstOrDefault();
+            var label = entityLabel;
+            var obj = m.Instances.Where<IfcObject>(o =>  o.EntityLabel == label).FirstOrDefault();
             if (obj != null)
             {
                 var pSets = obj.GetAllPropertySets();

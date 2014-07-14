@@ -66,8 +66,8 @@ namespace Xbim
 				nativeHandle = new TopoDS_Shape();
 				*nativeHandle = shape;
 				_hasCurvedEdges = hasCurves;
-				_representationLabel = Math::Abs(representationLabel);
-				_surfaceStyleLabel=Math::Abs(surfaceStyleLabel);
+				_representationLabel = representationLabel;
+				_surfaceStyleLabel=surfaceStyleLabel;
 			}
 
 
@@ -183,11 +183,11 @@ namespace Xbim
 						bool is3D = (polyLoop->Polygon[0]->Dim == 3);
 						for each (IfcCartesianPoint^ p in polyLoop->Polygon) //add all the points into unique collection
 						{
-							if(!vertexStore.IsBound(Math::Abs(p->EntityLabel)))
+							if(!vertexStore.IsBound(p->EntityLabel))
 							{
 								TopoDS_Vertex v;
 								builder.MakeVertex(v,gp_Pnt(p->X, p->Y, is3D ? p->Z : 0),tolerance);
-								vertexStore.Bind(Math::Abs(p->EntityLabel),v);
+								vertexStore.Bind(p->EntityLabel,v);
 								
 							}
 						}
@@ -320,13 +320,13 @@ TryBuildLoop:
 					int p2;
 				    if(p==lastPt)
 					{
-						p2 = Math::Abs(boundToConvert[0]->EntityLabel);
-						p1 = Math::Abs(boundToConvert[p-1]->EntityLabel);	
+						p2 = boundToConvert[0]->EntityLabel;
+						p1 = boundToConvert[p-1]->EntityLabel;	
 					}
 					else
 					{
-						p1= Math::Abs(boundToConvert[p-1]->EntityLabel);
-						p2 = Math::Abs(boundToConvert[p]->EntityLabel);
+						p1= boundToConvert[p-1]->EntityLabel;
+						p2 = boundToConvert[p]->EntityLabel;
 					}
 					
 					bool builtEdge = false;

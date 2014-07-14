@@ -75,7 +75,7 @@ namespace Xbim.IO.ViewModels
             }
         }
 
-        public int EntityLabel
+        public uint EntityLabel
         {
             get { return _project.EntityLabel; }
         }

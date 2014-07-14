@@ -70,7 +70,7 @@ namespace CodeExamples.BoundingBox
                             //in the TransformBounds function
                             Console.WriteLine("\n-------------Bounding Box Information-------------");
                             Console.WriteLine("Entity Type = {0}", IfcMetaData.GetType(geoData.IfcTypeId).Name);
-                            Console.WriteLine("Entity Label = {0}", Math.Abs(ifcDoor.EntityLabel).ToString());
+                            Console.WriteLine("Entity Label = {0}", ifcDoor.EntityLabel.ToString());
                             Console.WriteLine("Size X = {0:F2}", boundBox.SizeX.ToString());
                             Console.WriteLine("Size Y = {0:F2}", boundBox.SizeY.ToString());
                             Console.WriteLine("Size Z = {0:F2}", boundBox.SizeZ.ToString());

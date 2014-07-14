@@ -53,7 +53,7 @@ namespace Xbim.Ifc2x3.Extensions
             IfcConnectedFaceSet p = b as IfcConnectedFaceSet;
             if (p == null) return false;
             if(a.CfsFaces.Count!=p.CfsFaces.Count) return false;
-            List<IfcFace> aFaces = p.CfsFaces.ToList();
+            List<IfcFace> aFaces = a.CfsFaces.ToList();
             List<IfcFace> bFaces = p.CfsFaces.ToList();
             for (int i = 0; i < aFaces.Count; i++)
 			{

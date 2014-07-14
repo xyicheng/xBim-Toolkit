@@ -14,12 +14,12 @@ namespace Xbim.WeXplorer.MVC4.Models
         {
         }
 
-        public IEnumerable<int> PropertySets {
+        public IEnumerable<uint> PropertySets {
             get
             {
                 var pSets = Element.GetAllPropertySets();
                 foreach (var pSet in pSets)
-                    yield return Math.Abs(pSet.EntityLabel);
+                    yield return pSet.EntityLabel;
             }
         }
     }

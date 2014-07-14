@@ -236,9 +236,9 @@ namespace Xbim.COBie.Data
                 )
             {
                 IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
-                if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
+                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
                 {
-                    return Context.EMails[Math.Abs(ifcPerson.EntityLabel)];
+                    return Context.EMails[ifcPerson.EntityLabel];
                 }
                 else
                 {
@@ -264,9 +264,9 @@ namespace Xbim.COBie.Data
             if (ifcPersonAndOrganization != null)
             {
                 IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-                if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
+                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
                 {
-                    return Context.EMails[Math.Abs(ifcPerson.EntityLabel)];
+                    return Context.EMails[ifcPerson.EntityLabel];
                 }
                 else
                 {

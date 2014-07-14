@@ -68,10 +68,10 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             parser = new XbimQueryParser(GetModel(name));
         }
 
-        private IEnumerable<int> GetLatestResults()
+        private IEnumerable<uint> GetLatestResults()
         {
             foreach (var item in parser.Results.LastEntities)
-                yield return Math.Abs(item.EntityLabel);
+                yield return item.EntityLabel;
         }
     }
 }
