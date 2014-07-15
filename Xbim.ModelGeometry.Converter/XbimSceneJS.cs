@@ -15,7 +15,7 @@ namespace Xbim.ModelGeometry.Converter
     public class XbimSceneJS
     {
         private Xbim3DModelContext _context;
-        private HashSet<uint> _maps = new HashSet<uint>();
+        private HashSet<int> _maps = new HashSet<int>();
 
         public XbimSceneJS(Xbim3DModelContext context)
         {
@@ -158,7 +158,7 @@ namespace Xbim.ModelGeometry.Converter
                         writer.WriteStartObject(); //start of instance transform
                         {
 
-                            if (_maps.Contains((uint)shapeInstance.ShapeGeometryLabel)) //it is a reference
+                            if (_maps.Contains(shapeInstance.ShapeGeometryLabel)) //it is a reference
                             {
                                 //write the transform
                                 writer.WritePropertyName("type"); //geometry node
@@ -211,7 +211,7 @@ namespace Xbim.ModelGeometry.Converter
 
         private void WriteLibrary(JsonWriter writer)
         {
-            _maps = new HashSet<uint>();
+            _maps = new HashSet<int>();
             writer.WriteStartObject();
             {
                 //first write out the library nodes

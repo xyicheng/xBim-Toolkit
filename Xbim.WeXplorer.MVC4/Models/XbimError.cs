@@ -12,7 +12,7 @@ namespace Xbim.WeXplorer.MVC4.Models
             get { return "Error"; }
         }
 
-        public uint? Label
+        public int? Label
         {
             get { return null; }
         }

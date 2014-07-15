@@ -14,7 +14,7 @@ namespace Xbim.WeXplorer.MVC4.Models
         {
         }
 
-        public IEnumerable<uint> PropertySets {
+        public IEnumerable<int> PropertySets {
             get
             {
                 var pSets = Element.GetAllPropertySets();

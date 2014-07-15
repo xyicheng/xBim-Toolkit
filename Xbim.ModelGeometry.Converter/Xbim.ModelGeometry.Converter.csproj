@@ -82,10 +82,8 @@
     <Compile Include="XbimPolyhedronExtensions.cs" />
     <Compile Include="XbimSceneBuilder.cs" />
     <Compile Include="XbimSceneJS.cs" />
-    <Compile Include="XbimShape.cs" />
     <Compile Include="XbimShapeGeometry.cs" />
     <Compile Include="XbimShapeInstance.cs" />
-    <Compile Include="XbimShapeMap.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">

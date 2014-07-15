@@ -14,7 +14,7 @@ namespace Xbim.IO.ViewModels
     {
         IEnumerable<IXbimViewModel> Children { get; }
         string Name {get;}
-        uint EntityLabel { get; }
+        int EntityLabel { get; }
         IPersistIfcEntity Entity { get; }
         XbimModel Model { get; }
         bool IsExpanded { get; set; }

@@ -11,7 +11,7 @@ namespace Xbim.IO
         /// <summary>
         /// The unique ID of the geometry
         /// </summary>
-        public uint GeometryLabel;
+        public int GeometryLabel;
         /// <summary>
         /// The label of the Ifc Entity that holds the surface style render
         /// </summary>
@@ -19,7 +19,7 @@ namespace Xbim.IO
         /// <summary>
         /// The label of the Ifc Entity that the geomtry represents
         /// </summary>
-        public uint ProductLabel;
+        public int ProductLabel;
         /// <summary>
         /// The id of the Ifc Type of the Product represented
         /// </summary>
@@ -41,7 +41,7 @@ namespace Xbim.IO
         /// <param name="productLabel">The label of the Ifc Entity that the geomtry represents</param>
         /// <param name="ifcTypeId">The id of the Ifc Type of the Product represented</param>
         /// <param name="surfaceStyleLabel">The label of the Ifc Entity that holds the surface style render</param>
-        public XbimGeometryHandle(uint geometryLabel, XbimGeometryType geometryType, uint productLabel, short ifcTypeId, int surfaceStyleLabel, int? geometryHashCode)
+        public XbimGeometryHandle(int geometryLabel, XbimGeometryType geometryType, int productLabel, short ifcTypeId, int surfaceStyleLabel, int? geometryHashCode)
         {
             GeometryLabel = geometryLabel;
             SurfaceStyleLabel = surfaceStyleLabel;
@@ -50,12 +50,12 @@ namespace Xbim.IO
             GeometryType = geometryType;
             GeometryHashCode = geometryHashCode;
         }
-        public XbimGeometryHandle(uint geometryLabel, XbimGeometryType geometryType, uint productLabel, short ifcTypeId, int surfaceStyleLabel)
+        public XbimGeometryHandle(int geometryLabel, XbimGeometryType geometryType, int productLabel, short ifcTypeId, int surfaceStyleLabel)
             : this(geometryLabel, geometryType, productLabel, ifcTypeId, surfaceStyleLabel, null)
         {
         }
 
-        public XbimGeometryHandle(uint geometryLabel)
+        public XbimGeometryHandle(int geometryLabel)
         {
             GeometryLabel = geometryLabel;
             GeometryType = XbimGeometryType.Undefined;

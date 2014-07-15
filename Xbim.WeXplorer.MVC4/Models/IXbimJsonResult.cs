@@ -9,7 +9,7 @@ namespace Xbim.WeXplorer.MVC4.Models
     public interface IXbimJsonResult
     {
         string Type { get; }
-        uint? Label { get; }
+        int? Label { get; }
 
     }
 }

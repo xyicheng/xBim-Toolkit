@@ -17,11 +17,11 @@ namespace Xbim.IO
         /// <summary>
         /// The unique label of this shape instance
         /// </summary>
-        UInt32ColumnValue _colValShapeLabel;
+        Int32ColumnValue _colValShapeLabel;
         /// <summary>
         /// The label of the IFC object that defines this shape
         /// </summary>
-        UInt32ColumnValue _colValIfcShapeLabel;
+        Int32ColumnValue _colValIfcShapeLabel;
         /// <summary>
         ///  Hash of the shape Geometry, based on the IFC representation, this is not unique
         /// </summary>
@@ -29,11 +29,11 @@ namespace Xbim.IO
         /// <summary>
         /// The total cost in bytes of this shape
         /// </summary>
-        UInt32ColumnValue _colValCost;
+        Int32ColumnValue _colValCost;
         /// <summary>
         /// The number of references to this shape
         /// </summary>
-        UInt32ColumnValue _colValReferenceCount;
+        Int32ColumnValue _colValReferenceCount;
         /// <summary>
         /// The level of detail or development that the shape is suited for
         /// </summary>
@@ -160,11 +160,11 @@ namespace Xbim.IO
             _colIdBoundingBox = Api.GetTableColumnid(sesid, table, colNameBoundingBox);
             _colIdShapeData = Api.GetTableColumnid(sesid, table, colNameShapeData);
 
-            _colValShapeLabel = new UInt32ColumnValue { Columnid = _colIdShapeLabel };
-            _colValIfcShapeLabel = new UInt32ColumnValue { Columnid = _colIdIfcShapeLabel };
+            _colValShapeLabel = new Int32ColumnValue { Columnid = _colIdShapeLabel };
+            _colValIfcShapeLabel = new Int32ColumnValue { Columnid = _colIdIfcShapeLabel };
             _colValGeometryHash = new Int32ColumnValue { Columnid = _colIdGeometryHash };
-            _colValCost = new UInt32ColumnValue { Columnid = _colIdCost };
-            _colValReferenceCount = new UInt32ColumnValue { Columnid = _colIdReferenceCount };
+            _colValCost = new Int32ColumnValue { Columnid = _colIdCost };
+            _colValReferenceCount = new Int32ColumnValue { Columnid = _colIdReferenceCount };
             _colValLOD = new ByteColumnValue { Columnid = _colIdLOD };
             _colValFormat = new ByteColumnValue { Columnid = _colIdFormat };
             _colValBoundingBox = new BytesColumnValue { Columnid = _colIdBoundingBox };
@@ -275,9 +275,9 @@ namespace Xbim.IO
         }
         #endregion
 
-        public uint AddGeometry(IXbimShapeGeometryData shapeGeom)
+        public int AddGeometry(IXbimShapeGeometryData shapeGeom)
         {
-            uint mainId = 0;
+            int mainId = 0;
             
             using (var update = new Update(sesid, table, JET_prep.Insert))
             {
@@ -290,7 +290,7 @@ namespace Xbim.IO
                 _colValShapeData.Value = shapeGeom.ShapeDataCompressed;
                 _colValBoundingBox.Value = shapeGeom.BoundingBox;
                 Api.SetColumns(sesid, table, _colValues);
-                mainId = Api.RetrieveColumnAsUInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
+                mainId = Api.RetrieveColumnAsInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
                 update.Save();
                 UpdateCount(1);
             }
@@ -299,13 +299,13 @@ namespace Xbim.IO
             return mainId;
         }
 
-        public void UpdateReferenceCount(uint geomLabel, uint refCount)
+        public void UpdateReferenceCount(int geomLabel, int refCount)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, geomLabel, MakeKeyGrbit.NewKey);
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
             {
-                uint size = Api.RetrieveColumnAsUInt32(sesid, table, _colIdCost).Value;         
+                int size = Api.RetrieveColumnAsInt32(sesid, table, _colIdCost).Value;         
                 using (var update = new Update(sesid, table, JET_prep.Replace))
                 {
                     Api.SetColumn(sesid, table, _colIdCost, refCount*size); //set the total cost in bytes of this shape
@@ -318,7 +318,7 @@ namespace Xbim.IO
         private void GetShapeGeometryData(IXbimShapeGeometryData sg)
         {
             Api.RetrieveColumns(sesid, table, _colValues);
-            sg.ShapeLabel = Api.RetrieveColumnAsUInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+            sg.ShapeLabel = Api.RetrieveColumnAsInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
             sg.IfcShapeLabel = _colValIfcShapeLabel.Value.Value;
             sg.GeometryHash = _colValGeometryHash.Value.Value;
             sg.ReferenceCount = _colValReferenceCount.Value.Value;
@@ -369,7 +369,7 @@ namespace Xbim.IO
         /// <param name="shapeGeometryLabel"></param>
         /// <param name="sg"></param>
         /// <returns></returns>
-        public bool TryGetShapeGeometry(uint shapeGeometryLabel, ref IXbimShapeGeometryData sg)
+        public bool TryGetShapeGeometry(int shapeGeometryLabel, ref IXbimShapeGeometryData sg)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, shapeGeometryLabel, MakeKeyGrbit.NewKey);

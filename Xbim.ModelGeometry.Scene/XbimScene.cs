@@ -133,7 +133,7 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <param name="entityLabel"></param>
         /// <returns></returns>
-        public XbimMeshFragmentCollection GetMeshFragments(uint entityLabel)
+        public XbimMeshFragmentCollection GetMeshFragments(int entityLabel)
         {
             XbimMeshFragmentCollection fragments = new XbimMeshFragmentCollection();
             foreach (var layer in Layers)

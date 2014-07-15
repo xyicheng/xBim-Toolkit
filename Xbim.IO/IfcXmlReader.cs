@@ -40,8 +40,8 @@ namespace Xbim.IO
     {
         private static readonly Dictionary<string, IfcParserType> primitives;
         private readonly int _transactionBatchSize = 100;
-        private Dictionary<string, uint> idMap;
-        private uint lastId;
+        private Dictionary<string, int> idMap;
+        private int lastId;
         static IfcXmlReader()
         {
             primitives = new Dictionary<string, IfcParserType>();
@@ -233,7 +233,7 @@ namespace Xbim.IO
         {
             string elementName = input.LocalName;
             bool isRefType;
-            uint? id = GetId(input, out isRefType);
+            int? id = GetId(input, out isRefType);
            
             IfcType ifcType;
             
@@ -465,10 +465,10 @@ namespace Xbim.IO
             return ok && typeof(ExpressType).IsAssignableFrom(ifcType.Type);
         }
 
-        private uint? GetId(XmlReader input, out bool isRefType)
+        private int? GetId(XmlReader input, out bool isRefType)
         {
             isRefType = false;
-            uint? nextId = null;
+            int? nextId = null;
             IfcType ifcType;
             string strId = input.GetAttribute("id");
             if (string.IsNullOrEmpty(strId))
@@ -478,7 +478,7 @@ namespace Xbim.IO
             }
             if (!string.IsNullOrEmpty(strId)) //must be a new instance or a reference to an existing one  
             {
-                uint lookup;
+                int lookup;
                 if (!idMap.TryGetValue(strId, out lookup))
                 {
                     ++lastId;
@@ -812,7 +812,7 @@ namespace Xbim.IO
         {
            
             // Read until end of file
-            idMap = new Dictionary<string, uint>();
+            idMap = new Dictionary<string, int>();
             lastId = 0;
             _entitiesParsed = 0;
             bool foundHeader = false;

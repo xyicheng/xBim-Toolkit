@@ -514,7 +514,7 @@ namespace Xbim.ModelGeometry.Scene
         #endregion
 
         //adds the content of the toAdd to this, it is added as a single mesh fragment, any meshes in toAdd are lost
-        public void Add(IXbimMeshGeometry3D toAdd, uint entityLabel, Type ifcType, short modelId)
+        public void Add(IXbimMeshGeometry3D toAdd, int entityLabel, Type ifcType, short modelId)
         {
             int startPosition = Positions.Count;
             XbimMeshFragment fragment = new XbimMeshFragment(startPosition, TriangleIndexCount, modelId);
@@ -580,7 +580,7 @@ namespace Xbim.ModelGeometry.Scene
             {
                 XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);
                 XbimMeshFragment fragment = strm.BuildWithNormals(this, transform);
-                if (fragment.EntityLabel==int.MaxValue) //nothing was added due to size being exceeded
+                if (fragment.EntityLabel==-1) //nothing was added due to size being exceeded
                     return false;
                 else //added ok
                 {
@@ -679,7 +679,7 @@ namespace Xbim.ModelGeometry.Scene
             BinaryWriter bw = new BinaryWriter(ms);
             foreach (var mesh in meshes)
             {
-                uint label = mesh.EntityLabel;
+                int label = mesh.EntityLabel;
                 label =  ((label & 0xff) << 24) + ((label & 0xff00) << 8) + ((label & 0xff0000) >> 8) + ((label >> 24) & 0xff);
                 for (int i = mesh.StartTriangleIndex; i <= mesh.EndTriangleIndex; i++)
                 {
@@ -727,13 +727,13 @@ namespace Xbim.ModelGeometry.Scene
 
 
 
-        public void Add(string mesh, Type productType, uint productLabel, uint geometryLabel, XbimMatrix3D? transform, short modelId)
+        public void Add(string mesh, Type productType, int productLabel, int geometryLabel, XbimMatrix3D? transform, short modelId)
         {
             Add(mesh, IfcMetaData.IfcTypeId(productType), productLabel, geometryLabel, transform, modelId);
 
         }
 
-        public void Add(string mesh, short productTypeId, uint productLabel, uint geometryLabel, XbimMatrix3D? transform, short modelId)
+        public void Add(string mesh, short productTypeId, int productLabel, int geometryLabel, XbimMatrix3D? transform, short modelId)
         {
             lock (meshLock)
             {

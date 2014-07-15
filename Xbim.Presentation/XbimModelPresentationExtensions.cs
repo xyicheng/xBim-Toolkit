@@ -123,7 +123,7 @@ namespace Xbim.Presentation
                     // they share the same underlying set of Materials, so we are looking for a signature of the underlying materials.
                     // 
                     var BaseMatArray = ((IfcMaterialList)matSel).Materials.Select(x => x.EntityLabel).ToArray(); // this is the signature.
-                    var cmp = EqualityComparer<uint>.Default;
+                    var cmp = EqualityComparer<int>.Default;
                     foreach (var testingMaterialList in InstanceCollection.OfType<IfcMaterialList>())
                     {
                         bool bDoesMatch = false;
@@ -134,7 +134,7 @@ namespace Xbim.Presentation
                         else
                         {
                             var CompMatArray = ((IfcMaterialList)testingMaterialList).Materials.Select(x => x.EntityLabel).ToArray(); // this is the other signature.
-                            bDoesMatch = ArraysEqual<uint>(BaseMatArray, CompMatArray, cmp);
+                            bDoesMatch = ArraysEqual<int>(BaseMatArray, CompMatArray, cmp);
                         }
                         if (bDoesMatch)
                         {

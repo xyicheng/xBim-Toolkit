@@ -10,7 +10,7 @@ namespace Xbim.IO
         /// <summary>
         /// The unique label of this shape instance
         /// </summary>
-        uint InstanceLabel { get; set; }
+        int InstanceLabel { get; set; }
         /// <summary>
         /// The IFC type of the product this instance represents
         /// </summary>
@@ -18,19 +18,19 @@ namespace Xbim.IO
         /// <summary>
         /// The label of the IFC Product object that  this instance fully or partly defines
         /// </summary>
-        uint IfcProductLabel { get; set; }
+        int IfcProductLabel { get; set; }
         /// <summary>
         /// The style that this shape is presented in when it overrides the shape style
         /// </summary>
-        uint StyleLabel { get; set; }
+        int StyleLabel { get; set; }
         /// <summary>
         /// The id of the shape geometry  that this is an instance of
         /// </summary>
-        uint ShapeGeometryLabel { get; set; }
+        int ShapeGeometryLabel { get; set; }
         /// <summary>
         /// The label of the IFC representation context of this instance
         /// </summary>
-        uint RepresentationContext { get; set; }
+        int RepresentationContext { get; set; }
         /// <summary>
         /// What type of representation, typically this is how the shape has been generated, i.e. openings have been applied or not applied
         /// </summary>

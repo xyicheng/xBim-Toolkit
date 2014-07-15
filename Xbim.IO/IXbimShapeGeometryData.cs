@@ -10,11 +10,11 @@ namespace Xbim.IO
         /// <summary>
         /// The unique label of this shape instance
         /// </summary>
-        uint ShapeLabel{get;set;}
+        int ShapeLabel{get;set;}
         /// <summary>
         /// The label of the IFC object that defines this shape
         /// </summary>
-        uint IfcShapeLabel{get;set;}
+        int IfcShapeLabel{get;set;}
         /// <summary>
         ///  Hash of the shape Geometry, based on the IFC representation, this is not unique
         /// </summary>
@@ -22,11 +22,11 @@ namespace Xbim.IO
         /// <summary>
         /// The cost of this shape in bytes
         /// </summary>
-        uint Cost { get; }
+        int Cost { get; }
         /// <summary>
         /// The number of references to this shape
         /// </summary>
-        uint ReferenceCount{get;set;}
+        int ReferenceCount{get;set;}
         /// <summary>
         /// The level of detail or development that the shape is suited for
         /// </summary>

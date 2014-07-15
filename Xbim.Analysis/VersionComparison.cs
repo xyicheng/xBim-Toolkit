@@ -27,7 +27,7 @@ namespace Xbim.Analysis
         }
 
         public Dictionary<IfcRoot, ChangeType> EntityLabelChanges = new Dictionary<IfcRoot, ChangeType>();
-        public Dictionary<UInt32, UInt32> EntityMapping = new Dictionary<UInt32, UInt32>();
+        public Dictionary<Int32, Int32> EntityMapping = new Dictionary<Int32, Int32>();
         public List<IfcRoot> Deleted = new List<IfcRoot>();
         public List<IfcRoot> Added = new List<IfcRoot>();
 

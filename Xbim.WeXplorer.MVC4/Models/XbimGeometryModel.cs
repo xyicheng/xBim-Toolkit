@@ -27,13 +27,6 @@ namespace Xbim.WeXplorer.MVC4.Models
     public class XbimGeometryModel : XbimDataModel
     {
 
-        bool _hasGeometry;
-
-        public bool HasGeometry
-        {
-            get { return _hasGeometry; }
-        }
-
         public XbimGeometryModel(string xbimFileName)
             : base(xbimFileName)
         {
@@ -119,27 +112,6 @@ namespace Xbim.WeXplorer.MVC4.Models
 
         }
 
-        /// <summary>
-        /// Returns meta data about shapes that are multiply used
-        /// </summary>
-        /// <returns></returns>
-        public String GetShapeGeometry()
-        {
-            object returndata;
-
-            Xbim3DModelContext context = new Xbim3DModelContext(model);
-
-            if (context.IsGenerated)
-            {
-                returndata = context.MappedShapes().ToList();
-            }
-            else
-            {
-                returndata = Enumerable.Empty<Int32>();
-            }
-
-            return JsonConvert.SerializeObject(returndata);
-        }
 
 
         public String GetStyles()
@@ -157,7 +129,7 @@ namespace Xbim.WeXplorer.MVC4.Models
 
             String[] stringids = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            IEnumerable<UInt32> intIds = stringids.Select(s => UInt32.Parse(s));
+            IEnumerable<int> intIds = stringids.Select(s => Int32.Parse(s));
 
             Xbim3DModelContext context = new Xbim3DModelContext(model);
 

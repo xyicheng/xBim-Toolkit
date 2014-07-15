@@ -118,7 +118,7 @@ namespace Xbim.IO
         /// <param name="EntityLabel">Allows for entitylabel lookup when appropriate</param>
         /// <param name="Identifier">Optional</param>
         /// <param name="Value">Any string persistence mechanism of choice (required).</param>
-        public void AddMetaData(string Type, uint EntityLabel, string Value, string Identifier = null)
+        public void AddMetaData(string Type, int EntityLabel, string Value, string Identifier = null)
         {
             if (_transactedMetaString == null)
             {
@@ -132,7 +132,7 @@ namespace Xbim.IO
                 _transactedMetaString.Command.Parameters.Add("@Meta_type", DbType.String);
                 _transactedMetaString.Command.Parameters.Add("@Meta_Value", DbType.String);
                 _transactedMetaString.Command.Parameters.Add("@Meta_key", DbType.String);
-                _transactedMetaString.Command.Parameters.Add("@Meta_intkey", DbType.UInt32);
+                _transactedMetaString.Command.Parameters.Add("@Meta_intkey", DbType.Int32);
             }
 
             _transactedMetaString.Command.Parameters["@Meta_type"].Value = Type;
@@ -197,7 +197,7 @@ namespace Xbim.IO
         /// <param name="EntityLabel">Allows for entitylabel lookup when appropriate</param>
         /// <param name="Identifier">Optional</param>
         /// <param name="Value">Any string persistence mechanism of choice (required).</param>
-        public void AddMetaData(string Type, uint EntityLabel, byte[] Value, string Identifier = null)
+        public void AddMetaData(string Type, int EntityLabel, byte[] Value, string Identifier = null)
         {
             if (_transactedMetaByteArray == null)
             {
@@ -211,7 +211,7 @@ namespace Xbim.IO
                 _transactedMetaByteArray.Command.Parameters.Add("@Meta_type", DbType.String);
                 _transactedMetaByteArray.Command.Parameters.Add("@Meta_Value", DbType.Binary);
                 _transactedMetaByteArray.Command.Parameters.Add("@Meta_key", DbType.String);
-                _transactedMetaByteArray.Command.Parameters.Add("@Meta_intkey", DbType.UInt32);
+                _transactedMetaByteArray.Command.Parameters.Add("@Meta_intkey", DbType.Int32);
             }
 
             _transactedMetaByteArray.Command.Parameters["@Meta_type"].Value = Type;

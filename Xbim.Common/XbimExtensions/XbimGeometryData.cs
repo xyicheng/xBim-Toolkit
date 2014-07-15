@@ -24,8 +24,8 @@ namespace Xbim.XbimExtensions
 
     public class XbimGeometryData
     {
-        readonly public uint GeometryLabel;
-        readonly public uint IfcProductLabel;
+        readonly public int GeometryLabel;
+        readonly public int IfcProductLabel;
         readonly public XbimGeometryType GeometryType;
         readonly public byte[] ShapeData;
         readonly public byte[] DataArray2;
@@ -35,7 +35,7 @@ namespace Xbim.XbimExtensions
         readonly public int Counter;
        
      
-        public XbimGeometryData(uint geometrylabel, uint productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel, int counter)
+        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] dataArray2, int geometryHash, int styleLabel, int counter)
         {
             GeometryLabel = geometrylabel;
             GeometryType = geomType;
@@ -75,7 +75,7 @@ namespace Xbim.XbimExtensions
         /// <param name="shape"></param>
         /// <param name="transform"></param>
         /// <param name="styleLabel"></param>
-        public XbimGeometryData(uint geometrylabel, uint productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] transform, int styleLabel)
+        public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] transform, int styleLabel)
         {
             GeometryLabel = geometrylabel;
             GeometryType = geomType;

@@ -27,19 +27,19 @@ namespace Xbim.IO
         /// <summary>
         /// The label of the IFC Product object that  this instance fully or partly defines
         /// </summary>
-        UInt32ColumnValue _colValIfcProductLabel;
+        Int32ColumnValue _colValIfcProductLabel;
         /// <summary>
         /// The style that this shape is presented in when it overrides the shape style
         /// </summary>
-        UInt32ColumnValue _colValStyleLabel;
+        Int32ColumnValue _colValStyleLabel;
         /// <summary>
         /// The id of the shape  that this is an instance of
         /// </summary>
-        UInt32ColumnValue _colValShapeLabel;
+        Int32ColumnValue _colValShapeLabel;
         /// <summary>
         /// The label of the IFC representation context of this instance
         /// </summary>
-        UInt32ColumnValue _colValRepresentationContext;
+        Int32ColumnValue _colValRepresentationContext;
         /// <summary>
         /// What type of representation, typically this is how the shape has been generated, i.e. openings have been applied or not applied
         /// </summary>
@@ -170,10 +170,10 @@ namespace Xbim.IO
 
             _colValInstanceLabel = new Int32ColumnValue { Columnid = _colIdInstanceLabel };
             _colValIfcTypeId = new Int16ColumnValue { Columnid = _colIdIfcTypeId };
-            _colValIfcProductLabel = new UInt32ColumnValue { Columnid = _colIdIfcProductLabel };
-            _colValStyleLabel = new UInt32ColumnValue { Columnid = _colIdStyleLabel };
-            _colValShapeLabel = new UInt32ColumnValue { Columnid = _colIdShapeLabel };
-            _colValRepresentationContext = new UInt32ColumnValue { Columnid = _colIdRepresentationContext };
+            _colValIfcProductLabel = new Int32ColumnValue { Columnid = _colIdIfcProductLabel };
+            _colValStyleLabel = new Int32ColumnValue { Columnid = _colIdStyleLabel };
+            _colValShapeLabel = new Int32ColumnValue { Columnid = _colIdShapeLabel };
+            _colValRepresentationContext = new Int32ColumnValue { Columnid = _colIdRepresentationContext };
             _colValRepType = new ByteColumnValue { Columnid = _colIdRepType };
             _colValTransformation = new BytesColumnValue { Columnid = _colIdTransformation };
             _colValBoundingBox = new BytesColumnValue { Columnid = _colIdBoundingBox };
@@ -292,7 +292,7 @@ namespace Xbim.IO
         }
         #endregion
 
-        public uint AddInstance(IXbimShapeInstanceData instance)
+        public int AddInstance(IXbimShapeInstanceData instance)
         {
             using (var update = new Update(sesid, table, JET_prep.Insert))
             {
@@ -305,7 +305,7 @@ namespace Xbim.IO
                 _colValTransformation.Value = instance.Transformation;
                 _colValBoundingBox.Value = instance.BoundingBox;
                 Api.SetColumns(sesid, table, _colValues);
-                instance.InstanceLabel = Api.RetrieveColumnAsUInt32(sesid, table, _colIdInstanceLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
+                instance.InstanceLabel = Api.RetrieveColumnAsInt32(sesid, table, _colIdInstanceLabel, RetrieveColumnGrbit.RetrieveCopy).Value;
                 update.Save();
                 UpdateCount(1);              
                
@@ -323,7 +323,7 @@ namespace Xbim.IO
         /// <param name="repType"></param>
         /// <param name="bounds"></param>
         /// <param name="transform"></param>
-        public int AddInstance(uint ctxtId, uint shapeLabel, uint styleLabel, short typeId, uint productLabel, XbimGeometryRepresentationType repType, byte[] transform)
+        public int AddInstance(int ctxtId, int shapeLabel, int styleLabel, short typeId, int productLabel, XbimGeometryRepresentationType repType, byte[] transform)
         {
             int id = -1;
             using (var update = new Update(sesid, table, JET_prep.Insert))
@@ -348,7 +348,7 @@ namespace Xbim.IO
         {
             Api.RetrieveColumns(sesid, table, _colValues);
             si.RepresentationContext = _colValRepresentationContext.Value.Value;
-            si.InstanceLabel = Api.RetrieveColumnAsUInt32(sesid, table, _colIdInstanceLabel).Value;
+            si.InstanceLabel = Api.RetrieveColumnAsInt32(sesid, table, _colIdInstanceLabel).Value;
             si.IfcTypeId = _colValIfcTypeId.Value.Value;
             si.IfcProductLabel = _colValIfcProductLabel.Value.Value;
             si.StyleLabel = _colValStyleLabel.Value.Value;
@@ -365,7 +365,7 @@ namespace Xbim.IO
        /// <param name="si"></param>
        /// <param name="retrieveAll">if false only retrieve the key index data for speed, if true all data is returned</param>
        /// <returns></returns>
-        public bool TrySeekShapeInstance(uint context, ref IXbimShapeInstanceData si)
+        public bool TrySeekShapeInstance(int context, ref IXbimShapeInstanceData si)
         {
             Api.JetSetCurrentIndex(sesid, table, instanceTablePrimaryIndex);
             Api.MakeKey(sesid, table, context, MakeKeyGrbit.NewKey);
@@ -404,7 +404,7 @@ namespace Xbim.IO
         /// <param name="si"></param>
         /// <param name="retrieveAll">if false only retrieve the key index data for speed, if true all data is returned</param>
         /// <returns></returns>
-        public bool TrySeekShapeInstanceOfProduct(uint product, ref IXbimShapeInstanceData si)
+        public bool TrySeekShapeInstanceOfProduct(int product, ref IXbimShapeInstanceData si)
         {
             Api.JetSetCurrentIndex(sesid, table, productIndex);
             Api.MakeKey(sesid, table, product, MakeKeyGrbit.NewKey);
@@ -428,7 +428,7 @@ namespace Xbim.IO
         /// <param name="context"></param>
         /// <param name="si"></param>
         /// <returns></returns>
-        public bool TrySeekShapeInstanceOfGeometry(uint shapeGeometryLabel, ref IXbimShapeInstanceData si)
+        public bool TrySeekShapeInstanceOfGeometry(int shapeGeometryLabel, ref IXbimShapeInstanceData si)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryShapeIndex);
             Api.MakeKey(sesid, table, shapeGeometryLabel, MakeKeyGrbit.NewKey);
@@ -451,7 +451,7 @@ namespace Xbim.IO
         /// <param name="p"></param>
         /// <param name="surfaceStyle"></param>
         /// <returns></returns>
-        public bool TryMoveFirstSurfaceStyle(uint context, out int surfaceStyle, out short productType)
+        public bool TryMoveFirstSurfaceStyle(int context, out int surfaceStyle, out short productType)
         {
             Api.JetSetCurrentIndex(sesid, table, instanceTablePrimaryIndex);
             Api.MakeKey(sesid, table, context, MakeKeyGrbit.NewKey);
@@ -590,7 +590,7 @@ namespace Xbim.IO
         }
 
 
-        public bool TrySeekSurfaceStyle(uint context, uint surfaceStyle, ref IXbimShapeInstanceData shapeInstance)
+        public bool TrySeekSurfaceStyle(int context, int surfaceStyle, ref IXbimShapeInstanceData shapeInstance)
         {
             Api.JetSetCurrentIndex(sesid, table, instanceTablePrimaryIndex);
             Api.MakeKey(sesid, table, context, MakeKeyGrbit.NewKey);

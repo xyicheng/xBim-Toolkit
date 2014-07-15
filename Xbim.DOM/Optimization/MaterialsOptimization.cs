@@ -14,15 +14,15 @@ namespace Xbim.DOM.Optimization
         /// </summary>
         /// <param name="Model">The model to extract material lists from</param>
         /// <returns>Dictionary associating the entitylabel (value) of an IfcMaterialList that duplicates the composition of the one identified by the entitylabel (Key).</returns>
-        public static Dictionary<uint, uint> IfcMaterialListReplacementDictionary(this XbimModel Model)
+        public static Dictionary<int, int> IfcMaterialListReplacementDictionary(this XbimModel Model)
         {
             // the resulting dictionary contains information on the replacing ID of any IfcMaterialList that duplicates another of the same composition.
             
-            Dictionary<uint, uint> dic = new Dictionary<uint, uint>();
-            Dictionary<string, uint> CompositionDic = new Dictionary<string, uint>();
+            Dictionary<int, int> dic = new Dictionary<int, int>();
+            Dictionary<string, int> CompositionDic = new Dictionary<string, int>();
             foreach (var matList in Model.Instances.OfType<IfcMaterialList>())
             {
-                List<uint> mlist = new List<uint>();
+                List<int> mlist = new List<int>();
                 foreach (var item in matList.Materials)
                 {
                     mlist.Add(item.EntityLabel);

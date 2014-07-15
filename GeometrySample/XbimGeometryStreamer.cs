@@ -58,7 +58,7 @@ namespace GeometrySample
                     }
                    
                 }
-                catch (Exception e)
+                catch (Exception )
                 {
                     return new byte[1] { (byte)Commands.Error};
                     

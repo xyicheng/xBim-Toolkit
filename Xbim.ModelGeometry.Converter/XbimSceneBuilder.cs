@@ -72,7 +72,7 @@ namespace Xbim.ModelGeometry.Converter
                     XbimColourMap cmap = new XbimColourMap();
                     int layerid = 1;
                     IfcProject project = model.IfcProject;
-                    uint projectId = 0;
+                    int projectId = 0;
                     if (project != null) projectId = project.EntityLabel;
                     
                     float mScalingReference = (float)model.ModelFactors.OneMetre;
@@ -183,7 +183,7 @@ namespace Xbim.ModelGeometry.Converter
                         // string data loop
                         foreach (var space in model.Instances.OfType<IfcSpace>())
                         {
-                            uint iEntLabel = space.EntityLabel;
+                            int iEntLabel = space.EntityLabel;
                             if ((Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces)
                             {
                                 db.AddMetaData(

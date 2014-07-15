@@ -176,7 +176,7 @@ namespace Xbim.IO
         /// <param name="styleLabel"></param>
         /// <param name="geometryHash"></param>
         /// <returns></returns>
-        public int AddGeometry(uint prodLabel, XbimGeometryType type, short ifcType, byte[] transform, byte[] shapeData, short subPart = 0, int styleLabel = 0, int? geometryHash = null)
+        public int AddGeometry(int prodLabel, XbimGeometryType type, short ifcType, byte[] transform, byte[] shapeData, short subPart = 0, int styleLabel = 0, int? geometryHash = null)
         {
             
             int mainId=-1;
@@ -245,7 +245,7 @@ namespace Xbim.IO
         }
 
 
-        public int AddMapGeometry(uint geomId, uint prodLabel, short ifcType, byte[] transform, int styleLabel = 0)
+        public int AddMapGeometry(int geomId, int prodLabel, short ifcType, byte[] transform, int styleLabel = 0)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, geomId, MakeKeyGrbit.NewKey);
@@ -300,7 +300,7 @@ namespace Xbim.IO
 
         }
 
-        internal IEnumerable<XbimGeometryData> GeometryData(short typeId, uint productLabel, XbimGeometryType geomType)
+        internal IEnumerable<XbimGeometryData> GeometryData(short typeId, int productLabel, XbimGeometryType geomType)
         {
             
             Api.JetSetCurrentIndex(sesid, table, geometryTableGeomTypeIndex);
@@ -321,7 +321,7 @@ namespace Xbim.IO
                        // System.Diagnostics.Debug.Assert((byte)geomType == _colValGeomType.Value);
                         _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
                         //SRL note this method needs to be modified to support UINT rather than int, the casting below should be removed
-                        yield return new XbimGeometryData((uint)_colValGeometryLabel.Value.Value, productLabel, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+                        yield return new XbimGeometryData(_colValGeometryLabel.Value.Value, productLabel, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
 
                     } while (Api.TryMoveNext(sesid, table));
                 }
@@ -343,7 +343,7 @@ namespace Xbim.IO
                     {
                         Api.RetrieveColumns(sesid, table, _colValues);
                         _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
-                        yield return new XbimGeometryData((uint)_colValGeometryLabel.Value.Value, (uint)_colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+                        yield return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
                     } while (Api.TryMoveNext(sesid, table));
                 }
             }
@@ -406,7 +406,7 @@ namespace Xbim.IO
                         int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
                         int? hashId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryHash);
                         //srl note casting to UINT, needs to be resolved at database level
-                        result.Add(new XbimGeometryHandle((uint)geomId.Value, geomType, (uint)product.Value, ifcType.Value, style.Value, hashId.Value));
+                        result.Add(new XbimGeometryHandle(geomId.Value, geomType, product.Value, ifcType.Value, style.Value, hashId.Value));
                     } while (Api.TryMoveNext(sesid, table));
                 }
 
@@ -432,7 +432,7 @@ namespace Xbim.IO
                         int? product = Api.RetrieveColumnAsInt32(sesid, table, _colIdProductLabel, RetrieveColumnGrbit.RetrieveFromIndex);
                         int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveFromIndex);
                         //srl note casting to UINT, needs to be resolved at database level
-                        result.Add(new XbimGeometryHandle((uint)geomId.Value, geomType, (uint)product.Value, ifcType.Value, style.Value, geomId.Value));
+                        result.Add(new XbimGeometryHandle(geomId.Value, geomType, product.Value, ifcType.Value, style.Value, geomId.Value));
                     } while (Api.TryMoveNext(sesid, table));
                 }
 
@@ -456,8 +456,7 @@ namespace Xbim.IO
                         short? ifcType = Api.RetrieveColumnAsInt16(sesid, table, _colIdProductIfcTypeId, RetrieveColumnGrbit.RetrieveFromIndex);
                         int? product = Api.RetrieveColumnAsInt32(sesid, table, _colIdProductLabel, RetrieveColumnGrbit.RetrieveFromIndex);
                         int? geomId = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel, RetrieveColumnGrbit.RetrieveFromIndex);
-                        //srl note casting to UINT, needs to be resolved at database level
-                        result.Add(new XbimGeometryHandle((uint)geomId.Value, geomType, (uint)product.Value, ifcType.Value, style.Value));
+                        result.Add(new XbimGeometryHandle(geomId.Value, geomType, product.Value, ifcType.Value, style.Value));
                     } while (Api.TryMoveNext(sesid, table));
                 }
 
@@ -465,7 +464,7 @@ namespace Xbim.IO
             return result;
         }
 
-        internal XbimGeometryHandle GetGeometryHandle(uint geometryLabel)
+        internal XbimGeometryHandle GetGeometryHandle(int geometryLabel)
         {
             // Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex );
@@ -480,8 +479,8 @@ namespace Xbim.IO
                 int? product = Api.RetrieveColumnAsInt32(sesid, table, _colIdProductLabel);
                 byte? geomType = Api.RetrieveColumnAsByte(sesid, table, _colIdGeomType);
                 int? geomHash = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryHash);
-                //srl note casting to UINT, needs to be resolved at database level
-                return new XbimGeometryHandle((uint)geometryLabel, (XbimGeometryType)geomType.Value, (uint)product.Value, ifcType.Value, style.Value, geomHash.Value);
+               
+                return new XbimGeometryHandle(geometryLabel, (XbimGeometryType)geomType.Value, product.Value, ifcType.Value, style.Value, geomHash.Value);
             }
             return new XbimGeometryHandle();
         }
@@ -495,7 +494,7 @@ namespace Xbim.IO
             {
                 Api.RetrieveColumns(sesid, table, _colValues);
                 _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
-                return new XbimGeometryData((uint)_colValGeometryLabel.Value.Value, (uint)_colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+                return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
 
             }
             else
@@ -512,7 +511,7 @@ namespace Xbim.IO
                 {
                     Api.RetrieveColumns(sesid, table, _colValues);
                     _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
-                    yield return new XbimGeometryData((uint)_colValGeometryLabel.Value.Value, (uint)_colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+                    yield return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
                 }
             }
         }
@@ -520,7 +519,7 @@ namespace Xbim.IO
 
 
 
-        public XbimGeometryData GetGeometryData(uint geomLabel)
+        public XbimGeometryData GetGeometryData(int geomLabel)
         {
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, geomLabel, MakeKeyGrbit.NewKey);
@@ -528,7 +527,7 @@ namespace Xbim.IO
             {
                 Api.RetrieveColumns(sesid, table, _colValues);
               //  _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel); //unnecessary call
-                return new XbimGeometryData(geomLabel, (uint)_colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+                return new XbimGeometryData(geomLabel, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
 
             }
             else
@@ -583,7 +582,7 @@ namespace Xbim.IO
                         Api.RetrieveColumns(sesid, table, _colValues);
                         System.Diagnostics.Debug.Assert((byte)xbimGeometryType == _colValGeomType.Value);
                         _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
-                        yield return new XbimGeometryData((uint)_colValGeometryLabel.Value.Value, (uint)_colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
+                        yield return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0, _colValSubPart.Value.HasValue ? _colValSubPart.Value.Value : 0);
 
                     } while (Api.TryMoveNext(sesid, table));
                 }

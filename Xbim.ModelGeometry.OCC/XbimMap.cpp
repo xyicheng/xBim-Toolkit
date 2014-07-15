@@ -50,7 +50,7 @@ namespace Xbim
 				_representationLabel = copy->RepresentationLabel;
 				_surfaceStyleLabel = copy->SurfaceStyleLabel;
 			}
-			XbimMap::XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<unsigned int,Object^>^ maps)
+			XbimMap::XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
 			{
 				_mappedItem = item;
 				_hasCurvedEdges=item->HasCurvedEdges;

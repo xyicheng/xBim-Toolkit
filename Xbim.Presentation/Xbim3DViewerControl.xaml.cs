@@ -162,7 +162,7 @@ namespace Xbim.Presentation
            
             //get a list of all the unique styles
             Dictionary<int, WpfMaterial> styles = new Dictionary<int, WpfMaterial>();
-            Dictionary<uint, MeshGeometry3D> shapeGeometries = new Dictionary<uint, MeshGeometry3D>();
+            Dictionary<int, MeshGeometry3D> shapeGeometries = new Dictionary<int, MeshGeometry3D>();
             Dictionary<int, WpfMeshGeometry3D> meshSets = new Dictionary<int, WpfMeshGeometry3D>();
             Model3DGroup opaques = new Model3DGroup();
             Model3DGroup transparents = new Model3DGroup();

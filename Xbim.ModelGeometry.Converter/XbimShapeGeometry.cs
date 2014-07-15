@@ -21,13 +21,13 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The unique label of this shape geometry
         /// </summary>
-        readonly uint _shapeLabel;
+        readonly int _shapeLabel;
         /// <summary>
         /// The number of references to this shape geoemetry
         /// </summary>
-        readonly  uint _referenceCount;
+        readonly  int _referenceCount;
 
-        public XbimShapeGeometryHandle(short contextHandle, uint shapeLabel, uint referenceCount)
+        public XbimShapeGeometryHandle(short contextHandle, int shapeLabel, int referenceCount)
         {
             _contextHandle = contextHandle;
             _shapeLabel = shapeLabel;
@@ -44,7 +44,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The unique label of this shape geometry
         /// </summary>
-        public uint ShapeLabel
+        public int ShapeLabel
         {
             get
             {
@@ -54,7 +54,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The number of references to this shape
         /// </summary>
-        public uint ReferenceCount
+        public int ReferenceCount
         {
             get
             {
@@ -67,19 +67,15 @@ namespace Xbim.ModelGeometry.Converter
     /// </summary>
     public struct XbimShapeGeometry : IXbimShapeGeometryData
     {
-        /// <summary>
-        /// The handle of 3D model context that contains this shape geometry
-        /// </summary>
-        short _contextHandle;
-
+        
         /// <summary>
         /// The unique label of this shape geometry
         /// </summary>
-        uint _shapeLabel;
+        int _shapeLabel;
         /// <summary>
         /// The label of the IFC object that defines this shape
         /// </summary>
-        uint _ifcShapeLabel;
+        int _ifcShapeLabel;
         /// <summary>
         ///  Hash of the shape Geometry, based on the IFC representation, this is not unique
         /// </summary>
@@ -87,7 +83,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The number of references to this shape
         /// </summary>
-        uint _referenceCount;
+        int _referenceCount;
         /// <summary>
         /// The level of detail or development that the shape is suited for
         /// </summary>
@@ -106,19 +102,11 @@ namespace Xbim.ModelGeometry.Converter
         byte[] _shapeData;
 
 
-        /// <summary>
-        ///  The 3D model context that contains this shape geometry
-        /// </summary>
-        public short Context
-        {
-            get { return _contextHandle; }
-            set { _contextHandle = value; }
-        }
 
         /// <summary>
         /// The unique label of this shape geometry
         /// </summary>
-        public uint ShapeLabel
+        public int ShapeLabel
         {
             get
             {
@@ -132,7 +120,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The label of the IFC object that defines this shape
         /// </summary>
-        public uint IfcShapeLabel
+        public int IfcShapeLabel
         {
             get
             {
@@ -161,21 +149,21 @@ namespace Xbim.ModelGeometry.Converter
         /// <summary>
         /// The cost in bytes of this shape
         /// </summary>
-        public uint Cost
+        public int Cost
         {
             get
             {
                 if(_referenceCount==0)
-                    return (uint)_shapeData.Length;
+                    return _shapeData.Length;
                 else 
-                   return (uint)(_referenceCount * _shapeData.Length);
+                   return _referenceCount * _shapeData.Length;
             }
 
         }
         /// <summary>
         /// The number of references to this shape
         /// </summary>
-        public uint ReferenceCount
+        public int ReferenceCount
         {
             get
             {
@@ -346,14 +334,7 @@ namespace Xbim.ModelGeometry.Converter
             return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}", _shapeLabel, _ifcShapeLabel, _geometryHash, _shapeLabel, _referenceCount, _lod, _format, _boundingBox.ToString(), _shapeData);
         }
 
-        /// <summary>
-        /// Returns a lightweight handle for this geometry
-        /// </summary>
-        /// <returns></returns>
-        public XbimShapeGeometryHandle GetHandle()
-        {
-            return new XbimShapeGeometryHandle(_contextHandle, _shapeLabel, _referenceCount);
-        }
+       
      
 
     }

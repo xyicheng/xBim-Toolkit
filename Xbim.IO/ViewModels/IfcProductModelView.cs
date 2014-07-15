@@ -70,7 +70,7 @@ namespace Xbim.IO.ViewModels
         }
 
       
-        public uint EntityLabel
+        public int EntityLabel
         {
             get { return product.EntityLabel; }
         }

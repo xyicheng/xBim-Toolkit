@@ -15,9 +15,9 @@ namespace Xbim.XbimExtensions.Interfaces
         IPersistIfcEntity New(Type t);
         T New<T>(InitProperties<T> initPropertiesFunc) where T : IPersistIfcEntity, new();
         T New<T>() where T : IPersistIfcEntity, new();
-        IPersistIfcEntity this[uint label] { get; }
+        IPersistIfcEntity this[int label] { get; }
         long Count { get; }
         long CountOf<T>() where T : IPersistIfcEntity;
-        IPersistIfcEntity GetFromGeometryLabel(uint geometryLabel);
+        IPersistIfcEntity GetFromGeometryLabel(int geometryLabel);
     }
 }

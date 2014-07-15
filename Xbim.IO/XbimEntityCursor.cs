@@ -219,10 +219,10 @@ namespace Xbim.IO
         /// <param name="primaryKey">The label of the entity</param>
         /// <param name="type">The index of the type of the entity</param>
         /// <param name="data">The property data</param>
-        internal void SetEntityRowValues(uint primaryKey, short type, byte[] data, bool? index)
+        internal void SetEntityRowValues(int primaryKey, short type, byte[] data, bool? index)
         {
             //SRL need to upgrade store to uint
-            _colValEntityLabel.Value = (int)primaryKey;
+            _colValEntityLabel.Value = primaryKey;
             _colValTypeId.Value = type;
             _colValData.Value = data;
             _colValIsIndexedClass.Value = index;
@@ -234,10 +234,10 @@ namespace Xbim.IO
         /// <param name="primaryKey">The entity label</param>
         /// <param name="type">The Ifc Type ID</param>
         /// <param name="indexKey">The secondary key to index by</param>
-        internal void SetEntityIndexRowValues(short type, int indexKey, uint primaryKey)
+        internal void SetEntityIndexRowValues(short type, int indexKey, int primaryKey)
         {
             //SRL we need to change the underlying store to UINT for large models
-            _colValIdxEntityLabel.Value = (int)primaryKey;
+            _colValIdxEntityLabel.Value = primaryKey;
             _colValIdxIfcType.Value = type;
             _colValIdxKey.Value = indexKey;
         }
@@ -296,7 +296,7 @@ namespace Xbim.IO
             BinaryWriter bw = new BinaryWriter(ms);
             toWrite.WriteEntity(bw);
             IfcType ifcType = IfcMetaData.IfcType(toWrite);
-            UpdateEntity((uint)toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
+            UpdateEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace Xbim.IO
         /// <param name="typeId">Type identifer</param>
         /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
         /// <param name="data">property data</param>
-        internal void UpdateEntity(uint currentLabel, short typeId, IEnumerable<uint> indexKeys, byte[] data, bool? indexed)
+        internal void UpdateEntity(int currentLabel, short typeId, IEnumerable<int> indexKeys, byte[] data, bool? indexed)
         {
             try
             {
@@ -333,7 +333,7 @@ namespace Xbim.IO
                 {
                     //set the main variables of label and type just ones
                     SetEntityIndexRowValues(typeId, -1, currentLabel);
-                    IEnumerable<uint> uniqueKeys = indexKeys.Distinct();
+                    IEnumerable<int> uniqueKeys = indexKeys.Distinct();
                     //SRL need to make keys uint on the store
                     foreach (var key in uniqueKeys.Cast<int>())
                     {
@@ -368,7 +368,7 @@ namespace Xbim.IO
             BinaryWriter bw = new BinaryWriter(ms);
             toWrite.WriteEntity(bw);
             IfcType ifcType = IfcMetaData.IfcType(toWrite);
-            AddEntity((uint)toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
+            AddEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
         }
         
 
@@ -379,7 +379,7 @@ namespace Xbim.IO
         /// <param name="typeId">Type identifer</param>
         /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
         /// <param name="data">property data</param>
-        internal void AddEntity(uint currentLabel, short typeId, IEnumerable<uint> indexKeys, byte[] data, bool? indexed, XbimLazyDBTransaction? trans = null)
+        internal void AddEntity(int currentLabel, short typeId, IEnumerable<int> indexKeys, byte[] data, bool? indexed, XbimLazyDBTransaction? trans = null)
         {
             try
             {
@@ -442,7 +442,7 @@ namespace Xbim.IO
         internal XbimInstanceHandle AddEntity(Type type)
         {
             System.Diagnostics.Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(type));
-            uint highest = RetrieveHighestLabel();
+            int highest = RetrieveHighestLabel();
             IfcType ifcType = IfcMetaData.IfcType(type);
             XbimInstanceHandle h = new XbimInstanceHandle(this.model, highest + 1, ifcType.TypeId);
             AddEntity(h.EntityLabel, h.EntityTypeId, null, null, ifcType.IndexedClass);
@@ -454,7 +454,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="key">The entity label to lookup</param>
         /// <returns></returns>
-        public bool TrySeekEntityLabel(uint key)
+        public bool TrySeekEntityLabel(int key)
         {
            
             Api.MakeKey(sesid, table, key, MakeKeyGrbit.NewKey);
@@ -478,7 +478,7 @@ namespace Xbim.IO
         /// <param name="key">The secondary key</param>
         /// <param name="currentLabel">The indexed entity label</param>
         /// <returns></returns>
-        private bool TrySeekEntityType(short typeId, int key, uint currentLabel)
+        private bool TrySeekEntityType(short typeId, int key, int currentLabel)
         {
             Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
             Api.MakeKey(sesid, _indexTable, key, MakeKeyGrbit.None);
@@ -503,7 +503,7 @@ namespace Xbim.IO
                 Api.MakeKey(sesid, _indexTable, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
                 if (Api.TrySetIndexRange(sesid, _indexTable, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
                 {
-                    ih = new XbimInstanceHandle(this.model,(uint) Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                    ih = new XbimInstanceHandle(this.model, Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
                     
                     return true;
                 }
@@ -533,7 +533,7 @@ namespace Xbim.IO
         {
             int? label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel);
             short? typeId = Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType);
-            return new XbimInstanceHandle(this.model, (uint)label.Value, typeId.Value);
+            return new XbimInstanceHandle(this.model, label.Value, typeId.Value);
             
         }
         /// <summary>
@@ -566,12 +566,12 @@ namespace Xbim.IO
             Api.EscrowUpdate(this.sesid, this.globalsTable, this.entityCountColumn, delta);
         }
 
-        internal uint RetrieveHighestLabel()
+        internal int RetrieveHighestLabel()
         { 
             if (TryMoveLast())
             {
                 int? val = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex);
-                if (val.HasValue) return (uint)val.Value;
+                if (val.HasValue) return val.Value;
             }
             return 0;
         }
@@ -613,7 +613,7 @@ namespace Xbim.IO
         {
             if (Api.TryMoveNext(this.sesid, this._indexTable))
             {
-                ih = new XbimInstanceHandle(this.model, (uint)Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                ih = new XbimInstanceHandle(this.model, Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
                 return true;
             }
             else
@@ -627,12 +627,11 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal bool TryMoveFirstLabel(out uint label)
+        internal bool TryMoveFirstLabel(out int label)
         {
             if (TryMoveFirst())
             {
-                //SRL need to remove dependency on int storage
-                label = (uint)Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+                label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
                 return true;
             }
             else
@@ -646,12 +645,12 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal bool TryMoveNextLabel(out uint label)
+        internal bool TryMoveNextLabel(out int label)
         {
             if (TryMoveNext())
             {
                 //SRL we need to remove storage dependency on int
-                label = (uint)Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+                label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
                 return true;
             }
             else
@@ -665,11 +664,11 @@ namespace Xbim.IO
 
     }
 
-    internal class XbimInstancesLabelEnumerator : IEnumerator<uint>, IEnumerator
+    internal class XbimInstancesLabelEnumerator : IEnumerator<int>, IEnumerator
     {
         private IfcPersistedInstanceCache cache;
         private XbimEntityCursor cursor;
-        private uint current;
+        private int current;
 
         public XbimInstancesLabelEnumerator(IfcPersistedInstanceCache cache)
         {
@@ -677,7 +676,7 @@ namespace Xbim.IO
             this.cursor = cache.GetEntityTable();
             Reset();
         }
-        public uint Current
+        public int Current
         {
             get { return current; }
         }
@@ -698,7 +697,7 @@ namespace Xbim.IO
 
         bool IEnumerator.MoveNext()
         {
-            uint label;
+            int label;
             if (cursor.TryMoveNextLabel(out label))
             {
                 current = label;
@@ -719,7 +718,7 @@ namespace Xbim.IO
     {
         private IfcPersistedInstanceCache cache;
         private XbimEntityCursor cursor;
-        private uint current;
+        private int current;
 
         public XbimInstancesEntityEnumerator(IfcPersistedInstanceCache cache)
         {
@@ -747,7 +746,7 @@ namespace Xbim.IO
 
         bool IEnumerator.MoveNext()
         {
-            uint label;
+            int label;
             if (cursor.TryMoveNextLabel(out label))
             {
                 current = label;

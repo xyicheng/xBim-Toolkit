@@ -719,7 +719,6 @@ namespace Xbim.Script
                 }
             }
 
-            return false;
         }
 
         private string ConcatClassFacets(IEnumerable<IfcClassificationNotationFacet> facets)

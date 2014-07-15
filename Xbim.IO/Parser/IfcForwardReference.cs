@@ -12,11 +12,11 @@ namespace Xbim.IO.Parser
 {
     public struct IfcForwardReference
     {
-        public readonly uint ReferenceEntityLabel;
+        public readonly int ReferenceEntityLabel;
         private readonly short ReferencingPropertyId;
         private readonly IPersistIfcEntity ReferencingEntity;
 
-        public IfcForwardReference(uint referenceEntityLabel,
+        public IfcForwardReference(int referenceEntityLabel,
             short referencingProperty,
             IPersistIfcEntity referencingEntity)
         {
@@ -25,7 +25,7 @@ namespace Xbim.IO.Parser
             ReferencingEntity = referencingEntity;
         }
 
-        public bool Resolve(ConcurrentDictionary<uint, IPersistIfcEntity> references)
+        public bool Resolve(ConcurrentDictionary<int, IPersistIfcEntity> references)
         {
             IPersistIfcEntity entity;
             if (references.TryGetValue(ReferenceEntityLabel, out entity))

@@ -13,7 +13,7 @@ namespace Xbim.WeXplorer.MVC4.Models
             get { return _prop.GetType().Name; }
         }
 
-        public uint? Label
+        public int? Label
         {
             get { return _prop.EntityLabel; }
         }

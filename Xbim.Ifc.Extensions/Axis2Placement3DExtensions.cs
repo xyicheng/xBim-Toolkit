@@ -55,7 +55,7 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "axis3"></param>
         /// <returns></returns>
-        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, ConcurrentDictionary<uint, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, ConcurrentDictionary<int, Object> maps = null)
         {
             if (maps == null)
                 return ConvertAxis3D(axis3);

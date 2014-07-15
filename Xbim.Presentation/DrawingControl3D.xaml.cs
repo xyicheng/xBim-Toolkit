@@ -1245,7 +1245,7 @@ namespace Xbim.Presentation
         /// Clears the current graphics and initiates the cascade of events that result in viewing the scene.
         /// </summary>
         /// <param name="EntityLabels">If null loads the whole model, otherwise only elements listed in the enumerable</param>
-        public void LoadGeometry(XbimModel model, IEnumerable<uint> EntityLabels = null, bool recalcView = true)
+        public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null, bool recalcView = true)
         {
             // AddLayerToDrawingControl is the function that actually populates the geometry in the viewer.
             // AddLayerToDrawingControl is triggered by BuildRefModelScene and BuildScene below here when layers get ready.
@@ -1316,7 +1316,7 @@ namespace Xbim.Presentation
         private XbimRegion GetLargestRegion(XbimModel model)
         {
             IfcProject project = model.IfcProject;
-            uint projectId = 0;
+            int projectId = 0;
             if (project != null) projectId = project.EntityLabel;
             XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
             
@@ -1384,7 +1384,7 @@ namespace Xbim.Presentation
             }
         }
 
-        public void ReportData(StringBuilder sb, IModel model, uint entityLabel)
+        public void ReportData(StringBuilder sb, IModel model, int entityLabel)
         {
             XbimModel m = model as XbimModel;
             if (m != null)
@@ -1453,7 +1453,7 @@ namespace Xbim.Presentation
              XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             //get a list of all the unique styles
             Dictionary<int, WpfMaterial> styles = new Dictionary<int, WpfMaterial>();
-            Dictionary<uint, MeshGeometry3D> shapeGeometries = new Dictionary<uint, MeshGeometry3D>();
+            Dictionary<int, MeshGeometry3D> shapeGeometries = new Dictionary<int, MeshGeometry3D>();
             Dictionary<int, WpfMeshGeometry3D> meshSets = new Dictionary<int, WpfMeshGeometry3D>();
             Model3DGroup opaques = new Model3DGroup();
             Model3DGroup transparents = new Model3DGroup();
@@ -1482,7 +1482,7 @@ namespace Xbim.Presentation
                         !typeof(IfcFeatureElement).IsAssignableFrom(IfcMetaData.GetType(s.IfcTypeId)) &&
                         !typeof(IfcSpace).IsAssignableFrom(IfcMetaData.GetType(s.IfcTypeId))))
             {
-                int styleId = shapeInstance.StyleLabel > 0 ? (int)shapeInstance.StyleLabel : shapeInstance.IfcTypeId * -1;
+                int styleId = shapeInstance.StyleLabel > 0 ? shapeInstance.StyleLabel : shapeInstance.IfcTypeId * -1;
                
                 //GET THE ACTUAL GEOMETRY 
                 MeshGeometry3D wpfMesh;
@@ -1670,7 +1670,7 @@ namespace Xbim.Presentation
         }
 
 
-        private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<uint> LoadLabels)
+        private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
 
             // spaces are not excluded from the model to make the ShowSpaces property meaningful
@@ -1687,7 +1687,7 @@ namespace Xbim.Presentation
             double processed = 0;
 
             IfcProject project = model.IfcProject;
-            uint projectId = 0;
+            int projectId = 0;
             if (project != null) projectId = project.EntityLabel;
             double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));

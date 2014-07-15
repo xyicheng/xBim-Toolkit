@@ -10,7 +10,7 @@ namespace Xbim.WeXplorer.MVC4.Models
     {
         public string Type { get { return _root.GetType().Name; } }
 
-        public uint? Label { get { return _root.EntityLabel; } }
+        public int? Label { get { return _root.EntityLabel; } }
 
         public string Name { get { return _root.Name; } }
 

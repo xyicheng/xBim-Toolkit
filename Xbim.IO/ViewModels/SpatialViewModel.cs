@@ -15,7 +15,7 @@ namespace Xbim.IO.ViewModels
     public class SpatialViewModel : IXbimViewModel
     {
         XbimModel xbimModel;
-        uint spatialStructureLabel;
+        int spatialStructureLabel;
         private bool _isSelected;
         private bool _isExpanded;
         private List<IXbimViewModel> children;
@@ -92,7 +92,7 @@ namespace Xbim.IO.ViewModels
             }
         }
 
-        public uint EntityLabel
+        public int EntityLabel
         {
             get { return spatialStructureLabel; }
         }

@@ -14,7 +14,7 @@ namespace Xbim.IO
         int currentModelIndex = 0;
         private IfcPersistedInstanceCache cache;
         private XbimEntityCursor cursor;
-        private uint currentEntityLabel;
+        private int currentEntityLabel;
 
         public XbimFederatedInstancesEntityEnumerator(IEnumerable<XbimModel> models)
         {
@@ -48,7 +48,7 @@ namespace Xbim.IO
 
         bool IEnumerator.MoveNext()
         {
-            uint label;
+            int label;
             if (cursor.TryMoveNextLabel(out label))
             {
                 currentEntityLabel = label;
@@ -148,7 +148,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity this[uint label]
+        public IPersistIfcEntity this[int label]
         {
             get { return _model.InstancesLocal[label]; }
         }
@@ -187,7 +187,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="geometryLabel"></param>
         /// <returns></returns>
-        public IPersistIfcEntity GetFromGeometryLabel(uint geometryLabel)
+        public IPersistIfcEntity GetFromGeometryLabel(int geometryLabel)
         {
             XbimGeometryHandle filledGeomData = _model.Cache.GetGeometryHandle(geometryLabel);
             return _model.Cache.GetInstance(filledGeomData.ProductLabel, true, true);

@@ -116,7 +116,7 @@ namespace Xbim
 			return XbimEmptyGeometryGroup::Empty;
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary< int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 
 			if(product->Representation == nullptr ||  product->Representation->Representations == nullptr 
@@ -256,7 +256,7 @@ namespace Xbim
 
 
 
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcProduct^ product, ConcurrentDictionary< int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 			return CreateFrom(product, nullptr, maps, forceSolid, lod, occOut);
 		}
@@ -267,7 +267,7 @@ namespace Xbim
 			// Upstream callers should ideally terminate the application ASAP.
 			/*__try
 			{*/
-				return CreateFrom(product, nullptr, gcnew ConcurrentDictionary<unsigned int, Object^>(), forceSolid,lod,occOut);
+				return CreateFrom(product, nullptr, gcnew ConcurrentDictionary< int, Object^>(), forceSolid,lod,occOut);
 			/*}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
@@ -280,7 +280,7 @@ namespace Xbim
 		/*
 		Create a model geometry for a given shape
 		*/
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentation^ rep, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentation^ rep, ConcurrentDictionary< int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 
 			if(rep->Items->Count == 0) //we have nothing to do
@@ -305,15 +305,15 @@ namespace Xbim
 
 		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(rep, gcnew ConcurrentDictionary<unsigned int, Object^>(), forceSolid,lod, occOut);
+			return CreateFrom(rep, gcnew ConcurrentDictionary< int, Object^>(), forceSolid,lod, occOut);
 		}
 
 		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(repItem, gcnew ConcurrentDictionary<unsigned int, Object^>(), forceSolid,lod, occOut);
+			return CreateFrom(repItem, gcnew ConcurrentDictionary< int, Object^>(), forceSolid,lod, occOut);
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
+		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
 		{
 			//look up if we have already created it
 			
@@ -417,7 +417,7 @@ namespace Xbim
 				return false;
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::Build(IfcBooleanResult^ repItem, ConcurrentDictionary<unsigned int, Object^>^ maps)
+		XbimGeometryModel^ XbimGeometryEngine::Build(IfcBooleanResult^ repItem, ConcurrentDictionary< int, Object^>^ maps)
 		{
 			
 			IfcBooleanOperand^ fOp= repItem->FirstOperand;
@@ -473,7 +473,7 @@ namespace Xbim
 		}
 
 
-		XbimGeometryModel^ XbimGeometryEngine::Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<unsigned int, Object^>^ maps)
+		XbimGeometryModel^ XbimGeometryEngine::Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary< int, Object^>^ maps)
 			{
 				if(dynamic_cast<IfcBooleanResult^>(csgSolid->TreeRootExpression)) 
 					return Build((IfcBooleanResult^)csgSolid->TreeRootExpression, maps);

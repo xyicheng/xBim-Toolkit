@@ -48,7 +48,7 @@ namespace Xbim.IO
 
         public IfcSurfaceStyle IfcSurfaceStyle(XbimModel model)
         {
-            if (IsIfcSurfaceStyle) return (IfcSurfaceStyle)model.Instances[(uint)styleId]; else return null;
+            if (IsIfcSurfaceStyle) return (IfcSurfaceStyle)model.Instances[styleId]; else return null;
         }
 
         public IfcType IfcType

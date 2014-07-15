@@ -13,7 +13,7 @@ namespace Xbim.Analysis
     public interface IModelComparer
     {
         Dictionary<IfcRoot, ChangeType> Compare(IEnumerable<IfcRoot> Baseline, IEnumerable<IfcRoot> Delta);
-        Dictionary<UInt32, UInt32> GetMap();
+        Dictionary<Int32, Int32> GetMap();
     }
 
 

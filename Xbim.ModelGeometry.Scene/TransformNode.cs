@@ -34,7 +34,7 @@ namespace Xbim.ModelGeometry.Scene
     {
         private XbimMatrix3D _localMatrix;
         private HashSet<TransformNode> _children;
-        private uint? _productLabel;
+        private int? _productLabel;
         private TransformNode _parent;
 
         public IEnumerable<TransformNode> Children
@@ -59,7 +59,7 @@ namespace Xbim.ModelGeometry.Scene
 
        
 
-        public uint? ProductLabel
+        public int? ProductLabel
         {
             get
             {

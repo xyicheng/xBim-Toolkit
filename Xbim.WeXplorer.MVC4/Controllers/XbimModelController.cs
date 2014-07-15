@@ -133,23 +133,6 @@ namespace Xbim.WeXplorer.MVC4.Controllers
         }
 
 
-        public JsonResult ShapeLibrary(string name, string ext)
-        {
-            JsonResult json = new JsonResult();
-            json.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
-            try
-            {
-                using (XbimGeometryModel model = GetXbimGeometryModel(name, ext))
-                {
-                    json.Data = model.GetShapeGeometry();
-                }
-            }
-            catch (Exception e)
-            {
-                json.Data = new { Model = name, Error = e.Message };
-            }
-            return json;
-        }
 
         public JsonResult Styles(string name, string ext)
         {

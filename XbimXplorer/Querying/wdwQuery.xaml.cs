@@ -170,7 +170,7 @@ namespace XbimXplorer.Querying
                     if (m.Success)
                     {
                         int recursion = 0;
-                        uint v = Convert.ToUInt32(m.Groups["el"].Value);
+                        int v = Convert.ToInt32(m.Groups["el"].Value);
                         try
                         {
                             recursion = Convert.ToInt32(m.Groups["recursion"].Value);
@@ -300,7 +300,7 @@ namespace XbimXplorer.Querying
                     if (m.Success)
                     {
                         string start = m.Groups["entities"].Value;
-                        IEnumerable<uint> labels = toUIntarray(start, ',');
+                        IEnumerable<int> labels = toIntarray(start, ',');
                         if (labels.Count() > 0)
                         {
                             ParentWindow.DrawingControl.LoadGeometry(Model, labels);
@@ -317,7 +317,7 @@ namespace XbimXplorer.Querying
                     {
                         string start = m.Groups["entities"].Value;
                         string mode = m.Groups["mode"].Value; 
-                        IEnumerable<uint> labels = toUIntarray(start, ',');
+                        IEnumerable<int> labels = toIntarray(start, ',');
                         foreach (var item in labels)
                         {
                             ReportAdd("Geometry for: " + item.ToString(), Brushes.Green);
@@ -355,8 +355,8 @@ namespace XbimXplorer.Querying
                         if (HighlightT != "")
                             Highlight = true;                        
 
-                        IEnumerable<uint> labels = toUIntarray(start, ',');
-                        IEnumerable<uint> ret = null;
+                        IEnumerable<int> labels = toIntarray(start, ',');
+                        IEnumerable<int> ret = null;
                         if (labels.Count() == 0)
                         {
                             // see if it's a type string instead
@@ -637,26 +637,26 @@ namespace XbimXplorer.Querying
             txtOut.Document.Blocks.Add(newP);
         }
 
-        uint[] toUIntarray(string value, char sep)
+        int[] toIntarray(string value, char sep)
         {
             string[] sa = value.Split(new char[] { sep}, StringSplitOptions.RemoveEmptyEntries);
-            List<uint> ia = new List<uint>();
-            for (uint i = 0; i < sa.Length; ++i)
+            List<int> ia = new List<int>();
+            for (int i = 0; i < sa.Length; ++i)
             {
                 if (sa[i].Contains('-'))
                 {
                     var v = sa[i].Split('-');
                     if (v.Length == 2)
                     {
-                        uint iS, iT;
+                        int iS, iT;
                         if (
-                            uint.TryParse(v[0], out iS) && 
-                            uint.TryParse(v[1], out iT) 
+                            int.TryParse(v[0], out iS) && 
+                            int.TryParse(v[1], out iT) 
                             )
                         {
                             if (iT >= iS)
                             {
-                                for (uint iC = iS; iC <= iT; iC++)
+                                for (int iC = iS; iC <= iT; iC++)
                                 {
                                     ia.Add(iC);
                                 }
@@ -666,8 +666,8 @@ namespace XbimXplorer.Querying
                 }
                 else 
                 {
-                uint j;
-                if (uint.TryParse(sa[i], out j))
+                int j;
+                if (int.TryParse(sa[i], out j))
                 {
                     ia.Add(j);
                 }
@@ -1010,7 +1010,7 @@ namespace XbimXplorer.Querying
             }
         }
 
-        private TextHighliter ReportEntity(uint EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
+        private TextHighliter ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
         {
             // Debug.WriteLine("EL: " + EntityLabel.ToString());
             TextHighliter sb = new TextHighliter();
@@ -1088,9 +1088,9 @@ namespace XbimXplorer.Querying
             return sb;
         }
 
-        private static IEnumerable<uint> ReportProp(TextHighliter sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
+        private static IEnumerable<int> ReportProp(TextHighliter sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
         {
-            List<uint> RetIds = new List<uint>();
+            List<int> RetIds = new List<int>();
             string propName = prop.PropertyInfo.Name;
             Type propType = prop.PropertyInfo.PropertyType;
             string ShortTypeName = CleanPropertyName(propType.FullName);
@@ -1159,10 +1159,10 @@ namespace XbimXplorer.Querying
             return ShortTypeName;
         }
 
-        private static string ReportPropValue(object propVal, ref List<uint> RetIds)
+        private static string ReportPropValue(object propVal, ref List<int> RetIds)
         {
             IPersistIfcEntity pe = propVal as IPersistIfcEntity;
-            uint PropLabel = 0;
+            int PropLabel = 0;
             if (pe != null)
             {
                 RetIds.Add(pe.EntityLabel);

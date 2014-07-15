@@ -133,7 +133,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label">entity label to retrieve</param>
         /// <returns></returns>
-        public IPersistIfcEntity this[uint label]
+        public IPersistIfcEntity this[int label]
         {
             get
             {
@@ -146,7 +146,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="geometryLabel"></param>
         /// <returns></returns>
-        public IPersistIfcEntity GetFromGeometryLabel(uint geometryLabel)
+        public IPersistIfcEntity GetFromGeometryLabel(int geometryLabel)
         {
             XbimGeometryHandle filledGeomData = cache.GetGeometryHandle(geometryLabel);
             return cache.GetInstance(filledGeomData.ProductLabel, true, true);
@@ -210,7 +210,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entityLabel"></param>
         /// <returns></returns>
-        public  bool Contains(uint entityLabel)
+        public  bool Contains(int entityLabel)
         {
             return cache.Contains(entityLabel);
         }

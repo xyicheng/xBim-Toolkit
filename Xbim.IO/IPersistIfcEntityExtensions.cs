@@ -163,7 +163,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entityWriter">The TextWriter</param>
         /// <param name="entity">The entity to write</param>
-        internal static void WriteEntity(this IPersistIfcEntity entity, TextWriter entityWriter, IDictionary<uint, uint> map = null)
+        internal static void WriteEntity(this IPersistIfcEntity entity, TextWriter entityWriter, IDictionary<int, int> map = null)
         {
 
             if (map != null && map.Keys.Contains(entity.EntityLabel)) return; //if the entity is replaced in the map do not write it
@@ -201,7 +201,7 @@ namespace Xbim.IO
         /// <param name="propType"></param>
         /// <param name="propVal"></param>
         /// <param name="entityWriter"></param>
-        private static void WriteProperty(Type propType, object propVal, TextWriter entityWriter,IDictionary<uint,uint> map)
+        private static void WriteProperty(Type propType, object propVal, TextWriter entityWriter,IDictionary<int,int> map)
         {
             Type itemType;
             if (propVal == null) //null or a value type that maybe null
@@ -284,8 +284,8 @@ namespace Xbim.IO
             //all writable entities must support this interface and ExpressType have been handled so only entities left
             {
                 entityWriter.Write('#');
-                uint label = ((IPersistIfcEntity)propVal).EntityLabel;
-                uint mapLabel;
+                int label = ((IPersistIfcEntity)propVal).EntityLabel;
+                int mapLabel;
                 if(map!=null &&  map.TryGetValue(label, out mapLabel))
                     label = mapLabel;
                 entityWriter.Write(label);
@@ -453,7 +453,7 @@ namespace Xbim.IO
             else if (typeof(IPersistIfcEntity).IsAssignableFrom(propType))
             //all writable entities must support this interface and ExpressType have been handled so only entities left
             {
-                uint val = ((IPersistIfcEntity)propVal).EntityLabel;
+                int val = ((IPersistIfcEntity)propVal).EntityLabel;
                 if (val <= UInt16.MaxValue)
                 {
                     entityWriter.Write((byte)P21ParseAction.SetObjectValueUInt16);
@@ -657,7 +657,7 @@ namespace Xbim.IO
                     case P21ParseAction.SetObjectValueUInt16:
                         if (fromCache)
                         {
-                            uint label = br.ReadUInt16();
+                            int label = br.ReadUInt16();
                             IPersistIfcEntity refEntity;
                             if (!parserState.InList && cache.Read.TryGetValue(label, out refEntity)) //if we are in a list then make a forward reference anyway to make sure we maintain list order
                                 parserState.SetObjectValue(refEntity);
@@ -673,7 +673,7 @@ namespace Xbim.IO
                     case P21ParseAction.SetObjectValueInt32:
                         if (fromCache)
                         {
-                            uint label = br.ReadUInt32();
+                            int label = br.ReadInt32();
                             IPersistIfcEntity refEntity;
                             if (!parserState.InList && cache.Read.TryGetValue(label, out refEntity)) //if we are in a list then make a forward reference anyway to make sure we maintain list order
                                 parserState.SetObjectValue(refEntity);
@@ -684,7 +684,7 @@ namespace Xbim.IO
                             }
                         }
                         else
-                            parserState.SetObjectValue(cache.GetInstance(br.ReadUInt32(), false, unCached));
+                            parserState.SetObjectValue(cache.GetInstance(br.ReadInt32(), false, unCached));
                         break;
                     case P21ParseAction.SetObjectValueInt64:
                         throw new XbimException("Entity Label is int64, this is not currently supported");

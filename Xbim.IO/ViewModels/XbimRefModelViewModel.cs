@@ -67,7 +67,7 @@ namespace Xbim.IO.ViewModels
                 return children.Count > 0;
             }
         }
-        public uint EntityLabel
+        public int EntityLabel
         {
             get { return refModel.DocumentInformation.EntityLabel; }
         }

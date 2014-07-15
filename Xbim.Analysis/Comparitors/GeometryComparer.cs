@@ -15,8 +15,8 @@ namespace Xbim.Analysis.Comparitors
             throw new NotImplementedException(); //need to do this
         }
 
-        private Dictionary<UInt32, UInt32> map = new Dictionary<UInt32, UInt32>();
-        public Dictionary<UInt32, UInt32> GetMap() { return map; }
+        private Dictionary<Int32, Int32> map = new Dictionary<Int32, Int32>();
+        public Dictionary<Int32, Int32> GetMap() { return map; }
 
         public Dictionary<IfcRoot, ChangeType> Compare(Xbim3DModelContext baseContext, Xbim3DModelContext revisionContext, double oneMillimetre)
         {

@@ -140,9 +140,9 @@ namespace Xbim.Tests
 
             private void CompareXbimFiles(string source, string target)
             {
-                List<uint> badLabels1_3 = GetFileBadLabels(source, target);
+                List<int> badLabels1_3 = GetFileBadLabels(source, target);
                 // get any labels in xbimFile2 that are not in xbimFile1
-                List<uint> badLabels2_3 = GetFileBadLabels(target, source);
+                List<int> badLabels2_3 = GetFileBadLabels(target, source);
                 // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
                 Assert.AreEqual(badLabels1_3.Count, 0);
                 Assert.AreEqual(badLabels2_3.Count, 0);
@@ -286,9 +286,9 @@ namespace Xbim.Tests
                 return "";
             }
 
-            private List<uint> GetFileBadLabels(string fileName1, string fileName2)
+            private List<int> GetFileBadLabels(string fileName1, string fileName2)
             {
-                List<uint> badLabels = new List<uint>();
+                List<int> badLabels = new List<int>();
                 using (XbimModel modelServer = new XbimModel())
                 {
                     modelServer.Open(fileName1);
@@ -297,7 +297,7 @@ namespace Xbim.Tests
                         modelServer2.Open(fileName2);
                         foreach (var entity in modelServer.Instances)
                         {
-                            uint entityLabel = entity.EntityLabel;
+                            int entityLabel = entity.EntityLabel;
                             byte[] b1 = modelServer.GetEntityBinaryData(entity);
 
 

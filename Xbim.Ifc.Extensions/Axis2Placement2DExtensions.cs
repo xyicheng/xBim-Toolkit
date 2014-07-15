@@ -38,7 +38,7 @@ namespace Xbim.Ifc2x3.Extensions
 
       
 
-        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, ConcurrentDictionary<uint, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, ConcurrentDictionary<int, Object> maps = null)
         {
             object transform;
             if (maps != null && maps.TryGetValue(axis2.EntityLabel, out transform)) //already converted it just return cached

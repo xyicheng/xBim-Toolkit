@@ -41,10 +41,9 @@ namespace Xbim.ModelGeometry.Converter
         //private struct to hold details of references to geometries
         private struct GeometryReference
         {
-            public uint GeometryId;
-            public uint ReferencedEntityLabel;
+            public int GeometryId;
             public XbimRect3D BoundingBox;
-            public uint StyleLabel;
+            public int StyleLabel;
         }
 
         private struct RepresentationItemGeometricHashKey
@@ -207,32 +206,32 @@ namespace Xbim.ModelGeometry.Converter
             if (cacheOn) _engine.CacheStart(true);
             ParallelOptions pOpts = new ParallelOptions();
             
-            HashSet<uint> mappedShapeIds; 
-            HashSet<uint> productShapeIds = GetProductShapeIds(out mappedShapeIds);
+            HashSet<int> mappedShapeIds; 
+            HashSet<int> productShapeIds = GetProductShapeIds(out mappedShapeIds);
             List<IGrouping<IfcElement, IfcFeatureElement>> openingsAndProjections = GetOpeningsAndProjections();
 
             //HashSet<int> elementIDsForVoidsandProjectionOps = GetElementIDsForVoidandProjectionOperations();
-            ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes = new ConcurrentDictionary<uint, IXbimGeometryModel>();
+            ConcurrentDictionary<int, IXbimGeometryModel> curvedShapes = new ConcurrentDictionary<int, IXbimGeometryModel>();
             //
             int total = productShapeIds.Count() + openingsAndProjections.Count();
             int tally = 0;
             int percentageParsed = 0;
 
             //Do the elements with openings and projectsion first, cache any geometry shapes created 
-            ConcurrentDictionary<uint, GeometryReference> shapeLookup = new ConcurrentDictionary<uint, GeometryReference>();
+            ConcurrentDictionary<int, GeometryReference> shapeLookup = new ConcurrentDictionary<int, GeometryReference>();
 
             //turn caching off as we don't want to keep all geometries in memory
             if (!wasCaching && cacheOn) _engine.CacheStop(false);
 
             //Get the aurface styles
-            Dictionary<uint, uint> surfaceStyles = GetSurfaceStyles();
+            Dictionary<int, int> surfaceStyles = GetSurfaceStyles();
             //init clusters
             //set up a bag element bounds for clustering for each context
             Dictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>> clusters = new Dictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>>();
             foreach (var context in _contexts) clusters.Add(context, new ConcurrentQueue<XbimBBoxClusterElement>());
             //keep a list of maps written as some tools incorrectly reuse the product definition shape and reuse the mapped item this way
-            ConcurrentDictionary<uint, List<GeometryReference>> mapsWritten = new ConcurrentDictionary<uint, List<GeometryReference>>();
-            ConcurrentDictionary<uint, XbimRect3D> allMapBounds = new ConcurrentDictionary<uint, XbimRect3D>();
+            ConcurrentDictionary<int, List<GeometryReference>> mapsWritten = new ConcurrentDictionary<int, List<GeometryReference>>();
+            ConcurrentDictionary<int, XbimRect3D> allMapBounds = new ConcurrentDictionary<int, XbimRect3D>();
         
             using (BlockingCollection<XbimShapeGeometry> shapeGeometries = new BlockingCollection<XbimShapeGeometry>())
             {
@@ -259,7 +258,7 @@ namespace Xbim.ModelGeometry.Converter
                                                                     new BlockingCollection<Tuple<XbimShapeInstance, XbimShapeGeometry>>())
             {
                 //start a new task to process features
-                HashSet<uint> processed;
+                HashSet<int> processed;
                 using (Task writeToDB = Task.Factory.StartNew(() => WriteFeatureElementsToDatabase(features)))
                 {
                     try
@@ -293,7 +292,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        private void WriteShapeGeometriesToDatabase(ConcurrentDictionary<uint, GeometryReference> shapeLookup, Dictionary<uint, uint> surfaceStyles, BlockingCollection<XbimShapeGeometry> shapeGeometries)
+        private void WriteShapeGeometriesToDatabase(ConcurrentDictionary<int, GeometryReference> shapeLookup, Dictionary<int, int> surfaceStyles, BlockingCollection<XbimShapeGeometry> shapeGeometries)
         {
             XbimShapeGeometry shapeGeom = new XbimShapeGeometry() ;
             XbimShapeGeometryCursor geomTable = _model.GetShapeGeometryTable();
@@ -313,7 +312,7 @@ namespace Xbim.ModelGeometry.Converter
                             GeometryReference refCounter = new GeometryReference();                        
                             refCounter.BoundingBox = shapeGeom.BoundingBox;
                             refCounter.GeometryId = geomTable.AddGeometry(shapeGeom);
-                            uint styleLabel;
+                            int styleLabel;
                             surfaceStyles.TryGetValue(shapeGeom.IfcShapeLabel, out styleLabel);
                             refCounter.StyleLabel = styleLabel;
                             shapeLookup.TryAdd(shapeGeom.IfcShapeLabel, refCounter);
@@ -325,7 +324,7 @@ namespace Xbim.ModelGeometry.Converter
                         }
                         catch (Exception e)
                         {        
-                             Logger.ErrorFormat("Failed to write entity #{0} to database", shapeGeom.IfcShapeLabel);
+                             Logger.ErrorFormat("Failed to write entity #{0} to database, error = {1}", shapeGeom.IfcShapeLabel, e.Message);
                            
                         }
                         long remainder = geomCount % _transactionBatchSize; //pulse transactions
@@ -409,9 +408,9 @@ namespace Xbim.ModelGeometry.Converter
         /// Returns a set of element IDs that will need to be used later in boolean operations for cutting voids and adding projections
         /// </summary>
         /// <returns></returns>
-        private HashSet<uint> GetElementIDsForVoidandProjectionOperations()
+        private HashSet<int> GetElementIDsForVoidandProjectionOperations()
         {
-            HashSet<uint> required = new HashSet<uint>();
+            HashSet<int> required = new HashSet<int>();
             IEnumerable<IGrouping<IfcElement, IfcRelVoidsElement>> productShapeAndOpeningsIds = _model.Instances.OfType<IfcRelVoidsElement>()
                .Where(r => r.RelatingBuildingElement.Representation != null && r.RelatedOpeningElement.Representation != null)
                             .GroupBy(x => x.RelatingBuildingElement);      
@@ -442,11 +441,11 @@ namespace Xbim.ModelGeometry.Converter
         }
 
 
-        private HashSet<uint> WriteFeatureElements(IEnumerable<IGrouping<IfcElement, IfcFeatureElement>> openingsAndProjections,
-            ConcurrentDictionary<uint, GeometryReference> shapeLookup,
-            ConcurrentDictionary<uint, List<GeometryReference>> mapsWritten,
-            ConcurrentDictionary<uint, XbimRect3D> allMapBounds,
-            ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes,
+        private HashSet<int> WriteFeatureElements(IEnumerable<IGrouping<IfcElement, IfcFeatureElement>> openingsAndProjections,
+            ConcurrentDictionary<int, GeometryReference> shapeLookup,
+            ConcurrentDictionary<int, List<GeometryReference>> mapsWritten,
+            ConcurrentDictionary<int, XbimRect3D> allMapBounds,
+            ConcurrentDictionary<int, IXbimGeometryModel> curvedShapes,
             Dictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>> clusters,
             BlockingCollection<Tuple<XbimShapeInstance, XbimShapeGeometry>> features,
             int total,
@@ -455,7 +454,7 @@ namespace Xbim.ModelGeometry.Converter
             ReportProgressDelegate progDelegate
             )
         {
-            HashSet<uint> processed = new HashSet<uint>();
+            HashSet<int> processed = new HashSet<int>();
             int localPercentageParsed = percentageParsed;
             int localTally = tally;
 
@@ -469,8 +468,8 @@ namespace Xbim.ModelGeometry.Converter
                
                if (elementShapes.Any())
                {
-                   uint styleLabel = 0; //take the last style and rep label of the shapes that make up the object
-                   uint context = 0;
+                   int styleLabel = 0; //take the last style and rep label of the shapes that make up the object
+                   int context = 0;
                    IXbimGeometryModel elementGeom = null;
                    if (elementShapes.Count() > 1) //merge multiple body parts together
                    {
@@ -587,7 +586,7 @@ namespace Xbim.ModelGeometry.Converter
                    string shapeData = elementGeom.WriteAsString(_model.ModelFactors);
                    XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()
                    {
-                       IfcShapeLabel = (uint)element.EntityLabel,
+                       IfcShapeLabel = element.EntityLabel,
                        GeometryHash = 0,
                        LOD = XbimLOD.LOD_Unspecified,
                        Format = XbimGeometryType.Polyhedron,
@@ -645,11 +644,11 @@ namespace Xbim.ModelGeometry.Converter
             return openingsAndProjections;
         }
 
-        private IXbimGeometryModel GetGeometryModel(XbimShapeInstance xbimShapeInstance, ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes)
+        private IXbimGeometryModel GetGeometryModel(XbimShapeInstance xbimShapeInstance, ConcurrentDictionary<int, IXbimGeometryModel> curvedShapes)
         {
             IXbimGeometryModel geomModel;
             XbimShapeGeometry shapeGeom = this.ShapeGeometry(xbimShapeInstance.ShapeGeometryLabel);
-            if (curvedShapes.TryGetValue((uint)shapeGeom.IfcShapeLabel, out geomModel))
+            if (curvedShapes.TryGetValue(shapeGeom.IfcShapeLabel, out geomModel))
             {
                 geomModel = geomModel.TransformBy(xbimShapeInstance.Transformation);
                 geomModel.RepresentationLabel = (int)shapeGeom.IfcShapeLabel;
@@ -708,11 +707,11 @@ namespace Xbim.ModelGeometry.Converter
         /// </summary>
         /// <param name="productShapeIds"></param>
         /// <param name="mappedShapeIds">Those representation items that are maps to others</param>
-        private HashSet<uint> GetProductShapeIds(out HashSet<uint> mappedShapeIds)
+        private HashSet<int> GetProductShapeIds(out HashSet<int> mappedShapeIds)
         {
 
-            mappedShapeIds = new HashSet<uint>();
-            HashSet<uint> productShapeIds = new HashSet<uint>();
+            mappedShapeIds = new HashSet<int>();
+            HashSet<int> productShapeIds = new HashSet<int>();
             foreach (var product in _model.Instances.OfType<IfcProduct>().Where(p => p.Representation != null))
             {
 
@@ -737,7 +736,7 @@ namespace Xbim.ModelGeometry.Converter
                             {
                                 if (!(item is IfcGeometricSet))
                                 {
-                                    uint mappedItemLabel = item.EntityLabel;
+                                    int mappedItemLabel = item.EntityLabel;
                                     //if not already processed add it
                                     productShapeIds.Add(mappedItemLabel);
                                     
@@ -745,10 +744,9 @@ namespace Xbim.ModelGeometry.Converter
                             }
                         }
                         else
-                        {
-                            uint shapeLabel = shape.EntityLabel;
+                        { 
                             //if not already processed add it
-                            productShapeIds.Add(shapeLabel);
+                            productShapeIds.Add(shape.EntityLabel);
                         }
                     }
 
@@ -759,7 +757,7 @@ namespace Xbim.ModelGeometry.Converter
         }
 
 
-        private void WriteProductShapes(bool includeOpeningsAndProjections, ReportProgressDelegate progDelegate, ParallelOptions pOpts, List<IfcProduct> products, int total, ref int tally, ref int percentageParsed, ConcurrentDictionary<uint, GeometryReference> shapeLookup, ConcurrentDictionary<uint, List<GeometryReference>> mapsWritten, ConcurrentDictionary<uint, XbimRect3D> allMapBounds,
+        private void WriteProductShapes(bool includeOpeningsAndProjections, ReportProgressDelegate progDelegate, ParallelOptions pOpts, List<IfcProduct> products, int total, ref int tally, ref int percentageParsed, ConcurrentDictionary<int, GeometryReference> shapeLookup, ConcurrentDictionary<int, List<GeometryReference>> mapsWritten, ConcurrentDictionary<int, XbimRect3D> allMapBounds,
              Dictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>> clusters)
         {
 
@@ -799,7 +797,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <param name="product"></param>
         /// <param name="rep"></param>
         /// <returns>IEnumerable of XbimShapeInstance that have been written</returns>
-        private IEnumerable<XbimShapeInstance> WriteProductShape(ConcurrentDictionary<uint, GeometryReference> shapeLookup, ConcurrentDictionary<uint, List<GeometryReference>> mapsWritten, ConcurrentDictionary<uint, XbimRect3D> allMapBounds, IDictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>> clusters, IfcProduct element, bool includesOpenings)
+        private IEnumerable<XbimShapeInstance> WriteProductShape(ConcurrentDictionary<int, GeometryReference> shapeLookup, ConcurrentDictionary<int, List<GeometryReference>> mapsWritten, ConcurrentDictionary<int, XbimRect3D> allMapBounds, IDictionary<IfcRepresentationContext, ConcurrentQueue<XbimBBoxClusterElement>> clusters, IfcProduct element, bool includesOpenings)
         {
             
             IfcRepresentation rep = element.Representation.Representations.Where(r =>
@@ -817,7 +815,7 @@ namespace Xbim.ModelGeometry.Converter
                     if (shape is IfcMappedItem)
                     {
                         List<GeometryReference> mapGeomIds;
-                        uint mapId = shape.EntityLabel;
+                        int mapId = shape.EntityLabel;
                         if (mapsWritten.TryGetValue(mapId, out mapGeomIds))//if we have something to write                           
                         {
                             geomLabels.AddRange(mapGeomIds);
@@ -849,7 +847,7 @@ namespace Xbim.ModelGeometry.Converter
                 {
                     List<XbimShapeInstance> shapesInstances = new List<XbimShapeInstance>(geomLabels.Count);
                     
-                    uint contextId = rep.ContextOfItems.EntityLabel;
+                    int contextId = rep.ContextOfItems.EntityLabel;
                     foreach (var instance in geomLabels)
                     {
                         shapesInstances.Add(
@@ -868,9 +866,9 @@ namespace Xbim.ModelGeometry.Converter
 
 
 
-        private void WriteMappedItems(ParallelOptions pOpts, ConcurrentDictionary<uint, GeometryReference> shapeLookup, IEnumerable<uint> allMaps, ConcurrentDictionary<uint, List<GeometryReference>> mapsWritten, ConcurrentDictionary<uint, XbimRect3D> allMapBounds, Dictionary<uint, uint> surfaceStyles)
+        private void WriteMappedItems(ParallelOptions pOpts, ConcurrentDictionary<int, GeometryReference> shapeLookup, IEnumerable<int> allMaps, ConcurrentDictionary<int, List<GeometryReference>> mapsWritten, ConcurrentDictionary<int, XbimRect3D> allMapBounds, Dictionary<int, int> surfaceStyles)
         {
-            Parallel.ForEach<uint>(allMaps, pOpts, mapId =>
+            Parallel.ForEach<int>(allMaps, pOpts, mapId =>
             //   foreach (var map in allMaps)
             {
                 IPersistIfcEntity entity = _model.Instances[mapId];
@@ -884,11 +882,11 @@ namespace Xbim.ModelGeometry.Converter
                         //Check if we have already written this shape geometry, we should have so throw an exception if not
                         GeometryReference counter;
 
-                        uint mapShapeLabel = mapShape.EntityLabel;
+                        int mapShapeLabel = mapShape.EntityLabel;
 
                         if (shapeLookup.TryGetValue(mapShapeLabel, out counter))
                         {
-                            uint style = 0;
+                            int style = 0;
                             if (surfaceStyles.TryGetValue(mapShapeLabel, out style))
                                 counter.StyleLabel = style;
                             mapShapes.Add(counter);
@@ -906,8 +904,8 @@ namespace Xbim.ModelGeometry.Converter
                         XbimMatrix3D localTransform = map.MappingSource.MappingOrigin.ToMatrix3D();
                         XbimMatrix3D mapTransform = XbimMatrix3D.Multiply(cartesianTransform, localTransform);
                         mapBounds = XbimRect3D.TransformBy(mapBounds, mapTransform);
-                        mapsWritten.TryAdd((uint)map.EntityLabel, mapShapes);
-                        allMapBounds.TryAdd((uint)map.EntityLabel, mapBounds);
+                        mapsWritten.TryAdd(map.EntityLabel, mapShapes);
+                        allMapBounds.TryAdd(map.EntityLabel, mapBounds);
                     }
                 }
                 else
@@ -918,35 +916,35 @@ namespace Xbim.ModelGeometry.Converter
         }
        
         private int WriteShapeGeometries(
-            IEnumerable<uint> listShapes,
-            ConcurrentDictionary<uint, GeometryReference> shapeLookup,
-            Dictionary<uint, uint> surfaceStyles,
+            IEnumerable<int> listShapes,
+            ConcurrentDictionary<int, GeometryReference> shapeLookup,
+            Dictionary<int, int> surfaceStyles,
             int total,
             ref int tally,
             ref int percentageParsed,
             ReportProgressDelegate progDelegate,
             ParallelOptions pOpts,
             BlockingCollection<XbimShapeGeometry> shapeGeometries,
-            ConcurrentDictionary<uint, IXbimGeometryModel> curvedShapes)
+            ConcurrentDictionary<int, IXbimGeometryModel> curvedShapes)
         {
             int localPercentageParsed = percentageParsed;
             int localTally = tally;
             int dedupCount = 0;
 
 
-            ConcurrentDictionary<RepresentationItemGeometricHashKey, uint> geomHash =
-                new ConcurrentDictionary<RepresentationItemGeometricHashKey, uint>();
+            ConcurrentDictionary<RepresentationItemGeometricHashKey, int> geomHash =
+                new ConcurrentDictionary<RepresentationItemGeometricHashKey, int>();
 
-            ConcurrentDictionary<uint, uint> mapLookup =
-                new ConcurrentDictionary<uint, uint>();
+            ConcurrentDictionary<int, int> mapLookup =
+                new ConcurrentDictionary<int, int>();
 
-            Parallel.ForEach<uint>(listShapes, pOpts, shapeId =>
+            Parallel.ForEach<int>(listShapes, pOpts, shapeId =>
             //        foreach (var shapeId in listShapes)
             {   
                 Interlocked.Increment(ref localTally);
                 IfcRepresentationItem shape = (IfcRepresentationItem)Model.Instances[shapeId];
                 RepresentationItemGeometricHashKey key = new RepresentationItemGeometricHashKey(shape);
-                uint mappedEntityLabel = geomHash.GetOrAdd(key, shapeId); 
+                int mappedEntityLabel = geomHash.GetOrAdd(key, shapeId); 
             
                 if (mappedEntityLabel != shapeId)//it already exists
                 {
@@ -1004,10 +1002,10 @@ namespace Xbim.ModelGeometry.Converter
             tally = localTally;
 
             //Now tidy up the maps
-            Parallel.ForEach<KeyValuePair<uint, uint>>(mapLookup, pOpts, mapKV =>
+            Parallel.ForEach<KeyValuePair<int, int>>(mapLookup, pOpts, mapKV =>
            // foreach (var mapKV in mapLookup)
            {
-               uint surfaceStyle = 0;
+               int surfaceStyle = 0;
                if (!surfaceStyles.TryGetValue(mapKV.Key, out surfaceStyle)) //it doesn't have a surface style assigned to itself, so use the base one of the main shape
                    surfaceStyles.TryGetValue(mapKV.Value, out surfaceStyle);
                GeometryReference geometryReference;
@@ -1019,7 +1017,7 @@ namespace Xbim.ModelGeometry.Converter
             return dedupCount;
         }
 
-        private Dictionary<uint, uint> GetSurfaceStyles()
+        private Dictionary<int, int> GetSurfaceStyles()
         {
             //get all the surface styles
 
@@ -1027,7 +1025,7 @@ namespace Xbim.ModelGeometry.Converter
                         .OfType<IfcStyledItem>()
                         .Where(s => s.Item != null)
                         .GroupBy(s => s.Item.EntityLabel);
-            Dictionary<uint, uint> surfaceStyles = new Dictionary<uint, uint>();
+            Dictionary<int, int> surfaceStyles = new Dictionary<int, int>();
             foreach (var styledItemGrouping in styledItemsGroup)
             {
 
@@ -1090,8 +1088,8 @@ namespace Xbim.ModelGeometry.Converter
                        i => i.ShapeGeometryLabel,
                        (label, instances) => new
                        {
-                           Label = (uint)label,
-                           Count = (uint)instances.Count()
+                           Label = label,
+                           Count = instances.Count()
                        });
             XbimShapeGeometryCursor geomTable = _model.GetShapeGeometryTable();
             try
@@ -1139,7 +1137,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <param name="geom"></param>
         /// <param name="refCount">Number of other references to this geometry</param>
         /// <returns></returns>
-        XbimShapeInstance WriteShapeInstanceToDB(XbimModel model, uint shapeLabel, uint styleLabel, uint ctxtId, IfcProduct product, XbimMatrix3D placementTransform, XbimRect3D bounds, XbimGeometryRepresentationType repType)
+        XbimShapeInstance WriteShapeInstanceToDB(XbimModel model, int shapeLabel, int styleLabel, int ctxtId, IfcProduct product, XbimMatrix3D placementTransform, XbimRect3D bounds, XbimGeometryRepresentationType repType)
         {
 
             XbimShapeInstance shapeInstance = new XbimShapeInstance()
@@ -1277,7 +1275,7 @@ namespace Xbim.ModelGeometry.Converter
         }
 
 
-        public XbimShapeGeometry ShapeGeometry(uint shapeGeometryLabel)
+        public XbimShapeGeometry ShapeGeometry(int shapeGeometryLabel)
         {
             XbimShapeGeometryCursor shapeGeometryTable = Model.GetShapeGeometryTable();
             try
@@ -1323,7 +1321,7 @@ namespace Xbim.ModelGeometry.Converter
                             {
                                 if (surfaceStyle > 0) //we have a surface style
                                 {
-                                    IfcSurfaceStyle ss = (IfcSurfaceStyle)_model.Instances[(uint)surfaceStyle];
+                                    IfcSurfaceStyle ss = (IfcSurfaceStyle)_model.Instances[surfaceStyle];
                                     yield return new XbimTexture().CreateTexture(ss);
                                     surfaceStyle = shapeInstanceTable.SkipSurfaceStyes(surfaceStyle);
                                 }
@@ -1495,7 +1493,7 @@ namespace Xbim.ModelGeometry.Converter
 
                         if (texture.DefinedObjectId > 0)
                         {
-                            if (shapeInstanceTable.TrySeekSurfaceStyle(context.EntityLabel, (uint)texture.DefinedObjectId, ref shapeInstance))
+                            if (shapeInstanceTable.TrySeekSurfaceStyle(context.EntityLabel, texture.DefinedObjectId, ref shapeInstance))
                             {
                                 do
                                 {
@@ -1531,7 +1529,7 @@ namespace Xbim.ModelGeometry.Converter
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        public IXbimMeshGeometry3D ShapeGeometryMeshOf(uint shapeGeometryLabel)
+        public IXbimMeshGeometry3D ShapeGeometryMeshOf(int shapeGeometryLabel)
         {
             XbimShapeGeometry sg = ShapeGeometry(shapeGeometryLabel);
             XbimMeshGeometry3D mg = new XbimMeshGeometry3D();
@@ -1570,7 +1568,7 @@ namespace Xbim.ModelGeometry.Converter
         /// <param name="textWriter"></param>
         public void CreateSceneJS(TextWriter textWriter)
         {
-            HashSet<uint> maps = new HashSet<uint>();
+            HashSet<int> maps = new HashSet<int>();
             using (JsonWriter writer = new JsonTextWriter(textWriter))
             {            
                 XbimSceneJS sceneJS = new XbimSceneJS(this);
@@ -1585,17 +1583,7 @@ namespace Xbim.ModelGeometry.Converter
             return sw.ToString();
         }
 
-        //srl these methods below need to go
-        internal IEnumerable<XbimShape> Shapes(int[] _shapeGeomLabels)
-        {
-            throw new NotImplementedException();
-        }
 
-        public Int32[] MappedShapes()
-        {
-            throw new NotImplementedException();
-        }
-        //end of methods to be removed
     }
 }
 

@@ -447,7 +447,7 @@ namespace Xbim.ModelGeometry.Scene
                 builder.BeginBuild();
                 XbimMeshFragment fragment = new XbimMeshFragment(builder.PositionCount,builder.TriangleIndexCount, modelId);
                 if (!BuildWithNormals(builder, br, transform))
-                    fragment.EntityLabel = uint.MaxValue; //set the entity label to indicate failure
+                    fragment.EntityLabel = -1; //set the entity label to indicate failure
                 fragment.EndPosition = builder.PositionCount-1;
                 fragment.EndTriangleIndex = builder.TriangleIndexCount-1;
                 builder.EndBuild();

@@ -60,16 +60,16 @@ namespace Xbim.IO.Parser
         public event ReportProgressDelegate ProgressStatus;
         private int _percentageParsed;
         private long _streamSize = -1;
-        private BlockingCollection<Tuple<uint,Type,byte[]>> toProcess;
-        private BlockingCollection<Tuple<uint, short, List<uint>, byte[], bool>> toStore;
+        private BlockingCollection<Tuple<int,Type,byte[]>> toProcess;
+        private BlockingCollection<Tuple<int, short, List<int>, byte[], bool>> toStore;
         Task cacheProcessor;
         Task storeProcessor;
         private BinaryWriter _binaryWriter;
         
-        private uint _currentLabel;
+        private int _currentLabel;
         private string _currentType;
         private List<int> _indexKeys = null;
-        private List<uint> _indexKeyValues = new List<uint>();
+        private List<int> _indexKeyValues = new List<int>();
         private Part21Entity _currentInstance;
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private PropertyValue _propertyValue;
@@ -121,10 +121,10 @@ namespace Xbim.IO.Parser
         internal override void BeginParse()
         {
             _binaryWriter = new BinaryWriter(new MemoryStream(0x7FFF));
-            toStore = new BlockingCollection<Tuple<uint, short, List<uint>, byte[], bool>>(512);
+            toStore = new BlockingCollection<Tuple<int, short, List<int>, byte[], bool>>(512);
             if (this.modelCache.IsCaching)
             {
-                toProcess = new BlockingCollection<Tuple<uint, Type, byte[]>>();
+                toProcess = new BlockingCollection<Tuple<int, Type, byte[]>>();
                 cacheProcessor = Task.Factory.StartNew(() =>
                     {
                         try
@@ -132,7 +132,7 @@ namespace Xbim.IO.Parser
                             // Consume the BlockingCollection 
                             while (!toProcess.IsCompleted)
                             {
-                                Tuple<uint, Type, byte[]> h = toProcess.Take();
+                                Tuple<int, Type, byte[]> h = toProcess.Take();
                                 this.modelCache.GetOrCreateInstanceFromCache(h.Item1, h.Item2, h.Item3);
                             }
 
@@ -154,7 +154,7 @@ namespace Xbim.IO.Parser
                     {
                         try
                         {
-                            Tuple<uint, short, List<uint>, byte[], bool> h = toStore.Take(CancellationToken.None);
+                            Tuple<int, short, List<int>, byte[], bool> h = toStore.Take(CancellationToken.None);
                             table.AddEntity(h.Item1, h.Item2, h.Item3, h.Item4, h.Item5, transaction);
                             if (toStore.IsCompleted)
                                 table.WriteHeader(Header);
@@ -263,7 +263,7 @@ namespace Xbim.IO.Parser
             _processStack.Push(_currentInstance);
             _entityCount++;
             _indexKeyValues.Clear();
-            _currentLabel = Convert.ToUInt32(entityLabel.TrimStart('#'));
+            _currentLabel = Convert.ToInt32(entityLabel.TrimStart('#'));
             MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
             data.SetLength(0);
 
@@ -323,9 +323,9 @@ namespace Xbim.IO.Parser
                 IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
                 byte[] bytes =  data.ToArray();
-                List<uint> keys = new List<uint>(_indexKeyValues);
-                toStore.Add(new Tuple<uint, short, List<uint>, byte[], bool>(_currentLabel, ifcType.TypeId, keys, bytes, ifcType.IndexedClass));
-                if (this.modelCache.IsCaching) toProcess.Add(new Tuple<uint, Type, byte[]>(_currentLabel, ifcType.Type, bytes)); 
+                List<int> keys = new List<int>(_indexKeyValues);
+                toStore.Add(new Tuple<int, short, List<int>, byte[], bool>(_currentLabel, ifcType.TypeId, keys, bytes, ifcType.IndexedClass));
+                if (this.modelCache.IsCaching) toProcess.Add(new Tuple<int, Type, byte[]>(_currentLabel, ifcType.Type, bytes)); 
             }
 
         }
@@ -459,7 +459,7 @@ namespace Xbim.IO.Parser
 
         internal override void SetObjectValue(string value)
         {
-            uint val = Convert.ToUInt32(value.TrimStart('#'));
+            int val = Convert.ToInt32(value.TrimStart('#'));
 
             if (_indexKeys != null && _indexKeys.Contains(_currentInstance.CurrentParamIndex + 1)) //current param index is 0 based and ifcKey is 1 based
                 _indexKeyValues.Add(val);

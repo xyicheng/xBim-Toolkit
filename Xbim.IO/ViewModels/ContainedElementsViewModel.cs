@@ -15,7 +15,7 @@ namespace Xbim.IO.ViewModels
     {
         XbimModel xbimModel;
         Type type;
-        uint spatialContainerLabel;
+        int spatialContainerLabel;
         private bool _isSelected;
         private bool _isExpanded;
         public IXbimViewModel CreatingParent { get; set; } 
@@ -72,7 +72,7 @@ namespace Xbim.IO.ViewModels
             }
         }
 
-        public uint EntityLabel
+        public int EntityLabel
         {
             get { return 0; }
         }

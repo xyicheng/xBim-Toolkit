@@ -51,7 +51,7 @@ namespace Xbim.Analysis
     /// </summary>
     public class IfcElementSignature
     {
-        public uint ModelID;
+        public int ModelID;
         public string SchemaType;
         public string DefinedTypeId;
         public string GlobalId;

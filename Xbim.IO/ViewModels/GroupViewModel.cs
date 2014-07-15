@@ -53,7 +53,7 @@ namespace Xbim.IO.ViewModels
             get { return group.Name; }
         }
 
-        public uint EntityLabel
+        public int EntityLabel
         {
             get { return group.EntityLabel; }
         }

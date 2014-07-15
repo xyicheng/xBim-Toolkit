@@ -148,7 +148,7 @@ namespace Xbim.IO
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(XbimModel model, uint handle, XmlWriter output, int pos = -1)
+        private void Write(XbimModel model, int handle, XmlWriter output, int pos = -1)
         {
 
             if (_written.Contains(handle)) //we have already done it

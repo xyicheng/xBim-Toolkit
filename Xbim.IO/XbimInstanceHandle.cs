@@ -12,7 +12,7 @@ namespace Xbim.IO
     /// </summary>
     public struct XbimInstanceHandle
     {
-        public uint EntityLabel;
+        public int EntityLabel;
         public short EntityTypeId;
         public XbimModel Model;
        
@@ -63,21 +63,21 @@ namespace Xbim.IO
         }
 
         
-        public XbimInstanceHandle(XbimModel model, uint entityLabel, short type = 0)
+        public XbimInstanceHandle(XbimModel model, int entityLabel, short type = 0)
         {
             Model = model;
             EntityLabel = entityLabel;
             EntityTypeId= type;
         }
 
-        public XbimInstanceHandle(XbimModel model, uint entityLabel, Type type)
+        public XbimInstanceHandle(XbimModel model, int entityLabel, Type type)
         {
             Model = model;
             EntityLabel = entityLabel;
             EntityTypeId = IfcMetaData.IfcTypeId(type);
         }
 
-        public XbimInstanceHandle(XbimModel model, uint? label, short? type)
+        public XbimInstanceHandle(XbimModel model, int? label, short? type)
         {
             Model = model;
             this.EntityLabel = label ?? 0;

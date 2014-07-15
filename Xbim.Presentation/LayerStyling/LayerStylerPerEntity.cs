@@ -28,9 +28,9 @@ namespace Xbim.Presentation.LayerStyling
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene
             )
         {
-            uint iLab;
+            int iLab;
             string LayerName = layerKey;
-            bool conversionok = UInt32.TryParse(layerKey, out iLab);
+            bool conversionok = Int32.TryParse(layerKey, out iLab);
             if (conversionok)
             {
                 layerKey = model.Instances[iLab].GetType().Name;

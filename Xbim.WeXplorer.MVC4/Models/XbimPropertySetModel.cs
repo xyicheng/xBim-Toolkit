@@ -9,7 +9,7 @@ namespace Xbim.WeXplorer.MVC4.Models
 {
     public class XbimPropertySetModel : XbimRootModel
     {
-        public IEnumerable<uint> Properties
+        public IEnumerable<int> Properties
         {
             get 
             {

@@ -11,20 +11,20 @@ namespace Xbim.ModelGeometry.Scene.Clustering
     /// </summary>
     public class XbimBBoxClusterElement
     {
-        public List<uint> GeometryIds;
+        public List<int> GeometryIds;
         public XbimRect3D Bound;
             
          
-        public XbimBBoxClusterElement(uint GeomteryId, XbimRect3D bound)
+        public XbimBBoxClusterElement(int GeomteryId, XbimRect3D bound)
         {
-            GeometryIds = new List<uint>(1);
+            GeometryIds = new List<int>(1);
             this.GeometryIds.Add(GeomteryId);
             this.Bound = bound;
         }
 
         public void Add(XbimBBoxClusterElement OtherElement)
         {
-            GeometryIds = new List<uint>(OtherElement.GeometryIds.Count);
+            GeometryIds = new List<int>(OtherElement.GeometryIds.Count);
             GeometryIds.AddRange(OtherElement.GeometryIds);
             Bound.Union(OtherElement.Bound);
         }

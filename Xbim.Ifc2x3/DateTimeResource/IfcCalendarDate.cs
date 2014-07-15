@@ -71,7 +71,7 @@ namespace Xbim.Ifc2x3.DateTimeResource
         }
         #region IPersistIfcEntity Members
 
-        private uint _entityLabel;
+        private int _entityLabel;
 		bool _activated;
 
         private IModel _model;
@@ -81,7 +81,7 @@ namespace Xbim.Ifc2x3.DateTimeResource
             get { return _model; }
         }
 
-        void IPersistIfcEntity.Bind(IModel model, uint entityLabel, bool activated)
+        void IPersistIfcEntity.Bind(IModel model, int entityLabel, bool activated)
         {
             _activated=activated;
 			_model = model;
@@ -93,7 +93,7 @@ namespace Xbim.Ifc2x3.DateTimeResource
             get { return _activated; }
         }
 
-        public uint EntityLabel
+        public int EntityLabel
         {
             get { return _entityLabel; }
         }

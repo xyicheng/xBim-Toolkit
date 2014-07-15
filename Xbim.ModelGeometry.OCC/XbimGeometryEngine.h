@@ -16,8 +16,8 @@ namespace Xbim
 			{
 				//_representationItemCache = gcnew ConcurrentDictionary<int, XbimGeometryModel^>();
 			};
-			virtual void CacheStart(bool clear){if(clear) _cache = gcnew ConcurrentDictionary<unsigned int, Object^>(); _caching=true;};
-			virtual void CacheStop(bool clear){if(clear) _cache = gcnew ConcurrentDictionary<unsigned int, Object^>(); _caching=false;};
+			virtual void CacheStart(bool clear){if(clear) _cache = gcnew ConcurrentDictionary<int, Object^>(); _caching=true;};
+			virtual void CacheStop(bool clear){if(clear) _cache = gcnew ConcurrentDictionary<int, Object^>(); _caching=false;};
 	
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcProduct^ product);
 			virtual IXbimGeometryModelGroup^ GetGeometry3D(IfcProduct^ product,  XbimGeometryType xbimGeometryType);
@@ -30,7 +30,7 @@ namespace Xbim
 			{
 				_model = model;
 				Standard::SetReentrant(Standard_True);
-				_cache = gcnew ConcurrentDictionary<unsigned int, Object^>();
+				_cache = gcnew ConcurrentDictionary<int, Object^>();
 				_deflection=model->ModelFactors->DeflectionTolerance;
 				_precision = model->ModelFactors->Precision;
 				_precisionMax = model->ModelFactors->PrecisionMax;
@@ -66,17 +66,17 @@ namespace Xbim
 			double _precision;
 			unsigned int _rounding;
 			bool _caching;
-			ConcurrentDictionary<unsigned int, Object^>^ _cache;
-			XbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			XbimGeometryModel^ CreateFrom(IfcProduct^ product, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			ConcurrentDictionary<int, Object^>^ _cache;
+			XbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			XbimGeometryModel^ CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut);
-			XbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			XbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, ConcurrentDictionary<unsigned int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			XbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			XbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			XbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, bool forceSolid, XbimLOD lod, bool occOut);
 			
-			XbimGeometryModel^ Build(IfcBooleanResult^ repItem, ConcurrentDictionary<unsigned int, Object^>^ maps);
-			XbimGeometryModel^ Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<unsigned int, Object^>^ maps);
+			XbimGeometryModel^ Build(IfcBooleanResult^ repItem, ConcurrentDictionary<int, Object^>^ maps);
+			XbimGeometryModel^ Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<int, Object^>^ maps);
 
 			bool CutOpenings(IfcProduct^ product, XbimLOD lod);
 

@@ -68,7 +68,7 @@ namespace Xbim.WeXplorer.MVC4.Controllers
             parser = new XbimQueryParser(GetModel(name));
         }
 
-        private IEnumerable<uint> GetLatestResults()
+        private IEnumerable<int> GetLatestResults()
         {
             foreach (var item in parser.Results.LastEntities)
                 yield return item.EntityLabel;
