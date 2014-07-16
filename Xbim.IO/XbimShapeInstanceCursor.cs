@@ -400,9 +400,8 @@ namespace Xbim.IO
         /// <summary>
         /// xbimShapeInstanceData will contain the first shape instance of the specified product label
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="product"></param>
         /// <param name="si"></param>
-        /// <param name="retrieveAll">if false only retrieve the key index data for speed, if true all data is returned</param>
         /// <returns></returns>
         public bool TrySeekShapeInstanceOfProduct(int product, ref IXbimShapeInstanceData si)
         {
@@ -414,6 +413,27 @@ namespace Xbim.IO
                 if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
                 {
                     GetShapeInstanceData(si);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Return whether the product has any instances
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
+        public bool TrySeekShapeInstanceOfProduct(int product)
+        {
+            Api.JetSetCurrentIndex(sesid, table, productIndex);
+            Api.MakeKey(sesid, table, product, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
+            {
+                Api.MakeKey(sesid, table, product, MakeKeyGrbit.NewKey | MakeKeyGrbit.FullColumnEndLimit);
+                if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                {
                     return true;
                 }
             }

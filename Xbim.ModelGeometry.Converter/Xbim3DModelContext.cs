@@ -807,7 +807,6 @@ namespace Xbim.ModelGeometry.Converter
             if (rep != null)
             {
                 XbimMatrix3D placementTransform = element.ObjectPlacement.ToMatrix3D();
-                XbimRect3D productBounds = XbimRect3D.Empty;
                 List<GeometryReference> geomLabels = new List<GeometryReference>(rep.Items.Count);    //prepare a list for actual keys  
                 //write out any shapes it has                   
                 foreach (var shape in rep.Items)
@@ -819,10 +818,6 @@ namespace Xbim.ModelGeometry.Converter
                         if (mapsWritten.TryGetValue(mapId, out mapGeomIds))//if we have something to write                           
                         {
                             geomLabels.AddRange(mapGeomIds);
-                            XbimRect3D mapBounds = allMapBounds[mapId];
-                            if (productBounds.IsEmpty) productBounds = mapBounds;
-                            else productBounds.Union(mapBounds);
-
                         }
                         
                     }
@@ -833,10 +828,6 @@ namespace Xbim.ModelGeometry.Converter
                         if (shapeLookup.TryGetValue(shape.EntityLabel, out counter))
                         {
                             geomLabels.Add(counter);
-                            if (productBounds.IsEmpty)
-                                productBounds = counter.BoundingBox;
-                            else
-                                productBounds.Union(counter.BoundingBox);
                         }
                         else
                             Logger.ErrorFormat("Failed to find shape #{0}", shape.EntityLabel);
@@ -852,11 +843,11 @@ namespace Xbim.ModelGeometry.Converter
                     {
                         shapesInstances.Add(
                             WriteShapeInstanceToDB(_model, instance.GeometryId, instance.StyleLabel, contextId, element,
-                                       placementTransform, productBounds,
+                                       placementTransform, instance.BoundingBox/*productBounds*/,
                                        includesOpenings ? XbimGeometryRepresentationType.OpeningsAndAdditionsIncluded : XbimGeometryRepresentationType.OpeningsAndAdditionsExcluded)
                             );
-                        productBounds = productBounds.Transform(placementTransform); //transform the bounds
-                        clusters[rep.ContextOfItems].Enqueue(new XbimBBoxClusterElement(instance.GeometryId, productBounds));
+                        XbimRect3D transproductBounds = instance.BoundingBox/*productBounds*/.Transform(placementTransform); //transform the bounds
+                        clusters[rep.ContextOfItems].Enqueue(new XbimBBoxClusterElement(instance.GeometryId, transproductBounds));
                     }
                     return shapesInstances;
                 }
@@ -1523,6 +1514,43 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
+        /// <summary>
+        /// Returns whether the product has geometry
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
+        public bool ProductHasGeometry(Int32 productId)
+        {
+            XbimShapeInstanceCursor shapeInstanceTable = _model.GetShapeInstanceTable();
+            try
+            {
+                using (var transaction = shapeInstanceTable.BeginReadOnlyTransaction())
+                {
+                    foreach (var context in _contexts)
+                    {
+                        if (shapeInstanceTable.TrySeekShapeInstanceOfProduct(productId))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _model.FreeTable(shapeInstanceTable);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns whether the product has geometry
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
+        public bool ProductHasGeometry(IfcProduct product)
+        {
+            return ProductHasGeometry(product.EntityLabel);
+        }
        
         /// <summary>
         /// Returns a triangulated mesh geometry fopr the specified shape
