@@ -140,6 +140,14 @@ namespace Xbim.COBie
         }
 
         /// <summary>
+        /// Provide your own hash implementation for initial row
+        /// </summary>
+        public void SetInitialRowHash(String hash)
+        {
+            InitialRowHashValue = hash;
+        }
+
+        /// <summary>
         /// Return the concatenation of the row values
         /// </summary>
         /// <returns>string value of all rows added together</returns>
