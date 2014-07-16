@@ -61,6 +61,8 @@
     <Compile Include="Contracts\ICOBieDeserialiser.cs" />
     <Compile Include="Contracts\ICOBieFederate.cs" />
     <Compile Include="Contracts\ICOBieSerialiser.cs" />
+    <Compile Include="Contracts\ICOBieSheetValidationTemplate.cs" />
+    <Compile Include="Contracts\ICOBieValidationTemplate.cs" />
     <Compile Include="Data\COBieData.cs" />
     <Compile Include="Data\COBieDataAssembly.cs" />
     <Compile Include="Data\COBieDataAttributeBuilder.cs" />

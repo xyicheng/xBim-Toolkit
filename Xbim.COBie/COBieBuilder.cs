@@ -181,7 +181,7 @@ namespace Xbim.COBie
             return classTypes;
         }
 
-        private void PopulateErrors()
+        private void PopulateErrors(ICOBieValidationTemplate ValidationTemplate = null)
         {
             try
             {
@@ -193,7 +193,7 @@ namespace Xbim.COBie
                 
                 // Validate the workbook
                 progress.ReportMessage("Starting Validation...");
-                Workbook.Validate(Context.ErrorRowStartIndex, (lastProcessedSheetIndex) =>
+                Workbook.Validate(Context.ErrorRowStartIndex, ValidationTemplate, (lastProcessedSheetIndex) =>
                 {
                     // When each sheet has been processed, increment the progress bar
                     progress.IncrementAndUpdate();
@@ -245,12 +245,12 @@ namespace Xbim.COBie
         /// Passes this instance of the COBieReader into the provided ICOBieSerialiser
 		/// </summary>
         /// <param name="serialiser">The object implementing the ICOBieSerialiser interface.</param>
-        public void Export(ICOBieSerialiser serialiser)
+        public void Export(ICOBieSerialiser serialiser, ICOBieValidationTemplate ValidationTemplate = null)
 		{
             if (serialiser == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieSerialiser) must not be null."); }
 
 
-			serialiser.Serialise(Workbook);
+			serialiser.Serialise(Workbook, ValidationTemplate);
 		}
 
 

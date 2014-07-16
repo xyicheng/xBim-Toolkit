@@ -5,6 +5,7 @@ using System.Text;
 using Xbim.IO;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using Xbim.COBie.Contracts;
 
 namespace Xbim.COBie
 {
@@ -42,14 +43,20 @@ namespace Xbim.COBie
         /// on each sheet.
         /// </summary>
         ///<param name="errorRowIdx">excel sheet = ErrorRowIndexBase.RowTwo, datasets = ErrorRowIndexBase.RowOne </param>
-        public void Validate( ErrorRowIndexBase errorRowIdx, Action<int> progressCallback = null) //default for excel row index's on error rows
+        public void Validate( ErrorRowIndexBase errorRowIdx, ICOBieValidationTemplate ValidationTemplate = null, Action<int> progressCallback = null) //default for excel row index's on error rows
         {
             // Enumerates the sheets and validates each
             foreach (var sheet in this)
             {
                 if (sheet.SheetName != Constants.WORKSHEET_PICKLISTS) //skip validation on pick list
                 {
-                    sheet.Validate(this, errorRowIdx);
+                    if (ValidationTemplate != null)
+                    {
+                        sheet.Validate(this, errorRowIdx, ValidationTemplate.Sheet[sheet.SheetName]);
+                    }
+                    else { 
+                        sheet.Validate(this, errorRowIdx, null); 
+                    }
                 }
 
                 // Progress bar support

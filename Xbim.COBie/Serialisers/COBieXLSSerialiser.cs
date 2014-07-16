@@ -62,7 +62,7 @@ namespace Xbim.COBie.Serialisers
         /// Formats the COBie data into an Excel XLS file
         /// </summary>
         /// <param name="cobie"></param>
-        public void Serialise(COBieWorkbook workbook)
+        public void Serialise(COBieWorkbook workbook, ICOBieValidationTemplate ValidationTemplate = null)
         {
             if (workbook == null) { throw new ArgumentNullException("COBie", "COBieXLSSerialiser.Serialise does not accept null as the COBie data parameter."); }
 
@@ -82,7 +82,7 @@ namespace Xbim.COBie.Serialisers
 
             UpdateInstructions();
 
-            ReportErrors(workbook);
+            ReportErrors(workbook, ValidationTemplate);
 
             ReportRules();
 
@@ -275,19 +275,25 @@ namespace Xbim.COBie.Serialisers
             }
         }
 
-        private void ReportErrors(COBieWorkbook workbook)
+        private void ReportErrors(COBieWorkbook workbook, ICOBieValidationTemplate ValidationTemplate = null)
         {
             ISheet errorsSheet = XlsWorkbook.GetSheet(ErrorsSheet) ?? XlsWorkbook.CreateSheet(ErrorsSheet);
 
             //if we are validating here then ensure we have Indices on each sheet
             //workbook.CreateIndices();
-                
+            ICOBieSheetValidationTemplate SheetValidator = null;
+    
+            
             foreach(var sheet in workbook.OrderBy(w=>w.SheetName))
             {
                 if(sheet.SheetName != Constants.WORKSHEET_PICKLISTS)
                 {
+                    if (ValidationTemplate != null && ValidationTemplate.Sheet.ContainsKey(sheet.SheetName))
+                    {
+                        SheetValidator = ValidationTemplate.Sheet[sheet.SheetName];
+                    }
                     // Ensure the validation is up to date
-                     sheet.Validate(workbook, ErrorRowIndexBase.RowTwo);
+                     sheet.Validate(workbook, ErrorRowIndexBase.RowTwo, SheetValidator);
                 }
 
                 WriteErrors(errorsSheet, sheet.Errors);  

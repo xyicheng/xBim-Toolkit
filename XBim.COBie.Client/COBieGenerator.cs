@@ -221,7 +221,7 @@ namespace Xbim.COBie.Client
         /// Create XLS file from ifc/xbim files
         /// </summary>
         /// <param name="parameters">Params</param>
-        private void GenerateFederatedCOBieFile(Params parameters)
+        private void GenerateFederatedCOBieFile(Params parameters, ICOBieValidationTemplate ValidationTemplate = null)
         {
             string outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
             Stopwatch timer = new Stopwatch();
@@ -234,7 +234,7 @@ namespace Xbim.COBie.Client
             LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
             COBieXLSSerialiser serialiser = new COBieXLSSerialiser(outputFile, parameters.TemplateFile);
             serialiser.Excludes = UserFilters;
-            serialiser.Serialise(fedWorkBook);
+            serialiser.Serialise(fedWorkBook, ValidationTemplate);
 
             LogBackground(String.Format("Export Complete: {0}", outputFile));
 
@@ -324,7 +324,7 @@ namespace Xbim.COBie.Client
         /// </summary>
         /// <param name="parameters">Params</param>
         /// <returns>Created file name</returns>
-        private void ValidateXLSfile(Params parameters)
+        private void ValidateXLSfile(Params parameters, ICOBieValidationTemplate ValidationTemplate = null)
         {
             
             //read xls file
@@ -385,7 +385,7 @@ namespace Xbim.COBie.Client
             LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
             COBieXLSSerialiser serialiser = new COBieXLSSerialiser(parameters.ModelFile, parameters.TemplateFile);
             serialiser.Excludes = UserFilters;
-            serialiser.Serialise(Workbook);
+            serialiser.Serialise(Workbook, ValidationTemplate);
 
             LogBackground(String.Format("Export Complete: {0}", parameters.ModelFile));
             
@@ -654,6 +654,7 @@ namespace Xbim.COBie.Client
         {
             public string ModelFile { get; set; }
             public string TemplateFile { get; set; }
+            public string ValidaitonFile { get; set; }
         }
 
         private class MergeParams : Params

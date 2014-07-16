@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using Xbim.IO;
 using System.Collections;
+using Xbim.COBie.Contracts;
 
 
 namespace Xbim.COBie
@@ -23,7 +24,6 @@ namespace Xbim.COBie
         COBieErrorCollection Errors { get; }
 
 
-        void Validate(COBieWorkbook workbook, ErrorRowIndexBase errorRowIdx);
         List<string> ValidateComponentMerge(XbimModel model, COBieMergeRoles fileRoles);
         int ValidateAttributeMerge(List<string> Keys);
         int ValidateTypeMerge(List<string> GlobalIds);
@@ -34,7 +34,9 @@ namespace Xbim.COBie
         T AddNewRow();
         void AddRow(COBieRow cOBieRow);
         void AddRemovedRow(COBieRow cOBieRow);
-        
-        
+
+
+
+        void Validate(COBieWorkbook cOBieWorkbook, ErrorRowIndexBase errorRowIdx, ICOBieSheetValidationTemplate SheetValidator);
     }
 }

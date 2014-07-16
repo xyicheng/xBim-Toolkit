@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Xbim.COBie.Contracts
 {
-    public interface ICOBieSerialiser
+    public interface ICOBieValidationTemplate
     {
-        void Serialise(COBieWorkbook workbook, ICOBieValidationTemplate ValidationTemplate);
+        Dictionary<String, ICOBieSheetValidationTemplate> Sheet { get; }
     }
 }

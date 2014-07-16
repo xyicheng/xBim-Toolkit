@@ -167,7 +167,7 @@ namespace Xbim.COBie.Federate
 
                 // Validate the workbook
                 cOBieProgress.ReportMessage("Starting Validation...");
-                fedWorkBook.Validate(ErrorRowStartIndex, (lastProcessedSheetIndex) =>
+                fedWorkBook.Validate(ErrorRowStartIndex, null, (lastProcessedSheetIndex) =>
                 {
                     // When each sheet has been processed, increment the progress bar
                     cOBieProgress.IncrementAndUpdate();

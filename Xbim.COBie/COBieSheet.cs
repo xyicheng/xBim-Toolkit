@@ -9,6 +9,7 @@ using Xbim.IO;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.COBie.Contracts;
 
 namespace Xbim.COBie
 {
@@ -245,14 +246,14 @@ namespace Xbim.COBie
         /// Validate the sheet
         /// </summary>
         /// <param name="workbook"></param>
-        public void Validate(COBieWorkbook workbook, ErrorRowIndexBase errorRowIdx)
+        public void Validate(COBieWorkbook workbook, ErrorRowIndexBase errorRowIdx, ICOBieSheetValidationTemplate SheetValidator)
         {
             _errorRowIdx = errorRowIdx; //set the index for error reporting on rows
             _errors.Clear();
 
-            ValidatePrimaryKeysUnique();
-            ValidateFields();
-            ValidateForeignKeys(workbook);
+            ValidatePrimaryKeysUnique(SheetValidator);
+            ValidateFields(SheetValidator);
+            ValidateForeignKeys(workbook, SheetValidator);
         }
 
         /// <summary>
@@ -446,7 +447,7 @@ namespace Xbim.COBie
         /// Validate the existence of the Foreign Key value on the referencing sheet, if not add error
         /// </summary>
         /// <param name="context">COBieContext object holding global values for this model</param>
-        private void ValidateForeignKeys(COBieWorkbook workbook)
+        private void ValidateForeignKeys(COBieWorkbook workbook, ICOBieSheetValidationTemplate SheetValidator)
         {
             int rowIndex = 1;
             foreach (COBieRow row in Rows)
@@ -456,38 +457,46 @@ namespace Xbim.COBie
                     // TODO: COBieColumn should own the relationship rather than creating a new one each time.
                     COBieColumnRelationship cobieReference = new COBieColumnRelationship(workbook, foreignKeyColumn);
 
-                    if (!string.IsNullOrEmpty(foreignKeyColumn.ReferenceColumnName))
+                    if (SheetValidator != null && SheetValidator.IsRequired.ContainsKey(foreignKeyColumn.ColumnOrder) &&
+                        SheetValidator.IsRequired[foreignKeyColumn.ColumnOrder])
                     {
-                        
-                        COBieCell cell = row[foreignKeyColumn.ColumnOrder];
-                        
-                        string foreignKeyValue = cell.CellValue;
-
-                        // Don't validate nulls. Will be reported by the Foreign Key null value check, so just skip here 
-                        if (!string.IsNullOrEmpty(foreignKeyValue))
+                        if (!string.IsNullOrEmpty(foreignKeyColumn.ReferenceColumnName))
                         {
-                            bool isValid = false;
 
-                            bool isPickList = (cobieReference.SheetName == Constants.WORKSHEET_PICKLISTS);
+                            COBieCell cell = row[foreignKeyColumn.ColumnOrder];
 
-                            if (isPickList)
+                            string foreignKeyValue = cell.CellValue;
+
+                            // Don't validate nulls. Will be reported by the Foreign Key null value check, so just skip here 
+                            if (!string.IsNullOrEmpty(foreignKeyValue))
                             {
-                                isValid = PickListMatch(cobieReference, cell);
-                            }
-                            else
-                            {
-                                isValid = ForeignKeyMatch(cobieReference, cell);
-                            }
-                            //report no match
-                            if (!isValid)
-                            {
-                                string errorDescription = BuildErrorMessage(cobieReference, isPickList);
+                                bool isValid = false;
 
-                                COBieError.ErrorTypes errorType = isPickList == true ? COBieError.ErrorTypes.PickList_Violation : COBieError.ErrorTypes.ForeignKey_Violation;
+                                bool isPickList = (cobieReference.SheetName == Constants.WORKSHEET_PICKLISTS);
 
-                                COBieError error = new COBieError(SheetName, foreignKeyColumn.ColumnName, errorDescription, errorType, 
-                                     COBieError.ErrorLevels.Error, row.InitialRowHashValue, foreignKeyColumn.ColumnOrder, rowIndex);
-                                _errors.Add(error);
+                                if (isPickList)
+                                {
+                                    isValid = PickListMatch(cobieReference, cell);
+                                }
+                                else
+                                {
+                                    isValid = ForeignKeyMatch(cobieReference, cell);
+                                }
+                                //report no match
+                                if (!isValid)
+                                {
+                                    string errorDescription = BuildErrorMessage(cobieReference, isPickList);
+
+                                    COBieError.ErrorTypes errorType = isPickList == true
+                                        ? COBieError.ErrorTypes.PickList_Violation
+                                        : COBieError.ErrorTypes.ForeignKey_Violation;
+
+                                    COBieError error = new COBieError(SheetName, foreignKeyColumn.ColumnName,
+                                        errorDescription, errorType,
+                                        COBieError.ErrorLevels.Error, row.InitialRowHashValue,
+                                        foreignKeyColumn.ColumnOrder, rowIndex);
+                                    _errors.Add(error);
+                                }
                             }
                         }
                     }
@@ -570,7 +579,7 @@ namespace Xbim.COBie
         /// <summary>
         /// Validate the row columns against the attributes set for each column 
         /// </summary>
-        public void ValidateFields()
+        public void ValidateFields(ICOBieSheetValidationTemplate SheetValidator)
         {
             int r = 0;
             foreach(T row in Rows)
@@ -578,17 +587,27 @@ namespace Xbim.COBie
                 r++;
                 for(int col = 0 ; col < row.RowCount ; col++)
                 {
-                    COBieError errNull = GetCobieFieldNullError(row[col], SheetName, r, col, row.InitialRowHashValue);
-                    if (errNull != null)
-                        _errors.Add(errNull);
-                    else //passed null check so check format
+                    
+                    if (SheetValidator == null || !SheetValidator.IsRequired.ContainsKey(col) || SheetValidator.IsRequired[col])
                     {
-                        errNull = GetCOBieFieldOutOfBoundsError(row[col], SheetName, r, col, row.InitialRowHashValue);
+                        COBieError errNull = GetCobieFieldNullError(row[col], SheetName, r, col, row.InitialRowHashValue);
                         if (errNull != null)
+                        {
                             _errors.Add(errNull);
-                        errNull = GetCOBieFieldFormatError(row[col], SheetName, r, col, row.InitialRowHashValue);
-                        if (errNull != null)
-                            _errors.Add(errNull);
+                        }
+                        else //passed null check so check format
+                        {
+                            errNull = GetCOBieFieldOutOfBoundsError(row[col], SheetName, r, col, row.InitialRowHashValue);
+                            if (errNull != null)
+                            {
+                                _errors.Add(errNull);
+                            }
+                            errNull = GetCOBieFieldFormatError(row[col], SheetName, r, col, row.InitialRowHashValue);
+                            if (errNull != null)
+                            {
+                                _errors.Add(errNull);
+                            }
+                        }
                     }
                 }
             }
@@ -597,9 +616,9 @@ namespace Xbim.COBie
         /// <summary>
         /// Validate the Primary Keys only exist once in the sheet 
         /// </summary>
-        private void ValidatePrimaryKeysUnique()
+        private void ValidatePrimaryKeysUnique(ICOBieSheetValidationTemplate SheetValidator)
         {
-            var dupes = Rows
+        var dupes = Rows
                     .Select((v, i) => new { row = v, index = i }) //get COBieRow and its index in the list
                     .GroupBy(r => r.row.GetPrimaryKeyValue.ToLower().Trim(), (key, group) => new {rowkey = key, rows = group }) //group by the primary key value(s) joint as a delimited string
                     .Where(grp => grp.rows.Count() > 1); 
@@ -625,16 +644,25 @@ namespace Xbim.COBie
                 
                 foreach (var row in dupe.rows)
                 {
-                    indexList.Add((row.index + errorRowInc).ToString());
+                    if (SheetValidator != null && SheetValidator.IsRequired.ContainsKey(row.index) && SheetValidator.IsRequired[row.index]){
+                        indexList.Add((row.index + errorRowInc).ToString());
+                    }
                 }
                 string rowIndexList = string.Join(",", indexList);
                 foreach (var row in dupe.rows)
                 {
-                    string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols, rowIndexList);
-                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation,
-                        COBieError.ErrorLevels.Error, row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder, (row.index + 1));
-                    _errors.Add(error);
-                   
+                    if (SheetValidator != null && SheetValidator.IsRequired.ContainsKey(row.index) &&
+                        SheetValidator.IsRequired[row.index])
+                    {
+                        string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols,
+                            rowIndexList);
+                        COBieError error = new COBieError(SheetName, keyCols, errorDescription,
+                            COBieError.ErrorTypes.PrimaryKey_Violation,
+                            COBieError.ErrorLevels.Error, row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder,
+                            (row.index + 1));
+                        _errors.Add(error);
+                    }
+
                 }
                 
                 

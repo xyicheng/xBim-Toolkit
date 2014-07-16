@@ -28,8 +28,8 @@ namespace Xbim.COBie
 		public const string WORKSHEET_PICKLISTS = "PickLists";
 
 
-        public const string DEFAULT_STRING = "n/a";
-        public const string DEFAULT_NUMERIC = "n/a";
+        public const string DEFAULT_STRING = "";
+        public const string DEFAULT_NUMERIC = "";
         public const int DOUBLE_MAXSIZE = 16;
         public const string DEFAULT_EMAIL = "unknown.unknown@unknown.com";
         public const string DATE_FORMAT = "yyyy-MM-dd";
