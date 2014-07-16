@@ -19,7 +19,9 @@ namespace Xbim.ModelGeometry.Scene
         bool WritePly(string fileName, bool ascii=true);
 
         int VertexCount { get; }
+        int FaceCount { get; }
         XbimPoint3D Vertex(int i);
         IList<Int32> Triangulation(double precision);
+        int MergeCoPlanarFaces(double p);
     }
 }

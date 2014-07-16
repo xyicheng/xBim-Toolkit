@@ -953,6 +953,21 @@ namespace Xbim.ModelGeometry.Converter
                         {
                             if (geomModel.HasCurvedEdges) curvedShapes.TryAdd(shapeId, geomModel);
                             IXbimPolyhedron poly = geomModel.ToPolyhedron(_model.ModelFactors);
+                            //if (poly.VertexCount > 3000) 
+                            //{ 
+                            //    int v1 = poly.VertexCount;
+                            //    int f1 = poly.FaceCount;
+                          
+                            //    int facesRemoved = poly.MergeCoPlanarFaces(0.01);
+
+                            //    int v2 = poly.VertexCount;
+                            //    int f2 = poly.FaceCount;
+
+                            //    if (f1 != f2)
+                            //    {
+                            //        Console.WriteLine("VertexCount:" + v1 + "->" + v2 + " FaceCount:" + f1 + "->" + f2 + " " + (f1 - f2) + " faces removed");
+                            //    }
+                            //}
                             XbimRect3D bb = poly.GetBoundingBox();
                             string shapeData = poly.WriteAsString(_model.ModelFactors);                           
                             XbimShapeGeometry shapeGeometry = new XbimShapeGeometry()

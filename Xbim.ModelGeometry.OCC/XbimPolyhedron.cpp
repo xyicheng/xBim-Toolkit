@@ -176,12 +176,12 @@ namespace Xbim
 				return mods;
 			}
 
-			size_t XbimPolyhedron::MergeCoPlanarFaces(double normalAngle)
+			int XbimPolyhedron::MergeCoPlanarFaces(double normalAngle)
 			{			
 				carve::mesh::MeshSimplifier simplifier;
 				size_t mods = simplifier.mergeCoplanarFaces(_meshSet, normalAngle);	
 				GC::KeepAlive(this);
-				return mods;
+				return (int)mods;
 			}
 
 			size_t XbimPolyhedron::EliminateShortEdges(double minLength, double EPSILON)

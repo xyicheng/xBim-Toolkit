@@ -301,7 +301,7 @@ namespace Xbim
 										  double EPSILON);
 				size_t Improve( double EPSILON);
 				void Invert();
-				size_t MergeCoPlanarFaces(double normalAngle);
+				virtual int MergeCoPlanarFaces(double normalAngle);
 				bool IsClosed();
 				virtual IList<Int32>^ Triangulation(double precision);
 			};

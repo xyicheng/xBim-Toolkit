@@ -120,5 +120,16 @@ namespace Xbim.ModelGeometry.Scene
         {
             get { return false; }
         }
+
+
+        public int FaceCount
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public int MergeCoPlanarFaces(double p)
+        {
+            return 0;
+        }
     }
 }
