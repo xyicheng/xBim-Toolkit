@@ -10,7 +10,7 @@ namespace Xbim.Common
         /// <summary>
         /// If this number is greater than 0, any faceted meshes will be simplified if the number of faces exceeds the threshhold
         /// </summary>
-        public int SimplifyFaceCountThreshHold = 0;
+        public int SimplifyFaceCountThreshHold = 1000;
 
         /// <summary>
         /// If the SimplifyFaceCountThreshHold is greater than 0, this is the minimum length of any edge in a face in millimetres, default is 10mm
