@@ -1528,6 +1528,38 @@ namespace Xbim.ModelGeometry.Converter
         }
 
         /// <summary>
+        /// Returns a lookup of each gemeotry label and the number of instances that reference it
+        /// </summary>
+        /// <returns></returns>
+        public IDictionary<int,int>  ShapeGeometryReferenceData()
+        {
+            XbimShapeGeometryCursor shapeGeometryTable = Model.GetShapeGeometryTable();
+            Dictionary<int,int> lookup = new Dictionary<int,int>();
+            try
+            {
+                
+                using (var transaction = shapeGeometryTable.BeginReadOnlyTransaction())
+                {
+                    IXbimShapeGeometryData shapeGeometry = new XbimShapeGeometry();
+                    if (shapeGeometryTable.TryMoveFirstReferenceCounter())
+                    {
+                        do
+                        {
+                            lookup.Add(shapeGeometryTable.GetShapeGeometryLabel(), shapeGeometryTable.GetReferenceCount());
+                        }
+                        while (shapeGeometryTable.TryMoveNextReferenceCounter());
+                    }
+                }
+            }
+            finally
+            {
+                Model.FreeTable(shapeGeometryTable);
+            }
+            return lookup;
+        }
+
+
+        /// <summary>
         /// Returns whether the product has geometry
         /// </summary>
         /// <param name="product"></param>

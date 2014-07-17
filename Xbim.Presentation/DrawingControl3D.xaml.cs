@@ -1450,6 +1450,7 @@ namespace Xbim.Presentation
         /// <returns></returns>
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene2(XbimModel model, Xbim3DModelContext context, List<Type> exclude = null)
         {
+            
              XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             //get a list of all the unique styles
             Dictionary<int, WpfMaterial> styles = new Dictionary<int, WpfMaterial>();

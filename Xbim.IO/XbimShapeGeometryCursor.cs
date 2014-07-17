@@ -243,7 +243,7 @@ namespace Xbim.IO
               //  Api.JetCreateIndex(sesid, tableid, geometryTableHashIndex, CreateIndexGrbit.None, indexDef, indexDef.Length, 100);
 
                 //create indexfor reference count
-                indexDef = string.Format("-{0}\0{1}\0\0", colNameCost, colNameReferenceCount);
+                indexDef = string.Format("-{0}\0{1}\0{2}\0\0", colNameCost, colNameReferenceCount, colNameShapeLabel);
                 Api.JetCreateIndex(sesid, tableid, geometryTableReferenceIndex, CreateIndexGrbit.None, indexDef, indexDef.Length, 100);
 
                 Api.JetCloseTable(sesid, tableid);
@@ -384,6 +384,67 @@ namespace Xbim.IO
             }
         }
 
-      
+        /// <summary>
+        /// fast retrieval of the reference counf for this geometry
+        /// </summary>
+        /// <param name="shapeGeometryLabel"></param>
+        /// <returns></returns>
+        public int GetReferenceCount(int shapeGeometryLabel)
+        {
+            Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
+            Api.MakeKey(sesid, table, shapeGeometryLabel, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
+            {
+                int refCount = Api.RetrieveColumnAsInt32(sesid, table, _colIdReferenceCount,RetrieveColumnGrbit.RetrieveFromIndex).Value;
+                return refCount;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Moves to the first Shape Geometry and sets the index to the reference counter index
+        /// </summary>
+        /// <returns></returns>
+        public bool TryMoveFirstReferenceCounter()
+        {
+            Api.JetSetCurrentIndex(sesid, table, geometryTableReferenceIndex);
+            return TryMoveFirst();
+        }
+
+
+        /// <summary> Moves to the next shape geometry assumes TryMoveFirstReferenceCounter has been called
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool TryMoveNextReferenceCounter()
+        {
+            return TryMoveNext();
+        }
+       
+        /// <summary>
+        /// returns the reference count for the current record, assume that TryMoveFirstReferenceCounter has been called
+        /// </summary>
+        /// <returns></returns>
+        public int GetReferenceCount()
+        {
+            return Api.RetrieveColumnAsInt32(sesid, table, _colIdReferenceCount, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+        }
+
+        /// <summary>
+        /// returns the cost for the current record, assume that TryMoveFirstReferenceCounter has been called
+        /// </summary>
+        /// <returns></returns>
+        public int GetCost()
+        {
+            return Api.RetrieveColumnAsInt32(sesid, table, _colIdCost, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+        }
+        /// <summary>
+        /// returns the geometry label for the current record, assume that the current index has been set to primary
+        /// </summary>
+        /// <returns></returns>
+        public int GetShapeGeometryLabel()
+        {
+            return Api.RetrieveColumnAsInt32(sesid, table, _colIdShapeLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+        }
     }
 }
