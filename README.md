@@ -3,9 +3,9 @@
 ## What is it?
 
 The xBIM Tookit (eXtensible Building Information Modelling) is an open-source, software development BIM toolkit that 
-supports the BuildingSmart Data Model (aka the [Industry Foundation Classes IFC][http://en.wikipedia.org/wiki/Industry_Foundation_Classes]).
+supports the BuildingSmart Data Model (aka the [Industry Foundation Classes IFC](http://en.wikipedia.org/wiki/Industry_Foundation_Classes)).
 
-xBIM allows developers to read, create and view [Building Information (BIM)][http://en.wikipedia.org/wiki/Building_information_modeling] Models in the IFC format. 
+xBIM allows developers to read, create and view [Building Information (BIM)](http://en.wikipedia.org/wiki/Building_information_modeling) Models in the IFC format. 
 There is full support for geometric, topological operations and visualisation. In addition xBIM supports 
 bi-directional translation between IFC and COBie formats
 
@@ -65,4 +65,4 @@ Alternatively use the Issue Tracker to raise any bugs relating to Xbim.
 
 ## Getting Involved
 
-If you'd like to get involved and contribute to this project, please contact the Project Coordinator, [Steve Lockley][https://www.codeplex.com/site/users/view/SteveLockley].
+If you'd like to get involved and contribute to this project, please contact the Project Coordinator, [Steve Lockley](https://www.codeplex.com/site/users/view/SteveLockley).
