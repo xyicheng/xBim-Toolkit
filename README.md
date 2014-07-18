@@ -1,3 +1,6 @@
+Please note that this repository is a git mirror of the original [Codeplex project](https://xbim.codeplex.com/). Please use the Codeplex site for communications.
+
+
 # XBIM - the eXtensible Building Information Modelling (BIM) Toolkit
 
 ## What is it?
