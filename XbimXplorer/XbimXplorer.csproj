@@ -217,9 +217,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Resource Include="..\Readme.txt">
-      <Link>Readme.txt</Link>
-    </Resource>
     <None Include="..\Local.testsettings">
       <Link>Local.testsettings</Link>
     </None>
@@ -239,6 +236,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="README.md" />
     <None Include="XbimXplorer_TemporaryKey.pfx" />
     <Resource Include="xBimQueryLogo.png" />
   </ItemGroup>

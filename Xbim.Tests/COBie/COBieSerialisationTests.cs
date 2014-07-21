@@ -89,7 +89,7 @@ namespace Xbim.Tests.COBie
             
             string output = Path.ChangeExtension(SourceBinaryFile, ".xls");
             ICOBieSerialiser serialiser = new COBieXLSSerialiser(output, ExcelTemplateFile);
-            serialiser.Serialise(_book);
+            serialiser.Serialise(_book, null);
             
             
             Stopwatch timer = new Stopwatch();
